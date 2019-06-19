@@ -17,6 +17,17 @@ module.exports = merge(common, {
       'process.env.NODE_ENV': JSON.stringify('development')
     })
   ],
+/*
+  "externals": {
+    "electron": "require('electron')",
+    "child_process": "require('child_process')",
+    "fs": "require('fs')",
+    "path": "require('path')"
+   
+ },
+*/
+ node: {fs: "empty"},
+
   module: {
     rules: [
       {

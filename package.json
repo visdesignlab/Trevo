@@ -47,6 +47,10 @@
   "dependencies": {
     "@babel/polyfill": "^7.4.0",
     "core-js": "^3.0.1",
+    "csv-parser": "^2.3.0",
+    "d3": "^5.9.2",
+    "fs": "0.0.1-security",
+    "papaparse": "^5.0.0",
     "tar": "^4.4.8"
   }
 }

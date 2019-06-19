@@ -15,7 +15,7 @@ module.exports = {
     splitChunks: {
       chunks: 'all',
       name: false
-    }
+    },
   },
   plugins: [
     new CleanWebpackPlugin(),
