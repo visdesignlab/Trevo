@@ -15,9 +15,15 @@ export function allPaths(edgeArray, leafArray){
 export function getPath(edgeArray, leaf, pathKeeper){
     let path = edgeArray.filter(ed=> ed.target == leaf.source);
     if(path.length > 0){
+        
         pathKeeper.push(path[0]);
         return getPath(edgeArray, path[0], pathKeeper);
     }else{
-        return pathKeeper;
+        /*
+        pathKeeper.map(p=> ++p.blen).reduce(function(accumulator, currentValue, currentIndex, array) {
+            return accumulator + currentValue;
+          });
+ */
+        return pathKeeper.reverse();
     }
 }
