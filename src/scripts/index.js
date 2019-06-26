@@ -2,12 +2,15 @@ import '../styles/index.scss';
 import * as d3 from "d3";
 import * as Papa from 'papaparse';
 import {edgeFile, nodeFile} from './fileThing';
+import {loadData} from './dataLoad';
 import {allPaths} from './pathCalc';
 const csv = require('csv-parser');  
 
 let edgeOb = Papa.parse(edgeFile, {header:true});
 let nodeOb = Papa.parse(nodeFile, {header:true});
 
+
+/*
 let linkOb = edgeOb.data.map(m=> {
     return { source: m._from, target: m._to,  blen: ++m.length}
 });
@@ -22,8 +25,6 @@ let wrap = d3.select('#wrapper');
 let svg = wrap.append('svg'),
     width = +svg.attr("width"),
     height = +svg.attr("height");
-
-
 
 let filterSample = graph.links.map(m=> m.source);
 let leaves = graph.links.filter(l=> !filterSample.includes(l.target));
@@ -82,17 +83,49 @@ branches = branchEnter.merge(branches);
 branches.attr('cx', (d)=> xScale(d.x1)).attr('cy', 10).attr('r', 5).attr('fill', '#7B747B');
 branches.on('mouseover', (d, i)=> console.log(d) );
 */
+
+/*
 let branches = nodeGroups.append('circle');
 branches.attr('cx', (d)=> xScale(d.x1)).attr('cy', 10).attr('r', 5).attr('fill', '#7B747B');
 branches.on('mouseover', (d, i)=> console.log(d) );
+
+let lab = nodeGroups.append('text').text(d=> d.)
 
 let labels = pathGroups.append('text').text(d=> {
     console.log(d[0])
     return d[d.length - 1].target}).attr('x', (d, i)=> xScale(d[d.length - 1].x2)).attr('y', 15)
 
+*/
+let notEmpty = function(childArray){
+    if(childArray == undefined){
+        return false;
+    }else if(childArray.length == 0){
+        return false;
+    }else{
+        return true;
+    }
+}
 
+let digger = function(nodes, nodeArr, index){
+    nodes.forEach((node, i)=> {
+        let newIndex = index + (i+1)
+        node.id = newIndex
+        nodeArr.push(node);
+        if(notEmpty(node.children)){
+            return digger(node.children, nodeArr, newIndex)
+        }else{
+            return nodeArr;
+        }
+    })
+    return nodeArr
+}
+    
+loadData(d3.json, './public/data/geospiza_with_attributes.json').then(data=> {
+    let nodeArray = [];
+    console.log(digger([data], nodeArray, -1));
+});
 
-
+loadData(d3.csv, './public/data/edges.csv');
 
 
 
