@@ -3,14 +3,22 @@ import * as d3 from "d3";
 import * as Papa from 'papaparse';
 import {edgeFile, nodeFile} from './fileThing';
 import {loadData} from './dataLoad';
-import {allPaths} from './pathCalc';
+import {allPaths, pullPath} from './pathCalc';
 const csv = require('csv-parser');  
 
 let edgeOb = Papa.parse(edgeFile, {header:true});
 let nodeOb = Papa.parse(nodeFile, {header:true});
 
+let wrap = d3.select('#wrapper');
+
+let svg = wrap.append('svg'),
+    width = +svg.attr("width"),
+    height = +svg.attr("height");
+
 
 /*
+
+
 let linkOb = edgeOb.data.map(m=> {
     return { source: m._from, target: m._to,  blen: ++m.length}
 });
@@ -70,13 +78,15 @@ nodeGroups = nodeGroupEnter.merge(nodeGroups);
 let rects = nodeGroups.append('rect');
 rects.attr('x', d=> xScale(d.x1))
 .attr('y', 5).attr('width', d=> xScale(d.blen)).attr('height', 10).attr('fill', '#DED0DC')
-/*
+
 let rects = pathGroups.selectAll('rect').data(d=> d);
 let rectsEnter = rects.enter().append('rect');
 rects = rectsEnter.merge(rects);
 rects.attr('x', d=> xScale(d.x1))
 .attr('y', 5).attr('width', d=> xScale(d.blen)).attr('height', 10).attr('fill', '#DED0DC')
+*/
 
+/*
 let branches = pathGroups.selectAll('circle').data(d=> d);
 let branchEnter = branches.enter().append('circle');
 branches = branchEnter.merge(branches);
@@ -95,7 +105,7 @@ let labels = pathGroups.append('text').text(d=> {
     console.log(d[0])
     return d[d.length - 1].target}).attr('x', (d, i)=> xScale(d[d.length - 1].x2)).attr('y', 15)
 
-*/
+
 let notEmpty = function(childArray){
     if(childArray == undefined){
         return false;
@@ -106,7 +116,7 @@ let notEmpty = function(childArray){
     }
 }
 
-let digger = function(nodes, nodeArr, index){
+let digger = function(nodes, nodeArr, index, parent){
     nodes.forEach((node, i)=> {
         let newIndex = index + (i+1)
         node.id = newIndex
@@ -118,16 +128,20 @@ let digger = function(nodes, nodeArr, index){
         }
     })
     return nodeArr
-}
-    
+}*/
+
+
+
 loadData(d3.json, './public/data/geospiza_with_attributes.json').then(data=> {
-    let nodeArray = [];
-    console.log(digger([data], nodeArray, -1));
+    let pathArray = pullPath([], [data], [], [], 0);
+    console.log(pathArray)
+
+
+
+
+
 });
 
+
+
 loadData(d3.csv, './public/data/edges.csv');
-
-
-
-
-

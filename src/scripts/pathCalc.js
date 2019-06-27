@@ -27,3 +27,29 @@ export function getPath(edgeArray, leaf, pathKeeper){
         return pathKeeper.reverse();
     }
 }
+
+export function pullPath(pathArray, nodes, arrayOfArray, nameArray, depth){
+    nodes.forEach((node, i)=> {
+        node.depth = depth;
+        node.id = depth + '.' + i;
+        if(notEmpty(node.children)){
+            pathArray.push(node);
+            pullPath([...pathArray], node.children, arrayOfArray, nameArray, depth+1);
+        }else{
+            nameArray.push(node.node_data['node name']);
+            node.flag = true
+            arrayOfArray.push([...pathArray, node]);
+        }
+    })
+    return arrayOfArray
+}
+
+function notEmpty(childArray){
+    if(childArray == undefined){
+        return false;
+    }else if(childArray.length == 0){
+        return false;
+    }else{
+        return true;
+    }
+}
