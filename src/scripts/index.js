@@ -3,7 +3,7 @@ import * as d3 from "d3";
 import * as Papa from 'papaparse';
 import {edgeFile, nodeFile} from './fileThing';
 import {loadData} from './dataLoad';
-import {allPaths, pullPath} from './pathCalc';
+import {allPaths, pullPath, getPath} from './pathCalc';
 const csv = require('csv-parser');  
 
 let edgeOb = Papa.parse(edgeFile, {header:true});
@@ -106,38 +106,40 @@ let labels = pathGroups.append('text').text(d=> {
     return d[d.length - 1].target}).attr('x', (d, i)=> xScale(d[d.length - 1].x2)).attr('y', 15)
 
 
-let notEmpty = function(childArray){
-    if(childArray == undefined){
-        return false;
-    }else if(childArray.length == 0){
-        return false;
-    }else{
-        return true;
-    }
-}
+*/
 
-let digger = function(nodes, nodeArr, index, parent){
-    nodes.forEach((node, i)=> {
-        let newIndex = index + (i+1)
-        node.id = newIndex
-        nodeArr.push(node);
-        if(notEmpty(node.children)){
-            return digger(node.children, nodeArr, newIndex)
-        }else{
-            return nodeArr;
-        }
-    })
-    return nodeArr
-}*/
+loadData(d3.json, './public/data/geo-edges.json').then(edges => {
 
+    let edgeSource = edges.rows.map(d=> d.V1);
+    let leaves = edges.rows.filter(f=> edgeSource.indexOf(f.V2) == -1 );
+
+    let test = leaves.map(le=> {
+        return getPath(edges.rows, le, [le], 'V1', 'V2')
+    });
+    console.log("test",test)
+});
 
 
 loadData(d3.json, './public/data/geospiza_with_attributes.json').then(data=> {
     let pathArray = pullPath([], [data], [], [], 0);
-    console.log(pathArray)
+    let maxDepth = d3.max(pathArray.flatMap(f=> f).map(m=> m.x2));
+    let xScale = d3.scaleLinear().range([10, 700]).domain([0, maxDepth])
 
+    /////Rendering ///////
 
+    svg.style('height', (pathArray.length*16) + 'px');
 
+    let pathGroups = svg.selectAll('.paths').data(pathArray);
+    let pathEnter = pathGroups.enter().append('g').classed('paths', true);
+    pathGroups = pathEnter.merge(pathGroups);
+    pathGroups.attr('transform', (d, i)=> 'translate(0,'+ (i * 15)+')');
+
+    let nodeGroups = pathGroups.selectAll('.node').data(d=> d);
+    let nodeGroupEnter = nodeGroups.enter().append('g').classed('node', true);
+    nodeGroups = nodeGroupEnter.merge(nodeGroups);
+    
+    let speciesLabel = nodeGroups.filter(f=> f.node_data['node name'])
+    speciesLabel.append('text').text(f=> f.node_data['node name'])
 
 
 });
