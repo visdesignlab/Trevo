@@ -11,6 +11,8 @@ let nodeOb = Papa.parse(nodeFile, {header:true});
 
 let wrap = d3.select('#wrapper');
 
+let toolbarDiv = wrap.append('div').attr('id', 'toolbar');
+
 let svg = wrap.append('svg'),
     width = +svg.attr("width"),
     height = +svg.attr("height");
@@ -108,38 +110,78 @@ let labels = pathGroups.append('text').text(d=> {
 
 */
 
-loadData(d3.json, './public/data/geo-edges.json').then(edges => {
+loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
 
     let edgeSource = edges.rows.map(d=> d.V1);
     let leaves = edges.rows.filter(f=> edgeSource.indexOf(f.V2) == -1 );
 
-    let test = leaves.map(le=> {
-        return getPath(edges.rows, le, [le], 'V1', 'V2')
+    let paths = allPaths(edges.rows, leaves, "V1", "V2");
+    console.log("test",paths);
+    
+    let resBreak = await loadData(d3.json, './public/data/geo-res-breakD.json');
+    console.log(resBreak.rows)
+
+   // let maxDepth = d3.max(paths.flatMap(f=> f).map(m=> m.x2));
+    let xScale = d3.scaleLinear().range([0, 1000]).clamp(true)//.domain([0, maxDepth])
+
+    /////Rendering ///////
+
+    svg.style('height', (paths.length*30) + 'px');
+
+    let pathWrap = svg.append('g').classed('path-wrapper', true);
+
+    let pathGroups = pathWrap.selectAll('.paths').data(paths);
+    let pathEnter = pathGroups.enter().append('g').classed('paths', true);
+    pathGroups = pathEnter.merge(pathGroups);
+    pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * 25)+')');
+
+    let pathBars = pathGroups.append('rect');//.style('fill', 'red');
+
+    pathGroups.on('mouseover', function(d, i){
+        return d3.select(this).classed('hover', true);
+    }).on('mouseout', function(d, i){
+       // return d3.selec('.hover').classed('hover', false);
+        return d3.select(this).classed('hover', false)
+    })
+
+    let speciesTitle = pathGroups.append('text').text('SPECIES NAME');
+    speciesTitle.attr('x', 10).attr('y', 15)
+
+    let timelines = pathGroups.append('g').classed('time-line', true);
+    timelines.attr('transform', (d, i)=> 'translate(150, 0)');
+
+    let lines = timelines.append('line')
+    .attr('x1', 0)
+    .attr('x2', 1000)
+    .attr('y1', 15)
+    .attr('y2', 15);
+
+    let nodeGroups = timelines.selectAll('.node').data((d)=> {
+        d.xScale = xScale.domain([0, d.length-1]);
+        d.map((m, i)=> {
+            m.move = d.xScale(i);
+            return m;
+        });
+        return d;
     });
-    console.log("test",test)
+
+    let nodeGroupEnter = nodeGroups.enter().append('g').classed('node', true);
+    nodeGroups = nodeGroupEnter.merge(nodeGroups);
+    nodeGroups.attr('transform', (d)=> 'translate('+ d.move +', 10)');
+
+    let circle = nodeGroups.append('circle').attr('cx', 0).attr('cy', 0).attr('r', 10)
+    
+    let speciesLabel = nodeGroups.filter(f=> leaves.map(l=> l.V2).indexOf(f.V2) > -1)
+    speciesLabel.append('text').text(f=> f.V2)
+
 });
+
+
 
 
 loadData(d3.json, './public/data/geospiza_with_attributes.json').then(data=> {
     let pathArray = pullPath([], [data], [], [], 0);
-    let maxDepth = d3.max(pathArray.flatMap(f=> f).map(m=> m.x2));
-    let xScale = d3.scaleLinear().range([10, 700]).domain([0, maxDepth])
-
-    /////Rendering ///////
-
-    svg.style('height', (pathArray.length*16) + 'px');
-
-    let pathGroups = svg.selectAll('.paths').data(pathArray);
-    let pathEnter = pathGroups.enter().append('g').classed('paths', true);
-    pathGroups = pathEnter.merge(pathGroups);
-    pathGroups.attr('transform', (d, i)=> 'translate(0,'+ (i * 15)+')');
-
-    let nodeGroups = pathGroups.selectAll('.node').data(d=> d);
-    let nodeGroupEnter = nodeGroups.enter().append('g').classed('node', true);
-    nodeGroups = nodeGroupEnter.merge(nodeGroups);
-    
-    let speciesLabel = nodeGroups.filter(f=> f.node_data['node name'])
-    speciesLabel.append('text').text(f=> f.node_data['node name'])
+   
 
 
 });

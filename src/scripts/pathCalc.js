@@ -2,9 +2,11 @@
  * 
  * @param {array of all graph edges} edgeArray 
  * @param {array of leaf nodes in graph} leafArray 
+ * @param {string for property} source
+ * @param {string for property} target  
  */
-export function allPaths(edgeArray, leafArray){
-    return leafArray.map(le=> getPath(edgeArray, le, [], "V1", 'V2'));
+export function allPaths(edgeArray, leafArray, source, target){
+    return leafArray.map(le=> getPath(edgeArray, le, [le], source, target));
 }
 /**
  * 
@@ -15,16 +17,15 @@ export function allPaths(edgeArray, leafArray){
  * @param {string for target header} target (V2)
  */
 export function getPath(edgeArray, leaf, pathKeeper, source, target){
-   
     let path = edgeArray.filter(ed=> {
         return ed[target] === leaf[source]
     });
-
     if(path.length > 0){
         pathKeeper.push(path[0]);
         return getPath(edgeArray, path[0], pathKeeper, source, target);
     }else{
-        return pathKeeper;
+        pathKeeper.push({'root': leaf[source]})
+        return pathKeeper.reverse();
     }
 }
 
