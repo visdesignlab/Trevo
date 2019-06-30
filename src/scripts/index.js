@@ -16,8 +16,6 @@ let toolbarDiv = wrap.append('div').attr('id', 'toolbar');
 let svg = wrap.append('svg'),
     width = +svg.attr("width"),
     height = +svg.attr("height");
-
-
 /*
 
 
@@ -115,11 +113,28 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
     let edgeSource = edges.rows.map(d=> d.V1);
     let leaves = edges.rows.filter(f=> edgeSource.indexOf(f.V2) == -1 );
 
-    let paths = allPaths(edges.rows, leaves, "V1", "V2");
-    console.log("test",paths);
-    
+    let leafChar = await loadData(d3.json, './public/data/geo-char.json');
+
+    let matchedLeaves = leaves.map((leaf, i)=> {
+        leaf.attributes = leafChar.rows[i];
+        return leaf;
+    });
+
     let resBreak = await loadData(d3.json, './public/data/geo-res-breakD.json');
     console.log(resBreak.rows)
+
+    let mappedEdges = edges.rows.map((edge, i)=> {
+        let index = resBreak.rows.map(m=> m['nodeLabels']).indexOf(edge.V2);
+        if(index > -1){ edge.attributes = resBreak.rows[index] }
+        return edge
+    })
+
+    let paths = allPaths(mappedEdges, matchedLeaves, "V1", "V2");
+    console.log("test",paths);
+    
+   
+
+    console.log(edges.rows)
 
    // let maxDepth = d3.max(paths.flatMap(f=> f).map(m=> m.x2));
     let xScale = d3.scaleLinear().range([0, 1000]).clamp(true)//.domain([0, maxDepth])
@@ -140,7 +155,6 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
     pathGroups.on('mouseover', function(d, i){
         return d3.select(this).classed('hover', true);
     }).on('mouseout', function(d, i){
-       // return d3.selec('.hover').classed('hover', false);
         return d3.select(this).classed('hover', false)
     })
 
@@ -182,8 +196,6 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
 loadData(d3.json, './public/data/geospiza_with_attributes.json').then(data=> {
     let pathArray = pullPath([], [data], [], [], 0);
    
-
-
 });
 
 
