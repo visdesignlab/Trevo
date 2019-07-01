@@ -25,15 +25,31 @@ svg{
   margin-bottom: 5px;
 }
 
-.paths rect{
+.paths rect.path-rect{
   fill: white;
   width:100%;
   height: 22px;
 }
 
-.paths.hover rect{
+.paths.hover rect.path-rect{
   fill:gainsboro;
   opacity:0.4;
+}
+
+.paths rect.attribute-rect{
+  fill: none;
+  stroke: gray;
+  stroke-width: 0.5;
+  width:100%;
+  height: 35px;
+}
+
+.paths rect.attribute-inner-bar{
+  fill: none;
+  stroke: gray;
+  stroke-width: 0.5;
+  width:20px;
+  height: 35px;
 }
 
 .paths line{

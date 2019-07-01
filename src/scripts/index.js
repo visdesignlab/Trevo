@@ -116,41 +116,37 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
     let leafChar = await loadData(d3.json, './public/data/geo-char.json');
 
     let matchedLeaves = leaves.map((leaf, i)=> {
-        leaf.attributes = leafChar.rows[i];
+        leaf.attributes = [leafChar.rows[i]];
         return leaf;
     });
 
     let resBreak = await loadData(d3.json, './public/data/geo-res-breakD.json');
-    console.log(resBreak.rows)
 
     let mappedEdges = edges.rows.map((edge, i)=> {
         let index = resBreak.rows.map(m=> m['nodeLabels']).indexOf(edge.V2);
-        if(index > -1){ edge.attributes = resBreak.rows[index] }
+        if(index > -1){ edge.attributes = [resBreak.rows[index]] }
         return edge
     })
 
     let paths = allPaths(mappedEdges, matchedLeaves, "V1", "V2");
-    console.log("test",paths);
-    
-   
 
-    console.log(edges.rows)
+    console.log(paths)
 
    // let maxDepth = d3.max(paths.flatMap(f=> f).map(m=> m.x2));
     let xScale = d3.scaleLinear().range([0, 1000]).clamp(true)//.domain([0, maxDepth])
 
     /////Rendering ///////
 
-    svg.style('height', (paths.length*30) + 'px');
+    svg.style('height', (paths.length*60) + 'px');
 
     let pathWrap = svg.append('g').classed('path-wrapper', true);
 
     let pathGroups = pathWrap.selectAll('.paths').data(paths);
     let pathEnter = pathGroups.enter().append('g').classed('paths', true);
     pathGroups = pathEnter.merge(pathGroups);
-    pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * 25)+')');
+    pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * (35 * (d[1].attributes.length + 1))) +')');
 
-    let pathBars = pathGroups.append('rect');//.style('fill', 'red');
+    let pathBars = pathGroups.append('rect').classed('path-rect', true);//.style('fill', 'red');
 
     pathGroups.on('mouseover', function(d, i){
         return d3.select(this).classed('hover', true);
@@ -186,12 +182,24 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
     let circle = nodeGroups.append('circle').attr('cx', 0).attr('cy', 0).attr('r', 10)
     
     let speciesLabel = nodeGroups.filter(f=> leaves.map(l=> l.V2).indexOf(f.V2) > -1)
-    speciesLabel.append('text').text(f=> f.V2)
+    speciesLabel.append('text').text(f=> f.V2);
+
+    let attributeBars = pathGroups.append('g').classed('attribute', true);
+    let attribRect = attributeBars.append('rect').classed('attribute-rect', true);
+    attributeBars.attr('transform', (d)=> 'translate(0, 25)');
+    let innerTimeline = attributeBars.append('g').classed('time-line', true).attr('transform', (d, i)=> 'translate(150, 0)');
+    let attributeNodes = attributeBars.selectAll('g').data(d=> d);
+    let attrGroupEnter = attributeNodes.enter().append('g').classed('attribute-node', true);
+    attributeNodes = attrGroupEnter.merge(attributeNodes);
+   // attributeNodes.attr('transform', (d)=> 'translate('+ d.move +', 10)');
+
+    let innerBars = attributeNodes.append('rect').classed('attribute-inner-bar', true);
+    innerBars.attr('transform', (d)=> 'translate('+ d.move +', 0)');
+
+
+
 
 });
-
-
-
 
 loadData(d3.json, './public/data/geospiza_with_attributes.json').then(data=> {
     let pathArray = pullPath([], [data], [], [], 0);
