@@ -27,27 +27,41 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
 
     let leafChar = await loadData(d3.json, './public/data/geo-char.json');
     let leafLabels = await loadData(d3.json, './public/data/species-labels.json');
+   
+    let observedScales = leafChar.fields.map(d=> {
+        let max = d3.max(leafChar.rows.map(m=> m[d]));
+        let min = d3.min(leafChar.rows.map(m=> m[d]));
+        return {
+            'field': d, 
+            'max': max, 
+            'min':  min,
+            'yScale': d3.scaleLinear().range([0, 30]).domain([min, max]),
+        };
+    });
+
+    ///MAKE A ESTIMATED SCALES THING
 
     let matchedLeaves = leaves.map((leaf, i)=> {
         leaf.label = leafLabels.rows[i].x
-        let keys = Object.keys(leafChar.rows[i])
+        let keys = Object.keys(leafChar.rows[i]).filter(f=> f!= 'species')
         let attr = {}
         keys.forEach(k=> {
-            attr[k] = {'scaledVal': leafChar.rows[i][k], 'scaledHigh': 0, 'scaledLow': 0 }
+            let scale = observedScales.filter(f=> f.field == k)[0];
+            attr[k] = {'scaledVal': scale.yScale(leafChar.rows[i][k]), 'scaledHigh': 0, 'scaledLow': 0 }
         });
         leaf.attributes = attr;
         return leaf;
     });
 
-    console.log('matched', matchedLeaves)
-
     let resBreak = await loadData(d3.json, './public/data/geo-res-breakD.json');
+    console.log(resBreak.rows.filter(f=> f.nodeLabels == 14)[0])
 
     let mappedEdges = edges.rows.map((edge, i)=> {
         let index = resBreak.rows.map(m=> m['nodeLabels']).indexOf(edge.V2);
         if(index > -1){ 
             let res = resBreak.rows[index]
-            res.yScale = d3.scaleLinear().range([0, 30]).domain([d3.min(resBreak.rows.map(m=> m.lowerCI95)), d3.max(resBreak.rows.map(m=> m.upperCI95))])
+            res.yScale = d3.scaleLinear().range([0, 30])
+                    .domain([d3.min(resBreak.rows.map(m=> m.lowerCI95)), d3.max(resBreak.rows.map(m=> m.upperCI95))])
             res.scaledVal = res.yScale(res.estimate);
             res.scaledLow = res.yScale(res.lowerCI95);
             res.scaledHigh = res.yScale(res.upperCI95);
@@ -57,10 +71,20 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
     });
 
     let paths = allPaths(mappedEdges, matchedLeaves, "V1", "V2");
-
+    let rootAttrib = resBreak.rows.filter(f=> f.nodeLabels == 14)[0];
+    paths.forEach(p=> {
+        console.log(p)
+        let rootAttr = {};
+        let yScale = d3.scaleLinear().range([0, 30])
+                    .domain([d3.min(resBreak.rows.map(m=> m.lowerCI95)), d3.max(resBreak.rows.map(m=> m.upperCI95))])
+        rootAttr.beakD = {}
+        rootAttr.beakD.scaledVal = yScale(rootAttrib.estimate);
+        rootAttr.beakD.scaledLow = yScale(rootAttrib.lowerCI95);
+        rootAttr.beakD.scaledHigh = yScale(rootAttrib.upperCI95);
+        p[0].attributes = rootAttr;
+    });
+    
     let maxBranch = d3.max(paths.map(r=> r.length));
-
-    console.log('paths', paths)
 
     //SCALES for X and Y/////
     let xScale = d3.scaleLinear().range([0, 1000]).clamp(true);
@@ -133,9 +157,9 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
     innerBars.attr('transform', (d)=> 'translate('+ d.move +', 0)');
     let rangeRect = innerBars.append('rect').classed('range-rect', true);
     rangeRect.attr('width', 20).attr('height', (d, i)=> {
-        console.log('d',d)
+        
         let range = d.attributes? d.attributes.beakD.scaledHigh -  d.attributes.beakD.scaledLow : 1;
-        console.log(range)
+    
         return range;
     });
     rangeRect.attr('transform', (d, i)=> {
@@ -145,7 +169,7 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
     innerBars.append('rect').attr('width', 20).attr('height', 5).attr('transform', (d, i)=> {
         let est = d.attributes? d.attributes.beakD.scaledVal : 0;
         return 'translate(0, '+ est +')';
-    });
+    }).attr('fill', '#32C1FE');
 
 });
 
