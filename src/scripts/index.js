@@ -114,8 +114,10 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
     let leaves = edges.rows.filter(f=> edgeSource.indexOf(f.V2) == -1 );
 
     let leafChar = await loadData(d3.json, './public/data/geo-char.json');
+    let leafLabels = await loadData(d3.json, './public/data/species-labels.json');
 
     let matchedLeaves = leaves.map((leaf, i)=> {
+        leaf.label = leafLabels.rows[i].x
         leaf.attributes = [leafChar.rows[i]];
         return leaf;
     });
@@ -126,14 +128,11 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
         let index = resBreak.rows.map(m=> m['nodeLabels']).indexOf(edge.V2);
         if(index > -1){ edge.attributes = [resBreak.rows[index]] }
         return edge
-    })
+    });
 
     let paths = allPaths(mappedEdges, matchedLeaves, "V1", "V2");
 
-    console.log(paths)
-
-   // let maxDepth = d3.max(paths.flatMap(f=> f).map(m=> m.x2));
-    let xScale = d3.scaleLinear().range([0, 1000]).clamp(true)//.domain([0, maxDepth])
+    let xScale = d3.scaleLinear().range([0, 1000]).clamp(true);
 
     /////Rendering ///////
 
@@ -154,7 +153,9 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
         return d3.select(this).classed('hover', false)
     })
 
-    let speciesTitle = pathGroups.append('text').text('SPECIES NAME');
+    let speciesTitle = pathGroups.append('text').text(d=> {
+        let string = d[d.length - 1].label
+        return string.charAt(0).toUpperCase() + string.slice(1)});
     speciesTitle.attr('x', 10).attr('y', 15)
 
     let timelines = pathGroups.append('g').classed('time-line', true);
@@ -187,7 +188,7 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
     let attributeBars = pathGroups.append('g').classed('attribute', true);
     let attribRect = attributeBars.append('rect').classed('attribute-rect', true);
     attributeBars.attr('transform', (d)=> 'translate(0, 25)');
-    let innerTimeline = attributeBars.append('g').classed('time-line', true).attr('transform', (d, i)=> 'translate(150, 0)');
+    let innerTimeline = attributeBars.append('g').classed('time-line', true).attr('transform', (d, i)=> 'translate(140, 0)');
     let attributeNodes = attributeBars.selectAll('g').data(d=> d);
     let attrGroupEnter = attributeNodes.enter().append('g').classed('attribute-node', true);
     attributeNodes = attrGroupEnter.merge(attributeNodes);
