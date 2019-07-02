@@ -131,11 +131,11 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
     }).on('mouseout', function(d, i){
         return d3.select(this).classed('hover', false)
     });
+
     let speciesTitle = pathGroups.append('text').text(d=> {
         let string = d[d.length - 1].label
         return string.charAt(0).toUpperCase() + string.slice(1);
     });
-
     speciesTitle.attr('x', 10).attr('y', 15);
 
     let timelines = pathGroups.append('g').classed('time-line', true);
@@ -158,8 +158,7 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
     }).attr('class', (d, i)=> 'node-'+d.node);
 
 
-    circle.on('mouseover', function(d, i){
-        console.log(d3.selectAll('.node-'+d.node).classed('hover-branch', true))
+    nodeGroups.on('mouseover', function(d, i){
         d3.selectAll('.node-'+d.node).attr('fill', 'red')
         return d3.selectAll('.node-'+d.node).classed('hover-branch', true);
     }).on('mouseout', function(d, i){
@@ -170,6 +169,11 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
         let labelText = d.node;
         return labelText;
     }).attr('x', -8).attr('y', 5);
+
+    let speciesNodeLabel = nodeGroups.filter(f=> f.label != undefined).append('text').text(d=> {
+        let string = d.label.charAt(0).toUpperCase() + d.label.slice(1);
+        return string;
+    }).attr('x', 10).attr('y', 5);
 
     let attributeBars = pathGroups.append('g').classed('attribute', true);
     let attribRect = attributeBars.append('rect').classed('attribute-rect', true);
