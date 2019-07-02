@@ -153,7 +153,18 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
 
     let circle = nodeGroups.append('circle').attr('cx', 0).attr('cy', 0).attr('r', d=> {
         return circleScale(branchFrequency[d.node]);
+    }).attr('class', (d, i)=> 'node-'+d.node);
+
+
+    circle.on('mouseover', function(d, i){
+        console.log(d3.selectAll('.node-'+d.node))
+        d3.selectAll('.node-'+d.node).attr('fill', 'red')
+        return d3.selectAll('.node-'+d.node).classed('hover-branch', true);
+    }).on('mouseout', function(d, i){
+        return d3.selectAll('.node-'+d.node).classed('hover-branch', false);
     });
+
+    //});
     /*
     let nodeLabels = nodeGroups.append('text').text(d=> {
         let labelText = d.node;
