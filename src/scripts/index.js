@@ -40,6 +40,10 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
     });
 
     ///MAKE A ESTIMATED SCALES THING
+    let resBreak = await loadData(d3.json, './public/data/geo-res-breakD.json');
+
+    let yScale = yScale = d3.scaleLinear().range([0, 30])
+    .domain([d3.min(resBreak.rows.map(m=> m.lowerCI95)), d3.max(resBreak.rows.map(m=> m.upperCI95))]);
 
     let matchedLeaves = leaves.map((leaf, i)=> {
         leaf.label = leafChar.rows[i].species;
@@ -48,25 +52,23 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
         let attr = {}
         keys.forEach(k=> {
             let scale = observedScales.filter(f=> f.field == k)[0];
-            attr[k] = {'scaledVal': scale.yScale(leafChar.rows[i][k]), 'scaledHigh': 0, 'scaledLow': 0 }
+            attr[k] = {'scaledVal': yScale(leafChar.rows[i][k]), 'scaledHigh': 0, 'scaledLow': 0 }
         });
         leaf.attributes = attr;
         return leaf;
     });
 
-    let resBreak = await loadData(d3.json, './public/data/geo-res-breakD.json');
-    console.log(resBreak.rows.filter(f=> f.nodeLabels == 14)[0])
 
     let mappedEdges = edges.rows.map((edge, i)=> {
         let index = resBreak.rows.map(m=> m['nodeLabels']).indexOf(edge.V2);
         edge.node = edge.V2;
         if(index > -1){ 
             let res = resBreak.rows[index]
-            res.yScale = d3.scaleLinear().range([0, 30])
-                    .domain([d3.min(resBreak.rows.map(m=> m.lowerCI95)), d3.max(resBreak.rows.map(m=> m.upperCI95))])
-            res.scaledVal = res.yScale(res.estimate);
-            res.scaledLow = res.yScale(res.lowerCI95);
-            res.scaledHigh = res.yScale(res.upperCI95);
+           // res.yScale = d3.scaleLinear().range([0, 30])
+            //        .domain([d3.min(resBreak.rows.map(m=> m.lowerCI95)), d3.max(resBreak.rows.map(m=> m.upperCI95))])
+            res.scaledVal = yScale(res.estimate);
+            res.scaledLow = yScale(res.lowerCI95);
+            res.scaledHigh = yScale(res.upperCI95);
             edge.attributes = {}
             edge.attributes.beakD = res }
         return edge
@@ -74,6 +76,7 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
 
     let paths = allPaths(mappedEdges, matchedLeaves, "V1", "V2");
     let rootAttrib = resBreak.rows.filter(f=> f.nodeLabels == 14)[0];
+
     paths.forEach(p=> {
         console.log(p)
         let rootAttr = {};
@@ -90,7 +93,6 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
 
     //SCALES for X, Y /////
     let xScale = d3.scaleLinear().range([0, 1000]).clamp(true);
-    
     
     let normedPaths = paths.map((p, i)=> {
         p.xScale = xScale.domain([0, maxBranch]);
@@ -165,16 +167,16 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
     });
 
     //});
-    /*
+    
     let nodeLabels = nodeGroups.append('text').text(d=> {
         let labelText = d.node;
         return labelText;
-    }).attr('x', -8).attr('y', 5);*/
+    }).attr('x', -8).attr('y', 5);
 
     let attributeBars = pathGroups.append('g').classed('attribute', true);
     let attribRect = attributeBars.append('rect').classed('attribute-rect', true);
     attributeBars.attr('transform', (d)=> 'translate(140, 25)');
-    let innerTimeline = attributeBars.append('g').classed('time-line', true)//.attr('transform', (d, i)=> 'translate(0, 0)');
+    let innerTimeline = attributeBars.append('g').classed('time-line', true).data(normedPaths);//.attr('transform', (d, i)=> 'translate(0, 0)');
     let attributeNodes = attributeBars.selectAll('g').data(d=> d);
     let attrGroupEnter = attributeNodes.enter().append('g').classed('attribute-node', true);
     attributeNodes = attrGroupEnter.merge(attributeNodes);
@@ -182,15 +184,16 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
 
     let innerBars = attributeNodes.append('g');
 
-    let lineGen = d3.line()
-    .x(d=> {
-        console.log(d.move)
-        return d.move})
+    var lineGen = d3.line()
+    .x(d=> d.move)
     .y(d=> d.attributes.beakD.scaledVal);
 
-    attributeNodes.append("path")
-    .attr("d", d=> lineGen(d))
-    .attr("class", "inner-line");
+    let innerPaths = innerTimeline.append('path')
+    .attr("d", (d, i)=> lineGen(normedPaths[i]))
+    .attr("class", "inner-line")
+    .attr('fill', 'none')
+    .attr('stroke', 'black')
+    .attr('stroke-width', 1);
 
     innerBars.append('rect').classed('attribute-inner-bar', true);
     innerBars.attr('transform', (d)=> 'translate('+ d.move +', 0)');
@@ -208,9 +211,7 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
         return 'translate(0, '+ est +')';
     }).attr('fill', '#32C1FE');
 
-    innerBars.append("path")
-    .attr("class", "inner-line")
-    .attr("d", d=> lineGen(d)); 
+  
 });
 
 loadData(d3.json, './public/data/geospiza_with_attributes.json').then(data=> {
