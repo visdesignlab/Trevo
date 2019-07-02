@@ -40,10 +40,11 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
     });
 
     ///MAKE A ESTIMATED SCALES THING
-    let resBreak = await loadData(d3.json, './public/data/geo-res-breakD.json');
+    let resBeak = await loadData(d3.json, './public/data/geo-res-breakD.json');
+    let resCulmenL = await loadData(d3.json, './public/data/geo-res-cumlu.json');
 
     let yScale = yScale = d3.scaleLinear().range([0, 30])
-    .domain([d3.min(resBreak.rows.map(m=> m.lowerCI95)), d3.max(resBreak.rows.map(m=> m.upperCI95))]);
+    .domain([d3.min(resBeak.rows.map(m=> m.lowerCI95)), d3.max(resBeak.rows.map(m=> m.upperCI95))]);
 
     let matchedLeaves = leaves.map((leaf, i)=> {
         leaf.label = leafChar.rows[i].species;
@@ -60,32 +61,48 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
 
 
     let mappedEdges = edges.rows.map((edge, i)=> {
-        let index = resBreak.rows.map(m=> m['nodeLabels']).indexOf(edge.V2);
+        let index = resBeak.rows.map(m=> m['nodeLabels']).indexOf(edge.V2);
         edge.node = edge.V2;
         if(index > -1){ 
-            let res = resBreak.rows[index]
-           // res.yScale = d3.scaleLinear().range([0, 30])
-            //        .domain([d3.min(resBreak.rows.map(m=> m.lowerCI95)), d3.max(resBreak.rows.map(m=> m.upperCI95))])
-            res.scaledVal = yScale(res.estimate);
-            res.scaledLow = yScale(res.lowerCI95);
-            res.scaledHigh = yScale(res.upperCI95);
-            edge.attributes = {}
-            edge.attributes.beakD = res }
+            let resB = resBeak.rows[index]
+            resB.scaledVal = yScale(resB.estimate);
+            resB.scaledLow = yScale(resB.lowerCI95);
+            resB.scaledHigh = yScale(resB.upperCI95);
+
+            let resC = resCulmenL.rows[index]
+            resC.scaledVal = yScale(resC.estimate);
+            resC.scaledLow = yScale(resC.lowerCI95);
+            resC.scaledHigh = yScale(resC.upperCI95);
+
+            edge.attributes = (edge.attributes != undefined)? edge.attributes : {}
+            edge.attributes.beakD = resB 
+            edge.attributes.culmenL = resC
+        }
         return edge
     });
 
     let paths = allPaths(mappedEdges, matchedLeaves, "V1", "V2");
-    let rootAttrib = resBreak.rows.filter(f=> f.nodeLabels == 14)[0];
+    let rootAttribBeak = resBeak.rows.filter(f=> f.nodeLabels == 14)[0];
+    let rootAttribCul = resCulmenL.rows.filter(f=> f.nodeLabels == 14)[0];
 
     paths.forEach(p=> {
         console.log(p)
         let rootAttr = {};
-        let yScale = d3.scaleLinear().range([0, 30])
-                    .domain([d3.min(resBreak.rows.map(m=> m.lowerCI95)), d3.max(resBreak.rows.map(m=> m.upperCI95))])
-        rootAttr.beakD = {}
-        rootAttr.beakD.scaledVal = yScale(rootAttrib.estimate);
-        rootAttr.beakD.scaledLow = yScale(rootAttrib.lowerCI95);
-        rootAttr.beakD.scaledHigh = yScale(rootAttrib.upperCI95);
+        let yScaleB = d3.scaleLinear().range([0, 30])
+                    .domain([d3.min(resBeak.rows.map(m=> m.lowerCI95)), d3.max(resBeak.rows.map(m=> m.upperCI95))])
+        let yScaleC = d3.scaleLinear().range([0, 30])
+                    .domain([d3.min(resCulmenL.rows.map(m=> m.lowerCI95)), d3.max(resCulmenL.rows.map(m=> m.upperCI95))])
+
+        rootAttr.beakD = {};
+        rootAttr.beakD.scaledVal = yScaleB(rootAttribBeak.estimate);
+        rootAttr.beakD.scaledLow = yScaleB(rootAttribBeak.lowerCI95);
+        rootAttr.beakD.scaledHigh = yScaleB(rootAttribBeak.upperCI95);
+
+        rootAttr.culmenL = {};
+        rootAttr.culmenL.scaledVal = yScaleC(rootAttribCul.estimate);
+        rootAttr.culmenL.scaledLow = yScaleC(rootAttribCul.lowerCI95);
+        rootAttr.culmenL.scaledHigh = yScaleC(rootAttribCul.upperCI95);
+
         p[0].attributes = rootAttr;
     });
     
@@ -157,24 +174,24 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
         return circleScale(branchFrequency[d.node]);
     }).attr('class', (d, i)=> 'node-'+d.node);
 
-
     nodeGroups.on('mouseover', function(d, i){
         d3.selectAll('.node-'+d.node).attr('fill', 'red')
         return d3.selectAll('.node-'+d.node).classed('hover-branch', true);
     }).on('mouseout', function(d, i){
         return d3.selectAll('.node-'+d.node).classed('hover-branch', false);
     });
-
+/*
     let nodeLabels = nodeGroups.append('text').text(d=> {
         let labelText = d.node;
         return labelText;
     }).attr('x', -8).attr('y', 5);
-
+*/
     let speciesNodeLabel = nodeGroups.filter(f=> f.label != undefined).append('text').text(d=> {
         let string = d.label.charAt(0).toUpperCase() + d.label.slice(1);
         return string;
     }).attr('x', 10).attr('y', 5);
 
+    /// LOWER ATTRIBUTE VISUALIZATION ///
     let attributeBars = pathGroups.append('g').classed('attribute', true);
     let attribRect = attributeBars.append('rect').classed('attribute-rect', true);
     attributeBars.attr('transform', (d)=> 'translate(140, 25)');
@@ -209,8 +226,6 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
         let est = d.attributes? d.attributes.beakD.scaledVal : 0;
         return 'translate(0, '+ est +')';
     }).attr('fill', '#32C1FE');
-
-  
 });
 
 loadData(d3.json, './public/data/geospiza_with_attributes.json').then(data=> {
