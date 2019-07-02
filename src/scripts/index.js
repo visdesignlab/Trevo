@@ -159,15 +159,13 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
 
 
     circle.on('mouseover', function(d, i){
-        console.log(d3.selectAll('.node-'+d.node))
+        console.log(d3.selectAll('.node-'+d.node).classed('hover-branch', true))
         d3.selectAll('.node-'+d.node).attr('fill', 'red')
         return d3.selectAll('.node-'+d.node).classed('hover-branch', true);
     }).on('mouseout', function(d, i){
         return d3.selectAll('.node-'+d.node).classed('hover-branch', false);
     });
 
-    //});
-    
     let nodeLabels = nodeGroups.append('text').text(d=> {
         let labelText = d.node;
         return labelText;
@@ -190,10 +188,7 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
 
     let innerPaths = innerTimeline.append('path')
     .attr("d", (d, i)=> lineGen(normedPaths[i]))
-    .attr("class", "inner-line")
-    .attr('fill', 'none')
-    .attr('stroke', 'black')
-    .attr('stroke-width', 1);
+    .attr("class", "inner-line");
 
     innerBars.append('rect').classed('attribute-inner-bar', true);
     innerBars.attr('transform', (d)=> 'translate('+ d.move +', 0)');
