@@ -42,7 +42,8 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
     ///MAKE A ESTIMATED SCALES THING
 
     let matchedLeaves = leaves.map((leaf, i)=> {
-        leaf.label = leafLabels.rows[i].x
+        leaf.label = leafChar.rows[i].species;
+        leaf.node = leaf.V2
         let keys = Object.keys(leafChar.rows[i]).filter(f=> f!= 'species')
         let attr = {}
         keys.forEach(k=> {
@@ -58,6 +59,7 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
 
     let mappedEdges = edges.rows.map((edge, i)=> {
         let index = resBreak.rows.map(m=> m['nodeLabels']).indexOf(edge.V2);
+        edge.node = edge.V2;
         if(index > -1){ 
             let res = resBreak.rows[index]
             res.yScale = d3.scaleLinear().range([0, 30])
@@ -86,8 +88,9 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
     
     let maxBranch = d3.max(paths.map(r=> r.length));
 
-    //SCALES for X and Y/////
+    //SCALES for X, Y /////
     let xScale = d3.scaleLinear().range([0, 1000]).clamp(true);
+    
     
     let normedPaths = paths.map((p, i)=> {
         p.xScale = xScale.domain([0, maxBranch]);
@@ -99,9 +102,23 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
         });
     });
 
+   /////Counting frequency of nodes//////
+    let branchFrequency = normedPaths.flatMap(row=> row.flatMap(f=> f.node)).reduce(function (acc, curr) {
+        if (typeof acc[curr] == 'undefined') {
+          acc[curr] = 1;
+        } else {
+          acc[curr] += 1;
+        }
+        return acc;
+      }, {});
+
+    ///Scales for circles ///
+    let circleScale = d3.scaleLog().range([6, 14]).domain([1, d3.max(Object.values(branchFrequency))])
+    
     /////Rendering ///////
     svg.style('height', (normedPaths.length*70) + 'px');
     let pathWrap = svg.append('g').classed('path-wrapper', true);
+    pathWrap.attr('transform', (d, i)=> 'translate(0,20)');
     let pathGroups = pathWrap.selectAll('.paths').data(normedPaths);
     let pathEnter = pathGroups.enter().append('g').classed('paths', true);
     pathGroups = pathEnter.merge(pathGroups);
@@ -128,20 +145,20 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
     .attr('y1', 15)
     .attr('y2', 15);
 
-    let nodeGroups = timelines.selectAll('.node').data((d)=> {
-       return d;
-    });
+    let nodeGroups = timelines.selectAll('.node').data((d)=> d);
 
     let nodeGroupEnter = nodeGroups.enter().append('g').classed('node', true);
     nodeGroups = nodeGroupEnter.merge(nodeGroups);
     nodeGroups.attr('transform', (d)=> 'translate('+ d.move +', 10)');
 
-    let circle = nodeGroups.append('circle').attr('cx', 0).attr('cy', 0).attr('r', 10);
+    let circle = nodeGroups.append('circle').attr('cx', 0).attr('cy', 0).attr('r', d=> {
+        return circleScale(branchFrequency[d.node]);
+    });
+    /*
     let nodeLabels = nodeGroups.append('text').text(d=> {
-       // let labelText = d.root? d.root : d.attributes[0].nodeLabels + " " + d.V2;
-        let labelText = d.root? d.root : d.V2;
+        let labelText = d.node;
         return labelText;
-    }).attr('x', -8).attr('y', 5);
+    }).attr('x', -8).attr('y', 5);*/
 
     let attributeBars = pathGroups.append('g').classed('attribute', true);
     let attribRect = attributeBars.append('rect').classed('attribute-rect', true);
@@ -153,13 +170,22 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
    // attributeNodes.attr('transform', (d)=> 'translate('+ d.move +', 10)');
 
     let innerBars = attributeNodes.append('g');
+
+    let lineGen = d3.line()
+    .x(d=> {
+        console.log(d.move)
+        return d.move})
+    .y(d=> d.attributes.beakD.scaledVal);
+
+    attributeNodes.append("path")
+    .attr("d", d=> lineGen(d))
+    .attr("class", "inner-line");
+
     innerBars.append('rect').classed('attribute-inner-bar', true);
     innerBars.attr('transform', (d)=> 'translate('+ d.move +', 0)');
     let rangeRect = innerBars.append('rect').classed('range-rect', true);
     rangeRect.attr('width', 20).attr('height', (d, i)=> {
-        
         let range = d.attributes? d.attributes.beakD.scaledHigh -  d.attributes.beakD.scaledLow : 1;
-    
         return range;
     });
     rangeRect.attr('transform', (d, i)=> {
@@ -171,6 +197,9 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
         return 'translate(0, '+ est +')';
     }).attr('fill', '#32C1FE');
 
+    innerBars.append("path")
+    .attr("class", "inner-line")
+    .attr("d", d=> lineGen(d)); 
 });
 
 loadData(d3.json, './public/data/geospiza_with_attributes.json').then(data=> {

@@ -24,7 +24,7 @@ export function getPath(edgeArray, leaf, pathKeeper, source, target){
         pathKeeper.push(path[0]);
         return getPath(edgeArray, path[0], pathKeeper, source, target);
     }else{
-        pathKeeper.push({'root': leaf[source]})
+        pathKeeper.push({'root': true, 'node': leaf[source]})
         return pathKeeper.reverse();
     }
 }

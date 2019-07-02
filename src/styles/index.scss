@@ -56,18 +56,24 @@ svg{
 }
 
 .paths line{
-  stroke: gray;
-  stroke-width: 0.5;
+  stroke: #95ABB5;
+  stroke-width: 1;
   stroke-opacity: 0.7;
 }
 
 .paths circle{
-  fill: grey;
-  opacity: 0.8;
+  fill: #95ABB5;
+ // opacity: 0.8;
 }
 
 .range-rect{
   width:20px;
   fill:#32C1FE;
   opacity:0.4;
+}
+
+.inner-line{
+  stroke: black;
+  stroke-width: 1px;
+  fill: none;
 }
