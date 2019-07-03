@@ -27,10 +27,18 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
 
     let leafChar = await loadData(d3.json, './public/data/geo-char.json');
     let leafLabels = await loadData(d3.json, './public/data/species-labels.json');
-   
-    let observedScales = leafChar.fields.map(d=> {
-        let max = d3.max(leafChar.rows.map(m=> m[d]));
-        let min = d3.min(leafChar.rows.map(m=> m[d]));
+
+    console.log(leafChar)
+
+    ///MAKE A ESTIMATED SCALES THING
+    let calculatedAtt = {
+        'beakD' : await loadData(d3.json, './public/data/geo-res-breakD.json'),
+        'culmenL' : await loadData(d3.json, './public/data/geo-res-cumlu.json'),
+    }
+    
+    let calculatedScales = Object.keys(calculatedAtt).map(d=> {
+        let max = d3.max(calculatedAtt[d].rows.map(m=> m.upperCI95));
+        let min = d3.min(calculatedAtt[d].rows.map(m=> m.lowerCI95));
         return {
             'field': d, 
             'max': max, 
@@ -39,21 +47,15 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
         };
     });
 
-    ///MAKE A ESTIMATED SCALES THING
-    let resBeak = await loadData(d3.json, './public/data/geo-res-breakD.json');
-    let resCulmenL = await loadData(d3.json, './public/data/geo-res-cumlu.json');
-
-    let yScale = yScale = d3.scaleLinear().range([0, 30])
-    .domain([d3.min(resBeak.rows.map(m=> m.lowerCI95)), d3.max(resBeak.rows.map(m=> m.upperCI95))]);
-
     let matchedLeaves = leaves.map((leaf, i)=> {
         leaf.label = leafChar.rows[i].species;
         leaf.node = leaf.V2
-        let keys = Object.keys(leafChar.rows[i]).filter(f=> f!= 'species')
+        //let keys = Object.keys(leafChar.rows[i]).filter(f=> f!= 'species')
+        let keys = calculatedScales.map(m=> m.field);
         let attr = {}
         keys.forEach(k=> {
-            let scale = observedScales.filter(f=> f.field == k)[0];
-            attr[k] = {'scaledVal': yScale(leafChar.rows[i][k]), 'scaledHigh': 0, 'scaledLow': 0 }
+            let scale = calculatedScales.filter(f=> f.field == k)[0].yScale;
+            attr[k] = {'scaledVal': scale(leafChar.rows[i][k]), 'scaledHigh': 0, 'scaledLow': 0 }
         });
         leaf.attributes = attr;
         return leaf;
@@ -61,18 +63,20 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
 
 
     let mappedEdges = edges.rows.map((edge, i)=> {
-        let index = resBeak.rows.map(m=> m['nodeLabels']).indexOf(edge.V2);
+        let index = calculatedAtt.beakD.rows.map(m=> m['nodeLabels']).indexOf(edge.V2);
         edge.node = edge.V2;
         if(index > -1){ 
-            let resB = resBeak.rows[index]
-            resB.scaledVal = yScale(resB.estimate);
-            resB.scaledLow = yScale(resB.lowerCI95);
-            resB.scaledHigh = yScale(resB.upperCI95);
+            let resB = calculatedAtt.beakD.rows[index]
+            let scaleB = calculatedScales.filter(f=> f.field == 'beakD')[0].yScale;
+            resB.scaledVal = scaleB(resB.estimate);
+            resB.scaledLow = scaleB(resB.lowerCI95);
+            resB.scaledHigh = scaleB(resB.upperCI95);
 
-            let resC = resCulmenL.rows[index]
-            resC.scaledVal = yScale(resC.estimate);
-            resC.scaledLow = yScale(resC.lowerCI95);
-            resC.scaledHigh = yScale(resC.upperCI95);
+            let scaleC = calculatedScales.filter(f=> f.field == 'culmenL')[0].yScale;
+            let resC = calculatedAtt.culmenL.rows[index]
+            resC.scaledVal = scaleC(resC.estimate);
+            resC.scaledLow = scaleC(resC.lowerCI95);
+            resC.scaledHigh = scaleC(resC.upperCI95);
 
             edge.attributes = (edge.attributes != undefined)? edge.attributes : {}
             edge.attributes.beakD = resB 
@@ -82,26 +86,25 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
     });
 
     let paths = allPaths(mappedEdges, matchedLeaves, "V1", "V2");
-    let rootAttribBeak = resBeak.rows.filter(f=> f.nodeLabels == 14)[0];
-    let rootAttribCul = resCulmenL.rows.filter(f=> f.nodeLabels == 14)[0];
+    let rootAttribBeak = calculatedAtt.beakD.rows.filter(f=> f.nodeLabels == 14)[0];
+    let rootAttribCul = calculatedAtt.culmenL.rows.filter(f=> f.nodeLabels == 14)[0];
 
     paths.forEach(p=> {
         console.log(p)
         let rootAttr = {};
-        let yScaleB = d3.scaleLinear().range([0, 30])
-                    .domain([d3.min(resBeak.rows.map(m=> m.lowerCI95)), d3.max(resBeak.rows.map(m=> m.upperCI95))])
-        let yScaleC = d3.scaleLinear().range([0, 30])
-                    .domain([d3.min(resCulmenL.rows.map(m=> m.lowerCI95)), d3.max(resCulmenL.rows.map(m=> m.upperCI95))])
+
+        let scaleB = calculatedScales.filter(f=> f.field == 'beakD')[0].yScale;
+        let scaleC = calculatedScales.filter(f=> f.field == 'culmenL')[0].yScale;
 
         rootAttr.beakD = {};
-        rootAttr.beakD.scaledVal = yScaleB(rootAttribBeak.estimate);
-        rootAttr.beakD.scaledLow = yScaleB(rootAttribBeak.lowerCI95);
-        rootAttr.beakD.scaledHigh = yScaleB(rootAttribBeak.upperCI95);
+        rootAttr.beakD.scaledVal =  scaleB(rootAttribBeak.estimate);
+        rootAttr.beakD.scaledLow =  scaleB(rootAttribBeak.lowerCI95);
+        rootAttr.beakD.scaledHigh =  scaleB(rootAttribBeak.upperCI95);
 
         rootAttr.culmenL = {};
-        rootAttr.culmenL.scaledVal = yScaleC(rootAttribCul.estimate);
-        rootAttr.culmenL.scaledLow = yScaleC(rootAttribCul.lowerCI95);
-        rootAttr.culmenL.scaledHigh = yScaleC(rootAttribCul.upperCI95);
+        rootAttr.culmenL.scaledVal = scaleC(rootAttribCul.estimate);
+        rootAttr.culmenL.scaledLow = scaleC(rootAttribCul.lowerCI95);
+        rootAttr.culmenL.scaledHigh = scaleC(rootAttribCul.upperCI95);
 
         p[0].attributes = rootAttr;
     });
