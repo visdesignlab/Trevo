@@ -90,7 +90,7 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
     let rootAttribCul = calculatedAtt.culmenL.rows.filter(f=> f.nodeLabels == 14)[0];
 
     paths.forEach(p=> {
-        console.log(p)
+       
         let rootAttr = {};
 
         let scaleB = calculatedScales.filter(f=> f.field == 'beakD')[0].yScale;
@@ -195,11 +195,28 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
     }).attr('x', 10).attr('y', 5);
 
     /// LOWER ATTRIBUTE VISUALIZATION ///
-    let attributeBars = pathGroups.append('g').classed('attribute', true);
-    let attribRect = attributeBars.append('rect').classed('attribute-rect', true);
-    attributeBars.attr('transform', (d)=> 'translate(140, 25)');
-    let innerTimeline = attributeBars.append('g').classed('time-line', true).data(normedPaths);//.attr('transform', (d, i)=> 'translate(0, 0)');
-    let attributeNodes = attributeBars.selectAll('g').data(d=> d);
+    let attributeWrapper = pathGroups.append('g').classed('attribute-wrapper', true);
+    ////this is the area that i changed
+    let attributeGroups = attributeWrapper.selectAll('g').data(d=> {
+        let keys = Object.keys(d.map(m=> m.attributes)[0]);
+        let att = keys.map(key=> {
+            return d.map((m, i)=> {
+            m.attributes[key].move = m.move;
+            m.attributes[key].label = key;
+            return m.attributes[key];
+        })}
+        );
+        return att;
+    }).enter().append('g');
+
+    attributeGroups.attr('transform', (d, i) => 'translate(0, '+(i * 35)+')')
+
+    let attribRect = attributeGroups.append('rect').classed('attribute-rect', true);
+
+    /////
+    attributeWrapper.attr('transform', (d)=> 'translate(140, 25)');
+    let innerTimeline = attributeGroups.append('g').classed('time-line', true);//.data(normedPaths);//.attr('transform', (d, i)=> 'translate(0, 0)');
+    let attributeNodes = innerTimeline.selectAll('g').data(d=> d);
     let attrGroupEnter = attributeNodes.enter().append('g').classed('attribute-node', true);
     attributeNodes = attrGroupEnter.merge(attributeNodes);
    // attributeNodes.attr('transform', (d)=> 'translate('+ d.move +', 10)');
@@ -208,27 +225,26 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
 
     var lineGen = d3.line()
     .x(d=> d.move)
-    .y(d=> d.attributes.beakD.scaledVal);
+    .y(d=> d.scaledVal);
 
     let innerPaths = innerTimeline.append('path')
-    .attr("d", (d, i)=> lineGen(normedPaths[i]))
+    .attr("d", lineGen)
     .attr("class", "inner-line");
 
     innerBars.append('rect').classed('attribute-inner-bar', true);
     innerBars.attr('transform', (d)=> 'translate('+ d.move +', 0)');
     let rangeRect = innerBars.append('rect').classed('range-rect', true);
     rangeRect.attr('width', 20).attr('height', (d, i)=> {
-        let range = d.attributes? d.attributes.beakD.scaledHigh -  d.attributes.beakD.scaledLow : 1;
+        let range = d.scaledHigh -  d.scaledLow;
         return range;
     });
     rangeRect.attr('transform', (d, i)=> {
-        let lowMove = d.attributes? d.attributes.beakD.scaledLow : 0;
+        let lowMove = d.scaledLow;
         return 'translate(0, '+ lowMove +')';
     });
-    innerBars.append('rect').attr('width', 20).attr('height', 5).attr('transform', (d, i)=> {
-        let est = d.attributes? d.attributes.beakD.scaledVal : 0;
-        return 'translate(0, '+ est +')';
-    }).attr('fill', '#32C1FE');
+    innerBars.append('rect').attr('width', 20).attr('height', 5)
+    .attr('transform', (d, i)=> 'translate(0, '+ d.scaledVal +')')
+    .attr('fill', '#32C1FE');
 });
 
 loadData(d3.json, './public/data/geospiza_with_attributes.json').then(data=> {
