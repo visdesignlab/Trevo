@@ -47,6 +47,12 @@ svg{
   height: 35px;
 }
 
+.attribute-label{
+  font-size: 11px;
+  text-anchor: end;
+  color:gray;
+}
+
 .paths rect.attribute-inner-bar{
   fill: none;
   stroke: gray;

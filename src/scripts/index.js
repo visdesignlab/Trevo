@@ -19,6 +19,10 @@ let svg = wrap.append('svg'),
 
 loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
 
+    let colorKeeper = [
+        '#32C1FE',
+        '#3AD701'
+    ]
     
 
     //Mapping data together/////
@@ -196,11 +200,13 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
 
     /// LOWER ATTRIBUTE VISUALIZATION ///
     let attributeWrapper = pathGroups.append('g').classed('attribute-wrapper', true);
-    ////this is the area that i changed
-    let attributeGroups = attributeWrapper.selectAll('g').data(d=> {
+    attributeWrapper.attr('transform', (d)=> 'translate(140, 25)');
+  
+    let attributeGroups = attributeWrapper.selectAll('g').data((d)=> {
         let keys = Object.keys(d.map(m=> m.attributes)[0]);
-        let att = keys.map(key=> {
-            return d.map((m, i)=> {
+        let att = keys.map((key, i)=> {
+            return d.map((m)=> {
+            m.attributes[key].color = colorKeeper[i];
             m.attributes[key].move = m.move;
             m.attributes[key].label = key;
             return m.attributes[key];
@@ -208,18 +214,18 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
         );
         return att;
     }).enter().append('g');
+    attributeGroups.attr('transform', (d, i) => 'translate(0, '+(i * 35)+')');
 
-    attributeGroups.attr('transform', (d, i) => 'translate(0, '+(i * 35)+')')
+    let attrLabel = attributeGroups.append('text').text(d=> d[0].label);
+    attrLabel.classed('attribute-label', true);
+    attrLabel.attr('transform', 'translate(-15, 20)');
 
     let attribRect = attributeGroups.append('rect').classed('attribute-rect', true);
 
-    /////
-    attributeWrapper.attr('transform', (d)=> 'translate(140, 25)');
     let innerTimeline = attributeGroups.append('g').classed('time-line', true);//.data(normedPaths);//.attr('transform', (d, i)=> 'translate(0, 0)');
     let attributeNodes = innerTimeline.selectAll('g').data(d=> d);
     let attrGroupEnter = attributeNodes.enter().append('g').classed('attribute-node', true);
     attributeNodes = attrGroupEnter.merge(attributeNodes);
-   // attributeNodes.attr('transform', (d)=> 'translate('+ d.move +', 10)');
 
     let innerBars = attributeNodes.append('g');
 
@@ -229,7 +235,8 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
 
     let innerPaths = innerTimeline.append('path')
     .attr("d", lineGen)
-    .attr("class", "inner-line");
+    .attr("class", "inner-line")
+    .style('stroke', (d)=> d[0].color);
 
     innerBars.append('rect').classed('attribute-inner-bar', true);
     innerBars.attr('transform', (d)=> 'translate('+ d.move +', 0)');
@@ -242,9 +249,10 @@ loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
         let lowMove = d.scaledLow;
         return 'translate(0, '+ lowMove +')';
     });
+    rangeRect.style('fill', d=> d.color)
     innerBars.append('rect').attr('width', 20).attr('height', 5)
     .attr('transform', (d, i)=> 'translate(0, '+ d.scaledVal +')')
-    .attr('fill', '#32C1FE');
+    .attr('fill', d=> d.color);
 });
 
 loadData(d3.json, './public/data/geospiza_with_attributes.json').then(data=> {
