@@ -26,9 +26,6 @@ loadData(d3.json, './public/data/anolis-edges.json').then(async edges => {
     let leaves = edges.rows.filter(f=> edgeSource.indexOf(f.V2) == -1 );
 
     let leafChar = await loadData(d3.json, './public/data/anolisLeafChar.json', '');
-   
-
-    console.log(leafChar)
 
     ///MAKE A ESTIMATED SCALES THING
     let calculatedAtt = {
@@ -36,12 +33,9 @@ loadData(d3.json, './public/data/anolis-edges.json').then(async edges => {
         'island' : await loadData(d3.json, './public/data/anolis-island-res.json', 'discrete'),
     }
 
-    console.log('calculated att',calculatedAtt)
-    
     let calculatedScales = Object.keys(calculatedAtt).map(d=> {
-        console.log(calculatedAtt[d])
+       
         if(calculatedAtt[d].type == 'continuous'){
-            console.log('gahh')
             let max = d3.max(calculatedAtt[d].rows.map(m=> m.upperCI95));
             let min = d3.min(calculatedAtt[d].rows.map(m=> m.lowerCI95));
             return {
@@ -52,7 +46,6 @@ loadData(d3.json, './public/data/anolis-edges.json').then(async edges => {
                 'yScale': d3.scaleLinear().range([0, 30]).domain([min, max]),
             };
         }else{
-            console.log('gahh');
             let scaleCat = calculatedAtt[d].fields.filter(f=> f!= 'nodeLabels');
             return { 
                 'field': d,
@@ -73,7 +66,7 @@ loadData(d3.json, './public/data/anolis-edges.json').then(async edges => {
         }
     });
 
-    console.log(calculatedScales)
+
 
     let matchedLeaves = leaves.map((leaf, i)=> {
         leaf.label = leafChar.rows[i].species;
@@ -88,7 +81,7 @@ loadData(d3.json, './public/data/anolis-edges.json').then(async edges => {
                 let scale = calculatedScales.filter(f=> f.field == k)[0].yScale;
                 attr[k] = {'scaledVal': scale(leafChar.rows[i][k]), 'scaledHigh': 0, 'scaledLow': 0 }
             }else{
-                console.log('char',leafChar.rows[i][k])
+               
                 attr[k] = {'scaledVal': leafChar.rows[i][k], 'scaledHigh': 0, 'scaledLow': 0 }
             }
            
@@ -113,10 +106,10 @@ loadData(d3.json, './public/data/anolis-edges.json').then(async edges => {
                     res.scaledVal = scale(res.estimate);
                     res.scaledLow = scale(res.lowerCI95);
                     res.scaledHigh = scale(res.upperCI95);
+                    res.type = 'continuous'
                     edge.attributes = (edge.attributes != undefined)? edge.attributes : {}
                     edge.attributes[attr] = res;
 
-                    //THIS IS WHERE YOU LEFT OFF
 
                 }else{
                     let scales = calculatedScales.filter(f=> f.field == attr)[0].scales;
@@ -127,6 +120,7 @@ loadData(d3.json, './public/data/anolis-edges.json').then(async edges => {
                     });
 
                     edge.attributes = (edge.attributes != undefined)? edge.attributes : {}
+                    test.type = 'discrete'
                     edge.attributes[attr] = test;
 
                 }
@@ -135,51 +129,41 @@ loadData(d3.json, './public/data/anolis-edges.json').then(async edges => {
         return edge
     });
 
-    console.log(mappedEdges)
+
 
     let paths = allPaths(mappedEdges, matchedLeaves, "V1", "V2");
-   // let rootAttribBeak = calculatedAtt.beakD.rows.filter(f=> f.nodeLabels == 14)[0];
-    //let rootAttribCul = calculatedAtt.culmenL.rows.filter(f=> f.nodeLabels == 14)[0];
-    console.log(paths)
+ 
     paths.forEach(p=> {
        
-       
-/*
-        let scaleB = calculatedScales.filter(f=> f.field == 'beakD')[0].yScale;
-        let scaleC = calculatedScales.filter(f=> f.field == 'culmenL')[0].yScale;
-
-        rootAttr.beakD = {};
-        rootAttr.beakD.scaledVal =  scaleB(rootAttribBeak.estimate);
-        rootAttr.beakD.scaledLow =  scaleB(rootAttribBeak.lowerCI95);
-        rootAttr.beakD.scaledHigh =  scaleB(rootAttribBeak.upperCI95);
-
-        rootAttr.culmenL = {};
-        rootAttr.culmenL.scaledVal = scaleC(rootAttribCul.estimate);
-        rootAttr.culmenL.scaledLow = scaleC(rootAttribCul.lowerCI95);
-        rootAttr.culmenL.scaledHigh = scaleC(rootAttribCul.upperCI95);
-*/
-        console.log(calculatedAtt)
+      
         let rootAttr = {}
         Object.keys(calculatedAtt).map(att=> {
-            console.log('calc', calculatedAtt[att])
+          
             if(calculatedAtt[att].type == 'continuous'){
 
                 let root = calculatedAtt[att].rows.filter(f=> f.nodeLabels == p[0].node)[0]
-                console.log('root',calculatedScales.filter(f=> f.field == att)[0])
+              
                 rootAttr[att] = {};
                 let scale = calculatedScales.filter(f=> f.field == att)[0].yScale;
                 rootAttr[att].scaledVal =  scale(root.estimate);
                 rootAttr[att].scaledLow =  scale(root.lowerCI95);
                 rootAttr[att].scaledHigh =  scale(root.upperCI95);
                 rootAttr.scale = scale;
+                p[0].attributes = (p[0].attributes != undefined)? edge.attributes : {}
+                p[0].attributes[att] = rootAttr;
+            }else if(calculatedAtt[att].type == 'discrete'){
+                let root = calculatedAtt[att].rows.filter(f=> f.nodeLabels == p[0].node)[0]
+                let scales = calculatedScales.filter(f=> f.field == att)[0].scales;
+                let rootAttr = scales.map(s=> {
+                    return {'state': s.scaleName,  scaleVal: s.yScale(root[s.scaleName]), realVal: root[s.scaleName]}
+                });
+                p[0].attributes = (p[0].attributes != undefined)? p[0].attributes : {}
+                p[0].attributes[att] = rootAttr;
             }else{
-
+                console.error('type not found');
+                
             }
-           // let root = p[0]
-           // let root= calculatedAtt[att].rows.filter(f=> f.root === true)[0];
-           
         })
-        p[0].attributes = rootAttr;
     });
     
     let maxBranch = d3.max(paths.map(r=> r.length));

@@ -4,10 +4,103 @@ import * as d3 from "d3";
 export function renderAttributes(normedPaths, svg){
     let colorKeeper = [
         '#32C1FE',
-        '#3AD701'
+        '#3AD701',
+        '#E2AD01',
+        '#E2019E',
     ]
-     /////Counting frequency of nodes//////
-     let branchFrequency = normedPaths.flatMap(row=> row.flatMap(f=> f.node)).reduce(function (acc, curr) {
+         
+    /////Rendering ///////
+    svg.style('height', (normedPaths.length* 120) + 'px');
+    let pathWrap = svg.append('g').classed('path-wrapper', true);
+    pathWrap.attr('transform', (d, i)=> 'translate(0,20)');
+
+    /////Branch Paths/////
+    let pathGroups = branchPaths(pathWrap, normedPaths);
+
+    /// LOWER ATTRIBUTE VISUALIZATION ///
+    let attributeWrapper = pathGroups.append('g').classed('attribute-wrapper', true);
+    attributeWrapper.attr('transform', (d)=> 'translate(140, 25)');
+  
+    let attributeGroups = attributeWrapper.selectAll('g').data((d)=> {
+       
+        let keys = Object.keys(d.map(m=> m.attributes)[0]);
+        let att = keys.map((key, i)=> {
+            return d.map((m)=> {
+                if(m.attributes[key].type === 'continuous'){
+                  
+                    m.attributes[key].color = colorKeeper[i];
+                    m.attributes[key].move = m.move;
+                    m.attributes[key].label = key;
+                    return m.attributes[key];
+                }else if(m.attributes[key].type === 'discrete'){
+                    let states = m.attributes[key].filter(f => f.state != undefined);
+                    return states.map((st, j)=> {
+                        st.color = colorKeeper[j];
+                        st.move = m.move;
+                        st.attrLabel = key;
+                        return st
+                    })
+                }else{
+                    console.error('attribute type not found')
+                }
+            })
+        });
+        return att;
+    }).enter().append('g');
+
+    attributeGroups.attr('transform', (d, i) => 'translate(0, '+(i * 35)+')');
+
+    console.log(attributeGroups);
+
+    ////SPLIT THIS UP
+/*
+    let attrLabel = attributeGroups.append('text').text(d=> d[0].label);
+    attrLabel.classed('attribute-label', true);
+    attrLabel.attr('transform', 'translate(-15, 20)');
+*/
+    let attribRect = attributeGroups.append('rect').classed('attribute-rect', true);
+
+    let innerTimeline = attributeGroups.append('g').classed('time-line', true);//.data(normedPaths);//.attr('transform', (d, i)=> 'translate(0, 0)');
+    let attributeNodes = innerTimeline.selectAll('g').data(d=> d);
+    let attrGroupEnter = attributeNodes.enter().append('g').classed('attribute-node', true);
+    attributeNodes = attrGroupEnter.merge(attributeNodes);
+
+    let innerBars = attributeNodes.append('g');
+
+    //THIS IS THE PATH GENERATOR FOR THE CONTINUOUS VARIABLES
+    var lineGen = d3.line()
+    .x(d=> d.move)
+    .y(d=> d.scaledVal);
+
+    let innerPaths = innerTimeline.append('path')
+    .attr("d", lineGen)
+    .attr("class", "inner-line")
+    .style('stroke', (d)=> d[0].color);
+    ///////////////////////////////////////////////////////////
+
+
+    innerBars.append('rect').classed('attribute-inner-bar', true);
+    innerBars.attr('transform', (d)=> 'translate('+ d.move +', 0)');
+    let rangeRect = innerBars.append('rect').classed('range-rect', true);
+    rangeRect.attr('width', 20).attr('height', (d, i)=> {
+        let range = d.scaledHigh -  d.scaledLow;
+        return range;
+    });
+    rangeRect.attr('transform', (d, i)=> {
+        let lowMove = d.scaledLow;
+        return 'translate(0, '+ lowMove +')';
+    });
+    rangeRect.style('fill', d=> d.color);
+    innerBars.append('rect').attr('width', 20).attr('height', 5)
+    .attr('transform', (d, i)=> 'translate(0, '+ d.scaledVal +')')
+    .attr('fill', d=> d.color);
+
+}
+
+function branchPaths(wrapper, pathData) {
+
+    /////Counting frequency of nodes//////
+    let branchFrequency = pathData.flatMap(row=> row.flatMap(f=> f.node)).reduce(function (acc, curr) {
         if (typeof acc[curr] == 'undefined') {
           acc[curr] = 1;
         } else {
@@ -16,15 +109,10 @@ export function renderAttributes(normedPaths, svg){
         return acc;
       }, {});
 
-    ///Scales for circles ///
-    let circleScale = d3.scaleLog().range([6, 14]).domain([1, d3.max(Object.values(branchFrequency))])
-    
-    
-    /////Rendering ///////
-    svg.style('height', (normedPaths.length* 120) + 'px');
-    let pathWrap = svg.append('g').classed('path-wrapper', true);
-    pathWrap.attr('transform', (d, i)=> 'translate(0,20)');
-    let pathGroups = pathWrap.selectAll('.paths').data(normedPaths);
+     ///Scales for circles ///
+     let circleScale = d3.scaleLog().range([6, 14]).domain([1, d3.max(Object.values(branchFrequency))])
+
+    let pathGroups = wrapper.selectAll('.paths').data(pathData);
     let pathEnter = pathGroups.enter().append('g').classed('paths', true);
     pathGroups = pathEnter.merge(pathGroups);
     pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * (35 * (Object.keys(d[1].attributes).length + 1))) +')');
@@ -35,11 +123,15 @@ export function renderAttributes(normedPaths, svg){
         return d3.select(this).classed('hover', false)
     });
 
+///DO NOT GET RID OF THIS> YOU NEED TO ADD SPECIES AND THEN ADD THIS BACK
+/*
     let speciesTitle = pathGroups.append('text').text(d=> {
         let string = d[d.length - 1].label
         return string.charAt(0).toUpperCase() + string.slice(1);
     });
+
     speciesTitle.attr('x', 10).attr('y', 15);
+*/
 
     let timelines = pathGroups.append('g').classed('time-line', true);
     timelines.attr('transform', (d, i)=> 'translate(150, 0)');
@@ -77,60 +169,5 @@ export function renderAttributes(normedPaths, svg){
         return string;
     }).attr('x', 10).attr('y', 5);
 
-    /// LOWER ATTRIBUTE VISUALIZATION ///
-    let attributeWrapper = pathGroups.append('g').classed('attribute-wrapper', true);
-    attributeWrapper.attr('transform', (d)=> 'translate(140, 25)');
-  
-    let attributeGroups = attributeWrapper.selectAll('g').data((d)=> {
-        let keys = Object.keys(d.map(m=> m.attributes)[0]);
-        let att = keys.map((key, i)=> {
-            return d.map((m)=> {
-            m.attributes[key].color = colorKeeper[i];
-            m.attributes[key].move = m.move;
-            m.attributes[key].label = key;
-            return m.attributes[key];
-        })}
-        );
-        return att;
-    }).enter().append('g');
-    attributeGroups.attr('transform', (d, i) => 'translate(0, '+(i * 35)+')');
-
-    let attrLabel = attributeGroups.append('text').text(d=> d[0].label);
-    attrLabel.classed('attribute-label', true);
-    attrLabel.attr('transform', 'translate(-15, 20)');
-
-    let attribRect = attributeGroups.append('rect').classed('attribute-rect', true);
-
-    let innerTimeline = attributeGroups.append('g').classed('time-line', true);//.data(normedPaths);//.attr('transform', (d, i)=> 'translate(0, 0)');
-    let attributeNodes = innerTimeline.selectAll('g').data(d=> d);
-    let attrGroupEnter = attributeNodes.enter().append('g').classed('attribute-node', true);
-    attributeNodes = attrGroupEnter.merge(attributeNodes);
-
-    let innerBars = attributeNodes.append('g');
-
-    var lineGen = d3.line()
-    .x(d=> d.move)
-    .y(d=> d.scaledVal);
-
-    let innerPaths = innerTimeline.append('path')
-    .attr("d", lineGen)
-    .attr("class", "inner-line")
-    .style('stroke', (d)=> d[0].color);
-
-    innerBars.append('rect').classed('attribute-inner-bar', true);
-    innerBars.attr('transform', (d)=> 'translate('+ d.move +', 0)');
-    let rangeRect = innerBars.append('rect').classed('range-rect', true);
-    rangeRect.attr('width', 20).attr('height', (d, i)=> {
-        let range = d.scaledHigh -  d.scaledLow;
-        return range;
-    });
-    rangeRect.attr('transform', (d, i)=> {
-        let lowMove = d.scaledLow;
-        return 'translate(0, '+ lowMove +')';
-    });
-    rangeRect.style('fill', d=> d.color);
-    innerBars.append('rect').attr('width', 20).attr('height', 5)
-    .attr('transform', (d, i)=> 'translate(0, '+ d.scaledVal +')')
-    .attr('fill', d=> d.color);
-
+    return pathGroups;
 }
