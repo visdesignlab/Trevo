@@ -66,54 +66,18 @@ loadData(d3.json, './public/data/anolis-edges.json').then(async edges => {
         }
     });
 
-    console.log('leaves', leaves)
 
     let matchedLeaves = leaves.map((leaf, i)=> {
-/*
-        leaf.label = leafChar.rows[i].species;
-        leaf.node = leaf.V2
-        //let keys = Object.keys(leafChar.rows[i]).filter(f=> f!= 'species')
-        let keys = calculatedScales.map(m=> m.field);
-        console.log('keys',keys)
-        console.log('leaf', leaf)
-        let attr = {}
-        keys.forEach(k=> {
-            let scaleOb = calculatedScales.filter(f=> f.field == k)[0];
-            
-            if(scaleOb.type == 'continuous'){
-                let scale = calculatedScales.filter(f=> f.field == k)[0].yScale;
-                attr[k] = {'scaledVal': scale(leafChar.rows[i][k]), 'scaledHigh': 0, 'scaledLow': 0 }
-            }else if(scaleOb.type == 'discrete'){
-                console.log('discrete scalOb', scaleOb)
-                let scales = calculatedScales.filter(f=> f.field == att)[0].scales;
-                console.log(scales)
-               // let rootAttr = scales.map(s=> {
-              //      return {'state': s.scaleName,  scaleVal: s.yScale(leaf[s.scaleName]), realVal: root[s.scaleName]}
-               // });
-                
-                p[0].attributes[att] = {'states':rootAttr, 'type': 'discrete'};
-                attr[k] = {'scaledVal': leafChar.rows[i][k], 'scaledHigh': 0, 'scaledLow': 0 }
-              
-            }else{
-                console.log('cant find type', scaleOb)
-            }
-           
-        });
-*/
+
         leaf.label = leafChar.rows[i].species ? leafChar.rows[i].species : leafChar.rows[i][""];
-        console.log('species', leafChar.rows[i]);
         leaf.node = leaf.V2
- 
         let keys = calculatedScales.map(m=> m.field);
-   
         let attr = {};
         
         keys.forEach((k)=> {
             let scaleOb = calculatedScales.filter(f=> f.field == k)[0];
             if(scaleOb.type === 'discrete'){
-                let scale = scaleOb.scales.filter(s=> s.scaleName === leafChar.rows[i][k])[0];
-                attr[k] = {'state': leafChar.rows[i][k], 'trait': k, 'type': scaleOb.type}
-                //.filter(s=> s.scaleName === leafChar.rows[i][k])
+                attr[k] = {'states': [leafChar.rows[i][k]], 'trait': k, 'type': scaleOb.type}
             }else if(scaleOb.type === 'continuous'){
                 let scale = scaleOb.yScale;
                 attr[k] = {'scaledVal': scale(leafChar.rows[i][k]), 'scaledHigh': 0, 'scaledLow': 0, 'realVal':  leafChar.rows[i][k], 'type': scaleOb.type}
@@ -125,11 +89,12 @@ loadData(d3.json, './public/data/anolis-edges.json').then(async edges => {
         });
 
         leaf.attributes = attr;
+        leaf.leaf = true
     
         return leaf;
     });
 
-    console.log('edges', edges.rows)
+
 
     let mappedEdges = edges.rows.map((edge, i)=> {
         let attrKeys = Object.keys(calculatedAtt);

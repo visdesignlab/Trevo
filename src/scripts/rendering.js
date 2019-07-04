@@ -34,19 +34,32 @@ export function renderAttributes(normedPaths, svg){
                     m.attributes[key].label = key;
                     return m.attributes[key];
                 }else if(m.attributes[key].type === 'discrete'){
-                    let states = m.attributes[key].states;//.filter(f => f.state != undefined);
-                    return states.map((st, j)=> {
-                        st.color = colorKeeper[j];
-                        st.move = m.move;
-                        st.attrLabel = key;
-                        return st
-                    })
+                    if(m.leaf){
+                     
+                        let state = m.attributes[key];
+                        state.color = colorKeeper[0];
+                        state.move = m.move;
+                        state.attrLabel = key;
+                        return state;
+                     
+
+                    }else{
+                        let states = m.attributes[key].states ? m.attributes[key].states : m.attributes[key];//.filter(f => f.state != undefined);
+                       
+                        return states.map((st, j)=> {
+                            st.color = colorKeeper[j];
+                            st.move = m.move;
+                            st.attrLabel = key;
+                            return st
+                        });
+                    }
+             
                 }else{
                     console.error('attribute type not found')
                 }
             })
         });
-        console.log(att)
+        
         return att;
     }).enter().append('g');
 
@@ -59,14 +72,14 @@ export function renderAttributes(normedPaths, svg){
         return d.type === 'continuous'
     })
 
-    console.log(testCont)
+    console.log('test cont', testCont)
 
     ////SPLIT THIS UP
-/*
+
     let attrLabel = attributeGroups.append('text').text(d=> d[0].label);
     attrLabel.classed('attribute-label', true);
     attrLabel.attr('transform', 'translate(-15, 20)');
-*/
+
     let attribRect = attributeGroups.append('rect').classed('attribute-rect', true);
 
     let innerTimeline = attributeGroups.append('g').classed('time-line', true);//.data(normedPaths);//.attr('transform', (d, i)=> 'translate(0, 0)');
@@ -76,17 +89,10 @@ export function renderAttributes(normedPaths, svg){
 
     let innerBars = attributeNodes.append('g');
 
-    //THIS IS THE PATH GENERATOR FOR THE CONTINUOUS VARIABLES
-    var lineGen = d3.line()
-    .x(d=> d.move)
-    .y(d=> d.scaledVal);
-
-    let innerPaths = innerTimeline.append('path')
-    .attr("d", lineGen)
-    .attr("class", "inner-line")
-    .style('stroke', (d)=> d[0].color);
-    ///////////////////////////////////////////////////////////
-
+ /////DO NOT DELETE THIS! YOU NEED TO SEP CONT AND DICRETE ATTR. THIS DRAWS LINE FOR THE CONT
+ /////
+ //  let innerPaths = continuousPaths(innerTimeline);
+ ////////
 
     innerBars.append('rect').classed('attribute-inner-bar', true);
     innerBars.attr('transform', (d)=> 'translate('+ d.move +', 0)');
@@ -104,6 +110,21 @@ export function renderAttributes(normedPaths, svg){
     .attr('transform', (d, i)=> 'translate(0, '+ d.scaledVal +')')
     .attr('fill', d=> d.color);
 
+}
+
+function continuousPaths(innerTimeline){
+    //THIS IS THE PATH GENERATOR FOR THE CONTINUOUS VARIABLES
+    var lineGen = d3.line()
+    .x(d=> d.move)
+    .y(d=> d.scaledVal);
+
+    let innerPaths = innerTimeline.append('path')
+    .attr("d", lineGen)
+    .attr("class", "inner-line")
+    .style('stroke', (d)=> d[0].color);
+
+    return innerPaths;
+    ///////////////////////////////////////////////////////////
 }
 
 function branchPaths(wrapper, pathData) {
@@ -132,15 +153,15 @@ function branchPaths(wrapper, pathData) {
         return d3.select(this).classed('hover', false)
     });
 
-///DO NOT GET RID OF THIS> YOU NEED TO ADD SPECIES AND THEN ADD THIS BACK
-/*
+
+
     let speciesTitle = pathGroups.append('text').text(d=> {
         let string = d[d.length - 1].label
         return string.charAt(0).toUpperCase() + string.slice(1);
     });
 
     speciesTitle.attr('x', 10).attr('y', 15);
-*/
+
 
     let timelines = pathGroups.append('g').classed('time-line', true);
     timelines.attr('transform', (d, i)=> 'translate(150, 0)');
