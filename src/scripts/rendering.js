@@ -26,6 +26,7 @@ export function renderAttributes(normedPaths, svg){
         let keys = Object.keys(d.map(m=> m.attributes)[0]);
         let att = keys.map((key, i)=> {
             return d.map((m)=> {
+                console.log('m', m)
                 if(m.attributes[key].type === 'continuous'){
                   
                     m.attributes[key].color = colorKeeper[i];
@@ -33,7 +34,7 @@ export function renderAttributes(normedPaths, svg){
                     m.attributes[key].label = key;
                     return m.attributes[key];
                 }else if(m.attributes[key].type === 'discrete'){
-                    let states = m.attributes[key].filter(f => f.state != undefined);
+                    let states = m.attributes[key].states;//.filter(f => f.state != undefined);
                     return states.map((st, j)=> {
                         st.color = colorKeeper[j];
                         st.move = m.move;
@@ -45,12 +46,20 @@ export function renderAttributes(normedPaths, svg){
                 }
             })
         });
+        console.log(att)
         return att;
     }).enter().append('g');
 
     attributeGroups.attr('transform', (d, i) => 'translate(0, '+(i * 35)+')');
 
     console.log(attributeGroups);
+
+    let testCont = attributeGroups.filter(d=> {
+        console.log(d);
+        return d.type === 'continuous'
+    })
+
+    console.log(testCont)
 
     ////SPLIT THIS UP
 /*
