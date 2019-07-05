@@ -76,12 +76,16 @@ loadData(d3.json, './public/data/anolis-edges.json').then(async edges => {
         
         keys.forEach((k)=> {
             let scaleOb = calculatedScales.filter(f=> f.field == k)[0];
+            console.log(scaleOb)
+            
             if(scaleOb.type === 'discrete'){
-                let states = {'state': leafChar.rows[i][k],  scaleVal: 1, realVal: 1}
+                console.log(scaleOb.scales.filter(f=> f.scaleName == leafChar.rows[i][k]))
+                let thisScale = scaleOb.scales.filter(f=> f.scaleName == leafChar.rows[i][k])[0].yScale
+                let states = {'state': leafChar.rows[i][k],  scaleVal: thisScale(1), realVal: 1}
                 attr[k] = {'states': [states], 'label': k, 'type': scaleOb.type, leaf: true}
             }else if(scaleOb.type === 'continuous'){
                 let scale = scaleOb.yScale;
-                attr[k] = {'scaledVal': scale(leafChar.rows[i][k]), 'scaledHigh': 0, 'scaledLow': 0, 'realVal':  leafChar.rows[i][k], 'type': scaleOb.type, leaf: true}
+                attr[k] = {'scaleVal': scale(leafChar.rows[i][k]), 'scaledHigh': 0, 'scaledLow': 0, 'realVal':  leafChar.rows[i][k], 'type': scaleOb.type, leaf: true}
 
             }else{
                 attr[k] = 'error in leaf matching';
@@ -108,7 +112,7 @@ loadData(d3.json, './public/data/anolis-edges.json').then(async edges => {
                 if(calculatedAtt[attr].type == 'continuous'){
                     let scale = calculatedScales.filter(f=> f.field == attr)[0].yScale;
                     let res = calculatedAtt[attr].rows[index];
-                    res.scaledVal = scale(res.estimate);
+                    res.scaleVal = scale(res.estimate);
                     res.scaledLow = scale(res.lowerCI95);
                     res.scaledHigh = scale(res.upperCI95);
                     res.type = 'continuous'
@@ -139,7 +143,7 @@ loadData(d3.json, './public/data/anolis-edges.json').then(async edges => {
           
                 p[0].attributes[att] = {}
                 let scale = calculatedScales.filter(f=> f.field == att)[0].yScale;
-                p[0].attributes[att].scaledVal =  scale(root.estimate);
+                p[0].attributes[att].scaleVal =  scale(root.estimate);
                 p[0].attributes[att].scaledLow =  scale(root.lowerCI95);
                 p[0].attributes[att].scaledHigh =  scale(root.upperCI95);
                 p[0].attributes[att].scale = scale;
