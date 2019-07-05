@@ -31,6 +31,7 @@ loadData(d3.json, './public/data/anolis-edges.json').then(async edges => {
     let calculatedAtt = {
         'awesomeness' : await loadData(d3.json, './public/data/anolis-awesomeness-res.json', 'continuous'),
         'island' : await loadData(d3.json, './public/data/anolis-island-res.json', 'discrete'),
+        'svl' : await loadData(d3.json, './public/data/anolis-svl-res.json', 'continuous'),
     }
 
     let colorKeeper = [
