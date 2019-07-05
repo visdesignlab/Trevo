@@ -75,7 +75,6 @@ export function renderAttributes(normedPaths, svg){
         return d[0].type === 'continuous';
     })
     let discreteAtt = attributeGroups.filter(d=> {
-        //console.log(d[d.length - 1])
         return d[d.length - 1].type === 'discrete';
     })
 
@@ -85,14 +84,34 @@ export function renderAttributes(normedPaths, svg){
     let attrLabel = discreteAtt.append('text').text(d=> d[d.length - 1].label);
     attrLabel.classed('attribute-label', true);
     attrLabel.attr('transform', 'translate(-15, 20)');
+
     let innerTimeline = discreteAtt.append('g').classed('attribute-time-line', true);
     let attribRectDisc = innerTimeline.append('rect').classed('attribute-rect', true);//.data(normedPaths);//.attr('transform', (d, i)=> 'translate(0, 0)');
-    let attributeNodesCont = innerTimeline.selectAll('.attribute-node-discrete').data(d=> d);
-    let attrNodesContEnter = attributeNodesCont.enter().append('g').classed('attribute-node-discrete', true);
-    attributeNodesCont = attrNodesContEnter.merge(attributeNodesCont);
+    let attributeNodesDisc = innerTimeline.selectAll('.attribute-node-discrete').data(d=> {
+        return d});
+    let attrNodesDiscEnter = attributeNodesDisc.enter().append('g').classed('attribute-node-discrete', true);
+    attributeNodesDisc = attrNodesDiscEnter.merge(attributeNodesDisc);
 
-    let innerBars = attributeNodesCont.append('g').classed('inner-bars', true);
+    attributeNodesDisc.attr('transform', (d)=> {
+        let move = d[0] ? d[0].move : d.move;
+        let finalMove = move ? move : 0;
+        return 'translate('+finalMove+', 0)'});
 
+    attributeNodesDisc.append('line').attr('x1', 10).attr('x2', 10).attr('y1', 0).attr('y2', 35);
+
+    let stateDots = attributeNodesDisc.filter((att, i)=> att[0] != undefined).selectAll('.dots').data(d=> {
+        return d
+    });
+    let stateDotsEnter = stateDots.enter().append('circle').attr('cx', 10).attr('cy', (d)=> {
+        return d.scaleVal;
+    }).attr('r', 2).style('fill', d=> d.color);
+    stateDots = stateDotsEnter.merge(stateDots);
+
+    let endStateDot = attributeNodesDisc.filter((att, i)=> {
+        return att[0] === undefined});
+    endStateDot.append('circle').attr('cx', 0).attr('cy', 15).attr('r', 10).style('fill', d=> d.color);
+    endStateDot.append('text').text(d=> d.states[0]).attr('transform', 'translate(15, 17)').style('font-size', 10)
+ 
 
 }
 
@@ -182,7 +201,6 @@ function branchPaths(wrapper, pathData) {
 
     return pathGroups;
 }
-
 
 function drawContAtt(continuousAtt){
 
