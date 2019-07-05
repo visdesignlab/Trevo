@@ -216,10 +216,20 @@ function drawDiscreteAtt(discreteAtt){
     
     let statePath = innerTimelineDis.selectAll('g').data(d=> {
       
-        let disct = d.filter(f=> f.leaf != true);
+        let disct = d.map(m=> {
+            let test = (m.leaf == true) ? m.states.map(s=> {
+                s.move = m.move;
+                s.color = m.color;
+                return s
+            }) : m;
+            return test;
+        });//.filter(f=> f.leaf != true);
+    
         let keys = disct[0].map(s=> s.state);
+       
         let lines = keys.map(key=> {
-            return disct.map(d=> d.filter(f=> f.state == key)[0]);
+            console.log('filtering',disct.map(m=> m.filter(f=> f.state == key)[0]))
+            return disct.map(m=> m.filter(f=> f.state == key)[0]);
         });
         
         return lines;
@@ -229,9 +239,10 @@ function drawDiscreteAtt(discreteAtt){
     statePath = pathEnter.merge(statePath);
 
 
-
     var lineGen = d3.line()
-    .x(d=> d.move + 7)
+    .x(d=> {
+        console.log(d)
+        return d.move + 7})
     .y(d=> d.scaleVal);
 
     let innerStatePaths = statePath.append('path')

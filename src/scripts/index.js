@@ -83,7 +83,7 @@ loadData(d3.json, './public/data/anolis-edges.json').then(async edges => {
                 let states = scaleOb.scales.map(m=> m.scaleName).map(state=> {
                     let value = (state == leafChar.rows[i][k])? 1 : 0;
                    
-                    return {'state': state,  scaleVal: thisScale(value), realVal: value}
+                    return {'state': state,  scaleVal: (value === 0) ? 0 : thisScale(value), realVal: value}
 
                 })
             
