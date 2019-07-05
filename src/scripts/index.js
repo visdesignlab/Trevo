@@ -77,10 +77,11 @@ loadData(d3.json, './public/data/anolis-edges.json').then(async edges => {
         keys.forEach((k)=> {
             let scaleOb = calculatedScales.filter(f=> f.field == k)[0];
             if(scaleOb.type === 'discrete'){
-                attr[k] = {'states': [leafChar.rows[i][k]], 'label': k, 'type': scaleOb.type}
+                let states = {'state': leafChar.rows[i][k],  scaleVal: 1, realVal: 1}
+                attr[k] = {'states': [states], 'label': k, 'type': scaleOb.type, leaf: true}
             }else if(scaleOb.type === 'continuous'){
                 let scale = scaleOb.yScale;
-                attr[k] = {'scaledVal': scale(leafChar.rows[i][k]), 'scaledHigh': 0, 'scaledLow': 0, 'realVal':  leafChar.rows[i][k], 'type': scaleOb.type}
+                attr[k] = {'scaledVal': scale(leafChar.rows[i][k]), 'scaledHigh': 0, 'scaledLow': 0, 'realVal':  leafChar.rows[i][k], 'type': scaleOb.type, leaf: true}
 
             }else{
                 attr[k] = 'error in leaf matching';

@@ -78,40 +78,8 @@ export function renderAttributes(normedPaths, svg){
         return d[d.length - 1].type === 'discrete';
     })
 
-   
-    drawContAtt(continuousAtt)
-
-    let attrLabel = discreteAtt.append('text').text(d=> d[d.length - 1].label);
-    attrLabel.classed('attribute-label', true);
-    attrLabel.attr('transform', 'translate(-15, 20)');
-
-    let innerTimeline = discreteAtt.append('g').classed('attribute-time-line', true);
-    let attribRectDisc = innerTimeline.append('rect').classed('attribute-rect', true);//.data(normedPaths);//.attr('transform', (d, i)=> 'translate(0, 0)');
-    let attributeNodesDisc = innerTimeline.selectAll('.attribute-node-discrete').data(d=> {
-        return d});
-    let attrNodesDiscEnter = attributeNodesDisc.enter().append('g').classed('attribute-node-discrete', true);
-    attributeNodesDisc = attrNodesDiscEnter.merge(attributeNodesDisc);
-
-    attributeNodesDisc.attr('transform', (d)=> {
-        let move = d[0] ? d[0].move : d.move;
-        let finalMove = move ? move : 0;
-        return 'translate('+finalMove+', 0)'});
-
-    attributeNodesDisc.append('line').attr('x1', 10).attr('x2', 10).attr('y1', 0).attr('y2', 35);
-
-    let stateDots = attributeNodesDisc.filter((att, i)=> att[0] != undefined).selectAll('.dots').data(d=> {
-        return d
-    });
-    let stateDotsEnter = stateDots.enter().append('circle').attr('cx', 10).attr('cy', (d)=> {
-        return d.scaleVal;
-    }).attr('r', 2).style('fill', d=> d.color);
-    stateDots = stateDotsEnter.merge(stateDots);
-
-    let endStateDot = attributeNodesDisc.filter((att, i)=> {
-        return att[0] === undefined});
-    endStateDot.append('circle').attr('cx', 0).attr('cy', 15).attr('r', 10).style('fill', d=> d.color);
-    endStateDot.append('text').text(d=> d.states[0]).attr('transform', 'translate(15, 17)').style('font-size', 10)
- 
+    drawContAtt(continuousAtt);
+    drawDiscreteAtt(discreteAtt);
 
 }
 
@@ -236,4 +204,48 @@ function drawContAtt(continuousAtt){
     innerBars.append('rect').attr('width', 20).attr('height', 5)
     .attr('transform', (d, i)=> 'translate(0, '+ d.scaledVal +')')
     .attr('fill', d=> d.color);
+}
+
+function drawDiscreteAtt(discreteAtt){
+    let attrLabel = discreteAtt.append('text').text(d=> d[d.length - 1].label);
+    attrLabel.classed('attribute-label', true);
+    attrLabel.attr('transform', 'translate(-15, 20)');
+
+    let innerTimeline = discreteAtt.append('g').classed('attribute-time-line', true);
+    
+///THIS IS WHERE YOU LEFT OFF//////
+    /* 
+    let pathTest = innerTimeline.append('g').data(d=> {
+        console.log(d);
+    })
+    console.log(innerTimeline.data())
+*/
+    let attribRectDisc = innerTimeline.append('rect').classed('attribute-rect', true);//.data(normedPaths);//.attr('transform', (d, i)=> 'translate(0, 0)');
+    let attributeNodesDisc = innerTimeline.selectAll('.attribute-node-discrete').data(d=> {
+        return d});
+    let attrNodesDiscEnter = attributeNodesDisc.enter().append('g').classed('attribute-node-discrete', true);
+    attributeNodesDisc = attrNodesDiscEnter.merge(attributeNodesDisc);
+
+    attributeNodesDisc.attr('transform', (d)=> {
+        let move = d[0] ? d[0].move : d.move;
+        let finalMove = move ? move : 0;
+        return 'translate('+finalMove+', 0)'});
+
+    attributeNodesDisc.append('line').attr('x1', 10).attr('x2', 10).attr('y1', 0).attr('y2', 35);
+
+    let stateDots = attributeNodesDisc.filter((att, i)=> att[0] != undefined).selectAll('.dots').data(d=> {
+        return d
+    });
+    let stateDotsEnter = stateDots.enter().append('circle').attr('cx', 10).attr('cy', (d)=> {
+        return d.scaleVal;
+    }).attr('r', 2).style('fill', d=> d.color);
+    stateDots = stateDotsEnter.merge(stateDots);
+
+    let endStateDot = attributeNodesDisc.filter((att, i)=> {
+        return att[0] === undefined});
+
+    endStateDot.append('circle').attr('cx', 0).attr('cy', 15).attr('r', 10).style('fill', d=> d.color);
+    ////NEED TO MAKE A FUNCTION TO ASSIGN COLOR OF STATES//////
+
+    endStateDot.append('text').text(d=> d.states[0].state).attr('transform', 'translate(15, 17)').style('font-size', 10);
 }
