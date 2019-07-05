@@ -26,7 +26,7 @@ export function renderAttributes(normedPaths, svg){
         let keys = Object.keys(d.map(m=> m.attributes)[0]);
         let att = keys.map((key, i)=> {
             return d.map((m)=> {
-              //  console.log('m', m)
+            
                 if(m.attributes[key].type === 'continuous'){
                   
                     m.attributes[key].color = colorKeeper[i];
@@ -50,14 +50,14 @@ export function renderAttributes(normedPaths, svg){
                             st.color = colorKeeper[j];
                             st.move = m.move;
                             st.attrLabel = key;
-                            return st
+                            return st;
                         });
                     }
              
                 }else{
-                    console.error('attribute type not found')
+                    console.error('attribute type not found');
                 }
-            })
+            });
         });
         
         return att;
@@ -65,16 +65,16 @@ export function renderAttributes(normedPaths, svg){
 
     attributeGroups.attr('transform', (d, i) => 'translate(0, '+(i * 35)+')');
 
-    console.log('att groups',attributeGroups);
+
    
     ////SPLIT THIS UP
 
     let continuousAtt = attributeGroups.filter(d=> {
         return d[0].type === 'continuous';
-    })
+    });
     let discreteAtt = attributeGroups.filter(d=> {
         return d[d.length - 1].type === 'discrete';
-    })
+    });
 
     drawContAtt(continuousAtt);
     drawDiscreteAtt(discreteAtt);
@@ -206,27 +206,19 @@ function drawContAtt(continuousAtt){
 
 function drawDiscreteAtt(discreteAtt){
 
-    console.log(discreteAtt.data())
     let attrLabel = discreteAtt.append('text').text(d=> d[d.length - 1].label);
     attrLabel.classed('attribute-label', true);
     attrLabel.attr('transform', 'translate(-15, 20)');
 
     let innerTimelineDis = discreteAtt.append('g').classed('attribute-time-line', true);
 
-    console.log(innerTimelineDis.data())
-
 ///THIS IS WHERE YOU LEFT OFF//////
     
     let statePath = innerTimelineDis.selectAll('g').data(d=> {
-       // console.log(d)
-       // let attr = d.map(m=> m.attributes? Object.values(m.attributes) : []);
-       // let disct = attr.map(t=> t.filter(f=> f.type === 'discrete')[0]).filter(f=> f.leaf != true);
+      
         let disct = d.filter(f=> f.leaf != true);
-        //console.log(disct);
         let keys = disct[0].map(s=> s.state);
-        //console.log(keys);
         let lines = keys.map(key=> {
-           // console.log(key, disct.map(d=> d.filter(f=> f.state == key)[0]));
             return disct.map(d=> d.filter(f=> f.state == key)[0]);
         });
         
@@ -236,7 +228,7 @@ function drawDiscreteAtt(discreteAtt){
     let pathEnter = statePath.enter().append('g').classed('state-path', true);
     statePath = pathEnter.merge(statePath);
 
-    console.log(statePath)
+
 
     var lineGen = d3.line()
     .x(d=> d.move + 7)
@@ -246,8 +238,6 @@ function drawDiscreteAtt(discreteAtt){
     .attr("d", lineGen)
     .attr("class", "inner-line")
     .style('stroke', (d)=> d.color);
-
- 
 
     let attribRectDisc = innerTimelineDis.append('rect').classed('attribute-rect', true);//.data(normedPaths);//.attr('transform', (d, i)=> 'translate(0, 0)');
     let attributeNodesDisc = innerTimelineDis.selectAll('.attribute-node-discrete').data(d=> {
