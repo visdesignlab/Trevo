@@ -118,6 +118,7 @@ function branchPaths(wrapper, pathData) {
     pathGroups = pathEnter.merge(pathGroups);
     pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * (35 * (Object.keys(d[1].attributes).length + 1))) +')');
     let pathBars = pathGroups.append('rect').classed('path-rect', true);//.style('fill', 'red');
+    pathBars.attr('y', -8);
     pathGroups.on('mouseover', function(d, i){
         return d3.select(this).classed('hover', true);
     }).on('mouseout', function(d, i){
@@ -246,8 +247,8 @@ function drawDiscreteAtt(discreteAtt, scales){
     let innerStatePaths = statePath.append('path')
     .attr("d", lineGen)
     .attr("class", "inner-line")
+    .style('stroke-width', 0.7)
     .style('stroke', (d)=> {
-        console.log(d[0])
         return d[0].color});
 
     let attribRectDisc = innerTimelineDis.append('rect').classed('attribute-rect', true);//.data(normedPaths);//.attr('transform', (d, i)=> 'translate(0, 0)');
