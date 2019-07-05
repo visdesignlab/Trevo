@@ -77,7 +77,7 @@ loadData(d3.json, './public/data/anolis-edges.json').then(async edges => {
         keys.forEach((k)=> {
             let scaleOb = calculatedScales.filter(f=> f.field == k)[0];
             if(scaleOb.type === 'discrete'){
-                attr[k] = {'states': [leafChar.rows[i][k]], 'trait': k, 'type': scaleOb.type}
+                attr[k] = {'states': [leafChar.rows[i][k]], 'label': k, 'type': scaleOb.type}
             }else if(scaleOb.type === 'continuous'){
                 let scale = scaleOb.yScale;
                 attr[k] = {'scaledVal': scale(leafChar.rows[i][k]), 'scaledHigh': 0, 'scaledLow': 0, 'realVal':  leafChar.rows[i][k], 'type': scaleOb.type}

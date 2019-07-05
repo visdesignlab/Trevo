@@ -26,7 +26,7 @@ export function renderAttributes(normedPaths, svg){
         let keys = Object.keys(d.map(m=> m.attributes)[0]);
         let att = keys.map((key, i)=> {
             return d.map((m)=> {
-                console.log('m', m)
+              //  console.log('m', m)
                 if(m.attributes[key].type === 'continuous'){
                   
                     m.attributes[key].color = colorKeeper[i];
@@ -65,55 +65,39 @@ export function renderAttributes(normedPaths, svg){
 
     attributeGroups.attr('transform', (d, i) => 'translate(0, '+(i * 35)+')');
 
-    console.log(attributeGroups);
+    console.log('att groups',attributeGroups);
 
-    let testCont = attributeGroups.filter(d=> {
-        console.log(d);
-        return d.type === 'continuous'
-    })
 
-    console.log('test cont', testCont)
-
+   
     ////SPLIT THIS UP
 
-    let attrLabel = attributeGroups.append('text').text(d=> d[0].label);
+    let continuousAtt = attributeGroups.filter(d=> {
+        return d[0].type === 'continuous';
+    })
+    let discreteAtt = attributeGroups.filter(d=> {
+        //console.log(d[d.length - 1])
+        return d[d.length - 1].type === 'discrete';
+    })
+
+   
+    drawContAtt(continuousAtt)
+
+    let attrLabel = discreteAtt.append('text').text(d=> d[d.length - 1].label);
     attrLabel.classed('attribute-label', true);
     attrLabel.attr('transform', 'translate(-15, 20)');
+    let innerTimeline = discreteAtt.append('g').classed('attribute-time-line', true);
+    let attribRectDisc = innerTimeline.append('rect').classed('attribute-rect', true);//.data(normedPaths);//.attr('transform', (d, i)=> 'translate(0, 0)');
+    let attributeNodesCont = innerTimeline.selectAll('.attribute-node-discrete').data(d=> d);
+    let attrNodesContEnter = attributeNodesCont.enter().append('g').classed('attribute-node-discrete', true);
+    attributeNodesCont = attrNodesContEnter.merge(attributeNodesCont);
 
-    let attribRect = attributeGroups.append('rect').classed('attribute-rect', true);
+    let innerBars = attributeNodesCont.append('g').classed('inner-bars', true);
 
-    let innerTimeline = attributeGroups.append('g').classed('time-line', true);//.data(normedPaths);//.attr('transform', (d, i)=> 'translate(0, 0)');
-    let attributeNodes = innerTimeline.selectAll('g').data(d=> d);
-    let attrGroupEnter = attributeNodes.enter().append('g').classed('attribute-node', true);
-    attributeNodes = attrGroupEnter.merge(attributeNodes);
-
-    let innerBars = attributeNodes.append('g');
-
- /////DO NOT DELETE THIS! YOU NEED TO SEP CONT AND DICRETE ATTR. THIS DRAWS LINE FOR THE CONT
- /////
- //  let innerPaths = continuousPaths(innerTimeline);
- ////////
-
-    innerBars.append('rect').classed('attribute-inner-bar', true);
-    innerBars.attr('transform', (d)=> 'translate('+ d.move +', 0)');
-    let rangeRect = innerBars.append('rect').classed('range-rect', true);
-    rangeRect.attr('width', 20).attr('height', (d, i)=> {
-        let range = d.scaledHigh -  d.scaledLow;
-        return range;
-    });
-    rangeRect.attr('transform', (d, i)=> {
-        let lowMove = d.scaledLow;
-        return 'translate(0, '+ lowMove +')';
-    });
-    rangeRect.style('fill', d=> d.color);
-    innerBars.append('rect').attr('width', 20).attr('height', 5)
-    .attr('transform', (d, i)=> 'translate(0, '+ d.scaledVal +')')
-    .attr('fill', d=> d.color);
 
 }
 
 function continuousPaths(innerTimeline){
-    //THIS IS THE PATH GENERATOR FOR THE CONTINUOUS VARIABLES
+    //THIS IS THE PATH GENERATOR FOR THE CONTINUOUS VARIABLES1q
     var lineGen = d3.line()
     .x(d=> d.move)
     .y(d=> d.scaledVal);
@@ -153,15 +137,12 @@ function branchPaths(wrapper, pathData) {
         return d3.select(this).classed('hover', false)
     });
 
-
-
     let speciesTitle = pathGroups.append('text').text(d=> {
         let string = d[d.length - 1].label
         return string.charAt(0).toUpperCase() + string.slice(1);
     });
 
     speciesTitle.attr('x', 10).attr('y', 15);
-
 
     let timelines = pathGroups.append('g').classed('time-line', true);
     timelines.attr('transform', (d, i)=> 'translate(150, 0)');
@@ -200,4 +181,41 @@ function branchPaths(wrapper, pathData) {
     }).attr('x', 10).attr('y', 5);
 
     return pathGroups;
+}
+
+
+function drawContAtt(continuousAtt){
+
+    let attrLabel = continuousAtt.append('text').text(d=> d[0].label);
+    attrLabel.classed('attribute-label', true);
+    attrLabel.attr('transform', 'translate(-15, 20)');
+    let innerTimeline = continuousAtt.append('g').classed('attribute-time-line', true);
+    let attribRectCont = innerTimeline.append('rect').classed('attribute-rect', true);//.data(normedPaths);//.attr('transform', (d, i)=> 'translate(0, 0)');
+    let attributeNodesCont = innerTimeline.selectAll('g').data(d=> d);
+    let attrNodesContEnter = attributeNodesCont.enter().append('g').classed('attribute-node', true);
+    attributeNodesCont = attrNodesContEnter.merge(attributeNodesCont);
+
+    let innerBars = attributeNodesCont.append('g').classed('inner-bars', true);
+
+ /////DO NOT DELETE THIS! YOU NEED TO SEP CONT AND DICRETE ATTR. THIS DRAWS LINE FOR THE CONT
+ /////
+    let innerPaths = continuousPaths(innerTimeline);
+ ////////
+
+    innerBars.append('rect').classed('attribute-inner-bar', true);
+    innerBars.attr('transform', (d)=> {
+        return 'translate('+ d.move +', 0)'});
+    let rangeRect = innerBars.append('rect').classed('range-rect', true);
+    rangeRect.attr('width', 20).attr('height', (d, i)=> {
+        let range = d.scaledHigh -  d.scaledLow;
+        return range;
+    });
+    rangeRect.attr('transform', (d, i)=> {
+        let lowMove = d.scaledLow;
+        return 'translate(0, '+ lowMove +')';
+    });
+    rangeRect.style('fill', d=> d.color);
+    innerBars.append('rect').attr('width', 20).attr('height', 5)
+    .attr('transform', (d, i)=> 'translate(0, '+ d.scaledVal +')')
+    .attr('fill', d=> d.color);
 }
