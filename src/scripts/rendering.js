@@ -1,13 +1,15 @@
 import '../styles/index.scss';
 import * as d3 from "d3";
 
-export function renderAttributes(normedPaths, svg){
+export function renderAttributes(normedPaths, svg, scales){
     let colorKeeper = [
         '#32C1FE',
         '#3AD701',
         '#E2AD01',
         '#E2019E',
     ]
+
+    console.log(scales)
          
     /////Rendering ///////
     svg.style('height', (normedPaths.length* 120) + 'px');
@@ -77,7 +79,7 @@ export function renderAttributes(normedPaths, svg){
     });
 
     drawContAtt(continuousAtt);
-    drawDiscreteAtt(discreteAtt);
+    drawDiscreteAtt(discreteAtt, scales);
 
 }
 
@@ -204,7 +206,7 @@ function drawContAtt(continuousAtt){
     .attr('fill', d=> d.color);
 }
 
-function drawDiscreteAtt(discreteAtt){
+function drawDiscreteAtt(discreteAtt, scales){
 
     let attrLabel = discreteAtt.append('text').text(d=> d[d.length - 1].label);
     attrLabel.classed('attribute-label', true);
@@ -226,12 +228,9 @@ function drawDiscreteAtt(discreteAtt){
         });//.filter(f=> f.leaf != true);
     
         let keys = disct[0].map(s=> s.state);
-       
         let lines = keys.map(key=> {
-            console.log('filtering',disct.map(m=> m.filter(f=> f.state == key)[0]))
             return disct.map(m=> m.filter(f=> f.state == key)[0]);
         });
-        
         return lines;
     });
 
@@ -241,14 +240,15 @@ function drawDiscreteAtt(discreteAtt){
 
     var lineGen = d3.line()
     .x(d=> {
-        console.log(d)
         return d.move + 7})
     .y(d=> d.scaleVal);
 
     let innerStatePaths = statePath.append('path')
     .attr("d", lineGen)
     .attr("class", "inner-line")
-    .style('stroke', (d)=> d.color);
+    .style('stroke', (d)=> {
+        console.log(d[0])
+        return d[0].color});
 
     let attribRectDisc = innerTimelineDis.append('rect').classed('attribute-rect', true);//.data(normedPaths);//.attr('transform', (d, i)=> 'translate(0, 0)');
     let attributeNodesDisc = innerTimelineDis.selectAll('.attribute-node-discrete').data(d=> {
@@ -274,7 +274,9 @@ function drawDiscreteAtt(discreteAtt){
     let endStateDot = attributeNodesDisc.filter((att, i)=> {
         return att[0] === undefined});
 
-    endStateDot.append('circle').attr('cx', 0).attr('cy', 15).attr('r', 10).style('fill', d=> d.color);
+    endStateDot.append('circle').attr('cx', 0).attr('cy', 2).attr('r', 10).style('fill', d=> {
+        let win = d.states.filter(v=> v.realVal === 1)[0].state;
+        return scales.filter(f=> f.type == 'discrete')[0].stateColors.filter(c=> c.state === win)[0].color});
     ////NEED TO MAKE A FUNCTION TO ASSIGN COLOR OF STATES//////
 
     endStateDot.append('text').text(d=> d.states[0].state).attr('transform', 'translate(15, 17)').style('font-size', 10);

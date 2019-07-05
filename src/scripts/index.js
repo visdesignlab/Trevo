@@ -33,6 +33,13 @@ loadData(d3.json, './public/data/anolis-edges.json').then(async edges => {
         'island' : await loadData(d3.json, './public/data/anolis-island-res.json', 'discrete'),
     }
 
+    let colorKeeper = [
+        '#32C1FE',
+        '#3AD701',
+        '#E2AD01',
+        '#E2019E',
+    ]
+
     let calculatedScales = Object.keys(calculatedAtt).map(d=> {
        
         if(calculatedAtt[d].type == 'continuous'){
@@ -50,21 +57,26 @@ loadData(d3.json, './public/data/anolis-edges.json').then(async edges => {
             return { 
                 'field': d,
                 'type':'discrete',
+                'stateColors': scaleCat.map((sc, i)=> {
+                    return {'state': sc, 'color': colorKeeper[i]}
+                }),
                 'scales': scaleCat.map(sc=> {
                 let scaleName = sc;
                
-                let max = d3.max(calculatedAtt[d].rows.map(m=> m[sc]));
-                let min = d3.min(calculatedAtt[d].rows.map(m=> m[sc]));
+                let max = 1;//d3.max(calculatedAtt[d].rows.map(m=> m[sc]));
+                let min = 0;//d3.min(calculatedAtt[d].rows.map(m=> m[sc]));
                 return {
                     'field': d, 
-                    'scaleName': sc,
+                    'scaleName': scaleName,
                     'max': max, 
                     'min':  min,
-                    'yScale': d3.scaleLinear().range([0, 30]).domain([min, max]),
+                    'yScale': d3.scaleLinear().range([30, 0]).domain([min, max]),
                 };
             }) }
         }
     });
+
+    console.log(calculatedScales)
 
 
     let matchedLeaves = leaves.map((leaf, i)=> {
@@ -81,9 +93,9 @@ loadData(d3.json, './public/data/anolis-edges.json').then(async edges => {
             if(scaleOb.type === 'discrete'){
                 let thisScale = scaleOb.scales.filter(f=> f.scaleName == leafChar.rows[i][k])[0].yScale;
                 let states = scaleOb.scales.map(m=> m.scaleName).map(state=> {
-                    let value = (state == leafChar.rows[i][k])? 1 : 0;
+                    let value = (state === leafChar.rows[i][k])? 1 : 0;
                    
-                    return {'state': state,  scaleVal: (value === 0) ? 0 : thisScale(value), realVal: value}
+                    return {'state': state,  scaleVal: value, realVal: value}
 
                 })
             
@@ -184,7 +196,7 @@ loadData(d3.json, './public/data/anolis-edges.json').then(async edges => {
 
    
 
-    renderAttributes(normedPaths, svg);
+    renderAttributes(normedPaths, svg, calculatedScales);
 
     
   
