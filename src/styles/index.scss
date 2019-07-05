@@ -38,8 +38,8 @@ svg{
 }
 
 .paths.hover rect.path-rect{
-  fill:gray;
-  opacity:0.4;
+  fill:#4c575c;
+  opacity:0.6;
   width:100%;
 }
 
@@ -71,8 +71,19 @@ svg{
   stroke-opacity: 0.7;
 }
 
+.paths.hover line{
+  stroke: #b7ed7e;
+  stroke-width: 1;
+  stroke-opacity: 1.0;
+}
+
 .paths circle{
   fill: #4c575c;
+ // opacity: 0.8;
+}
+
+.paths.hover circle{
+  fill: #b7ed7e;
  // opacity: 0.8;
 }
 
