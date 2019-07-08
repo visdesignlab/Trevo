@@ -1,6 +1,32 @@
 import '../styles/index.scss';
 import * as d3 from "d3";
 
+export function renderDistibutions(normedPaths, distSVG, scales){
+    
+}
+
+export function renderToggles(normedPaths, toggleSVG, scales){
+    console.log('norm', normedPaths);
+    console.log('keys', Object.keys(normedPaths[0][0].attributes))
+
+    let keys = Object.keys(normedPaths[0][0].attributes);
+
+    let labelGroups = toggleSVG.selectAll('g').data(keys);
+    let labelGroupEnter = labelGroups.enter().append('g');
+    
+    labelGroupEnter.classed('toggle shown', true);
+    labelGroupEnter.attr('transform', (d, i)=> 'translate('+ ((120* i) + 50)+', 20)');
+    //labelGroupEnter.attr('transform', (d, i)=> 'translate('+ ((10 * d.textLength()) + 50)+', 20)');
+    //labelGroupEnter.attr('text-anchor', 'middle');
+
+    let toggle = labelGroupEnter.append('circle').attr('cx', -10).attr('cy', -4);
+
+    let labelText = labelGroupEnter.append('text').text(d=> d);
+    
+
+    labelGroups = labelGroupEnter.merge(labelGroups);
+}
+
 export function renderAttributes(normedPaths, svg, scales){
     let colorKeeper = [
         '#32C1FE',
@@ -14,7 +40,6 @@ export function renderAttributes(normedPaths, svg, scales){
         '#0095b6'
     ]
 
-    console.log(scales)
     let attributeHeight = 45;
          
     /////Rendering ///////

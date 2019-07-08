@@ -108,3 +108,13 @@ line.half{
 circle.hover-branch{
   fill:#FE9D0B;
 }
+
+.toggle-svg{
+  width:100%;
+  height: 50px;
+}
+
+.toggle circle{
+  r: 6;
+  fill: red;
+}
