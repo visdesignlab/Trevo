@@ -14,16 +14,21 @@ export function renderToggles(normedPaths, toggleSVG, scales){
     let labelGroups = toggleSVG.selectAll('g').data(keys);
     let labelGroupEnter = labelGroups.enter().append('g');
     
-    labelGroupEnter.classed('toggle shown', true);
+    
     labelGroupEnter.attr('transform', (d, i)=> 'translate('+ ((120* i) + 50)+', 20)');
     //labelGroupEnter.attr('transform', (d, i)=> 'translate('+ ((10 * d.textLength()) + 50)+', 20)');
     //labelGroupEnter.attr('text-anchor', 'middle');
 
     let toggle = labelGroupEnter.append('circle').attr('cx', -10).attr('cy', -4);
+    toggle.classed('toggle shown', true);
+    toggle.on('click', function(d, i){
+        let togg = d3.select(this);
+        togg.classed('shown') ? togg.classed('shown', false) : togg.classed('shown', true);
+        let newKeys = d3.selectAll('.shown');
+        console.log(newKeys.data());
 
+    });
     let labelText = labelGroupEnter.append('text').text(d=> d);
-    
-
     labelGroups = labelGroupEnter.merge(labelGroups);
 }
 
@@ -98,9 +103,10 @@ export function renderAttributes(normedPaths, svg, scales){
 
     attributeGroups.attr('transform', (d, i) => 'translate(0, '+(i * (attributeHeight + 5))+')');
 
-
+    return attributeGroups;
    
     ////SPLIT THIS UP
+    /*
 
     let continuousAtt = attributeGroups.filter(d=> {
         return d[0].type === 'continuous';
@@ -111,6 +117,7 @@ export function renderAttributes(normedPaths, svg, scales){
 
     drawContAtt(continuousAtt);
     drawDiscreteAtt(discreteAtt, scales);
+    */
 
 }
 
@@ -204,7 +211,7 @@ function branchPaths(wrapper, pathData) {
     return pathGroups;
 }
 
-function drawContAtt(continuousAtt){
+export function drawContAtt(continuousAtt){
     let attributeHeight = 45;
     let attrLabel = continuousAtt.append('text').text(d=> d[0].label);
     attrLabel.classed('attribute-label', true);
@@ -242,7 +249,7 @@ function drawContAtt(continuousAtt){
     .attr('fill', d=> d.color);
 }
 
-function drawDiscreteAtt(discreteAtt, scales){
+export function drawDiscreteAtt(discreteAtt, scales){
     let attributeHeight = 45;
     let attrLabel = discreteAtt.append('text').text(d=> d[d.length - 1].label);
     attrLabel.classed('attribute-label', true);

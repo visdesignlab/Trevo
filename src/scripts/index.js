@@ -5,7 +5,7 @@ import {edgeFile, nodeFile} from './fileThing';
 import {loadData} from './dataLoad';
 import {allPaths, pullPath, getPath} from './pathCalc';
 const csv = require('csv-parser');  
-import {renderAttributes, renderDistibutions, renderToggles} from './rendering';
+import {renderAttributes, renderDistibutions, renderToggles, drawContAtt, drawDiscreteAtt} from './rendering';
 
 let edgeOb = Papa.parse(edgeFile, {header:true});
 let nodeOb = Papa.parse(nodeFile, {header:true});
@@ -209,7 +209,17 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
    // renderDistibutions(normedPaths, distSVG, calculatedScales);
     console.log(normedPaths)
     renderToggles(normedPaths, toggleSVG, calculatedScales);
-    renderAttributes(normedPaths, svg, calculatedScales);
+    let attributeGroups = renderAttributes(normedPaths, svg, calculatedScales);
+
+    let continuousAtt = attributeGroups.filter(d=> {
+        return d[0].type === 'continuous';
+    });
+    let discreteAtt = attributeGroups.filter(d=> {
+        return d[d.length - 1].type === 'discrete';
+    });
+
+    drawContAtt(continuousAtt);
+    drawDiscreteAtt(discreteAtt, calculatedScales);
 
 });
 

@@ -114,7 +114,15 @@ circle.hover-branch{
   height: 50px;
 }
 
-.toggle circle{
-  r: 6;
+.toggle.shown {
+  r: 8;
   fill: red;
+}
+
+.toggle {
+  r: 8;
+  fill: white;
+  stroke: #4c575c;
+  stroke-width: 2px;
+  cursor: pointer;
 }
