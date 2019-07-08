@@ -34,13 +34,21 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
         'awesomeness' : await loadData(d3.json, './public/data/anolis-awesomeness-res.json', 'continuous'),
         'island' : await loadData(d3.json, './public/data/anolis-island-res.json', 'discrete'),
         'SVL' : await loadData(d3.json, './public/data/anolis-svl-res.json', 'continuous'),
+        'ecomorph': await loadData(d3.json, './public/data/anolis-ecomorph-res.json', 'discrete'),
     }
+
+    console.log('ecomorph', calculatedAtt.ecomorph)
 
     let colorKeeper = [
         '#32C1FE',
         '#3AD701',
         '#E2AD01',
         '#E2019E',
+        '#f36b2c',
+        '#1abc9c',
+        '#f36b2c',
+        '#a40b0b',
+        '#0095b6'
     ]
 
     let calculatedScales = Object.keys(calculatedAtt).map(d=> {
@@ -147,11 +155,8 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
         return edge
     });
 
-  
-
     let paths = allPaths(mappedEdges, matchedLeaves, "V1", "V2");
    
-
     paths.forEach((p, i)=> {
         p[0].attributes = {}
         Object.keys(calculatedAtt).map(att=> { 
@@ -190,9 +195,8 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
         let leafIndex = p.length - 1;
         return p.map((m, j)=> {
             let node = Object.assign({}, m);
-            let prevStep = (j > 0) ?  p[j-1].edgelength : 0;
-            let moveStep = (prevStep == 0) ? 0 : (m.edgelength + prevStep); 
-          
+           // let prevStep = (j > 0) ?  p[j-1].edgelength : 0;
+            //let moveStep = (prevStep == 0) ? 0 : (m.edgelength + prevStep); 
             node.move = (j < leafIndex) ? p.xScale(j) : p.xScale(maxBranch - 1);
            // node.move = (j < leafIndex) ? p.xScale(m.edgelength) : p.xScale(1);
           // node.move = p.xScale(step);
@@ -200,12 +204,7 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
         });
     });
 
-   
-
     renderAttributes(normedPaths, svg, calculatedScales);
-
-    
-  
 
 });
 

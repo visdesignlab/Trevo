@@ -7,8 +7,14 @@ export function renderAttributes(normedPaths, svg, scales){
         '#3AD701',
         '#E2AD01',
         '#E2019E',
+        '#f36b2c',
+        '#1abc9c',
+        '#f36b2c',
+        '#a40b0b',
+        '#0095b6'
     ]
 
+    console.log(scales)
     let attributeHeight = 45;
          
     /////Rendering ///////
@@ -37,9 +43,9 @@ export function renderAttributes(normedPaths, svg, scales){
                     return m.attributes[key];
                 }else if(m.attributes[key].type === 'discrete'){
                     if(m.leaf){
-                     
                         let state = m.attributes[key];
-                        state.color = colorKeeper[0];
+                        state.winState = m.attributes[key].states.filter(f=> f.realVal === 1)[0].state;
+                        state.color = scales.filter(f=> f.field === key)[0].stateColors.filter(f=> f.state === state.winState)[0].color
                         state.move = m.move;
                         state.attrLabel = key;
                         return state;
@@ -49,7 +55,7 @@ export function renderAttributes(normedPaths, svg, scales){
                         let states = m.attributes[key].states ? m.attributes[key].states : m.attributes[key];//.filter(f => f.state != undefined);
                        
                         return states.map((st, j)=> {
-                            st.color = colorKeeper[j];
+                            st.color = scales.filter(f=> f.field === key)[0].stateColors.filter(f=> f.state === st.state)[0].color;
                             st.move = m.move;
                             st.attrLabel = key;
                             return st;
@@ -281,16 +287,16 @@ function drawDiscreteAtt(discreteAtt, scales){
     stateDotsEnter.filter(f=> f.realVal > 0.5).attr('r', 4);
     stateDots = stateDotsEnter.merge(stateDots);
 
-
-
-    console.log('sde', stateDotsEnter.filter(f=> f.realValue > 0.5))
+   
 
     let endStateDot = attributeNodesDisc.filter((att, i)=> {
         return att[0] === undefined});
 
     endStateDot.append('circle').attr('cx', 10).attr('cy', 2).attr('r', 7).style('fill', d=> {
         let win = d.states.filter(v=> v.realVal === 1)[0].state;
-        return scales.filter(f=> f.type == 'discrete')[0].stateColors.filter(c=> c.state === win)[0].color});
+       // return scales.filter(f=> f.type == 'discrete')[0].stateColors.filter(c=> c.state === win)[0].color});
+       return d.color
+    });
     ////NEED TO MAKE A FUNCTION TO ASSIGN COLOR OF STATES//////
 
     endStateDot.append('text').text(d=> d.states[0].state).attr('transform', 'translate(15, 17)').style('font-size', 10);
