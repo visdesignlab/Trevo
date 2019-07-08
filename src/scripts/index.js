@@ -18,9 +18,11 @@ let svg = wrap.append('svg'),
     width = +svg.attr("width"),
     height = +svg.attr("height");
 
-loadData(d3.json, './public/data/anolis-edges.json').then(async edges => {
+loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges => {
     //loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
-    
+
+    let edgeLen = await loadData(d3.json, './public/data/anolis-edge-length.json', 'edge');
+
     //Mapping data together/////
     let edgeSource = edges.rows.map(d=> d.V1);
     let leaves = edges.rows.filter(f=> edgeSource.indexOf(f.V2) == -1 );
@@ -88,14 +90,12 @@ loadData(d3.json, './public/data/anolis-edges.json').then(async edges => {
         keys.forEach((k)=> {
             let scaleOb = calculatedScales.filter(f=> f.field == k)[0];
            
-            
             if(scaleOb.type === 'discrete'){
                 let thisScale = scaleOb.scales.filter(f=> f.scaleName == leafChar.rows[i][k])[0].yScale;
                 let states = scaleOb.scales.map(m=> m.scaleName).map(state=> {
                     let value = (state === leafChar.rows[i][k])? 1 : 0;
                    // console.log(thisScale(0), thisScale(value), value)
                     return {'state': state,  scaleVal: thisScale(value), realVal: value}
-
                 })
             
                 //let states = {'state': leafChar.rows[i][k],  scaleVal: thisScale(1), realVal: 1}
@@ -119,7 +119,7 @@ loadData(d3.json, './public/data/anolis-edges.json').then(async edges => {
     let mappedEdges = edges.rows.map((edge, i)=> {
         let attrKeys = Object.keys(calculatedAtt);
         let index = calculatedAtt[attrKeys[0]].rows.map(m=> m['nodeLabels']).indexOf(edge.V2);
-       
+        edge.edgelength = edgeLen.rows[i].x;
         edge.node = edge.V2;
         if(index > -1){ 
             attrKeys.forEach(attr=> {
@@ -147,15 +147,16 @@ loadData(d3.json, './public/data/anolis-edges.json').then(async edges => {
         return edge
     });
 
+  
+
     let paths = allPaths(mappedEdges, matchedLeaves, "V1", "V2");
- 
+   
 
     paths.forEach((p, i)=> {
         p[0].attributes = {}
         Object.keys(calculatedAtt).map(att=> { 
             if(calculatedAtt[att].type == 'continuous'){
                 let root = calculatedAtt[att].rows.filter(f=> f.nodeLabels == p[0].node)[0]
-          
                 p[0].attributes[att] = {}
                 let scale = calculatedScales.filter(f=> f.field == att)[0].yScale;
                 p[0].attributes[att].scaleVal =  scale(root.estimate);
@@ -183,11 +184,18 @@ loadData(d3.json, './public/data/anolis-edges.json').then(async edges => {
     let xScale = d3.scaleLinear().range([0, 1000]).clamp(true);
     
     let normedPaths = paths.map((p, i)=> {
-        p.xScale = xScale.domain([0, maxBranch]);
+      
+        p.xScale = xScale.domain([0, maxBranch - 1]);
+       // p.xScale = xScale.domain([0, 1]);
         let leafIndex = p.length - 1;
         return p.map((m, j)=> {
-            let node = Object.assign({}, m)
-            node.move = (j < leafIndex) ? p.xScale(j) : p.xScale(maxBranch);
+            let node = Object.assign({}, m);
+            let prevStep = (j > 0) ?  p[j-1].edgelength : 0;
+            let moveStep = (prevStep == 0) ? 0 : (m.edgelength + prevStep); 
+          
+            node.move = (j < leafIndex) ? p.xScale(j) : p.xScale(maxBranch - 1);
+           // node.move = (j < leafIndex) ? p.xScale(m.edgelength) : p.xScale(1);
+          // node.move = p.xScale(step);
             return node;
         });
     });
