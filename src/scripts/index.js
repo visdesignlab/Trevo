@@ -52,7 +52,7 @@ loadData(d3.json, './public/data/anolis-edges.json').then(async edges => {
                 'type':'continuous',
                 'max': max, 
                 'min':  min,
-                'yScale': d3.scaleLinear().range([0, 45]).domain([min, max]),
+                'yScale': d3.scaleLinear().range([0, 43]).domain([min, max]).clamp(true),
             };
         }else{
             let scaleCat = calculatedAtt[d].fields.filter(f=> f!= 'nodeLabels');
@@ -72,7 +72,7 @@ loadData(d3.json, './public/data/anolis-edges.json').then(async edges => {
                     'scaleName': scaleName,
                     'max': max, 
                     'min':  min,
-                    'yScale': d3.scaleLinear().range([40, 0]).domain([min, max]),
+                    'yScale': d3.scaleLinear().range([45, 0]).domain([min, max]),
                 };
             }) }
         }
@@ -93,8 +93,8 @@ loadData(d3.json, './public/data/anolis-edges.json').then(async edges => {
                 let thisScale = scaleOb.scales.filter(f=> f.scaleName == leafChar.rows[i][k])[0].yScale;
                 let states = scaleOb.scales.map(m=> m.scaleName).map(state=> {
                     let value = (state === leafChar.rows[i][k])? 1 : 0;
-                   
-                    return {'state': state,  scaleVal: value, realVal: value}
+                   // console.log(thisScale(0), thisScale(value), value)
+                    return {'state': state,  scaleVal: thisScale(value), realVal: value}
 
                 })
             

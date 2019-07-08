@@ -219,6 +219,8 @@ function drawDiscreteAtt(discreteAtt, scales){
 
     let innerTimelineDis = discreteAtt.append('g').classed('attribute-time-line', true);
 
+    innerTimelineDis.append('line').classed('half', true).attr('x1', 0).attr('y1', 22).attr('x2', 1010).attr('y2', 22)
+
 ///THIS IS WHERE YOU LEFT OFF//////
     
     let statePath = innerTimelineDis.selectAll('g').data(d=> {
