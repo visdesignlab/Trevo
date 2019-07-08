@@ -9,7 +9,7 @@ export function renderAttributes(normedPaths, svg, scales){
         '#E2019E',
     ]
 
-    console.log(scales)
+    let attributeHeight = 45;
          
     /////Rendering ///////
     svg.style('height', (normedPaths.length* 120) + 'px');
@@ -65,7 +65,7 @@ export function renderAttributes(normedPaths, svg, scales){
         return att;
     }).enter().append('g');
 
-    attributeGroups.attr('transform', (d, i) => 'translate(0, '+(i * 35)+')');
+    attributeGroups.attr('transform', (d, i) => 'translate(0, '+(i * (attributeHeight + 5))+')');
 
 
    
@@ -100,6 +100,8 @@ function continuousPaths(innerTimeline){
 
 function branchPaths(wrapper, pathData) {
 
+    let attributeHeight = 45;
+
     /////Counting frequency of nodes//////
     let branchFrequency = pathData.flatMap(row=> row.flatMap(f=> f.node)).reduce(function (acc, curr) {
         if (typeof acc[curr] == 'undefined') {
@@ -116,7 +118,7 @@ function branchPaths(wrapper, pathData) {
     let pathGroups = wrapper.selectAll('.paths').data(pathData);
     let pathEnter = pathGroups.enter().append('g').classed('paths', true);
     pathGroups = pathEnter.merge(pathGroups);
-    pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * (35 * (Object.keys(d[1].attributes).length + 1))) +')');
+    pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (Object.keys(d[1].attributes).length + 1))) +')');
     let pathBars = pathGroups.append('rect').classed('path-rect', true);//.style('fill', 'red');
     pathBars.attr('y', -8);
     pathGroups.on('mouseover', function(d, i){
@@ -172,12 +174,13 @@ function branchPaths(wrapper, pathData) {
 }
 
 function drawContAtt(continuousAtt){
-
+    let attributeHeight = 45;
     let attrLabel = continuousAtt.append('text').text(d=> d[0].label);
     attrLabel.classed('attribute-label', true);
     attrLabel.attr('transform', 'translate(-15, 20)');
     let innerTimeline = continuousAtt.append('g').classed('attribute-time-line', true);
-    let attribRectCont = innerTimeline.append('rect').classed('attribute-rect', true);//.data(normedPaths);//.attr('transform', (d, i)=> 'translate(0, 0)');
+    let attribRectCont = innerTimeline.append('rect').classed('attribute-rect', true);
+    attribRectCont.attr('height', attributeHeight);//.data(normedPaths);//.attr('transform', (d, i)=> 'translate(0, 0)');
     let attributeNodesCont = innerTimeline.selectAll('g').data(d=> d);
     let attrNodesContEnter = attributeNodesCont.enter().append('g').classed('attribute-node', true);
     attributeNodesCont = attrNodesContEnter.merge(attributeNodesCont);
@@ -189,7 +192,8 @@ function drawContAtt(continuousAtt){
     let innerPaths = continuousPaths(innerTimeline);
  ////////
 
-    innerBars.append('rect').classed('attribute-inner-bar', true);
+    let innerRect = innerBars.append('rect').classed('attribute-inner-bar', true);
+    innerRect.attr('height', attributeHeight)
     innerBars.attr('transform', (d)=> {
         return 'translate('+ d.move +', 0)'});
     let rangeRect = innerBars.append('rect').classed('range-rect', true);
@@ -208,7 +212,7 @@ function drawContAtt(continuousAtt){
 }
 
 function drawDiscreteAtt(discreteAtt, scales){
-
+    let attributeHeight = 45;
     let attrLabel = discreteAtt.append('text').text(d=> d[d.length - 1].label);
     attrLabel.classed('attribute-label', true);
     attrLabel.attr('transform', 'translate(-15, 20)');
@@ -251,7 +255,8 @@ function drawDiscreteAtt(discreteAtt, scales){
     .style('stroke', (d)=> {
         return d[0].color});
 
-    let attribRectDisc = innerTimelineDis.append('rect').classed('attribute-rect', true);//.data(normedPaths);//.attr('transform', (d, i)=> 'translate(0, 0)');
+    let attribRectDisc = innerTimelineDis.append('rect').classed('attribute-rect', true);
+    attribRectDisc.attr('height', attributeHeight);//.data(normedPaths);//.attr('transform', (d, i)=> 'translate(0, 0)');
     let attributeNodesDisc = innerTimelineDis.selectAll('.attribute-node-discrete').data(d=> {
         return d});
     let attrNodesDiscEnter = attributeNodesDisc.enter().append('g').classed('attribute-node-discrete', true);
@@ -262,7 +267,7 @@ function drawDiscreteAtt(discreteAtt, scales){
         let finalMove = move ? move : 0;
         return 'translate('+finalMove+', 0)'});
 
-    attributeNodesDisc.append('line').attr('x1', 10).attr('x2', 10).attr('y1', 0).attr('y2', 35);
+    attributeNodesDisc.append('line').attr('x1', 10).attr('x2', 10).attr('y1', 0).attr('y2', attributeHeight);
 
     let stateDots = attributeNodesDisc.filter((att, i)=> att[0] != undefined).selectAll('.dots').data(d=> {
         return d
@@ -270,12 +275,18 @@ function drawDiscreteAtt(discreteAtt, scales){
     let stateDotsEnter = stateDots.enter().append('circle').attr('cx', 10).attr('cy', (d)=> {
         return d.scaleVal;
     }).attr('r', 2).style('fill', d=> d.color);
+
+    stateDotsEnter.filter(f=> f.realVal > 0.5).attr('r', 4);
     stateDots = stateDotsEnter.merge(stateDots);
+
+
+
+    console.log('sde', stateDotsEnter.filter(f=> f.realValue > 0.5))
 
     let endStateDot = attributeNodesDisc.filter((att, i)=> {
         return att[0] === undefined});
 
-    endStateDot.append('circle').attr('cx', 0).attr('cy', 2).attr('r', 10).style('fill', d=> {
+    endStateDot.append('circle').attr('cx', 10).attr('cy', 2).attr('r', 7).style('fill', d=> {
         let win = d.states.filter(v=> v.realVal === 1)[0].state;
         return scales.filter(f=> f.type == 'discrete')[0].stateColors.filter(c=> c.state === win)[0].color});
     ////NEED TO MAKE A FUNCTION TO ASSIGN COLOR OF STATES//////

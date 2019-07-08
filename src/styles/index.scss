@@ -47,8 +47,7 @@ svg{
   fill: none;
   stroke: gray;
   stroke-width: 0.5;
-  width:1000px;
-  height: 35px;
+  width:1010px;
 }
 
 .attribute-label{
@@ -58,11 +57,12 @@ svg{
 }
 
 .paths rect.attribute-inner-bar{
-  fill: none;
+  fill: #fff;
   stroke: gray;
   stroke-width: 0.5;
+  //opacity: 0.6;
   width:20px;
-  height: 35px;
+ 
 }
 
 .paths line{

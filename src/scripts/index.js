@@ -46,13 +46,13 @@ loadData(d3.json, './public/data/anolis-edges.json').then(async edges => {
         if(calculatedAtt[d].type == 'continuous'){
             let max = d3.max(calculatedAtt[d].rows.map(m=> m.upperCI95));
             let min = d3.min(calculatedAtt[d].rows.map(m=> m.lowerCI95));
-            console.log(calculatedAtt[d].type, max, min, calculatedAtt)
+           // console.log(calculatedAtt[d].type, max, min, calculatedAtt)
             return {
                 'field': d, 
                 'type':'continuous',
                 'max': max, 
                 'min':  min,
-                'yScale': d3.scaleLinear().range([0, 30]).domain([min, max]),
+                'yScale': d3.scaleLinear().range([0, 45]).domain([min, max]),
             };
         }else{
             let scaleCat = calculatedAtt[d].fields.filter(f=> f!= 'nodeLabels');
@@ -65,21 +65,18 @@ loadData(d3.json, './public/data/anolis-edges.json').then(async edges => {
                 'scales': scaleCat.map(sc=> {
                 let scaleName = sc;
                
-                let max = 1;//d3.max(calculatedAtt[d].rows.map(m=> m[sc]));
-                let min = 0;//d3.min(calculatedAtt[d].rows.map(m=> m[sc]));
+                let max = 1;
+                let min = 0;
                 return {
                     'field': d, 
                     'scaleName': scaleName,
                     'max': max, 
                     'min':  min,
-                    'yScale': d3.scaleLinear().range([30, 0]).domain([min, max]),
+                    'yScale': d3.scaleLinear().range([40, 0]).domain([min, max]),
                 };
             }) }
         }
     });
-
-    console.log('leafssss', leaves, leafChar)
-
 
     let matchedLeaves = leaves.map((leaf, i)=> {
 
@@ -104,7 +101,6 @@ loadData(d3.json, './public/data/anolis-edges.json').then(async edges => {
                 //let states = {'state': leafChar.rows[i][k],  scaleVal: thisScale(1), realVal: 1}
                 attr[k] = {'states': states, 'label': k, 'type': scaleOb.type, leaf: true}
             }else if(scaleOb.type === 'continuous'){
-                console.log(attr[k])
                 let scale = scaleOb.yScale;
                 attr[k] = {'scaleVal': scale(leafChar.rows[i][k]), 'scaledHigh': 0, 'scaledLow': 0, 'realVal':  leafChar.rows[i][k], 'type': scaleOb.type, leaf: true}
 
@@ -118,7 +114,6 @@ loadData(d3.json, './public/data/anolis-edges.json').then(async edges => {
     
         return leaf;
     });
-    console.log('matched leaves', matchedLeaves)
 
 
     let mappedEdges = edges.rows.map((edge, i)=> {
