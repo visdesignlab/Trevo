@@ -9,6 +9,8 @@ export function renderToggles(normedPaths, toggleSVG, attrGroups, scales){
 
     let keys = Object.keys(normedPaths[0][0].attributes);
 
+    console.log('scales', scales)
+
     let labelGroups = toggleSVG.selectAll('g').data(keys);
     let labelGroupEnter = labelGroups.enter().append('g'); 
     
@@ -16,9 +18,14 @@ export function renderToggles(normedPaths, toggleSVG, attrGroups, scales){
 
     let toggle = labelGroupEnter.append('circle').attr('cx', -10).attr('cy', -4);
     toggle.classed('toggle shown', true);
+    toggle.style('fill', (d, i)=>{
+        return scales.filter(f=> f.field === d)[0].catColor;
+    });
     toggle.on('click', function(d, i){
         let togg = d3.select(this);
-        togg.classed('shown') ? togg.classed('shown', false) : togg.classed('shown', true);
+
+        toggleCircle(togg, scales);
+       
         let newKeys = d3.selectAll('.shown');
         
         let attributeWrapper = d3.selectAll('.attribute-wrapper');
@@ -47,6 +54,18 @@ export function renderToggles(normedPaths, toggleSVG, attrGroups, scales){
     });
     let labelText = labelGroupEnter.append('text').text(d=> d);
     labelGroups = labelGroupEnter.merge(labelGroups);
+}
+
+function toggleCircle(circle, scales){
+    if(circle.classed('shown')){
+        circle.classed('shown', false);
+        circle.style('fill', '#fff');
+    }else{
+        circle.classed('shown', true);
+        circle.style('fill', (d, i)=>{
+            return scales.filter(f=> f.field === d)[0].catColor;
+        });
+    }
 }
 
 

@@ -37,8 +37,6 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
         'ecomorph': await loadData(d3.json, './public/data/anolis-ecomorph-res.json', 'discrete'),
     }
 
-    console.log('ecomorph', calculatedAtt.ecomorph)
-
     let colorKeeper = [
         '#32C1FE',
         '#3AD701',
@@ -51,7 +49,7 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
         '#0095b6'
     ]
 
-    let calculatedScales = Object.keys(calculatedAtt).map(d=> {
+    let calculatedScales = Object.keys(calculatedAtt).map((d, i)=> {
        
         if(calculatedAtt[d].type == 'continuous'){
             let max = d3.max(calculatedAtt[d].rows.map(m=> m.upperCI95));
@@ -63,6 +61,7 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
                 'max': max, 
                 'min':  min,
                 'yScale': d3.scaleLinear().range([0, 43]).domain([min, max]).clamp(true),
+                'catColor': colorKeeper[i],
             };
         }else{
             let scaleCat = calculatedAtt[d].fields.filter(f=> f!= 'nodeLabels');
@@ -72,6 +71,7 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
                 'stateColors': scaleCat.map((sc, i)=> {
                     return {'state': sc, 'color': colorKeeper[i]}
                 }),
+                'catColor': colorKeeper[i],
                 'scales': scaleCat.map(sc=> {
                 let scaleName = sc;
                
@@ -83,7 +83,9 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
                     'max': max, 
                     'min':  min,
                     'yScale': d3.scaleLinear().range([45, 0]).domain([min, max]),
+                    
                 };
+                
             }) }
         }
     });
