@@ -322,7 +322,6 @@ export function drawDiscreteAtt(attributeGroups, scales){
         tool.transition()
           .duration(200)
           .style("opacity", .9);
-          console.log(d)
         let f = d3.format(".3f")
         tool.html(d.state + ": " + f(d.realVal))
           .style("left", (d3.event.pageX) + "px")
