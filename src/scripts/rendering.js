@@ -9,12 +9,12 @@ export function renderToggles(normedPaths, toggleSVG, attrGroups, scales){
 
     let keys = Object.keys(normedPaths[0][0].attributes);
 
-    console.log('scales', scales)
-
     let labelGroups = toggleSVG.selectAll('g').data(keys);
     let labelGroupEnter = labelGroups.enter().append('g'); 
     
-    labelGroupEnter.attr('transform', (d, i)=> 'translate('+ ((120* i) + 50)+', 20)');
+    labelGroupEnter.attr('transform', (d, i)=> {
+        console.log(d.length)
+        return 'translate('+ ( (i* 100) + (d.length * 2))+', 20)'});
 
     let toggle = labelGroupEnter.append('circle').attr('cx', -10).attr('cy', -4);
     toggle.classed('toggle shown', true);
@@ -37,7 +37,7 @@ export function renderToggles(normedPaths, toggleSVG, attrGroups, scales){
         drawDiscreteAtt(attributeGroups, scales);
 
     });
-    let labelText = labelGroupEnter.append('text').text(d=> d);
+    let labelText = labelGroupEnter.append('text').text(d=> d).style('font-size', 10);
     labelGroups = labelGroupEnter.merge(labelGroups);
 }
 
@@ -316,6 +316,24 @@ export function drawDiscreteAtt(attributeGroups, scales){
 
     stateDotsEnter.filter(f=> f.realVal > 0.5).attr('r', 4);
     stateDots = stateDotsEnter.merge(stateDots);
+
+    stateDots.on("mouseover", function(d) {
+        let tool = d3.select('#tooltip');
+        tool.transition()
+          .duration(200)
+          .style("opacity", .9);
+          console.log(d)
+        let f = d3.format(".3f")
+        tool.html(d.state + ": " + f(d.realVal))
+          .style("left", (d3.event.pageX) + "px")
+          .style("top", (d3.event.pageY - 28) + "px");
+        })
+      .on("mouseout", function(d) {
+        let tool = d3.select('#tooltip');
+        tool.transition()
+          .duration(500)
+          .style("opacity", 0);
+        });
 
     let endStateDot = attributeNodesDisc.filter((att, i)=> {
         return att[0] === undefined});

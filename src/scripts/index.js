@@ -20,6 +20,10 @@ let svg = main.append('svg').attr('id', 'main-path-view'),
     width = +svg.attr("width"),
     height = +svg.attr("height");
 
+let tooltip = wrap.append("div")
+.attr("id", "tooltip")
+.style("opacity", 0);
+
 loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges => {
     //loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
 

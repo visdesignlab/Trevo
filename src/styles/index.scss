@@ -34,6 +34,19 @@ svg{
 
 }
 
+#tooltip {
+  position: absolute;
+  text-align: center;
+  width: 60px;
+  height: 40px;
+  padding: 2px;
+  font: 12px sans-serif;
+  background: lightsteelblue;
+  border: 0px;
+  border-radius: 8px;
+  pointer-events: none;
+}
+
 .paths rect.path-rect{
   //fill: white;
   fill: gainsboro;
@@ -116,8 +129,13 @@ circle.hover-branch{
 }
 
 .toggle-svg{
-  width:100%;
+ // width:100%;
+ width: 400px;
   height: 50px;
+  position: absolute;
+  bottom: 2px;
+  right: 10px;
+  align-content: center;
 }
 
 .toggle.shown {
