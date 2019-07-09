@@ -14,7 +14,7 @@ let wrap = d3.select('#wrapper');
 
 let toolbarDiv = wrap.append('div').attr('id', 'toolbar');
 
-let svg = wrap.append('svg'),
+let svg = wrap.append('svg').attr('id', 'main-path-view'),
     width = +svg.attr("width"),
     height = +svg.attr("height");
 
@@ -195,6 +195,9 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
         let leafIndex = p.length - 1;
         return p.map((m, j)=> {
             let node = Object.assign({}, m);
+
+            //INTEGRATE THE DISTNACES HERE WHEN THEY WORK
+
            // let prevStep = (j > 0) ?  p[j-1].edgelength : 0;
             //let moveStep = (prevStep == 0) ? 0 : (m.edgelength + prevStep); 
             node.move = (j < leafIndex) ? p.xScale(j) : p.xScale(maxBranch - 1);
@@ -205,14 +208,23 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     });
 
    // let distSVG  = toolbarDiv.append('svg').classed('distribution-svg', true);
+    // renderDistibutions(normedPaths, distSVG, calculatedScales);
+
     let toggleSVG = toolbarDiv.append('svg').classed('toggle-svg', true);
-   // renderDistibutions(normedPaths, distSVG, calculatedScales);
     let pathGroups = renderPaths(normedPaths, svg);
+    
+
       /// LOWER ATTRIBUTE VISUALIZATION ///
     let attributeWrapper = pathGroups.append('g').classed('attribute-wrapper', true);
     attributeWrapper.attr('transform', (d)=> 'translate(140, 25)');
 
     let attributeGroups = formatAttributes(attributeWrapper, calculatedScales, null);
+
+    svg.style('height', ((normedPaths.length + attributeGroups.data().map(m=> m[0]).length)* 30) + 'px');
+
+    let attributeHeight = 45;
+
+    pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (Object.keys(d[1].attributes).length + 1))) +')');
 
     //let attributeGroups = renderAttributes(attributeWrapper, attributeData, calculatedScales);
 

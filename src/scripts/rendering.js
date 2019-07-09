@@ -24,7 +24,16 @@ export function renderToggles(normedPaths, toggleSVG, attrGroups, scales){
         let attributeWrapper = d3.selectAll('.attribute-wrapper');
         attributeWrapper.selectAll('g').remove();
 
+        let attributeHeight = 45;
+       
         let attributeGroups = formatAttributes(attributeWrapper, scales, newKeys.data());
+
+        d3.select('#main-path-view').style('height', ((normedPaths.length + attributeGroups.data().map(m=> m[0]).length)* 30) + 'px');
+        d3.selectAll('.paths').attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (newKeys.data().length + 1))) +')');
+
+
+       // svg.style('height', ((normedPaths.length + attributeGroups.data().map(m=> m[0]).length)* 30) + 'px');
+
         let continuousAtt = attributeGroups.filter(d=> {
             return d[0].type === 'continuous';
         });
@@ -35,7 +44,6 @@ export function renderToggles(normedPaths, toggleSVG, attrGroups, scales){
         drawContAtt(continuousAtt);
         drawDiscreteAtt(discreteAtt, scales);
 
-
     });
     let labelText = labelGroupEnter.append('text').text(d=> d);
     labelGroups = labelGroupEnter.merge(labelGroups);
@@ -44,7 +52,7 @@ export function renderToggles(normedPaths, toggleSVG, attrGroups, scales){
 
 export function renderPaths(normedPaths, svg){
     /////Rendering ///////
-    svg.style('height', (normedPaths.length* 120) + 'px');
+   
     let pathWrap = svg.append('g').classed('path-wrapper', true);
     pathWrap.attr('transform', (d, i)=> 'translate(0,20)');
 
@@ -74,9 +82,7 @@ export function formatAttributes(attributeWrapper, scales, filterArray){
         let keys = filterArray == null ? Object.keys(d.map(m=> m.attributes)[0]) : filterArray;
         let att = keys.map((key, i)=> {
             return d.map((m)=> {
-            
                 if(m.attributes[key].type === 'continuous'){
-                  
                     m.attributes[key].color = colorKeeper[i];
                     m.attributes[key].move = m.move;
                     m.attributes[key].label = key;
@@ -89,8 +95,6 @@ export function formatAttributes(attributeWrapper, scales, filterArray){
                         state.move = m.move;
                         state.attrLabel = key;
                         return state;
-                     
-
                     }else{
                         let states = m.attributes[key].states ? m.attributes[key].states : m.attributes[key];//.filter(f => f.state != undefined);
                        
@@ -115,32 +119,6 @@ export function formatAttributes(attributeWrapper, scales, filterArray){
 
     return attributeGroups;
 }
-/*
-export function renderAttributes(attributeWrapper, data, scales){
-
-    let attributeHeight = 45;
-    
-    let attributeGroups = attributeWrapper.selectAll('g').data(data).enter().append('g');
-
-    attributeGroups.attr('transform', (d, i) => 'translate(0, '+(i * (attributeHeight + 5))+')');
-
-    return attributeGroups;
-   
-    ////SPLIT THIS UP
-    /*
-
-    let continuousAtt = attributeGroups.filter(d=> {
-        return d[0].type === 'continuous';
-    });
-    let discreteAtt = attributeGroups.filter(d=> {
-        return d[d.length - 1].type === 'discrete';
-    });
-
-    drawContAtt(continuousAtt);
-    drawDiscreteAtt(discreteAtt, scales);
-    */
-
-//}
 
 function continuousPaths(innerTimeline){
     //THIS IS THE PATH GENERATOR FOR THE CONTINUOUS VARIABLES1q
@@ -177,7 +155,7 @@ function branchPaths(wrapper, pathData) {
     let pathGroups = wrapper.selectAll('.paths').data(pathData);
     let pathEnter = pathGroups.enter().append('g').classed('paths', true);
     pathGroups = pathEnter.merge(pathGroups);
-    pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (Object.keys(d[1].attributes).length + 1))) +')');
+   // pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (Object.keys(d[1].attributes).length + 1))) +')');
     let pathBars = pathGroups.append('rect').classed('path-rect', true);//.style('fill', 'red');
     pathBars.attr('y', -8);
     pathGroups.on('mouseover', function(d, i){
