@@ -23,30 +23,20 @@ export function renderToggles(normedPaths, toggleSVG, attrGroups, scales){
     });
     toggle.on('click', function(d, i){
         let togg = d3.select(this);
-
         toggleCircle(togg, scales);
-       
         let newKeys = d3.selectAll('.shown');
-        
         let attributeWrapper = d3.selectAll('.attribute-wrapper');
         attributeWrapper.selectAll('g').remove();
-
         let attributeHeight = 45;
-       
         let attributeGroups = formatAttributes(attributeWrapper, scales, newKeys.data());
 
         d3.select('#main-path-view').style('height', ((normedPaths.length + attributeGroups.data().map(m=> m[0]).length)* 30) + 'px');
         d3.selectAll('.paths').attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (newKeys.data().length + 1))) +')');
 
-
-       // svg.style('height', ((normedPaths.length + attributeGroups.data().map(m=> m[0]).length)* 30) + 'px');
-
         let continuousAtt = attributeGroups.filter(d=> {
             return d[0].type === 'continuous';
         });
-        let discreteAtt = attributeGroups.filter(d=> {
-            return d[d.length - 1].type === 'discrete';
-        });
+       
     
         drawContAtt(continuousAtt);
         drawDiscreteAtt(discreteAtt, scales);
@@ -156,8 +146,6 @@ function continuousPaths(innerTimeline){
 
 function branchPaths(wrapper, pathData) {
 
-    let attributeHeight = 45;
-
     /////Counting frequency of nodes//////
     let branchFrequency = pathData.flatMap(row=> row.flatMap(f=> f.node)).reduce(function (acc, curr) {
         if (typeof acc[curr] == 'undefined') {
@@ -228,8 +216,12 @@ function branchPaths(wrapper, pathData) {
 
     return pathGroups;
 }
+export function drawContAtt(attributeGroups){
 
-export function drawContAtt(continuousAtt){
+    let continuousAtt = attributeGroups.filter(d=> {
+        return d[0].type === 'continuous';
+    });
+
     let attributeHeight = 45;
     let attrLabel = continuousAtt.append('text').text(d=> d[0].label);
     attrLabel.classed('attribute-label', true);
@@ -266,8 +258,12 @@ export function drawContAtt(continuousAtt){
     .attr('transform', (d, i)=> 'translate(0, '+ d.scaleVal +')')
     .attr('fill', d=> d.color);
 }
+export function drawDiscreteAtt(attributeGroups, scales){
 
-export function drawDiscreteAtt(discreteAtt, scales){
+    let discreteAtt = attributeGroups.filter(d=> {
+        return d[d.length - 1].type === 'discrete';
+    });
+
     let attributeHeight = 45;
     let attrLabel = discreteAtt.append('text').text(d=> d[d.length - 1].label);
     attrLabel.classed('attribute-label', true);

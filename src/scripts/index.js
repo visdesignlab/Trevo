@@ -232,17 +232,8 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
 
     renderToggles(normedPaths, toggleSVG, attributeGroups, calculatedScales);
 
-    let continuousAtt = attributeGroups.filter(d=> {
-        return d[0].type === 'continuous';
-    });
-    let discreteAtt = attributeGroups.filter(d=> {
-        return d[d.length - 1].type === 'discrete';
-    });
-
-    //console.log('attr', attributeGroups, attributeGroups.data())
-
-    drawContAtt(continuousAtt);
-    drawDiscreteAtt(discreteAtt, calculatedScales);
+    drawContAtt(attributeGroups);
+    drawDiscreteAtt(attributeGroups, calculatedScales);
 
 });
 
