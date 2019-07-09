@@ -14,7 +14,9 @@ let wrap = d3.select('#wrapper');
 
 let toolbarDiv = wrap.append('div').attr('id', 'toolbar');
 
-let svg = wrap.append('svg').attr('id', 'main-path-view'),
+let main = wrap.append('div').attr('id', 'main');
+
+let svg = main.append('svg').attr('id', 'main-path-view'),
     width = +svg.attr("width"),
     height = +svg.attr("height");
 
@@ -124,7 +126,6 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     
         return leaf;
     });
-
 
     let mappedEdges = edges.rows.map((edge, i)=> {
         let attrKeys = Object.keys(calculatedAtt);

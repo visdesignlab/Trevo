@@ -26,6 +26,12 @@ svg{
   background-color: gainsboro;
   top:0;
   margin-bottom: 5px;
+  position: fixed;
+}
+
+#main{
+  margin-top: 150px;
+
 }
 
 .paths rect.path-rect{

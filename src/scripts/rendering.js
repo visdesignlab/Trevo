@@ -32,14 +32,9 @@ export function renderToggles(normedPaths, toggleSVG, attrGroups, scales){
 
         d3.select('#main-path-view').style('height', ((normedPaths.length + attributeGroups.data().map(m=> m[0]).length)* 30) + 'px');
         d3.selectAll('.paths').attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (newKeys.data().length + 1))) +')');
-
-        let continuousAtt = attributeGroups.filter(d=> {
-            return d[0].type === 'continuous';
-        });
-       
     
-        drawContAtt(continuousAtt);
-        drawDiscreteAtt(discreteAtt, scales);
+        drawContAtt(attributeGroups);
+        drawDiscreteAtt(attributeGroups, scales);
 
     });
     let labelText = labelGroupEnter.append('text').text(d=> d);
@@ -58,7 +53,6 @@ function toggleCircle(circle, scales){
     }
 }
 
-
 export function renderPaths(normedPaths, svg){
     /////Rendering ///////
    
@@ -72,27 +66,17 @@ export function renderPaths(normedPaths, svg){
 
 export function formatAttributes(attributeWrapper, scales, filterArray){
 
-    let colorKeeper = [
-        '#32C1FE',
-        '#3AD701',
-        '#E2AD01',
-        '#E2019E',
-        '#f36b2c',
-        '#1abc9c',
-        '#f36b2c',
-        '#a40b0b',
-        '#0095b6'
-    ]
-
     let attributeHeight = 45;
 
     let attributeGroups = attributeWrapper.selectAll('g').data((d)=> {
        
         let keys = filterArray == null ? Object.keys(d.map(m=> m.attributes)[0]) : filterArray;
+       
         let att = keys.map((key, i)=> {
+            //console.log(scales.filter(f=> f.field === key))
             return d.map((m)=> {
                 if(m.attributes[key].type === 'continuous'){
-                    m.attributes[key].color = colorKeeper[i];
+                    m.attributes[key].color = scales.filter(f=> f.field === key)[0].catColor;
                     m.attributes[key].move = m.move;
                     m.attributes[key].label = key;
                     return m.attributes[key];
