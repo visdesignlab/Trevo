@@ -5,19 +5,14 @@ export function renderDistibutions(normedPaths, distSVG, scales){
     
 }
 
-export function renderToggles(normedPaths, toggleSVG, scales){
-    console.log('norm', normedPaths);
-    console.log('keys', Object.keys(normedPaths[0][0].attributes))
+export function renderToggles(normedPaths, toggleSVG, attrGroups, scales){
 
     let keys = Object.keys(normedPaths[0][0].attributes);
 
     let labelGroups = toggleSVG.selectAll('g').data(keys);
-    let labelGroupEnter = labelGroups.enter().append('g');
-    
+    let labelGroupEnter = labelGroups.enter().append('g'); 
     
     labelGroupEnter.attr('transform', (d, i)=> 'translate('+ ((120* i) + 50)+', 20)');
-    //labelGroupEnter.attr('transform', (d, i)=> 'translate('+ ((10 * d.textLength()) + 50)+', 20)');
-    //labelGroupEnter.attr('text-anchor', 'middle');
 
     let toggle = labelGroupEnter.append('circle').attr('cx', -10).attr('cy', -4);
     toggle.classed('toggle shown', true);
@@ -25,14 +20,41 @@ export function renderToggles(normedPaths, toggleSVG, scales){
         let togg = d3.select(this);
         togg.classed('shown') ? togg.classed('shown', false) : togg.classed('shown', true);
         let newKeys = d3.selectAll('.shown');
-        console.log(newKeys.data());
+        
+        let attributeWrapper = d3.selectAll('.attribute-wrapper');
+        attributeWrapper.selectAll('g').remove();
+
+        let attributeGroups = formatAttributes(attributeWrapper, scales, newKeys.data());
+        let continuousAtt = attributeGroups.filter(d=> {
+            return d[0].type === 'continuous';
+        });
+        let discreteAtt = attributeGroups.filter(d=> {
+            return d[d.length - 1].type === 'discrete';
+        });
+    
+        drawContAtt(continuousAtt);
+        drawDiscreteAtt(discreteAtt, scales);
+
 
     });
     let labelText = labelGroupEnter.append('text').text(d=> d);
     labelGroups = labelGroupEnter.merge(labelGroups);
 }
 
-export function renderAttributes(normedPaths, svg, scales){
+
+export function renderPaths(normedPaths, svg){
+    /////Rendering ///////
+    svg.style('height', (normedPaths.length* 120) + 'px');
+    let pathWrap = svg.append('g').classed('path-wrapper', true);
+    pathWrap.attr('transform', (d, i)=> 'translate(0,20)');
+
+    /////Branch Paths/////
+    let pathGroups = branchPaths(pathWrap, normedPaths);
+    return pathGroups;
+}
+
+export function formatAttributes(attributeWrapper, scales, filterArray){
+
     let colorKeeper = [
         '#32C1FE',
         '#3AD701',
@@ -46,22 +68,10 @@ export function renderAttributes(normedPaths, svg, scales){
     ]
 
     let attributeHeight = 45;
-         
-    /////Rendering ///////
-    svg.style('height', (normedPaths.length* 120) + 'px');
-    let pathWrap = svg.append('g').classed('path-wrapper', true);
-    pathWrap.attr('transform', (d, i)=> 'translate(0,20)');
 
-    /////Branch Paths/////
-    let pathGroups = branchPaths(pathWrap, normedPaths);
-
-    /// LOWER ATTRIBUTE VISUALIZATION ///
-    let attributeWrapper = pathGroups.append('g').classed('attribute-wrapper', true);
-    attributeWrapper.attr('transform', (d)=> 'translate(140, 25)');
-  
     let attributeGroups = attributeWrapper.selectAll('g').data((d)=> {
        
-        let keys = Object.keys(d.map(m=> m.attributes)[0]);
+        let keys = filterArray == null ? Object.keys(d.map(m=> m.attributes)[0]) : filterArray;
         let att = keys.map((key, i)=> {
             return d.map((m)=> {
             
@@ -104,6 +114,17 @@ export function renderAttributes(normedPaths, svg, scales){
     attributeGroups.attr('transform', (d, i) => 'translate(0, '+(i * (attributeHeight + 5))+')');
 
     return attributeGroups;
+}
+/*
+export function renderAttributes(attributeWrapper, data, scales){
+
+    let attributeHeight = 45;
+    
+    let attributeGroups = attributeWrapper.selectAll('g').data(data).enter().append('g');
+
+    attributeGroups.attr('transform', (d, i) => 'translate(0, '+(i * (attributeHeight + 5))+')');
+
+    return attributeGroups;
    
     ////SPLIT THIS UP
     /*
@@ -119,7 +140,7 @@ export function renderAttributes(normedPaths, svg, scales){
     drawDiscreteAtt(discreteAtt, scales);
     */
 
-}
+//}
 
 function continuousPaths(innerTimeline){
     //THIS IS THE PATH GENERATOR FOR THE CONTINUOUS VARIABLES1q
@@ -318,8 +339,6 @@ export function drawDiscreteAtt(discreteAtt, scales){
 
     stateDotsEnter.filter(f=> f.realVal > 0.5).attr('r', 4);
     stateDots = stateDotsEnter.merge(stateDots);
-
-   
 
     let endStateDot = attributeNodesDisc.filter((att, i)=> {
         return att[0] === undefined});

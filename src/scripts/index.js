@@ -5,7 +5,7 @@ import {edgeFile, nodeFile} from './fileThing';
 import {loadData} from './dataLoad';
 import {allPaths, pullPath, getPath} from './pathCalc';
 const csv = require('csv-parser');  
-import {renderAttributes, renderDistibutions, renderToggles, drawContAtt, drawDiscreteAtt} from './rendering';
+import {renderAttributes, renderDistibutions, renderToggles, drawContAtt, drawDiscreteAtt, formatAttributes, renderPaths} from './rendering';
 
 let edgeOb = Papa.parse(edgeFile, {header:true});
 let nodeOb = Papa.parse(nodeFile, {header:true});
@@ -207,9 +207,16 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
    // let distSVG  = toolbarDiv.append('svg').classed('distribution-svg', true);
     let toggleSVG = toolbarDiv.append('svg').classed('toggle-svg', true);
    // renderDistibutions(normedPaths, distSVG, calculatedScales);
-    console.log(normedPaths)
-    renderToggles(normedPaths, toggleSVG, calculatedScales);
-    let attributeGroups = renderAttributes(normedPaths, svg, calculatedScales);
+    let pathGroups = renderPaths(normedPaths, svg);
+      /// LOWER ATTRIBUTE VISUALIZATION ///
+    let attributeWrapper = pathGroups.append('g').classed('attribute-wrapper', true);
+    attributeWrapper.attr('transform', (d)=> 'translate(140, 25)');
+
+    let attributeGroups = formatAttributes(attributeWrapper, calculatedScales, null);
+
+    //let attributeGroups = renderAttributes(attributeWrapper, attributeData, calculatedScales);
+
+    renderToggles(normedPaths, toggleSVG, attributeGroups, calculatedScales);
 
     let continuousAtt = attributeGroups.filter(d=> {
         return d[0].type === 'continuous';
@@ -217,6 +224,8 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     let discreteAtt = attributeGroups.filter(d=> {
         return d[d.length - 1].type === 'discrete';
     });
+
+    //console.log('attr', attributeGroups, attributeGroups.data())
 
     drawContAtt(continuousAtt);
     drawDiscreteAtt(discreteAtt, calculatedScales);
