@@ -5,37 +5,34 @@ import {edgeFile, nodeFile} from './fileThing';
 import {loadData} from './dataLoad';
 import {allPaths, pullPath, getPath} from './pathCalc';
 const csv = require('csv-parser');  
-import {renderAttributes, renderDistibutions, renderToggles, drawContAtt, drawDiscreteAtt, formatAttributes, renderPaths} from './rendering';
+import {renderTree, renderDistibutions, renderToggles, drawContAtt, drawDiscreteAtt, formatAttributes, renderPaths, toolbarControl} from './rendering';
 
 let edgeOb = Papa.parse(edgeFile, {header:true});
 let nodeOb = Papa.parse(nodeFile, {header:true});
 
 let wrap = d3.select('#wrapper');
-let toolbarDiv = wrap.append('div').attr('id', 'toolbar');
+
 let main = wrap.append('div').attr('id', 'main');
 let sidebar = wrap.append('div').attr('id', 'sidebar');
-
+let toolbarDiv = wrap.append('div').attr('id', 'toolbar');
+/*
 let svg = main.append('svg').attr('id', 'main-path-view'),
     width = +svg.attr("width"),
     height = +svg.attr("height");
-
+*/
 let tooltip = wrap.append("div")
 .attr("id", "tooltip")
 .style("opacity", 0);
 
 loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges => {
-    //loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
 
+    //helper function to create array of unique elements
     Array.prototype.unique = function() {
         return this.filter(function (value, index, self) { 
             return self.indexOf(value) === index;
         });
     }
 
-    let nodes = edges.rows.map(m=> m.V2).concat(edges.rows.map(m=> m.V1)).unique();
-
-    console.log('node', nodes);
-  
     let edgeLen = await loadData(d3.json, './public/data/anolis-edge-length.json', 'edge');
 
     //Mapping data together/////
@@ -110,7 +107,6 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
                 let thisScale = scaleOb.scales.filter(f=> f.scaleName == leafChar.rows[i][k])[0].yScale;
                 let states = scaleOb.scales.map(m=> m.scaleName).map(state=> {
                     let value = (state === leafChar.rows[i][k])? 1 : 0;
-                   // console.log(thisScale(0), thisScale(value), value)
                     return {'state': state,  scaleVal: thisScale(value), realVal: value}
                 })
             
@@ -178,73 +174,6 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     }
 
     let nestedData = getNested(root, edges.rows);
-    ////////
-    ///testing trees out
-
-    // set the dimensions and margins of the diagram
-    var margin = {top: 10, right: 90, bottom: 50, left: 20},
-    width = 400 - margin.left - margin.right,
-    height = 680 - margin.top - margin.bottom;
-
-// declares a tree layout and assigns the size
-    var treemap = d3.tree()
-    .size([height, width]);
-
-//  assigns the data to a hierarchy using parent-child relationships
-    var treenodes = d3.hierarchy(nestedData);
-
-// maps the node data to the tree layout
-    treenodes = treemap(treenodes);
-
-// append the svg obgect to the body of the page
-// appends a 'group' element to 'svg'
-// moves the 'group' element to the top left margin
-    var treeSvg = sidebar.append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom),
-    g = treeSvg.append("g")
-    .attr("transform",
-      "translate(" + margin.left + "," + margin.top + ")");
-
-// adds the links between the nodes
-    var link = g.selectAll(".link")
-    .data( treenodes.descendants().slice(1))
-    .enter().append("path")
-    .attr("class", "link")
-    .attr("d", function(d) {
-    return "M" + d.y + "," + d.x
-    + "C" + (d.y + d.parent.y) / 2 + "," + d.x
-    + " " + (d.y + d.parent.y) / 2 + "," + d.parent.x
-    + " " + d.parent.y + "," + d.parent.x;
-    });
-
-    // adds each node as a group
-    var node = g.selectAll(".node")
-    .data(treenodes.descendants())
-    .enter().append("g")
-    .attr("class", function(d) { 
-    return "node" + 
-    (d.children ? " node--internal" : " node--leaf"); })
-    .attr("transform", function(d) { 
-    return "translate(" + d.y + "," + d.x + ")"; });
-
-    // adds the circle to the node
-    node.append("circle")
-    .attr("r", 3);
-
-    // adds the text to the node
-    /*
-    node.append("text")
-    .attr("dy", ".35em")
-    .attr("x", function(d) { return d.children ? -13 : 13; })
-    .style("text-anchor", function(d) { 
-    return d.children ? "end" : "start"; })
-    .text(function(d) { return d.data.name; });
-    */
-
-/////END TREE STUFF
-///////////
-    console.log(nestedData)
    
     paths.forEach((p, i)=> {
         p[0].attributes = {}
@@ -278,7 +207,6 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     let xScale = d3.scaleLinear().range([0, 1000]).clamp(true);
  
     let normedPaths = paths.map((p, i)=> {
-      
         p.xScale = xScale.domain([0, maxBranch - 1]);
        // p.xScale = xScale.domain([0, 1]);
         let leafIndex = p.length - 1;
@@ -296,31 +224,29 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
         });
     });
 
-   // let distSVG  = toolbarDiv.append('svg').classed('distribution-svg', true);
-    // renderDistibutions(normedPaths, distSVG, calculatedScales);
+    renderDistibutions(normedPaths, toolbarDiv, calculatedScales);
+    toolbarControl(toolbarDiv, normedPaths, main);
 
     let toggleSVG = toolbarDiv.append('svg').classed('toggle-svg', true);
-    let pathGroups = renderPaths(normedPaths, svg);
-    
+    let pathGroups = renderPaths(normedPaths, main, calculatedScales);
 
+        //TREE RENDER
+    ////////
+    renderTree(nestedData, sidebar);
+    
       /// LOWER ATTRIBUTE VISUALIZATION ///
     let attributeWrapper = pathGroups.append('g').classed('attribute-wrapper', true);
-    attributeWrapper.attr('transform', (d)=> 'translate(140, 25)');
-
     let attributeGroups = formatAttributes(attributeWrapper, calculatedScales, null);
-
-    svg.style('height', ((normedPaths.length + attributeGroups.data().map(m=> m[0]).length)* 30) + 'px');
-
+   
     let attributeHeight = 45;
-
     pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (Object.keys(d[1].attributes).length + 1))) +')');
-
-    //let attributeGroups = renderAttributes(attributeWrapper, attributeData, calculatedScales);
-
     renderToggles(normedPaths, toggleSVG, attributeGroups, calculatedScales);
-
     drawContAtt(attributeGroups);
     drawDiscreteAtt(attributeGroups, calculatedScales);
+
+    //tranforming elements
+    main.select('#main-path-view').style('height', ((normedPaths.length + attributeGroups.data().map(m=> m[0]).length)* 30) + 'px');
+    attributeWrapper.attr('transform', (d)=> 'translate(140, 25)');
 
 });
 

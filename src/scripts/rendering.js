@@ -1,8 +1,35 @@
 import '../styles/index.scss';
 import * as d3 from "d3";
 
-export function renderDistibutions(normedPaths, distSVG, scales){
+export function renderDistibutions(normedPaths, toolbar, scales){
+    console.log(normedPaths);
+    let keys = Object.keys(normedPaths[0][0].attributes);
     
+}
+export function toolbarControl(toolbar, normedPaths, main, calculatedScales){
+    let button = toolbar.append('button').attr('id', 'view-toggle')
+    button.text('View Paths');
+    button.on('click', function(){
+        if(button.text() === 'View Paths'){
+            button.text('View Summary');
+            d3.select('#main-path-view').selectAll('*').remove();
+            let pathGroups = renderPaths(normedPaths, main);
+              /// LOWER ATTRIBUTE VISUALIZATION ///
+    let attributeWrapper = pathGroups.append('g').classed('attribute-wrapper', true);
+    let attributeGroups = formatAttributes(attributeWrapper, calculatedScales, null);
+   
+    let attributeHeight = 45;
+    pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (Object.keys(d[1].attributes).length + 1))) +')');
+    renderToggles(normedPaths, toggleSVG, attributeGroups, calculatedScales);
+    drawContAtt(attributeGroups);
+    drawDiscreteAtt(attributeGroups, calculatedScales);
+        }else{
+            button.text('View Paths');
+            d3.select('#main-path-view').selectAll('*').remove();
+         
+
+        }
+    })
 }
 
 export function renderToggles(normedPaths, toggleSVG, attrGroups, scales){
@@ -13,7 +40,6 @@ export function renderToggles(normedPaths, toggleSVG, attrGroups, scales){
     let labelGroupEnter = labelGroups.enter().append('g'); 
     
     labelGroupEnter.attr('transform', (d, i)=> {
-        console.log(d.length)
         return 'translate('+ ( (i* 100) + (d.length * 2))+', 20)'});
 
     let toggle = labelGroupEnter.append('circle').attr('cx', -10).attr('cy', -4);
@@ -53,8 +79,11 @@ function toggleCircle(circle, scales){
     }
 }
 
-export function renderPaths(normedPaths, svg){
+export function renderPaths(normedPaths, main){
     /////Rendering ///////
+    let svg = main.append('svg').attr('id', 'main-path-view'),
+    width = +svg.attr("width"),
+    height = +svg.attr("height");
    
     let pathWrap = svg.append('g').classed('path-wrapper', true);
     pathWrap.attr('transform', (d, i)=> 'translate(0,20)');
@@ -128,6 +157,62 @@ function continuousPaths(innerTimeline){
     ///////////////////////////////////////////////////////////
 }
 
+export function renderTree(nestedData, sidebar){
+     // set the dimensions and margins of the diagram
+     var margin = {top: 10, right: 90, bottom: 50, left: 20},
+     width = 400 - margin.left - margin.right,
+     height = 680 - margin.top - margin.bottom;
+ 
+ // declares a tree layout and assigns the size
+     var treemap = d3.tree()
+     .size([height, width]);
+ 
+ //  assigns the data to a hierarchy using parent-child relationships
+     var treenodes = d3.hierarchy(nestedData);
+ 
+ // maps the node data to the tree layout
+     treenodes = treemap(treenodes);
+ 
+ // append the svg obgect to the body of the page
+ // appends a 'group' element to 'svg'
+ // moves the 'group' element to the top left margin
+     var treeSvg = sidebar.append("svg")
+     .attr("width", width + margin.left + margin.right)
+     .attr("height", height + margin.top + margin.bottom),
+     g = treeSvg.append("g")
+     .attr("transform",
+       "translate(" + margin.left + "," + margin.top + ")");
+ 
+ // adds the links between the nodes
+     var link = g.selectAll(".link")
+     .data( treenodes.descendants().slice(1))
+     .enter().append("path")
+     .attr("class", "link")
+     .attr("d", function(d) {
+         return "M" + d.y + "," + d.x
+         + "C" + (d.y + d.parent.y) / 2 + "," + d.x
+         + " " + (d.y + d.parent.y) / 2 + "," + d.parent.x
+         + " " + d.parent.y + "," + d.parent.x;
+     });
+ 
+     // adds each node as a group
+     var node = g.selectAll(".node")
+     .data(treenodes.descendants())
+     .enter().append("g")
+     .attr("class", function(d) { 
+     return "node" + 
+     (d.children ? " node--internal" : " node--leaf"); })
+     .attr("transform", function(d) { 
+     return "translate(" + d.y + "," + d.x + ")"; });
+ 
+     // adds the circle to the node
+     node.append("circle")
+     .attr("r", 3);
+ 
+ /////END TREE STUFF
+ ///////////
+}
+
 function branchPaths(wrapper, pathData) {
 
     /////Counting frequency of nodes//////
@@ -194,12 +279,7 @@ function branchPaths(wrapper, pathData) {
     }).on('mouseout', function(d, i){
         return d3.selectAll('.node-'+d.node).classed('hover-branch', false);
     });
-/*
-    let nodeLabels = nodeGroups.append('text').text(d=> {
-        let labelText = d.node;
-        return labelText;
-    }).attr('x', -8).attr('y', 5);
-*/
+
     let speciesNodeLabel = nodeGroups.filter(f=> f.label != undefined).append('text').text(d=> {
         let string = d.label.charAt(0).toUpperCase() + d.label.slice(1);
         return string;
@@ -353,3 +433,4 @@ export function drawDiscreteAtt(attributeGroups, scales){
 
     endStateDot.append('text').text(d=> d.states[0].state).attr('transform', 'translate(15, 17)').style('font-size', 10);
 }
+
