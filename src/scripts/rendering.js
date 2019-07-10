@@ -150,8 +150,15 @@ function branchPaths(wrapper, pathData) {
     let pathBars = pathGroups.append('rect').classed('path-rect', true);//.style('fill', 'red');
     pathBars.attr('y', -8);
     pathGroups.on('mouseover', function(d, i){
+        let treeNode  = d3.select('#sidebar').selectAll('.node');//.filter(f=> d.map(m=> m.name).indexOf(f.name) > -1);
+        let treeLinks  = d3.select('#sidebar').selectAll('.link');//.filter(f=> d.map(m=> m.name).indexOf(f.name) > -1);
+        
+        treeNode.filter(f=> d.map(m=> m.name).indexOf(f.data.name) > -1).classed('hover', true);
+        treeLinks.filter(f=> d.map(m=> m.name).indexOf(f.data.name) > -1).classed('hover', true);
         return d3.select(this).classed('hover', true);
     }).on('mouseout', function(d, i){
+        let treeNode  = d3.select('#sidebar').selectAll('.node').classed('hover', false);//.filter(f=> d.map(m=> m.name).indexOf(f.name) > -1);
+        let treeLinks  = d3.select('#sidebar').selectAll('.link').classed('hover', false);
         return d3.select(this).classed('hover', false)
     });
 
@@ -181,9 +188,9 @@ function branchPaths(wrapper, pathData) {
         return circleScale(branchFrequency[d.node]);
     }).attr('class', (d, i)=> 'node-'+d.node);
 
-    nodeGroups.on('mouseover', function(d, i){
-        d3.selectAll('.node-'+d.node).attr('fill', 'red')
-        return d3.selectAll('.node-'+d.node).classed('hover-branch', true);
+    circle.on('mouseover', function(d, i){
+       // d3.selectAll('.node-'+d.node).attr('fill', 'red')
+        return nodeGroups.selectAll('.node-'+d.node).classed('hover-branch', true);
     }).on('mouseout', function(d, i){
         return d3.selectAll('.node-'+d.node).classed('hover-branch', false);
     });

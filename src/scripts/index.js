@@ -11,10 +11,9 @@ let edgeOb = Papa.parse(edgeFile, {header:true});
 let nodeOb = Papa.parse(nodeFile, {header:true});
 
 let wrap = d3.select('#wrapper');
-
 let toolbarDiv = wrap.append('div').attr('id', 'toolbar');
-
 let main = wrap.append('div').attr('id', 'main');
+let sidebar = wrap.append('div').attr('id', 'sidebar');
 
 let svg = main.append('svg').attr('id', 'main-path-view'),
     width = +svg.attr("width"),
@@ -27,6 +26,16 @@ let tooltip = wrap.append("div")
 loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges => {
     //loadData(d3.json, './public/data/geo-edges.json').then(async edges => {
 
+    Array.prototype.unique = function() {
+        return this.filter(function (value, index, self) { 
+            return self.indexOf(value) === index;
+        });
+    }
+
+    let nodes = edges.rows.map(m=> m.V2).concat(edges.rows.map(m=> m.V1)).unique();
+
+    console.log('node', nodes);
+  
     let edgeLen = await loadData(d3.json, './public/data/anolis-edge-length.json', 'edge');
 
     //Mapping data together/////
@@ -44,15 +53,7 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     }
 
     let colorKeeper = [
-        '#32C1FE',
-        '#3AD701',
-        '#E2AD01',
-        '#E2019E',
-        '#f36b2c',
-        '#1abc9c',
-        '#f36b2c',
-        '#a40b0b',
-        '#0095b6'
+        '#32C1FE','#3AD701','#E2AD01','#E2019E','#f36b2c','#1abc9c','#f36b2c','#a40b0b','#0095b6'
     ]
 
     let calculatedScales = Object.keys(calculatedAtt).map((d, i)=> {
@@ -89,7 +90,6 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
                     'max': max, 
                     'min':  min,
                     'yScale': d3.scaleLinear().range([45, 0]).domain([min, max]),
-                    
                 };
                 
             }) }
@@ -163,6 +163,88 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     });
 
     let paths = allPaths(mappedEdges, matchedLeaves, "V1", "V2");
+
+    let root = paths[0][0]
+
+    function getNested(node, edgeArray){
+        node.children = edgeArray.filter(f=> String(f.V1) === String(node.node));
+        node.name = String(node.node);
+        if(node.children.length > 0){
+            node.children.forEach(c=> getNested(c, edgeArray))
+        }else{
+            return node;
+        }
+        return node;
+    }
+
+    let nestedData = getNested(root, edges.rows);
+    ////////
+    ///testing trees out
+
+    // set the dimensions and margins of the diagram
+    var margin = {top: 10, right: 90, bottom: 50, left: 20},
+    width = 400 - margin.left - margin.right,
+    height = 680 - margin.top - margin.bottom;
+
+// declares a tree layout and assigns the size
+    var treemap = d3.tree()
+    .size([height, width]);
+
+//  assigns the data to a hierarchy using parent-child relationships
+    var treenodes = d3.hierarchy(nestedData);
+
+// maps the node data to the tree layout
+    treenodes = treemap(treenodes);
+
+// append the svg obgect to the body of the page
+// appends a 'group' element to 'svg'
+// moves the 'group' element to the top left margin
+    var treeSvg = sidebar.append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom),
+    g = treeSvg.append("g")
+    .attr("transform",
+      "translate(" + margin.left + "," + margin.top + ")");
+
+// adds the links between the nodes
+    var link = g.selectAll(".link")
+    .data( treenodes.descendants().slice(1))
+    .enter().append("path")
+    .attr("class", "link")
+    .attr("d", function(d) {
+    return "M" + d.y + "," + d.x
+    + "C" + (d.y + d.parent.y) / 2 + "," + d.x
+    + " " + (d.y + d.parent.y) / 2 + "," + d.parent.x
+    + " " + d.parent.y + "," + d.parent.x;
+    });
+
+    // adds each node as a group
+    var node = g.selectAll(".node")
+    .data(treenodes.descendants())
+    .enter().append("g")
+    .attr("class", function(d) { 
+    return "node" + 
+    (d.children ? " node--internal" : " node--leaf"); })
+    .attr("transform", function(d) { 
+    return "translate(" + d.y + "," + d.x + ")"; });
+
+    // adds the circle to the node
+    node.append("circle")
+    .attr("r", 3);
+
+    // adds the text to the node
+    /*
+    node.append("text")
+    .attr("dy", ".35em")
+    .attr("x", function(d) { return d.children ? -13 : 13; })
+    .style("text-anchor", function(d) { 
+    return d.children ? "end" : "start"; })
+    .text(function(d) { return d.data.name; });
+    */
+
+/////END TREE STUFF
+///////////
+    console.log(nestedData)
    
     paths.forEach((p, i)=> {
         p[0].attributes = {}
@@ -194,7 +276,7 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
 
     //SCALES for X, Y /////
     let xScale = d3.scaleLinear().range([0, 1000]).clamp(true);
-    
+ 
     let normedPaths = paths.map((p, i)=> {
       
         p.xScale = xScale.domain([0, maxBranch - 1]);
