@@ -1,32 +1,53 @@
 import '../styles/index.scss';
 import * as d3 from "d3";
 
-export function renderDistibutions(normedPaths, toolbar, scales){
-    console.log(normedPaths);
+export function renderDistibutions(normedPaths, mainDiv, scales){
+  
     let keys = Object.keys(normedPaths[0][0].attributes);
-    
+  
+    let svg = mainDiv.append('svg');
+    svg.attr('id', 'main-summary-view');
+    let attributeData = keys.map(key=> {
+        return normedPaths.map(path=> path.map(node=> node.attributes[key]));
+    })
+    console.log('attr', attributeData)
+    let attributeGroups = svg.selectAll('.summary-attr-grp').data(attributeData);
+    let attributeGrpEnter = attributeGroups.enter().append('g').classed('summary-attr-grp', true);
+    attributeGroups = attributeGrpEnter.merge(attributeGroups);
+
+    let attrRect = attributeGrpEnter.append('rect').classed('attribute-rect', true);
+    attrRect.attr('x', 0).attr('y', 0).attr('height', 45);
+
+
+    svg.attr('height', (attributeData.length * 45))
 }
 export function toolbarControl(toolbar, normedPaths, main, calculatedScales){
-    let button = toolbar.append('button').attr('id', 'view-toggle')
+    let button = toolbar.append('button').attr('id', 'view-toggle').attr('attr' , 'button').attr('class', 'btn btn-outline-secondary') 
     button.text('View Paths');
     button.on('click', function(){
         if(button.text() === 'View Paths'){
             button.text('View Summary');
-            d3.select('#main-path-view').selectAll('*').remove();
+            main.selectAll('*').remove();//.selectAll('*').remove();
             let pathGroups = renderPaths(normedPaths, main);
+
               /// LOWER ATTRIBUTE VISUALIZATION ///
-    let attributeWrapper = pathGroups.append('g').classed('attribute-wrapper', true);
-    let attributeGroups = formatAttributes(attributeWrapper, calculatedScales, null);
-   
-    let attributeHeight = 45;
-    pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (Object.keys(d[1].attributes).length + 1))) +')');
-    renderToggles(normedPaths, toggleSVG, attributeGroups, calculatedScales);
-    drawContAtt(attributeGroups);
-    drawDiscreteAtt(attributeGroups, calculatedScales);
+            let attributeWrapper = pathGroups.append('g').classed('attribute-wrapper', true);
+            let attributeGroups = formatAttributes(attributeWrapper, calculatedScales, null);
+        
+            let attributeHeight = 45;
+            pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (Object.keys(d[1].attributes).length + 1))) +')');
+            // renderToggles(normedPaths, toggleSVG, attributeGroups, calculatedScales);
+            drawContAtt(attributeGroups);
+            drawDiscreteAtt(attributeGroups, calculatedScales);
+
+            //tranforming elements
+            main.select('#main-path-view').style('height', ((normedPaths.length + attributeGroups.data().map(m=> m[0]).length)* 30) + 'px');
+            attributeWrapper.attr('transform', (d)=> 'translate(140, 25)');
+
         }else{
             button.text('View Paths');
-            d3.select('#main-path-view').selectAll('*').remove();
-         
+            main.selectAll('*').remove();
+            renderDistibutions(normedPaths, main, calculatedScales)
 
         }
     })
@@ -97,6 +118,8 @@ export function formatAttributes(attributeWrapper, scales, filterArray){
 
     let attributeHeight = 45;
 
+    console.log('scales',  scales)
+
     let attributeGroups = attributeWrapper.selectAll('g').data((d)=> {
        
         let keys = filterArray == null ? Object.keys(d.map(m=> m.attributes)[0]) : filterArray;
@@ -112,6 +135,7 @@ export function formatAttributes(attributeWrapper, scales, filterArray){
                 }else if(m.attributes[key].type === 'discrete'){
                     if(m.leaf){
                         let state = m.attributes[key];
+                        console.log('atrr', m.attributes[key])
                         state.winState = m.attributes[key].states.filter(f=> f.realVal === 1)[0].state;
                         state.color = scales.filter(f=> f.field === key)[0].stateColors.filter(f=> f.state === state.winState)[0].color
                         state.move = m.move;

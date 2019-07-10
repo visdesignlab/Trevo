@@ -224,13 +224,13 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
         });
     });
 
-    renderDistibutions(normedPaths, toolbarDiv, calculatedScales);
-    toolbarControl(toolbarDiv, normedPaths, main);
+   // renderDistibutions(normedPaths, main, calculatedScales);
+    toolbarControl(toolbarDiv, normedPaths, main, calculatedScales);
 
     let toggleSVG = toolbarDiv.append('svg').classed('toggle-svg', true);
     let pathGroups = renderPaths(normedPaths, main, calculatedScales);
 
-        //TREE RENDER
+    //TREE RENDER
     ////////
     renderTree(nestedData, sidebar);
     
