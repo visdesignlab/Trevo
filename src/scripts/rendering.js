@@ -5,7 +5,9 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
   
     let keys = Object.keys(normedPaths[0][0].attributes);
 
-    console.log()
+    let test = formatData(normedPaths, scales);
+    console.log('test', test)
+
     let maxBranch = d3.max(normedPaths.map(p=> p.length))
     let xScale = d3.scaleLinear().range([0, 800]).domain([0, (maxBranch - 1)]).clamp(true)
   
@@ -178,9 +180,51 @@ export function renderPaths(normedPaths, main){
     return pathGroups;
 }
 
+export function formatData(normedPaths, scales){
+    let keys = Object.keys(normedPaths[0][0].attributes);
+   
+    return normedPaths.map(path=> {
+        return keys.map((key)=> {
+            return path.map((m)=> {
+                if(m.attributes[key].type === 'continuous'){
+                    m.attributes[key].color = scales.filter(f=> f.field === key)[0].catColor;
+                    m.attributes[key].move = m.move;
+                    m.attributes[key].label = key;
+                    return m.attributes[key];
+                }else if(m.attributes[key].type === 'discrete'){
+                    if(m.leaf){
+                        let state = m.attributes[key];
+                       
+                        state.winState = m.attributes[key].states.filter(f=> f.realVal === 1)[0].state;
+                        state.color = scales.filter(f=> f.field === key)[0].stateColors.filter(f=> f.state === state.winState)[0].color
+                        state.move = m.move;
+                        state.attrLabel = key;
+                        return state;
+                    }else{
+                        let states = m.attributes[key].states ? m.attributes[key].states : m.attributes[key];//.filter(f => f.state != undefined);
+                       
+                        return states.map((st, j)=> {
+                            st.color = scales.filter(f=> f.field === key)[0].stateColors.filter(f=> f.state === st.state)[0].color;
+                            st.move = m.move;
+                            st.attrLabel = key;
+                            return st;
+                        });
+                    }
+             
+                }else{
+                    console.error('attribute type not found');
+                }
+            });
+        });
+    });
+    
+}
+
 export function formatAttributes(attributeWrapper, scales, filterArray){
 
     let attributeHeight = 45;
+
+    console.log('att',attributeWrapper.data())
 
     let attributeGroups = attributeWrapper.selectAll('g').data((d)=> {
        
