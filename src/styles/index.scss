@@ -27,6 +27,8 @@ svg{
   top:0;
   margin-bottom: 5px;
   position: fixed;
+  border-color: gray;
+  border: 1px;
 }
 
 #main{
@@ -168,8 +170,9 @@ circle.hover-branch{
 .node.hover circle {
   //fill: #fff;
   fill: red;
-  r: 5px;
- // stroke-width: 2px;
+  r: 4px;
+  stroke-width: 1px;
+  stroke: gainsboro;
 }
 
 //.node text { font: 12px sans-serif; }
