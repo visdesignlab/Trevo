@@ -228,11 +228,16 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     toolbarControl(toolbarDiv, normedPaths, main, calculatedScales);
 
     let toggleSVG = toolbarDiv.append('svg').classed('toggle-svg', true);
-    let pathGroups = renderPaths(normedPaths, main, calculatedScales);
+    
 
     //TREE RENDER
     ////////
     renderTree(nestedData, sidebar);
+
+    renderDistibutions(normedPaths, main, calculatedScales);
+
+    /*
+    let pathGroups = renderPaths(normedPaths, main, calculatedScales);
     
       /// LOWER ATTRIBUTE VISUALIZATION ///
     let attributeWrapper = pathGroups.append('g').classed('attribute-wrapper', true);
@@ -247,7 +252,7 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     //tranforming elements
     main.select('#main-path-view').style('height', ((normedPaths.length + attributeGroups.data().map(m=> m[0]).length)* 30) + 'px');
     attributeWrapper.attr('transform', (d)=> 'translate(140, 25)');
-
+*/
 });
 
 loadData(d3.json, './public/data/geospiza_with_attributes.json').then(data=> {

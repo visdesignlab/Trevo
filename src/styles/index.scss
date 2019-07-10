@@ -81,6 +81,15 @@ rect.attribute-rect{
   width:1010px;
 }
 
+rect.attribute-rect-sum{
+  //.paths rect.attribute-rect{
+    fill: none;
+    stroke: gray;
+    stroke-width: 0.5;
+    width:800px;
+  }
+  
+
 .attribute-label{
   font-size: 11px;
   text-anchor: end;
@@ -134,6 +143,24 @@ line.half{
   stroke: #32C1FE;
   stroke-width: 2px;
   fill: none;
+}
+
+.inner-line-sum{
+  stroke: #32C1FE;
+  stroke-width: 1px;
+  fill: none;
+  opacity:0.3;
+}
+
+.inner-node-wrap{
+  stroke: gray;
+  stroke-width: 1px;
+  fill: none;
+}
+
+.range-rect-sum{
+  fill: #32C1FE;
+  opacity: 0.2;
 }
 
 circle.hover-branch{

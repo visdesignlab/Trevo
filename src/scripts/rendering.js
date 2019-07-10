@@ -4,22 +4,83 @@ import * as d3 from "d3";
 export function renderDistibutions(normedPaths, mainDiv, scales){
   
     let keys = Object.keys(normedPaths[0][0].attributes);
+
+    console.log()
+    let maxBranch = d3.max(normedPaths.map(p=> p.length))
+    let xScale = d3.scaleLinear().range([0, 800]).domain([0, (maxBranch - 1)]).clamp(true)
   
     let svg = mainDiv.append('svg');
     svg.attr('id', 'main-summary-view');
     let attributeData = keys.map(key=> {
-        return normedPaths.map(path=> path.map(node=> node.attributes[key]));
-    })
-    console.log('attr', attributeData)
+        return normedPaths.map(path=> {
+
+            return path.map((node, i)=> {
+                let attr = node.attributes[key];
+                let lastnode = path.length - 1
+                attr.move = (i < lastnode) ? xScale(i): xScale(maxBranch - 1)
+                //attr.move = node.move;
+                return attr;
+            });
+        });
+    });
+
+    console.log(scales)
     let attributeGroups = svg.selectAll('.summary-attr-grp').data(attributeData);
     let attributeGrpEnter = attributeGroups.enter().append('g').classed('summary-attr-grp', true);
     attributeGroups = attributeGrpEnter.merge(attributeGroups);
+    attributeGroups.attr('transform', (d, i)=> 'translate(0,'+(i * 50)+')');
 
-    let attrRect = attributeGrpEnter.append('rect').classed('attribute-rect', true);
+    let innerTime = attributeGrpEnter.append('g').classed('inner-attr-summary', true);
+    innerTime.attr('transform', 'translate(150, 0)');
+    let attrRect = innerTime.append('rect').classed('attribute-rect-sum', true);
     attrRect.attr('x', 0).attr('y', 0).attr('height', 45);
 
+    let label = attributeGroups.append('text').text(d=> {
+        let innerArray = d[0];
+        let innerinner = innerArray[innerArray.length - 1]
+        return innerinner.label});
 
-    svg.attr('height', (attributeData.length * 45))
+    label.attr('x', 100).attr('y', 25).attr('text-anchor', 'end');
+
+    let cont = innerTime.filter(f=> {
+        return f[0][0].type === 'continuous';
+    })
+
+    let disc = attributeGroups.filter(f=> {
+        return f[0][0].type === 'discrete';
+    })
+
+    ////////
+    //experimenting with continuous rendering
+
+    let contpaths = cont.selectAll('g.summ-paths').data(d=> {
+        return d});
+    let contEnter = contpaths.enter().append('g').classed('summ-paths', true);
+    contpaths = contEnter.merge(contpaths);
+
+    //contpaths.attr('transform', 'translate(150px, 0)');
+
+    var lineGen = d3.line()
+    .x(d=> d.move)
+    .y(d=> d.scaleVal);
+
+    let line = contpaths.append('path')
+    .attr("d", lineGen)
+    .attr("class", "inner-line-sum")
+    .style('stroke', (d)=> d[0].color);
+
+    let nodes = contpaths.selectAll('.node-sum').data(d=> d).enter().append('g').attr('class', 'node-sum');
+    nodes.attr('transform', (d, i) => 'translate('+d.move+', 0)');
+    nodes.append('rect').attr('x', 0).attr('y', 0).attr('width', 5).attr('height', 45).classed('inner-node-wrap', true);
+    nodes.append('rect').attr('x', 0).attr('y', (d, i)=> d.scaledLow).attr('width', 5).attr('height', (d, i)=> {
+        return (d.scaledHigh - d.scaledLow);
+    }).classed('range-rect-sum', true);
+    svg.attr('height', (attributeData.length * 55));
+
+    /////playing with discrete
+    console.log(disc.data())
+
+
 }
 export function toolbarControl(toolbar, normedPaths, main, calculatedScales){
     let button = toolbar.append('button').attr('id', 'view-toggle').attr('attr' , 'button').attr('class', 'btn btn-outline-secondary') 
@@ -28,6 +89,8 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales){
         if(button.text() === 'View Paths'){
             button.text('View Summary');
             main.selectAll('*').remove();//.selectAll('*').remove();
+
+            ////NEED TO SIMPLIFY THIS///////
             let pathGroups = renderPaths(normedPaths, main);
 
               /// LOWER ATTRIBUTE VISUALIZATION ///
@@ -43,6 +106,7 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales){
             //tranforming elements
             main.select('#main-path-view').style('height', ((normedPaths.length + attributeGroups.data().map(m=> m[0]).length)* 30) + 'px');
             attributeWrapper.attr('transform', (d)=> 'translate(140, 25)');
+            ///////////////////////////////////
 
         }else{
             button.text('View Paths');
@@ -118,14 +182,12 @@ export function formatAttributes(attributeWrapper, scales, filterArray){
 
     let attributeHeight = 45;
 
-    console.log('scales',  scales)
-
     let attributeGroups = attributeWrapper.selectAll('g').data((d)=> {
        
         let keys = filterArray == null ? Object.keys(d.map(m=> m.attributes)[0]) : filterArray;
        
         let att = keys.map((key, i)=> {
-            //console.log(scales.filter(f=> f.field === key))
+           
             return d.map((m)=> {
                 if(m.attributes[key].type === 'continuous'){
                     m.attributes[key].color = scales.filter(f=> f.field === key)[0].catColor;
@@ -135,7 +197,7 @@ export function formatAttributes(attributeWrapper, scales, filterArray){
                 }else if(m.attributes[key].type === 'discrete'){
                     if(m.leaf){
                         let state = m.attributes[key];
-                        console.log('atrr', m.attributes[key])
+                       
                         state.winState = m.attributes[key].states.filter(f=> f.realVal === 1)[0].state;
                         state.color = scales.filter(f=> f.field === key)[0].stateColors.filter(f=> f.state === state.winState)[0].color
                         state.move = m.move;
