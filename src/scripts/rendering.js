@@ -5,21 +5,28 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
   
     let keys = Object.keys(normedPaths[0][0].attributes);
 
-    formatAttributeData(normedPaths, scales);
+    let newNormed = [...normedPaths];
+
+    formatAttributeData(newNormed, scales);
     //console.log('test', test)
 
-    let maxBranch = d3.max(normedPaths.map(p=> p.length))
+    let maxBranch = d3.max(newNormed.map(p=> p.length))
     let xScale = d3.scaleLinear().range([0, 800]).domain([0, (maxBranch - 1)]).clamp(true)
   
     let svg = mainDiv.append('svg');
     svg.attr('id', 'main-summary-view');
     let attributeData = keys.map(key=> {
-        return normedPaths.map(path=> {
-
+        return newNormed.map(path=> {
             return path.map((node, i)=> {
                 let attr = node.attributes[key];
                 let lastnode = path.length - 1
-                attr.move = (i < lastnode) ? xScale(i): xScale(maxBranch - 1)
+                attr.move = (i < lastnode) ? xScale(i): xScale(maxBranch - 1);
+                if(attr.type === 'discrete'){
+                    attr.states = node.attributes[key].states.map(s=> {
+                        s.move = attr.move;
+                        return s;
+                    });
+                }
                 //attr.move = node.move;
                 return attr;
             });
@@ -79,9 +86,57 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
     svg.attr('height', (attributeData.length * 55));
 
     /////playing with discrete
-    console.log(disc.data())
+    console.log('disc data', disc.data())
+    
+    let groupedData =  disc.data().map(attr=> {
+        let binCount = d3.max(attr.map(row=> row.length));
+        let moveMap = attr.filter(row=> row.length === binCount)[0]
+        let stateKeys = attr[0][0].states.map(s=> s.state);
+        let distrib = {}
 
-    /////NEED TO FIX DATA
+        stateKeys.forEach(key => {
+           // console.log(key)
+           //MADE THIS BINCOUNT - 1 to account for the filtered out leaf node
+            let distribution = Array(binCount-1).fill({'data':[]}).map((u, i)=> {
+            //distrib[key] = Array(binCount).fill({'data':[]}).map((u, i)=> {
+                let newOb = {'data': u.data}
+                newOb.move = moveMap[i].move
+                return newOb;
+            });
+            attr.forEach((row)=> {
+                let test = row.filter(r=> r.leaf != true).map(node=> node.states.filter(s=> s.state === key)[0])
+
+                test.forEach((t, i)=> {
+                    let newT = t;
+                    distribution[i].data.push(newT)})
+            })
+        //    console.log(key, distrib[key])
+            distrib[key] = {};
+            distrib[key].data = distribution.map(drow=> {
+                let filtered = drow.data.filter(d=> {
+                    return d.move === drow.move});
+                return filtered;
+            })
+            console.log(distribution)
+            distrib[key].realMean = distrib[key].data.map(branch=> d3.mean(branch.map(b=> b.realVal)))
+            distrib[key].realStDev = distrib[key].data.map(branch=> d3.deviation(branch.map(b=> b.realVal)))
+            distrib[key].realStUp = distrib[key].realMean.map((av, i)=> av + distrib[key].realStDev[i]);
+            distrib[key].realStDown = distrib[key].realMean.map((av, i)=> av - distrib[key].realStDev[i]);
+
+            distrib[key].scaleMean = distrib[key].data.map(branch=> d3.mean(branch.map(b=> b.scaleVal)))
+            distrib[key].scaleStDev = distrib[key].data.map(branch=> d3.deviation(branch.map(b=> b.scaleVal)))
+            distrib[key].scaleStUp = distrib[key].scaleMean.map((av, i)=> av + distrib[key].scaleStDev[i]);
+            distrib[key].scaleStDown = distrib[key].scaleMean.map((av, i)=> av - distrib[key].scaleStDev[i]);
+
+            distrib[key].moves = distribution.map(d=> d.move)
+            
+        });
+
+        return distrib;
+
+    });
+
+    console.log('grp work?',groupedData)
 
 }
 export function toolbarControl(toolbar, normedPaths, main, calculatedScales){
@@ -142,12 +197,11 @@ export function renderToggles(normedPaths, toggleSVG, scales){
         let attributeWrapper = d3.selectAll('.attribute-wrapper');
         attributeWrapper.selectAll('g').remove();
         let attributeHeight = 45;
-       // let attributeGroups = formatAttributes(attributeWrapper, scales, newKeys.data());
       
           /// LOWER ATTRIBUTE VISUALIZATION ///
-       //   let attributeWrapper = pathGroups.append('g').classed('attribute-wrapper', true);
-          let attData =  formatAttributeData(normedPaths, scales, newKeys.data());
-          let attributeGroups = renderAttributes(attributeWrapper, attData, scales, null);
+      
+        let attData =  formatAttributeData(normedPaths, scales, newKeys.data());
+        let attributeGroups = renderAttributes(attributeWrapper, attData, scales, null);
 
         d3.select('#main-path-view').style('height', ((normedPaths.length + attributeGroups.data().map(m=> m[0]).length)* 30) + 'px');
         d3.selectAll('.paths').attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (newKeys.data().length + 1))) +')');
