@@ -151,6 +151,15 @@ line.half{
   fill: none;
   opacity:0.1;
 }
+.inner-line-sum-discrete{
+  stroke: #32C1FE;
+  stroke-width: 2px;
+  fill: none;
+}
+
+.state-area-sum{
+  opacity: .1;
+}
 
 .inner-node-wrap{
   stroke: gray;

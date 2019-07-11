@@ -15,25 +15,104 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
   
     let svg = mainDiv.append('svg');
     svg.attr('id', 'main-summary-view');
-    let attributeData = keys.map(key=> {
-        return newNormed.map(path=> {
-            return path.map((node, i)=> {
-                let attr = node.attributes[key];
-                let lastnode = path.length - 1
-                attr.move = (i < lastnode) ? xScale(i): xScale(maxBranch - 1);
-                if(attr.type === 'discrete'){
-                    attr.states = node.attributes[key].states.map(s=> {
-                        s.move = attr.move;
-                        return s;
-                    });
-                }
-                //attr.move = node.move;
-                return attr;
+
+    let addMoveToAttributes = keys.map(key=> {
+            let data = newNormed.map(path=> {
+                return path.map((node, i)=> {
+                    let attr = node.attributes[key];
+                    let lastnode = path.length - 1
+                    attr.move = (i < lastnode) ? xScale(i): xScale(maxBranch - 1);
+                    if(attr.type === 'discrete'){
+                        attr.states = node.attributes[key].states.map(s=> {
+                            s.move = attr.move;
+                            return s;
+                        });
+                    }
+                    //attr.move = node.move;
+                    return attr;
+                });
             });
-        });
+            data.attKey = key;
+            return data;
     });
 
-    let attributeGroups = svg.selectAll('.summary-attr-grp').data(attributeData);
+    let summarizedData = addMoveToAttributes.map(attr=> {
+        console.log(attr)
+        if(attr[0][0].type === 'discrete'){
+
+           // let binCount = d3.max(attr.map(row=> row.length));
+            let moveMap = attr.filter(row=> row.length === maxBranch)[0];
+            let stateKeys = attr[0][0].states.map(s=> s.state);
+            let distrib = {}
+            distrib.stateData = {}
+            stateKeys.forEach(key => {
+              
+                 let distribution = Array(maxBranch-1).fill({'data':[]}).map((u, i)=> {
+                     let newOb = {'data': u.data}
+                     newOb.move = moveMap[i].move
+                     return newOb;
+                 });
+                 attr.forEach((row)=> {
+                     let test = row.filter(r=> r.leaf != true).map(node=> node.states.filter(s=> s.state === key)[0])
+                     test.forEach((t, i)=> {
+                         let newT = t;
+                         distribution[i].data.push(newT);
+                        });
+                 });
+                 
+                 distrib.stateData[key] = {};
+                 let data = distribution.map(drow=> {
+                     let filtered = drow.data.filter(d=> {
+                         return d.move === drow.move});
+                     return filtered;
+                 })
+                 let color = data[0][0].color;
+               
+                 let realMean = data.map(branch=> d3.mean(branch.map(b=> b.realVal)))
+                 let realStDev = data.map(branch=> d3.deviation(branch.map(b=> b.realVal)))
+                 let realStUp = realMean.map((av, i)=> av + realStDev[i]);
+                 let realStDown = realMean.map((av, i)=> av - realStDev[i]);
+     
+                let scaleMean = data.map(branch=> d3.mean(branch.map(b=> b.scaleVal)))
+                let scaleStDev = data.map(branch=> d3.deviation(branch.map(b=> b.scaleVal)))
+                let scaleStUp = scaleMean.map((av, i)=> av + scaleStDev[i]);
+                let scaleStDown = scaleMean.map((av, i)=> av - scaleStDev[i]);
+     
+                let moves = distribution.map(d=> d.move)
+
+                let final = moves.map((m, j)=> {
+                     return {
+                         'x': m,
+                         'realMean': realMean[j],
+                         'realStDev': realStDev[j],
+                         'realStUp': realStUp[j],
+                         'realStDown': realStDown[j],
+                         'scaleMean': scaleMean[j],
+                         'scaleStDev': scaleStDev[j],
+                         'scaleStUp': scaleStUp[j],
+                         'scaleStDown': scaleStDown[j],
+                         
+                        }
+                 });
+
+                 distrib.stateData[key].pathData = final;
+                 distrib.stateData[key].color = color;
+
+             });
+             distrib.attKey = attr.attKey;
+             distrib.type = 'discrete';
+             return distrib;
+
+        }else{
+      
+            attr.type = 'continuous';
+            return attr;
+        }
+    })
+
+    console.log('amta', summarizedData)
+
+    let attributeGroups = svg.selectAll('.summary-attr-grp').data(summarizedData);
     let attributeGrpEnter = attributeGroups.enter().append('g').classed('summary-attr-grp', true);
     attributeGroups = attributeGrpEnter.merge(attributeGroups);
     attributeGroups.attr('transform', (d, i)=> 'translate(0,'+(i * 50)+')');
@@ -43,20 +122,13 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
     let attrRect = innerTime.append('rect').classed('attribute-rect-sum', true);
     attrRect.attr('x', 0).attr('y', 0).attr('height', 45);
 
-    let label = attributeGroups.append('text').text(d=> {
-        let innerArray = d[0];
-        let innerinner = innerArray[innerArray.length - 1]
-        return innerinner.label});
+    let label = attributeGroups.append('text').text(d=> d.attKey);
 
     label.attr('x', 100).attr('y', 25).attr('text-anchor', 'end');
 
-    let cont = innerTime.filter(f=> {
-        return f[0][0].type === 'continuous';
-    })
+    let cont = innerTime.filter(f=> f.type === 'continuous');
 
-    let disc = attributeGroups.filter(f=> {
-        return f[0][0].type === 'discrete';
-    })
+    let disc = innerTime.filter(f=> f.type === 'discrete').classed('discrete-sum', true)
 
     ////////
     //experimenting with continuous rendering
@@ -83,64 +155,40 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
     nodes.append('rect').attr('x', 0).attr('y', (d, i)=> d.scaledLow).attr('width', 5).attr('height', (d, i)=> {
         return (d.scaledHigh - d.scaledLow);
     }).classed('range-rect-sum', true).style('fill', d=> d.color);
-    svg.attr('height', (attributeData.length * 55));
+    svg.attr('height', (summarizedData.length * 55));
 
-    /////playing with discrete
-    console.log('disc data', disc)
-    
-    let groupedData =  disc.data().map(attr=> {
-        let binCount = d3.max(attr.map(row=> row.length));
-        let moveMap = attr.filter(row=> row.length === binCount)[0]
-        let stateKeys = attr[0][0].states.map(s=> s.state);
-        let distrib = {}
 
-        stateKeys.forEach(key => {
-           // console.log(key)
-           //MADE THIS BINCOUNT - 1 to account for the filtered out leaf node
-            let distribution = Array(binCount-1).fill({'data':[]}).map((u, i)=> {
-            //distrib[key] = Array(binCount).fill({'data':[]}).map((u, i)=> {
-                let newOb = {'data': u.data}
-                newOb.move = moveMap[i].move
-                return newOb;
-            });
-            attr.forEach((row)=> {
-                let test = row.filter(r=> r.leaf != true).map(node=> node.states.filter(s=> s.state === key)[0])
 
-                test.forEach((t, i)=> {
-                    let newT = t;
-                    distribution[i].data.push(newT)})
-            })
-        //    console.log(key, distrib[key])
-            distrib[key] = {};
-            distrib[key].data = distribution.map(drow=> {
-                let filtered = drow.data.filter(d=> {
-                    return d.move === drow.move});
-                return filtered;
-            })
-            console.log(distribution)
-            distrib[key].realMean = distrib[key].data.map(branch=> d3.mean(branch.map(b=> b.realVal)))
-            distrib[key].realStDev = distrib[key].data.map(branch=> d3.deviation(branch.map(b=> b.realVal)))
-            distrib[key].realStUp = distrib[key].realMean.map((av, i)=> av + distrib[key].realStDev[i]);
-            distrib[key].realStDown = distrib[key].realMean.map((av, i)=> av - distrib[key].realStDev[i]);
+    let stateGroups = disc.selectAll('.state-sum').data(d=> Object.entries(d.stateData).map(m=> m[1]));
+    let stateEnter = stateGroups.enter().append('g').classed('state-sum', true);
+    stateGroups = stateEnter.merge(stateGroups);
 
-            distrib[key].scaleMean = distrib[key].data.map(branch=> d3.mean(branch.map(b=> b.scaleVal)))
-            distrib[key].scaleStDev = distrib[key].data.map(branch=> d3.deviation(branch.map(b=> b.scaleVal)))
-            distrib[key].scaleStUp = distrib[key].scaleMean.map((av, i)=> av + distrib[key].scaleStDev[i]);
-            distrib[key].scaleStDown = distrib[key].scaleMean.map((av, i)=> av - distrib[key].scaleStDev[i]);
+    console.log(stateGroups.data())
 
-            distrib[key].moves = distribution.map(d=> d.move)
-            
-        });
+    var lineGenD = d3.line()
+    .x(d=> d.x)
+    .y(d=> d.scaleMean);
 
-        return distrib;
-
+    let lineD = stateGroups.append('path')
+    .attr("d", d=> lineGenD(d.pathData))
+    .attr("class", "inner-line-sum-discrete")
+    .style('stroke', (d, i)=> {
+        console.log(d);
+        return d.color
     });
 
-    console.log('grp work?',groupedData)
+    let area = d3.area()
+    .x(d => d.x)
+    .y0(d => d.scaleStDown)
+    .y1(d => d.scaleStUp)
+    
 
-    let newGroup = disc.data((d, i)=> groupedData[i]);
+    let areaG =   stateGroups.append("path")
+    .attr("fill", d=> d.color)
+    .attr("d", d=> area(d.pathData))
+    .classed('state-area-sum', true);
 
-    console.log(newGroup)
+
 
 }
 export function toolbarControl(toolbar, normedPaths, main, calculatedScales){
