@@ -10,23 +10,32 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
     formatAttributeData(newNormed, scales);
     //console.log('test', test)
 
-    let maxBranch = d3.max(newNormed.map(p=> p.length))
+    let maxBranch = d3.max(newNormed.map(p=> p.length)) - 1;
     let xScale = d3.scaleLinear().range([0, 800]).domain([0, (maxBranch - 1)]).clamp(true)
   
     let svg = mainDiv.append('svg');
     svg.attr('id', 'main-summary-view');
 
     let addMoveToAttributes = keys.map(key=> {
-            let data = newNormed.map(path=> {
+            let filtered = newNormed.map(path=> {
+                return path.filter(n=> n.leaf != true)
+            });
+            console.log('fil', filtered, maxBranch)
+            let data = filtered.map(path=> {
                 return path.map((node, i)=> {
                     let attr = node.attributes[key];
                     let lastnode = path.length - 1
-                    attr.move = (i < lastnode) ? xScale(i): xScale(maxBranch - 1);
+                    console.log('last',lastnode)
+                    
                     if(attr.type === 'discrete'){
+                        attr.move = xScale(i);
                         attr.states = node.attributes[key].states.map(s=> {
                             s.move = attr.move;
                             return s;
                         });
+                    }else{
+                        attr.move = (i < lastnode) ? xScale(i): xScale(maxBranch - 1);
+
                     }
                     //attr.move = node.move;
                     return attr;
@@ -37,9 +46,9 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
     });
 
     let summarizedData = addMoveToAttributes.map(attr=> {
-        console.log(attr)
+       
         if(attr[0][0].type === 'discrete'){
-
+            
            // let binCount = d3.max(attr.map(row=> row.length));
             let moveMap = attr.filter(row=> row.length === maxBranch)[0];
             let stateKeys = attr[0][0].states.map(s=> s.state);
@@ -47,7 +56,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
             distrib.stateData = {}
             stateKeys.forEach(key => {
               
-                 let distribution = Array(maxBranch-1).fill({'data':[]}).map((u, i)=> {
+                 let distribution = Array(maxBranch).fill({'data':[]}).map((u, i)=> {
                      let newOb = {'data': u.data}
                      newOb.move = moveMap[i].move
                      return newOb;
@@ -173,7 +182,6 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
     .attr("d", d=> lineGenD(d.pathData))
     .attr("class", "inner-line-sum-discrete")
     .style('stroke', (d, i)=> {
-        console.log(d);
         return d.color
     });
 
