@@ -5,7 +5,7 @@ import {edgeFile, nodeFile} from './fileThing';
 import {loadData} from './dataLoad';
 import {allPaths, pullPath, getPath} from './pathCalc';
 const csv = require('csv-parser');  
-import {renderTree, renderDistibutions, renderToggles, drawContAtt, drawDiscreteAtt, formatAttributes, renderPaths, toolbarControl} from './rendering';
+import {renderTree, renderDistibutions, renderAttributes, renderToggles, drawContAtt, drawDiscreteAtt, renderPaths, toolbarControl, formatAttributeData} from './rendering';
 
 let edgeOb = Papa.parse(edgeFile, {header:true});
 let nodeOb = Papa.parse(nodeFile, {header:true});
@@ -235,13 +235,13 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     renderTree(nestedData, sidebar);
 
     renderDistibutions(normedPaths, main, calculatedScales);
-
-    /*
+/*
     let pathGroups = renderPaths(normedPaths, main, calculatedScales);
     
       /// LOWER ATTRIBUTE VISUALIZATION ///
     let attributeWrapper = pathGroups.append('g').classed('attribute-wrapper', true);
-    let attributeGroups = formatAttributes(attributeWrapper, calculatedScales, null);
+    let attData = formatAttributeData(normedPaths, calculatedScales)
+    let attributeGroups = renderAttributes(attributeWrapper, attData, calculatedScales, null);
    
     let attributeHeight = 45;
     pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (Object.keys(d[1].attributes).length + 1))) +')');

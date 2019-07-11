@@ -5,7 +5,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
   
     let keys = Object.keys(normedPaths[0][0].attributes);
 
-    let test = formatData(normedPaths, scales);
+    let test = formatAttributeData(normedPaths, scales);
     console.log('test', test)
 
     let maxBranch = d3.max(normedPaths.map(p=> p.length))
@@ -26,7 +26,6 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
         });
     });
 
-    console.log(scales)
     let attributeGroups = svg.selectAll('.summary-attr-grp').data(attributeData);
     let attributeGrpEnter = attributeGroups.enter().append('g').classed('summary-attr-grp', true);
     attributeGroups = attributeGrpEnter.merge(attributeGroups);
@@ -76,7 +75,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
     nodes.append('rect').attr('x', 0).attr('y', 0).attr('width', 5).attr('height', 45).classed('inner-node-wrap', true);
     nodes.append('rect').attr('x', 0).attr('y', (d, i)=> d.scaledLow).attr('width', 5).attr('height', (d, i)=> {
         return (d.scaledHigh - d.scaledLow);
-    }).classed('range-rect-sum', true);
+    }).classed('range-rect-sum', true).style('fill', d=> d.color);
     svg.attr('height', (attributeData.length * 55));
 
     /////playing with discrete
@@ -97,7 +96,8 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales){
 
               /// LOWER ATTRIBUTE VISUALIZATION ///
             let attributeWrapper = pathGroups.append('g').classed('attribute-wrapper', true);
-            let attributeGroups = formatAttributes(attributeWrapper, calculatedScales, null);
+            let attData = formatAttributeData(normedPaths, calculatedScales)
+            let attributeGroups = renderAttributes(attributeWrapper, attData, calculatedScales, null);
         
             let attributeHeight = 45;
             pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (Object.keys(d[1].attributes).length + 1))) +')');
@@ -180,10 +180,10 @@ export function renderPaths(normedPaths, main){
     return pathGroups;
 }
 
-export function formatData(normedPaths, scales){
+export function formatAttributeData(normedPaths, scales){
     let keys = Object.keys(normedPaths[0][0].attributes);
    
-    return normedPaths.map(path=> {
+    let newData = normedPaths.map(path=> {
         return keys.map((key)=> {
             return path.map((m)=> {
                 if(m.attributes[key].type === 'continuous'){
@@ -217,55 +217,14 @@ export function formatData(normedPaths, scales){
             });
         });
     });
-    
+    return newData;
 }
 
-export function formatAttributes(attributeWrapper, scales, filterArray){
+export function renderAttributes(attributeWrapper, data, scales, filterArray){
 
     let attributeHeight = 45;
 
-    console.log('att',attributeWrapper.data())
-
-    let attributeGroups = attributeWrapper.selectAll('g').data((d)=> {
-       
-        let keys = filterArray == null ? Object.keys(d.map(m=> m.attributes)[0]) : filterArray;
-       
-        let att = keys.map((key, i)=> {
-           
-            return d.map((m)=> {
-                if(m.attributes[key].type === 'continuous'){
-                    m.attributes[key].color = scales.filter(f=> f.field === key)[0].catColor;
-                    m.attributes[key].move = m.move;
-                    m.attributes[key].label = key;
-                    return m.attributes[key];
-                }else if(m.attributes[key].type === 'discrete'){
-                    if(m.leaf){
-                        let state = m.attributes[key];
-                       
-                        state.winState = m.attributes[key].states.filter(f=> f.realVal === 1)[0].state;
-                        state.color = scales.filter(f=> f.field === key)[0].stateColors.filter(f=> f.state === state.winState)[0].color
-                        state.move = m.move;
-                        state.attrLabel = key;
-                        return state;
-                    }else{
-                        let states = m.attributes[key].states ? m.attributes[key].states : m.attributes[key];//.filter(f => f.state != undefined);
-                       
-                        return states.map((st, j)=> {
-                            st.color = scales.filter(f=> f.field === key)[0].stateColors.filter(f=> f.state === st.state)[0].color;
-                            st.move = m.move;
-                            st.attrLabel = key;
-                            return st;
-                        });
-                    }
-             
-                }else{
-                    console.error('attribute type not found');
-                }
-            });
-        });
-        
-        return att;
-    }).enter().append('g');
+    let attributeGroups = attributeWrapper.selectAll('g').data((d, i)=> data[i]).enter().append('g');
 
     attributeGroups.attr('transform', (d, i) => 'translate(0, '+(i * (attributeHeight + 5))+')');
 
