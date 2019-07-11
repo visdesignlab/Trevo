@@ -235,6 +235,8 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     renderTree(nestedData, sidebar);
 
     renderDistibutions(normedPaths, main, calculatedScales);
+
+    renderToggles(normedPaths, toggleSVG, calculatedScales);
 /*
     let pathGroups = renderPaths(normedPaths, main, calculatedScales);
     

@@ -5,8 +5,8 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
   
     let keys = Object.keys(normedPaths[0][0].attributes);
 
-    let test = formatAttributeData(normedPaths, scales);
-    console.log('test', test)
+    formatAttributeData(normedPaths, scales);
+    //console.log('test', test)
 
     let maxBranch = d3.max(normedPaths.map(p=> p.length))
     let xScale = d3.scaleLinear().range([0, 800]).domain([0, (maxBranch - 1)]).clamp(true)
@@ -81,6 +81,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
     /////playing with discrete
     console.log(disc.data())
 
+    /////NEED TO FIX DATA
 
 }
 export function toolbarControl(toolbar, normedPaths, main, calculatedScales){
@@ -119,7 +120,7 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales){
     })
 }
 
-export function renderToggles(normedPaths, toggleSVG, attrGroups, scales){
+export function renderToggles(normedPaths, toggleSVG, scales){
 
     let keys = Object.keys(normedPaths[0][0].attributes);
 
@@ -141,7 +142,12 @@ export function renderToggles(normedPaths, toggleSVG, attrGroups, scales){
         let attributeWrapper = d3.selectAll('.attribute-wrapper');
         attributeWrapper.selectAll('g').remove();
         let attributeHeight = 45;
-        let attributeGroups = formatAttributes(attributeWrapper, scales, newKeys.data());
+       // let attributeGroups = formatAttributes(attributeWrapper, scales, newKeys.data());
+      
+          /// LOWER ATTRIBUTE VISUALIZATION ///
+       //   let attributeWrapper = pathGroups.append('g').classed('attribute-wrapper', true);
+          let attData =  formatAttributeData(normedPaths, scales, newKeys.data());
+          let attributeGroups = renderAttributes(attributeWrapper, attData, scales, null);
 
         d3.select('#main-path-view').style('height', ((normedPaths.length + attributeGroups.data().map(m=> m[0]).length)* 30) + 'px');
         d3.selectAll('.paths').attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (newKeys.data().length + 1))) +')');
@@ -180,8 +186,8 @@ export function renderPaths(normedPaths, main){
     return pathGroups;
 }
 
-export function formatAttributeData(normedPaths, scales){
-    let keys = Object.keys(normedPaths[0][0].attributes);
+export function formatAttributeData(normedPaths, scales, filterArray){
+    let keys = (filterArray == null)? Object.keys(normedPaths[0][0].attributes): filterArray;
    
     let newData = normedPaths.map(path=> {
         return keys.map((key)=> {
