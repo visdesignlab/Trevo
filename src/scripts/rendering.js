@@ -86,7 +86,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
     svg.attr('height', (attributeData.length * 55));
 
     /////playing with discrete
-    console.log('disc data', disc.data())
+    console.log('disc data', disc)
     
     let groupedData =  disc.data().map(attr=> {
         let binCount = d3.max(attr.map(row=> row.length));
@@ -137,6 +137,10 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
     });
 
     console.log('grp work?',groupedData)
+
+    let newGroup = disc.data((d, i)=> groupedData[i]);
+
+    console.log(newGroup)
 
 }
 export function toolbarControl(toolbar, normedPaths, main, calculatedScales){
