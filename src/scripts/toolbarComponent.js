@@ -1,5 +1,6 @@
 import '../styles/index.scss';
 import {formatAttributeData} from './dataFormat';
+import {renderAttributes,  drawContAtt, drawDiscreteAtt, renderPaths} from './rendering';
 import * as d3 from "d3";
 
 export function toolbarControl(toolbar, normedPaths, main, calculatedScales){
