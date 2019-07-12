@@ -1,17 +1,12 @@
 import '../styles/index.scss';
 import * as d3 from "d3";
-import * as Papa from 'papaparse';
-import {edgeFile, nodeFile} from './fileThing';
 import {loadData} from './dataLoad';
 import {allPaths, pullPath, getPath} from './pathCalc';
 import {formatAttributeData} from './dataFormat';
 import {renderTree, renderAttributes,  drawContAtt, drawDiscreteAtt, renderPaths} from './rendering';
 import {renderDistibutions} from './distributionView';
 import {toolbarControl, renderToggles} from './toolbarComponent';
-const csv = require('csv-parser');  
 
-let edgeOb = Papa.parse(edgeFile, {header:true});
-let nodeOb = Papa.parse(nodeFile, {header:true});
 
 let wrap = d3.select('#wrapper');
 
@@ -55,7 +50,7 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     }
 
     let colorKeeper = [
-        '#32C1FE','#3AD701','#E2AD01','#E2019E','#f36b2c','#1abc9c','#493267','#a40b0b','#0095b6'
+        '#32C1FE','#3AD701','#E2AD01','#E2019E','#f36b2c','#1abc9c','#493267','#a40b0b','#0095b6',
     ]
 
     let calculatedScales = Object.keys(calculatedAtt).map((d, i)=> {

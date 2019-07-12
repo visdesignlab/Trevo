@@ -1,5 +1,6 @@
 import '../styles/index.scss';
 import * as d3 from "d3";
+import {renderSelectedView, pathSelected} from './selectedPaths';
 
 export function renderPaths(normedPaths, main){
     /////Rendering ///////
@@ -128,6 +129,11 @@ function branchPaths(wrapper, pathData) {
         let treeNode  = d3.select('#sidebar').selectAll('.node').classed('hover', false);//.filter(f=> d.map(m=> m.name).indexOf(f.name) > -1);
         let treeLinks  = d3.select('#sidebar').selectAll('.link').classed('hover', false);
         return d3.select(this).classed('hover', false)
+    });
+    pathGroups.on('click', (d, i, n)=>{
+        console.log(n[i])
+        d3.select(n[i]).classed('selected-path', true);
+        pathSelected(d);
     });
 
     let speciesTitle = pathGroups.append('text').text(d=> {
