@@ -240,6 +240,9 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
     .attr("d", d=> area(d.pathData))
     .classed('state-area-sum', true);
 
+
+    /////////OBSERVED DISCRETE RENDERING
+
     let observedDiscrete = attributeGroups.filter(f=> f.predicted.type === 'discrete');
     let observedGroup = observedDiscrete.append('g').classed('observed-discrete', true);
     observedGroup.attr('transform', 'translate(920, 0)')
@@ -273,7 +276,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
     .attr("dx", "-.1em")
     .attr("dy", ".8em")
     .style('font-size', 9)
-    .attr("transform", "rotate(-65)");
+    .attr("transform", "rotate(-35)");
 }
 export function toolbarControl(toolbar, normedPaths, main, calculatedScales){
     let button = toolbar.append('button').attr('id', 'view-toggle').attr('attr' , 'button').attr('class', 'btn btn-outline-secondary') 
