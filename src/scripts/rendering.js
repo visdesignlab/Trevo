@@ -136,7 +136,6 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
 
     ////data for observed traits////
     let observed = keys.map(key=> {
-
         let leaves = newNormed.map(path=> {
             return path.filter(n=> n.leaf === true)[0];
         });
@@ -158,11 +157,14 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
             let states = stateCategories.map(st=> {
                 let color = colorScales.filter(f=> f.state == st)[0].color;
                 let xScale = d3.scaleLinear().domain([0, stateCategories.length-1])
-                return {'key': st, 'count': data.filter(f=> f === st).length, 'scale': xScale, 'color': color }
+                
+     
+                return {'key': st, 'count': data.filter(f=> f === st).length, 'x': xScale, 'color': color }
             });
             let max = d3.max(states.map(m=> m.count));
             states.forEach(state=> {
                 state.max = max;
+                state.y = d3.scaleLinear().domain([0, max + 10])
             });
             return states;
         }else{
@@ -183,6 +185,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
 
     let innerTime = predictedAttrGrps.append('g').classed('inner-attr-summary', true);
     innerTime.attr('transform', 'translate(105, 0)');
+    innerTime.append('line').attr('x1', 0).attr('y1', 40).attr('x2', 800).attr('y2', 40).attr('stroke', 'gray').attr('stroke-width', 0.5)
     let attrRect = innerTime.append('rect').classed('attribute-rect-sum', true);
     attrRect.attr('x', 0).attr('y', 0).attr('height', 80).attr('width', 800);
     let label = predictedAttrGrps.append('text').text(d=> d.predicted.attKey);
@@ -190,7 +193,6 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
     let cont = innerTime.filter(f=> f.predicted.type === 'continuous');
 
     //////////experimenting with continuous rendering///////////////////////////////
-
     let contpaths = cont.selectAll('g.summ-paths').data(d=> d.predicted);
     let contEnter = contpaths.enter().append('g').classed('summ-paths', true);
     contpaths = contEnter.merge(contpaths);
@@ -212,7 +214,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
     }).classed('range-rect-sum', true).style('fill', d=> d.color);
     svg.attr('height', (summarizedData.length * 120));
 
-    //////////experimenting with continuous rendering///////////////////////////////
+    //////////experimenting with discrete rendering///////////////////////////////
     let disc = innerTime.filter(f=> f.predicted.type === 'discrete').classed('discrete-sum', true);
 
     let stateGroups = disc.selectAll('.state-sum').data(d=> Object.entries(d.predicted.stateData).map(m=> m[1]));
@@ -241,8 +243,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
     .classed('state-area-sum', true);
 
 
-    /////////OBSERVED DISCRETE RENDERING
-
+    /////////OBSERVED DISCRETE RENDERING///////////////////////
     let observedDiscrete = attributeGroups.filter(f=> f.predicted.type === 'discrete');
     let observedGroup = observedDiscrete.append('g').classed('observed-discrete', true);
     observedGroup.attr('transform', 'translate(920, 0)')
@@ -254,8 +255,8 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
     stateBars = rectBarEnter.merge(stateBars);
 
     stateBars.attr('transform', (d, i)=> {
-        d.scale.range([0, 180]);
-        return 'translate('+ d.scale(i)+ ',0)'});
+        d.x.range([0, 180]);
+        return 'translate('+ d.x(i)+ ',0)'});
 
     let stateRects = stateBars.append('rect').classed('graph-bars', true);
    
@@ -265,6 +266,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
             return scale(0) - scale(d.count);
         }).attr('y', (d, i)=> {
             let scale = d3.scaleLinear().domain([0, d.max + 10]).range([0, 80])
+            console.log(d)
             let move = 80 - (scale(d.count));
             return move;
         }).attr('width', 20).style('fill', d=> d.color)
@@ -277,6 +279,13 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
     .attr("dy", ".8em")
     .style('font-size', 9)
     .attr("transform", "rotate(-35)");
+
+ 
+
+    let axs = observedGroup.data()
+    console.log('ax',axs)
+
+    //NEED TO FINISH THIS
 }
 export function toolbarControl(toolbar, normedPaths, main, calculatedScales){
     let button = toolbar.append('button').attr('id', 'view-toggle').attr('attr' , 'button').attr('class', 'btn btn-outline-secondary') 
