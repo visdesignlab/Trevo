@@ -50,7 +50,7 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     }
 
     let colorKeeper = [
-        '#32C1FE','#3AD701','#E2AD01','#E2019E','#f36b2c','#1abc9c','#f36b2c','#a40b0b','#0095b6'
+        '#32C1FE','#3AD701','#E2AD01','#E2019E','#f36b2c','#1abc9c','#493267','#a40b0b','#0095b6'
     ]
 
     let calculatedScales = Object.keys(calculatedAtt).map((d, i)=> {

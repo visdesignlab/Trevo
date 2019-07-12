@@ -141,8 +141,6 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
             return path.filter(n=> n.leaf === true)[0];
         });
 
-     ///YOU NEED TO GET THE FREQUENCY OF DISCRETE ATT
-
         let data = leaves.map(leaf=> {
             let attr = leaf.attributes[key];
             if(attr.type === 'continuous'){
@@ -155,26 +153,23 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
         });
 
         if(leaves[0].attributes[key].type === 'discrete'){
+            let colorScales = scales.filter(f=> f.field === key)[0].stateColors;
             let stateCategories = leaves[0].attributes[key].states.map(m=> m.state);
             let states = stateCategories.map(st=> {
+                let color = colorScales.filter(f=> f.state == st)[0].color;
                 let xScale = d3.scaleLinear().domain([0, stateCategories.length-1])
-                return {'key': st, 'count': data.filter(f=> f === st).length, 'scale': xScale}
+                return {'key': st, 'count': data.filter(f=> f === st).length, 'scale': xScale, 'color': color }
             });
-
             let max = d3.max(states.map(m=> m.count));
             states.forEach(state=> {
                 state.max = max;
             });
-
             return states;
-
         }else{
             return data.sort();
         };
     });
 
-    console.log(observed)
-    
     let combinedData = observed.map((ob, i)=> {
         return {'observed': ob, 'predicted': summarizedData[i]}
     })
@@ -184,23 +179,15 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
     attributeGroups = attEnter.merge(attributeGroups);
     attributeGroups.attr('transform', (d, i)=> 'translate(0,'+(i * 110)+')');
 
-    //let predictedAttrGrps = svg.selectAll('.summary-attr-grp').data(summarizedData);
-
     let predictedAttrGrps = attributeGroups.append('g').classed('summary-attr-grp', true);
-   // let predictedEnter = predictedAttrGrps.enter().append('g').classed('summary-attr-grp', true);
-   // predictedAttrGrps = predictedEnter.merge(predictedAttrGrps);
-    
+
     let innerTime = predictedAttrGrps.append('g').classed('inner-attr-summary', true);
     innerTime.attr('transform', 'translate(105, 0)');
     let attrRect = innerTime.append('rect').classed('attribute-rect-sum', true);
     attrRect.attr('x', 0).attr('y', 0).attr('height', 80).attr('width', 800);
-
     let label = predictedAttrGrps.append('text').text(d=> d.predicted.attKey);
-
     label.attr('x', 100).attr('y', 25).attr('text-anchor', 'end');
-
     let cont = innerTime.filter(f=> f.predicted.type === 'continuous');
-
 
     //////////experimenting with continuous rendering///////////////////////////////
 
@@ -253,22 +240,23 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
     .attr("d", d=> area(d.pathData))
     .classed('state-area-sum', true);
 
-
     let observedDiscrete = attributeGroups.filter(f=> f.predicted.type === 'discrete');
     let observedGroup = observedDiscrete.append('g').classed('observed-discrete', true);
     observedGroup.attr('transform', 'translate(920, 0)')
     let observedWrapRect = observedGroup.append('rect').attr('width', 200).attr('height', 80).attr('x', 0).attr('y', 0);
   
-    let stateRects = observedGroup.selectAll('.state-bar').data(d=> d.observed);
+    let stateBars = observedGroup.selectAll('.state-bar').data(d=> d.observed);
 
-    let rectBarEnter = stateRects.enter().append('rect').classed('state-bar', true);
-    stateRects = rectBarEnter.merge(stateRects);
+    let rectBarEnter = stateBars.enter().append('g').classed('state-bar', true);
+    stateBars = rectBarEnter.merge(stateBars);
 
-    let xBarScale = d3.scaleLinear().range([0, 200]).domain([0, stateRects.data().length])
-    stateRects.attr('x', (d, i)=> {
-    
+    stateBars.attr('transform', (d, i)=> {
         d.scale.range([0, 180]);
-        return d.scale(i)})
+        return 'translate('+ d.scale(i)+ ',0)'});
+
+    let stateRects = stateBars.append('rect').classed('graph-bars', true);
+   
+    stateRects.attr('x', 0)
         .attr('height', (d, i)=> {
             let scale = d3.scaleLinear().domain([0, d.max + 10]).range([80, 0])
             return scale(0) - scale(d.count);
@@ -276,9 +264,16 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
             let scale = d3.scaleLinear().domain([0, d.max + 10]).range([0, 80])
             let move = 80 - (scale(d.count));
             return move;
-        }).attr('width', 20);
+        }).attr('width', 20).style('fill', d=> d.color)
 
-
+    let labelsG = stateBars.append('g').attr('transform', 'translate(0, 80)');
+    let labels = labelsG.append('text').text(d=> d.key)
+    labels
+    .style("text-anchor", "end")
+    .attr("dx", "-.1em")
+    .attr("dy", ".8em")
+    .style('font-size', 9)
+    .attr("transform", "rotate(-65)");
 }
 export function toolbarControl(toolbar, normedPaths, main, calculatedScales){
     let button = toolbar.append('button').attr('id', 'view-toggle').attr('attr' , 'button').attr('class', 'btn btn-outline-secondary') 
