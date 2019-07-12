@@ -1,0 +1,289 @@
+import '../styles/index.scss';
+import {formatAttributeData} from './dataFormat';
+import * as d3 from "d3";
+
+export function renderDistibutions(normedPaths, mainDiv, scales){
+  
+    let keys = Object.keys(normedPaths[0][0].attributes);
+
+    let newNormed = [...normedPaths];
+
+    formatAttributeData(newNormed, scales, null);
+
+    let maxBranch = d3.max(newNormed.map(p=> p.length)) - 1;
+    let xScale = d3.scaleLinear().domain([0, (maxBranch - 1)]).clamp(true)
+  
+    let svg = mainDiv.append('svg');
+    svg.attr('id', 'main-summary-view');
+
+    let addMoveToAttributes = keys.map(key=> {
+            let filtered = newNormed.map(path=> {
+                return path.filter(n=> n.leaf != true)
+            });
+            let data = filtered.map(path=> {
+                return path.map((node, i)=> {
+                    let attr = node.attributes[key];
+                    let lastnode = path.length - 1
+                
+                    if(attr.type === 'discrete'){
+                        let thisScale = xScale;
+                        thisScale.range([0, 800]);
+                        attr.move = thisScale(i);
+                        attr.states = node.attributes[key].states.map(s=> {
+                            s.move = attr.move;
+                            return s;
+                        });
+                    }else{
+                        let thisScale = xScale;
+                        thisScale.range([0, 790]);
+                        attr.move = (i < lastnode) ? xScale(i): xScale(maxBranch - 1);
+                    }
+                    return attr;
+                });
+            });
+            data.attKey = key;
+            return data;
+    });
+
+    let summarizedData = addMoveToAttributes.map(attr=> {
+       
+        if(attr[0][0].type === 'discrete'){
+            
+           // let binCount = d3.max(attr.map(row=> row.length));
+            let moveMap = attr.filter(row=> row.length === maxBranch)[0];
+            let stateKeys = attr[0][0].states.map(s=> s.state);
+            let distrib = {}
+            distrib.stateData = {}
+            stateKeys.forEach(key => {
+              
+                 let distribution = Array(maxBranch).fill({'data':[]}).map((u, i)=> {
+                     let newOb = {'data': u.data}
+                     newOb.move = moveMap[i].move
+                     return newOb;
+                 });
+                 attr.forEach((row)=> {
+                     let test = row.filter(r=> r.leaf != true).map(node=> node.states.filter(s=> s.state === key)[0])
+                     test.forEach((t, i)=> {
+                         let newT = t;
+                         distribution[i].data.push(newT);
+                        });
+                 });
+                 
+                 distrib.stateData[key] = {};
+                 let data = distribution.map(drow=> {
+                     let filtered = drow.data.filter(d=> {
+                         return d.move === drow.move});
+                     return filtered;
+                 })
+                 let color = data[0][0].color;
+               
+                 let thisScale = [...scales].filter(f=> f.field == attr.attKey)[0].scales.filter(f=> f.scaleName == key)[0].yScale;
+            
+                 thisScale.range([0, 80]);
+                 thisScale.clamp(true)
+               
+                 let realMean = data.map(branch=> d3.mean(branch.map(b=> b.realVal)))
+                 let realStDev = data.map(branch=> d3.deviation(branch.map(b=> b.realVal)))
+                 let realStUp = realMean.map((av, i)=> av + realStDev[i]);
+                 let realStDown = realMean.map((av, i)=> av - realStDev[i]);
+     
+                let scaleMean = data.map(branch=> d3.mean(branch.map(b=> thisScale(b.realVal))))
+                let scaleStDev = data.map(branch=> d3.deviation(branch.map(b=> thisScale(b.realVal))))
+                let scaleStUp = scaleMean.map((av, i)=> av + scaleStDev[i]);
+                let scaleStDown = scaleMean.map((av, i)=> av - scaleStDev[i]);
+     
+                let moves = distribution.map(d=> d.move)
+
+                let final = moves.map((m, j)=> {
+                     return {
+                         'x': m,
+                         'realMean': realMean[j],
+                         'realStDev': realStDev[j],
+                         'realStUp': realStUp[j],
+                         'realStDown': realStDown[j],
+                         'scaleMean': scaleMean[j],
+                         'scaleStDev': scaleStDev[j],
+                         'scaleStUp': scaleStUp[j],
+                         'scaleStDown': scaleStDown[j],
+                        }
+                 });
+
+                 distrib.stateData[key].pathData = final;
+                 distrib.stateData[key].color = color;
+
+             });
+             distrib.attKey = attr.attKey;
+             distrib.type = 'discrete';
+             return distrib;
+        }else{
+            attr.type = 'continuous';
+            let thisScale = [...scales].filter(f=> f.field == attr.attKey)[0].yScale;
+            thisScale.range([0, 80]);//.scales.filter(f=> f.scaleName == key)[0].yScale;
+            thisScale.clamp(true)
+            let newScale = attr.map(row=> {
+                return row.map(n=> {
+                    n.scaleVal = thisScale(n.realVal)
+                    n.scaledHigh = thisScale(n.upperCI95)
+                    n.scaledLow = thisScale(n.lowerCI95)
+                    return n;
+                });
+            });
+          
+            newScale.type = 'continuous';
+            newScale.attKey = attr.attKey;
+            return newScale;
+        }
+    })
+
+    ////data for observed traits////
+    let observed = keys.map(key=> {
+        let leaves = newNormed.map(path=> {
+            return path.filter(n=> n.leaf === true)[0];
+        });
+
+        let data = leaves.map(leaf=> {
+            let attr = leaf.attributes[key];
+            if(attr.type === 'continuous'){
+                return attr.realVal;
+            }else if(attr.type === 'discrete'){
+                return attr.winState;
+            }else{
+                console.error('attribute type not found');
+            }
+        });
+
+        if(leaves[0].attributes[key].type === 'discrete'){
+            let colorScales = scales.filter(f=> f.field === key)[0].stateColors;
+            let stateCategories = leaves[0].attributes[key].states.map(m=> m.state);
+            let states = stateCategories.map(st=> {
+                let color = colorScales.filter(f=> f.state == st)[0].color;
+                let xScale = d3.scaleLinear().domain([0, stateCategories.length-1])
+            
+                return {'key': st, 'count': data.filter(f=> f === st).length, 'x': xScale, 'color': color }
+            });
+            let max = d3.max(states.map(m=> m.count));
+            states.forEach(state=> {
+                state.max = max;
+                state.y = d3.scaleLinear().domain([0, max + 10])
+            });
+            return states;
+        }else{
+            return data.sort();
+        };
+    });
+
+    let combinedData = observed.map((ob, i)=> {
+        return {'observed': ob, 'predicted': summarizedData[i]}
+    })
+
+    let attributeGroups = svg.selectAll('.combined-attr-grp').data(combinedData);
+    let attEnter = attributeGroups.enter().append('g').classed('combined-attr-grp', true);
+    attributeGroups = attEnter.merge(attributeGroups);
+    attributeGroups.attr('transform', (d, i)=> 'translate(0,'+(i * 110)+')');
+
+    let predictedAttrGrps = attributeGroups.append('g').classed('summary-attr-grp', true);
+
+    let innerTime = predictedAttrGrps.append('g').classed('inner-attr-summary', true);
+    innerTime.attr('transform', 'translate(105, 0)');
+    innerTime.append('line').attr('x1', 0).attr('y1', 40).attr('x2', 800).attr('y2', 40).attr('stroke', 'gray').attr('stroke-width', 0.5)
+    let attrRect = innerTime.append('rect').classed('attribute-rect-sum', true);
+    attrRect.attr('x', 0).attr('y', 0).attr('height', 80).attr('width', 800);
+    let label = predictedAttrGrps.append('text').text(d=> d.predicted.attKey);
+    label.attr('x', 100).attr('y', 25).attr('text-anchor', 'end');
+    let cont = innerTime.filter(f=> f.predicted.type === 'continuous');
+
+    //////////experimenting with continuous rendering///////////////////////////////
+    let contpaths = cont.selectAll('g.summ-paths').data(d=> d.predicted);
+    let contEnter = contpaths.enter().append('g').classed('summ-paths', true);
+    contpaths = contEnter.merge(contpaths);
+
+    var lineGen = d3.line()
+    .x(d=> d.move)
+    .y(d=> d.scaleVal);
+
+    let line = contpaths.append('path')
+    .attr("d", lineGen)
+    .attr("class", "inner-line-sum")
+    .style('stroke', (d)=> d[0].color);
+
+    let nodes = contpaths.selectAll('.node-sum').data(d=> d).enter().append('g').attr('class', 'node-sum');
+    nodes.attr('transform', (d, i) => 'translate('+d.move+', 0)');
+    nodes.append('rect').attr('x', 0).attr('y', 0).attr('width', 10).attr('height', 80).classed('inner-node-wrap', true);
+    nodes.append('rect').attr('x', 0).attr('y', (d, i)=> d.scaledLow).attr('width', 10).attr('height', (d, i)=> {
+        return (d.scaledHigh - d.scaledLow);
+    }).classed('range-rect-sum', true).style('fill', d=> d.color);
+    svg.attr('height', (summarizedData.length * 120));
+
+    //////////experimenting with discrete rendering///////////////////////////////
+    let disc = innerTime.filter(f=> f.predicted.type === 'discrete').classed('discrete-sum', true);
+
+    let stateGroups = disc.selectAll('.state-sum').data(d=> Object.entries(d.predicted.stateData).map(m=> m[1]));
+    let stateEnter = stateGroups.enter().append('g').classed('state-sum', true);
+    stateGroups = stateEnter.merge(stateGroups);
+
+    var lineGenD = d3.line()
+    .x(d=> d.x)
+    .y(d=> d.scaleMean);
+
+    let lineD = stateGroups.append('path')
+    .attr("d", d=> lineGenD(d.pathData))
+    .attr("class", "inner-line-sum-discrete")
+    .style('stroke', (d, i)=> {
+        return d.color
+    });
+
+    let area = d3.area()
+    .x(d => d.x)
+    .y0(d => d.scaleStDown)
+    .y1(d => d.scaleStUp)
+    
+    let areaG =   stateGroups.append("path")
+    .attr("fill", d=> d.color)
+    .attr("d", d=> area(d.pathData))
+    .classed('state-area-sum', true);
+
+
+    /////////OBSERVED DISCRETE RENDERING///////////////////////
+    let observedDiscrete = attributeGroups.filter(f=> f.predicted.type === 'discrete');
+    let observedGroup = observedDiscrete.append('g').classed('observed-discrete', true);
+    observedGroup.attr('transform', 'translate(920, 0)')
+    let observedWrapRect = observedGroup.append('rect').attr('width', 200).attr('height', 80).attr('x', 0).attr('y', 0);
+  
+    let stateBars = observedGroup.selectAll('.state-bar').data(d=> d.observed);
+
+    let rectBarEnter = stateBars.enter().append('g').classed('state-bar', true);
+    stateBars = rectBarEnter.merge(stateBars);
+
+    stateBars.attr('transform', (d, i)=> {
+        d.x.range([0, 180]);
+        return 'translate('+ d.x(i)+ ',0)'});
+
+    let stateRects = stateBars.append('rect').classed('graph-bars', true);
+   
+    stateRects.attr('x', 0)
+        .attr('height', (d, i)=> {
+            let scale = d3.scaleLinear().domain([0, d.max + 10]).range([80, 0])
+            return scale(0) - scale(d.count);
+        }).attr('y', (d, i)=> {
+            let scale = d3.scaleLinear().domain([0, d.max + 10]).range([0, 80])
+            console.log(d)
+            let move = 80 - (scale(d.count));
+            return move;
+        }).attr('width', 20).style('fill', d=> d.color)
+
+    let labelsG = stateBars.append('g').attr('transform', 'translate(0, 80)');
+    let labels = labelsG.append('text').text(d=> d.key)
+    labels
+    .style("text-anchor", "end")
+    .attr("dx", "-.1em")
+    .attr("dy", ".8em")
+    .style('font-size', 9)
+    .attr("transform", "rotate(-35)");
+
+ 
+
+    let axs = observedGroup.data()
+    console.log('ax',axs)
+
+    //NEED TO FINISH THIS
+}
