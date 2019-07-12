@@ -7,8 +7,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
 
     let newNormed = [...normedPaths];
 
-    formatAttributeData(newNormed, scales);
-    //console.log('test', test)
+    formatAttributeData(newNormed, scales, null);
 
     let maxBranch = d3.max(newNormed.map(p=> p.length)) - 1;
     let xScale = d3.scaleLinear().range([0, 800]).domain([0, (maxBranch - 1)]).clamp(true)
@@ -20,13 +19,11 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
             let filtered = newNormed.map(path=> {
                 return path.filter(n=> n.leaf != true)
             });
-            console.log('fil', filtered, maxBranch)
             let data = filtered.map(path=> {
                 return path.map((node, i)=> {
                     let attr = node.attributes[key];
                     let lastnode = path.length - 1
-                    console.log('last',lastnode)
-                    
+                
                     if(attr.type === 'discrete'){
                         attr.move = xScale(i);
                         attr.states = node.attributes[key].states.map(s=> {
@@ -77,13 +74,18 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
                  })
                  let color = data[0][0].color;
                
+                 let thisScale = [...scales].filter(f=> f.field == attr.attKey)[0].scales.filter(f=> f.scaleName == key)[0].yScale;
+            
+                 thisScale.range([0, 80]);
+                 thisScale.clamp(true)
+               
                  let realMean = data.map(branch=> d3.mean(branch.map(b=> b.realVal)))
                  let realStDev = data.map(branch=> d3.deviation(branch.map(b=> b.realVal)))
                  let realStUp = realMean.map((av, i)=> av + realStDev[i]);
                  let realStDown = realMean.map((av, i)=> av - realStDev[i]);
      
-                let scaleMean = data.map(branch=> d3.mean(branch.map(b=> b.scaleVal)))
-                let scaleStDev = data.map(branch=> d3.deviation(branch.map(b=> b.scaleVal)))
+                let scaleMean = data.map(branch=> d3.mean(branch.map(b=> thisScale(b.realVal))))
+                let scaleStDev = data.map(branch=> d3.deviation(branch.map(b=> thisScale(b.realVal))))
                 let scaleStUp = scaleMean.map((av, i)=> av + scaleStDev[i]);
                 let scaleStDown = scaleMean.map((av, i)=> av - scaleStDev[i]);
      
@@ -100,7 +102,6 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
                          'scaleStDev': scaleStDev[j],
                          'scaleStUp': scaleStUp[j],
                          'scaleStDown': scaleStDown[j],
-                         
                         }
                  });
 
@@ -115,21 +116,36 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
         }else{
       
             attr.type = 'continuous';
-            return attr;
+            let thisScale = [...scales].filter(f=> f.field == attr.attKey)[0].yScale;
+            thisScale.range([0, 80]);//.scales.filter(f=> f.scaleName == key)[0].yScale;
+            thisScale.clamp(true)
+            let newScale = attr.map(row=> {
+                return row.map(n=> {
+                    n.scaleVal = thisScale(n.realVal)
+                    n.scaledHigh = thisScale(n.upperCI95)
+                    n.scaledLow = thisScale(n.lowerCI95)
+                    return n;
+                });
+            });
+          
+            newScale.type = 'continuous';
+            newScale.attKey = attr.attKey;
+          
+            return newScale;
         }
     })
 
-    console.log('amta', summarizedData)
+
 
     let attributeGroups = svg.selectAll('.summary-attr-grp').data(summarizedData);
     let attributeGrpEnter = attributeGroups.enter().append('g').classed('summary-attr-grp', true);
     attributeGroups = attributeGrpEnter.merge(attributeGroups);
-    attributeGroups.attr('transform', (d, i)=> 'translate(0,'+(i * 50)+')');
+    attributeGroups.attr('transform', (d, i)=> 'translate(0,'+(i * 110)+')');
 
     let innerTime = attributeGrpEnter.append('g').classed('inner-attr-summary', true);
     innerTime.attr('transform', 'translate(150, 0)');
     let attrRect = innerTime.append('rect').classed('attribute-rect-sum', true);
-    attrRect.attr('x', 0).attr('y', 0).attr('height', 45);
+    attrRect.attr('x', 0).attr('y', 0).attr('height', 80);
 
     let label = attributeGroups.append('text').text(d=> d.attKey);
 
@@ -151,7 +167,9 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
 
     var lineGen = d3.line()
     .x(d=> d.move)
-    .y(d=> d.scaleVal);
+    .y(d=> {
+        console.log('ddd', d)
+        return d.scaleVal});
 
     let line = contpaths.append('path')
     .attr("d", lineGen)
@@ -160,11 +178,11 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
 
     let nodes = contpaths.selectAll('.node-sum').data(d=> d).enter().append('g').attr('class', 'node-sum');
     nodes.attr('transform', (d, i) => 'translate('+d.move+', 0)');
-    nodes.append('rect').attr('x', 0).attr('y', 0).attr('width', 5).attr('height', 45).classed('inner-node-wrap', true);
+    nodes.append('rect').attr('x', 0).attr('y', 0).attr('width', 5).attr('height', 80).classed('inner-node-wrap', true);
     nodes.append('rect').attr('x', 0).attr('y', (d, i)=> d.scaledLow).attr('width', 5).attr('height', (d, i)=> {
         return (d.scaledHigh - d.scaledLow);
     }).classed('range-rect-sum', true).style('fill', d=> d.color);
-    svg.attr('height', (summarizedData.length * 55));
+    svg.attr('height', (summarizedData.length * 120));
 
 
 
@@ -172,7 +190,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
     let stateEnter = stateGroups.enter().append('g').classed('state-sum', true);
     stateGroups = stateEnter.merge(stateGroups);
 
-    console.log(stateGroups.data())
+ 
 
     var lineGenD = d3.line()
     .x(d=> d.x)
@@ -190,13 +208,10 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
     .y0(d => d.scaleStDown)
     .y1(d => d.scaleStUp)
     
-
     let areaG =   stateGroups.append("path")
     .attr("fill", d=> d.color)
     .attr("d", d=> area(d.pathData))
     .classed('state-area-sum', true);
-
-
 
 }
 export function toolbarControl(toolbar, normedPaths, main, calculatedScales){
@@ -307,6 +322,7 @@ export function formatAttributeData(normedPaths, scales, filterArray){
         return keys.map((key)=> {
             return path.map((m)=> {
                 if(m.attributes[key].type === 'continuous'){
+                  
                     m.attributes[key].color = scales.filter(f=> f.field === key)[0].catColor;
                     m.attributes[key].move = m.move;
                     m.attributes[key].label = key;

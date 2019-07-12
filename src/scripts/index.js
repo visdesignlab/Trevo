@@ -141,6 +141,8 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
                     res.scaleVal = scale(res.estimate);
                     res.scaledLow = scale(res.lowerCI95);
                     res.scaledHigh = scale(res.upperCI95);
+                    res.realVal = res.estimate;
+
                     res.type = 'continuous'
                     edge.attributes = (edge.attributes != undefined)? edge.attributes : {}
                     edge.attributes[attr] = res;
@@ -185,6 +187,9 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
                 p[0].attributes[att].scaleVal =  scale(root.estimate);
                 p[0].attributes[att].scaledLow =  scale(root.lowerCI95);
                 p[0].attributes[att].scaledHigh =  scale(root.upperCI95);
+                p[0].attributes[att].realVal = root.estimate;
+                p[0].attributes[att].upperCI95 = root.upperCI95;
+                p[0].attributes[att].lowerCI95 = root.lowerCI95;
                 p[0].attributes[att].scale = scale;
                 p[0].attributes[att].type = 'continuous';
             }else if(calculatedAtt[att].type == 'discrete'){
