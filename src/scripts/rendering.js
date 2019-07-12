@@ -97,7 +97,7 @@ export function renderTree(nestedData, sidebar){
  ///////////
 }
 
-function branchPaths(wrapper, pathData) {
+export function branchPaths(wrapper, pathData) {
 
     /////Counting frequency of nodes//////
     let branchFrequency = pathData.flatMap(row=> row.flatMap(f=> f.node)).reduce(function (acc, curr) {

@@ -1,4 +1,5 @@
 import * as d3 from "d3";
+import {branchPaths} from './rendering';
 
 export function pathSelected(selectedPath){
 
@@ -15,5 +16,11 @@ export function renderSelectedView(selectedArray, selectedDiv){
     let svgTest = selectedDiv.select('svg.select-svg');
     console.log(svgTest.empty())
     let svg = svgTest.empty()? selectedDiv.append('svg').classed('select-svg', true) : svgTest;
+
+   // let paths = svg.selectAll('g').data(selectedArray).join('g');
+   let paths = branchPaths(svg, selectedArray)
+
+    ////NEED TO GENERALIZE BRANCH FUNCTION IN RENDER TO WORK HERE
+
     return svg;
 }
