@@ -10,7 +10,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
     formatAttributeData(newNormed, scales, null);
 
     let maxBranch = d3.max(newNormed.map(p=> p.length)) - 1;
-    let xScale = d3.scaleLinear().range([0, 800]).domain([0, (maxBranch - 1)]).clamp(true)
+    let xScale = d3.scaleLinear().domain([0, (maxBranch - 1)]).clamp(true)
   
     let svg = mainDiv.append('svg');
     svg.attr('id', 'main-summary-view');
@@ -25,12 +25,16 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
                     let lastnode = path.length - 1
                 
                     if(attr.type === 'discrete'){
-                        attr.move = xScale(i);
+                        let thisScale = xScale;
+                        thisScale.range([0, 800]);
+                        attr.move = thisScale(i);
                         attr.states = node.attributes[key].states.map(s=> {
                             s.move = attr.move;
                             return s;
                         });
                     }else{
+                        let thisScale = xScale;
+                        thisScale.range([0, 790]);
                         attr.move = (i < lastnode) ? xScale(i): xScale(maxBranch - 1);
                     }
                     return attr;
@@ -152,9 +156,17 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
 
         if(leaves[0].attributes[key].type === 'discrete'){
             let stateCategories = leaves[0].attributes[key].states.map(m=> m.state);
-            return stateCategories.map(st=> {
-                return {'key': st, 'count': data.filter(f=> f === st).length}
+            let states = stateCategories.map(st=> {
+                let xScale = d3.scaleLinear().domain([0, stateCategories.length-1])
+                return {'key': st, 'count': data.filter(f=> f === st).length, 'scale': xScale}
             });
+
+            let max = d3.max(states.map(m=> m.count));
+            states.forEach(state=> {
+                state.max = max;
+            });
+
+            return states;
 
         }else{
             return data.sort();
@@ -178,7 +190,6 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
    // let predictedEnter = predictedAttrGrps.enter().append('g').classed('summary-attr-grp', true);
    // predictedAttrGrps = predictedEnter.merge(predictedAttrGrps);
     
-
     let innerTime = predictedAttrGrps.append('g').classed('inner-attr-summary', true);
     innerTime.attr('transform', 'translate(105, 0)');
     let attrRect = innerTime.append('rect').classed('attribute-rect-sum', true);
@@ -246,7 +257,27 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
     let observedDiscrete = attributeGroups.filter(f=> f.predicted.type === 'discrete');
     let observedGroup = observedDiscrete.append('g').classed('observed-discrete', true);
     observedGroup.attr('transform', 'translate(920, 0)')
-    observedGroup.append('rect').attr('width', 200).attr('height', 80).attr('x', 0).attr('y', 0);
+    let observedWrapRect = observedGroup.append('rect').attr('width', 200).attr('height', 80).attr('x', 0).attr('y', 0);
+  
+    let stateRects = observedGroup.selectAll('.state-bar').data(d=> d.observed);
+
+    let rectBarEnter = stateRects.enter().append('rect').classed('state-bar', true);
+    stateRects = rectBarEnter.merge(stateRects);
+
+    let xBarScale = d3.scaleLinear().range([0, 200]).domain([0, stateRects.data().length])
+    stateRects.attr('x', (d, i)=> {
+    
+        d.scale.range([0, 180]);
+        return d.scale(i)})
+        .attr('height', (d, i)=> {
+            let scale = d3.scaleLinear().domain([0, d.max + 10]).range([80, 0])
+            return scale(0) - scale(d.count);
+        }).attr('y', (d, i)=> {
+            let scale = d3.scaleLinear().domain([0, d.max + 10]).range([0, 80])
+            let move = 80 - (scale(d.count));
+            return move;
+        }).attr('width', 20);
+
 
 }
 export function toolbarControl(toolbar, normedPaths, main, calculatedScales){
@@ -433,9 +464,6 @@ export function renderTree(nestedData, sidebar){
  // maps the node data to the tree layout
      treenodes = treemap(treenodes);
  
- // append the svg obgect to the body of the page
- // appends a 'group' element to 'svg'
- // moves the 'group' element to the top left margin
      var treeSvg = sidebar.append("svg")
      .attr("width", width + margin.left + margin.right)
      .attr("height", height + margin.top + margin.bottom),
@@ -603,8 +631,6 @@ export function drawDiscreteAtt(predictedAttrGrps, scales){
     let innerTimelineDis = discreteAtt.append('g').classed('attribute-time-line', true);
 
     innerTimelineDis.append('line').classed('half', true).attr('x1', 0).attr('y1', 22).attr('x2', 1010).attr('y2', 22)
-
-///THIS IS WHERE YOU LEFT OFF//////
     
     let statePath = innerTimelineDis.selectAll('g').data(d=> {
         let disct = d.map(m=> {
