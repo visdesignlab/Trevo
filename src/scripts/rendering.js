@@ -32,9 +32,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
                         });
                     }else{
                         attr.move = (i < lastnode) ? xScale(i): xScale(maxBranch - 1);
-
                     }
-                    //attr.move = node.move;
                     return attr;
                 });
             });
@@ -112,9 +110,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
              distrib.attKey = attr.attKey;
              distrib.type = 'discrete';
              return distrib;
-
         }else{
-      
             attr.type = 'continuous';
             let thisScale = [...scales].filter(f=> f.field == attr.attKey)[0].yScale;
             thisScale.range([0, 80]);//.scales.filter(f=> f.scaleName == key)[0].yScale;
@@ -130,46 +126,80 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
           
             newScale.type = 'continuous';
             newScale.attKey = attr.attKey;
-          
             return newScale;
         }
     })
 
+    ////data for observed traits////
+    let observed = keys.map(key=> {
 
+        let leaves = newNormed.map(path=> {
+            return path.filter(n=> n.leaf === true)[0];
+        });
 
-    let attributeGroups = svg.selectAll('.summary-attr-grp').data(summarizedData);
-    let attributeGrpEnter = attributeGroups.enter().append('g').classed('summary-attr-grp', true);
-    attributeGroups = attributeGrpEnter.merge(attributeGroups);
+     ///YOU NEED TO GET THE FREQUENCY OF DISCRETE ATT
+
+        let data = leaves.map(leaf=> {
+            let attr = leaf.attributes[key];
+            if(attr.type === 'continuous'){
+                return attr.realVal;
+            }else if(attr.type === 'discrete'){
+                return attr.winState;
+            }else{
+                console.error('attribute type not found');
+            }
+        });
+
+        if(leaves[0].attributes[key].type === 'discrete'){
+            let stateCategories = leaves[0].attributes[key].states.map(m=> m.state);
+            return stateCategories.map(st=> {
+                return {'key': st, 'count': data.filter(f=> f === st).length}
+            });
+
+        }else{
+            return data.sort();
+        };
+    });
+
+    console.log(observed)
+    
+    let combinedData = observed.map((ob, i)=> {
+        return {'observed': ob, 'predicted': summarizedData[i]}
+    })
+
+    let attributeGroups = svg.selectAll('.combined-attr-grp').data(combinedData);
+    let attEnter = attributeGroups.enter().append('g').classed('combined-attr-grp', true);
+    attributeGroups = attEnter.merge(attributeGroups);
     attributeGroups.attr('transform', (d, i)=> 'translate(0,'+(i * 110)+')');
 
-    let innerTime = attributeGrpEnter.append('g').classed('inner-attr-summary', true);
-    innerTime.attr('transform', 'translate(150, 0)');
-    let attrRect = innerTime.append('rect').classed('attribute-rect-sum', true);
-    attrRect.attr('x', 0).attr('y', 0).attr('height', 80);
+    //let predictedAttrGrps = svg.selectAll('.summary-attr-grp').data(summarizedData);
 
-    let label = attributeGroups.append('text').text(d=> d.attKey);
+    let predictedAttrGrps = attributeGroups.append('g').classed('summary-attr-grp', true);
+   // let predictedEnter = predictedAttrGrps.enter().append('g').classed('summary-attr-grp', true);
+   // predictedAttrGrps = predictedEnter.merge(predictedAttrGrps);
+    
+
+    let innerTime = predictedAttrGrps.append('g').classed('inner-attr-summary', true);
+    innerTime.attr('transform', 'translate(105, 0)');
+    let attrRect = innerTime.append('rect').classed('attribute-rect-sum', true);
+    attrRect.attr('x', 0).attr('y', 0).attr('height', 80).attr('width', 800);
+
+    let label = predictedAttrGrps.append('text').text(d=> d.predicted.attKey);
 
     label.attr('x', 100).attr('y', 25).attr('text-anchor', 'end');
 
-    let cont = innerTime.filter(f=> f.type === 'continuous');
+    let cont = innerTime.filter(f=> f.predicted.type === 'continuous');
 
-    let disc = innerTime.filter(f=> f.type === 'discrete').classed('discrete-sum', true)
 
-    ////////
-    //experimenting with continuous rendering
+    //////////experimenting with continuous rendering///////////////////////////////
 
-    let contpaths = cont.selectAll('g.summ-paths').data(d=> {
-        return d});
+    let contpaths = cont.selectAll('g.summ-paths').data(d=> d.predicted);
     let contEnter = contpaths.enter().append('g').classed('summ-paths', true);
     contpaths = contEnter.merge(contpaths);
 
-    //contpaths.attr('transform', 'translate(150px, 0)');
-
     var lineGen = d3.line()
     .x(d=> d.move)
-    .y(d=> {
-        console.log('ddd', d)
-        return d.scaleVal});
+    .y(d=> d.scaleVal);
 
     let line = contpaths.append('path')
     .attr("d", lineGen)
@@ -178,19 +208,18 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
 
     let nodes = contpaths.selectAll('.node-sum').data(d=> d).enter().append('g').attr('class', 'node-sum');
     nodes.attr('transform', (d, i) => 'translate('+d.move+', 0)');
-    nodes.append('rect').attr('x', 0).attr('y', 0).attr('width', 5).attr('height', 80).classed('inner-node-wrap', true);
-    nodes.append('rect').attr('x', 0).attr('y', (d, i)=> d.scaledLow).attr('width', 5).attr('height', (d, i)=> {
+    nodes.append('rect').attr('x', 0).attr('y', 0).attr('width', 10).attr('height', 80).classed('inner-node-wrap', true);
+    nodes.append('rect').attr('x', 0).attr('y', (d, i)=> d.scaledLow).attr('width', 10).attr('height', (d, i)=> {
         return (d.scaledHigh - d.scaledLow);
     }).classed('range-rect-sum', true).style('fill', d=> d.color);
     svg.attr('height', (summarizedData.length * 120));
 
+    //////////experimenting with continuous rendering///////////////////////////////
+    let disc = innerTime.filter(f=> f.predicted.type === 'discrete').classed('discrete-sum', true);
 
-
-    let stateGroups = disc.selectAll('.state-sum').data(d=> Object.entries(d.stateData).map(m=> m[1]));
+    let stateGroups = disc.selectAll('.state-sum').data(d=> Object.entries(d.predicted.stateData).map(m=> m[1]));
     let stateEnter = stateGroups.enter().append('g').classed('state-sum', true);
     stateGroups = stateEnter.merge(stateGroups);
-
- 
 
     var lineGenD = d3.line()
     .x(d=> d.x)
@@ -213,6 +242,12 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
     .attr("d", d=> area(d.pathData))
     .classed('state-area-sum', true);
 
+
+    let observedDiscrete = attributeGroups.filter(f=> f.predicted.type === 'discrete');
+    let observedGroup = observedDiscrete.append('g').classed('observed-discrete', true);
+    observedGroup.attr('transform', 'translate(920, 0)')
+    observedGroup.append('rect').attr('width', 200).attr('height', 80).attr('x', 0).attr('y', 0);
+
 }
 export function toolbarControl(toolbar, normedPaths, main, calculatedScales){
     let button = toolbar.append('button').attr('id', 'view-toggle').attr('attr' , 'button').attr('class', 'btn btn-outline-secondary') 
@@ -228,16 +263,16 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales){
               /// LOWER ATTRIBUTE VISUALIZATION ///
             let attributeWrapper = pathGroups.append('g').classed('attribute-wrapper', true);
             let attData = formatAttributeData(normedPaths, calculatedScales)
-            let attributeGroups = renderAttributes(attributeWrapper, attData, calculatedScales, null);
+            let predictedAttrGrps = renderAttributes(attributeWrapper, attData, calculatedScales, null);
         
             let attributeHeight = 45;
             pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (Object.keys(d[1].attributes).length + 1))) +')');
-            // renderToggles(normedPaths, toggleSVG, attributeGroups, calculatedScales);
-            drawContAtt(attributeGroups);
-            drawDiscreteAtt(attributeGroups, calculatedScales);
+            // renderToggles(normedPaths, toggleSVG, predictedAttrGrps, calculatedScales);
+            drawContAtt(predictedAttrGrps);
+            drawDiscreteAtt(predictedAttrGrps, calculatedScales);
 
             //tranforming elements
-            main.select('#main-path-view').style('height', ((normedPaths.length + attributeGroups.data().map(m=> m[0]).length)* 30) + 'px');
+            main.select('#main-path-view').style('height', ((normedPaths.length + predictedAttrGrps.data().map(m=> m[0]).length)* 30) + 'px');
             attributeWrapper.attr('transform', (d)=> 'translate(140, 25)');
             ///////////////////////////////////
 
@@ -276,13 +311,13 @@ export function renderToggles(normedPaths, toggleSVG, scales){
           /// LOWER ATTRIBUTE VISUALIZATION ///
       
         let attData =  formatAttributeData(normedPaths, scales, newKeys.data());
-        let attributeGroups = renderAttributes(attributeWrapper, attData, scales, null);
+        let predictedAttrGrps = renderAttributes(attributeWrapper, attData, scales, null);
 
-        d3.select('#main-path-view').style('height', ((normedPaths.length + attributeGroups.data().map(m=> m[0]).length)* 30) + 'px');
+        d3.select('#main-path-view').style('height', ((normedPaths.length + predictedAttrGrps.data().map(m=> m[0]).length)* 30) + 'px');
         d3.selectAll('.paths').attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (newKeys.data().length + 1))) +')');
     
-        drawContAtt(attributeGroups);
-        drawDiscreteAtt(attributeGroups, scales);
+        drawContAtt(predictedAttrGrps);
+        drawDiscreteAtt(predictedAttrGrps, scales);
 
     });
     let labelText = labelGroupEnter.append('text').text(d=> d).style('font-size', 10);
@@ -360,11 +395,11 @@ export function renderAttributes(attributeWrapper, data, scales, filterArray){
 
     let attributeHeight = 45;
 
-    let attributeGroups = attributeWrapper.selectAll('g').data((d, i)=> data[i]).enter().append('g');
+    let predictedAttrGrps = attributeWrapper.selectAll('g').data((d, i)=> data[i]).enter().append('g');
 
-    attributeGroups.attr('transform', (d, i) => 'translate(0, '+(i * (attributeHeight + 5))+')');
+    predictedAttrGrps.attr('transform', (d, i) => 'translate(0, '+(i * (attributeHeight + 5))+')');
 
-    return attributeGroups;
+    return predictedAttrGrps;
 }
 
 function continuousPaths(innerTimeline){
@@ -512,9 +547,9 @@ function branchPaths(wrapper, pathData) {
 
     return pathGroups;
 }
-export function drawContAtt(attributeGroups){
+export function drawContAtt(predictedAttrGrps){
 
-    let continuousAtt = attributeGroups.filter(d=> {
+    let continuousAtt = predictedAttrGrps.filter(d=> {
         return d[0].type === 'continuous';
     });
 
@@ -554,9 +589,9 @@ export function drawContAtt(attributeGroups){
     .attr('transform', (d, i)=> 'translate(0, '+ d.scaleVal +')')
     .attr('fill', d=> d.color);
 }
-export function drawDiscreteAtt(attributeGroups, scales){
+export function drawDiscreteAtt(predictedAttrGrps, scales){
 
-    let discreteAtt = attributeGroups.filter(d=> {
+    let discreteAtt = predictedAttrGrps.filter(d=> {
         return d[d.length - 1].type === 'discrete';
     });
 
@@ -572,7 +607,6 @@ export function drawDiscreteAtt(attributeGroups, scales){
 ///THIS IS WHERE YOU LEFT OFF//////
     
     let statePath = innerTimelineDis.selectAll('g').data(d=> {
-      
         let disct = d.map(m=> {
             let test = (m.leaf == true) ? m.states.map(s=> {
                 s.move = m.move;
@@ -580,8 +614,7 @@ export function drawDiscreteAtt(attributeGroups, scales){
                 return s
             }) : m;
             return test;
-        });//.filter(f=> f.leaf != true);
-    
+        });
         let keys = disct[0].map(s=> s.state);
         let lines = keys.map(key=> {
             return disct.map(m=> m.filter(f=> f.state == key)[0]);
@@ -591,7 +624,6 @@ export function drawDiscreteAtt(attributeGroups, scales){
 
     let pathEnter = statePath.enter().append('g').classed('state-path', true);
     statePath = pathEnter.merge(statePath);
-
 
     var lineGen = d3.line()
     .x(d=> {

@@ -81,12 +81,13 @@ rect.attribute-rect{
   width:1010px;
 }
 
-rect.attribute-rect-sum{
+rect.attribute-rect-sum,
+.observed-discrete rect{
   //.paths rect.attribute-rect{
     fill: none;
     stroke: gray;
     stroke-width: 0.5;
-    width:800px;
+    //width:800px;
   }
   
 
