@@ -58,6 +58,15 @@ svg{
   pointer-events: none;
 }
 
+#selected{
+  position: fixed;
+  //padding:2em;
+  top:200px;
+  left:10px;
+  right:300px;
+ 
+}
+
 .paths rect.path-rect{
   //fill: white;
   fill: gainsboro;
@@ -94,7 +103,9 @@ rect.attribute-rect-sum,
     stroke:none;
     opacity:.5;
   }
-  
+  .selected-path rect.path-rect{
+   fill: red;
+  }
 
 .attribute-label{
   font-size: 11px;

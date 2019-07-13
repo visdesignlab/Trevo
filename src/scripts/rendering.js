@@ -98,7 +98,7 @@ export function renderTree(nestedData, sidebar){
 }
 
 export function branchPaths(wrapper, pathData) {
-
+    console.log('pathdata', pathData)
     /////Counting frequency of nodes//////
     let branchFrequency = pathData.flatMap(row=> row.flatMap(f=> f.node)).reduce(function (acc, curr) {
         if (typeof acc[curr] == 'undefined') {
@@ -112,9 +112,8 @@ export function branchPaths(wrapper, pathData) {
      ///Scales for circles ///
      let circleScale = d3.scaleLog().range([6, 14]).domain([1, d3.max(Object.values(branchFrequency))])
 
-    let pathGroups = wrapper.selectAll('.paths').data(pathData);
-    let pathEnter = pathGroups.enter().append('g').classed('paths', true);
-    pathGroups = pathEnter.merge(pathGroups);
+    let pathGroups = wrapper.selectAll('.paths').data(pathData).join('g').classed('paths', true);
+ 
    // pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (Object.keys(d[1].attributes).length + 1))) +')');
     let pathBars = pathGroups.append('rect').classed('path-rect', true);//.style('fill', 'red');
     pathBars.attr('y', -8);
@@ -131,9 +130,15 @@ export function branchPaths(wrapper, pathData) {
         return d3.select(this).classed('hover', false)
     });
     pathGroups.on('click', (d, i, n)=>{
-        console.log(n[i])
-        d3.select(n[i]).classed('selected-path', true);
-        pathSelected(d);
+        let notIt = d3.selectAll(n).filter((f, j)=> j != i).classed('selected-path', false);
+        if(d3.select(n[i]).classed('selected-path')){
+            d3.select(n[i]).classed('selected-path', false);
+            pathSelected(null);
+        }else{
+            d3.select(n[i]).classed('selected-path', true);
+            pathSelected(d);
+        }
+      
     });
 
     let speciesTitle = pathGroups.append('text').text(d=> {
