@@ -5,11 +5,16 @@ import {renderDistibutions} from './distributionView';
 import * as d3 from "d3";
 
 export function toolbarControl(toolbar, normedPaths, main, calculatedScales){
-    let button = toolbar.append('button').attr('id', 'view-toggle').attr('attr' , 'button').attr('class', 'btn btn-outline-secondary') 
-    button.text('View Paths');
-    button.on('click', function(){
-        if(button.text() === 'View Paths'){
-            button.text('View Summary');
+    let viewButton = toolbar.append('button').attr('id', 'view-toggle').attr('attr' , 'button').attr('class', 'btn btn-outline-secondary') 
+    viewButton.text('View Paths');
+
+    let filterButton = toolbar.append('button').attr('id', 'view-filter');
+    filterButton.attr('class', 'btn btn-outline-secondary').text('Filter');
+    filterButton.on('click', ()=> toggleFilters(filterButton));
+
+    viewButton.on('click', function(){
+        if(viewButton.text() === 'View Paths'){
+            viewButton.text('View Summary');
             main.selectAll('*').remove();//.selectAll('*').remove();
        
             ////NEED TO SIMPLIFY THIS///////
@@ -23,7 +28,7 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales){
         
             let attributeHeight = 45;
             pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (Object.keys(d[1].attributes).length + 1))) +')');
-            // renderToggles(normedPaths, toggleSVG, predictedAttrGrps, calculatedScales);
+      
             drawContAtt(predictedAttrGrps);
             drawDiscreteAtt(predictedAttrGrps, calculatedScales);
 
@@ -33,13 +38,27 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales){
             ///////////////////////////////////
 
         }else{
-            button.text('View Paths');
+            viewButton.text('View Paths');
             main.selectAll('*').remove();
-        
             renderDistibutions(normedPaths, main, calculatedScales)
-
         }
-    })
+    });
+
+    
+}
+
+function toggleFilters(filterButton){
+    let filterDiv = d3.select('#filter-tab');
+    let main = d3.select('#main');
+    if(filterDiv.classed('hidden')){
+        console.log('filter hidden');
+        filterDiv.classed('hidden', false);
+        main.style('padding-top', '200px');
+    }else{
+        console.log('filter not hidden');
+        filterDiv.classed('hidden', true);
+        main.style('padding-top', '0px');
+    }
 }
 
 export function renderToggles(normedPaths, toggleSVG, scales){

@@ -9,17 +9,12 @@ import {toolbarControl, renderToggles} from './toolbarComponent';
 
 
 let wrap = d3.select('#wrapper');
+let main = wrap.select('#main');
+let selectedPaths = wrap.select('#selected');
+let sidebar = wrap.select('#sidebar');;
+let toolbarDiv = wrap.select('#toolbar');
+let filterDiv = wrap.select('#filter-tab');
 
-let main = wrap.append('div').attr('id', 'main');
-let selectedPaths = wrap.append('div').attr('id', 'selected');
-
-let sidebar = wrap.append('div').attr('id', 'sidebar');
-let toolbarDiv = wrap.append('div').attr('id', 'toolbar');
-/*
-let svg = main.append('svg').attr('id', 'main-path-view'),
-    width = +svg.attr("width"),
-    height = +svg.attr("height");
-*/
 let tooltip = wrap.append("div")
 .attr("id", "tooltip")
 .style("opacity", 0);
