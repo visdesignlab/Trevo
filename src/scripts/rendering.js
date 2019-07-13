@@ -2,7 +2,8 @@ import '../styles/index.scss';
 import * as d3 from "d3";
 import {renderSelectedView, pathSelected} from './selectedPaths';
 
-export function renderPaths(normedPaths, main){
+export function renderPaths(normedPaths, main, scales){
+    console.log('in renderPaths', scales)
     /////Rendering ///////
     let svg = main.append('svg').attr('id', 'main-path-view'),
     width = +svg.attr("width"),
@@ -12,7 +13,7 @@ export function renderPaths(normedPaths, main){
     pathWrap.attr('transform', (d, i)=> 'translate(0,20)');
 
     /////Branch Paths/////
-    let pathGroups = branchPaths(pathWrap, normedPaths);
+    let pathGroups = branchPaths(pathWrap, normedPaths, scales);
     return pathGroups;
 }
 
@@ -97,8 +98,8 @@ export function renderTree(nestedData, sidebar){
  ///////////
 }
 
-export function branchPaths(wrapper, pathData) {
-    console.log('pathdata', pathData)
+export function branchPaths(wrapper, pathData, scales) {
+    console.log('pathdata scales in branch paths', scales)
     /////Counting frequency of nodes//////
     let branchFrequency = pathData.flatMap(row=> row.flatMap(f=> f.node)).reduce(function (acc, curr) {
         if (typeof acc[curr] == 'undefined') {
@@ -133,10 +134,11 @@ export function branchPaths(wrapper, pathData) {
         let notIt = d3.selectAll(n).filter((f, j)=> j != i).classed('selected-path', false);
         if(d3.select(n[i]).classed('selected-path')){
             d3.select(n[i]).classed('selected-path', false);
-            pathSelected(null);
+            console.log('in path groups', scales);
+            pathSelected(null, scales);
         }else{
             d3.select(n[i]).classed('selected-path', true);
-            pathSelected(d);
+            pathSelected(d, scales);
         }
       
     });

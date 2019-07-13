@@ -242,7 +242,7 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
    // renderDistibutions(normedPaths, main, calculatedScales);
 
     renderToggles(normedPaths, toggleSVG, calculatedScales);
-
+    console.log('cs',calculatedScales)
     let pathGroups = renderPaths(normedPaths, main, calculatedScales);
     
       /// LOWER ATTRIBUTE VISUALIZATION ///
