@@ -11,9 +11,11 @@ export function pathSelected(selectedPath, scales){
     console.log('scales pathSelec', scales);
     if(selectedPath === null){
         d3.select('div#selected').selectAll('*').remove();
-        selectedDiv.style('height', 0)
+        selectedDiv.style('height', 0);
+        d3.select('div#main').style('padding-top', '0px');
     }else{
         renderSelectedView([selectedPath], selectedDiv, scales);
+        d3.select('div#main').style('padding-top', '230px');
 
     }
 }
@@ -41,7 +43,7 @@ export function renderSelectedView(normedPaths, selectedDiv, scales){
    
        //tranforming elements
        svg.style('height', ((normedPaths.length + attributeGroups.data().map(m=> m[0]).length)* 50) + 'px');
-       selectedDiv.style('height', ((normedPaths.length + attributeGroups.data().map(m=> m[0]).length)* 50) + 'px');
+       selectedDiv.style('height', ((normedPaths.length + attributeGroups.data().map(m=> m[0]).length)* 45) + 'px');
        attributeWrapper.attr('transform', (d)=> 'translate(140, 25)');
 
     ////NEED TO GENERALIZE BRANCH FUNCTION IN RENDER TO WORK HERE
