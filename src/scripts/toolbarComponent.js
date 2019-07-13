@@ -1,6 +1,7 @@
 import '../styles/index.scss';
 import {formatAttributeData} from './dataFormat';
 import {renderAttributes,  drawContAtt, drawDiscreteAtt, renderPaths} from './rendering';
+import {renderDistibutions} from './distributionView';
 import * as d3 from "d3";
 
 export function toolbarControl(toolbar, normedPaths, main, calculatedScales){
@@ -10,12 +11,13 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales){
         if(button.text() === 'View Paths'){
             button.text('View Summary');
             main.selectAll('*').remove();//.selectAll('*').remove();
-
+       
             ////NEED TO SIMPLIFY THIS///////
-            let pathGroups = renderPaths(normedPaths, main);
+            let pathGroups = renderPaths(normedPaths, main, calculatedScales);
 
               /// LOWER ATTRIBUTE VISUALIZATION ///
             let attributeWrapper = pathGroups.append('g').classed('attribute-wrapper', true);
+
             let attData = formatAttributeData(normedPaths, calculatedScales)
             let predictedAttrGrps = renderAttributes(attributeWrapper, attData, calculatedScales, null);
         
@@ -33,6 +35,7 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales){
         }else{
             button.text('View Paths');
             main.selectAll('*').remove();
+        
             renderDistibutions(normedPaths, main, calculatedScales)
 
         }

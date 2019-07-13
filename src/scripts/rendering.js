@@ -133,14 +133,15 @@ export function branchPaths(wrapper, pathData, scales) {
     pathGroups.on('click', (d, i, n)=>{
         let notIt = d3.selectAll(n).filter((f, j)=> j != i).classed('selected-path', false);
         if(d3.select(n[i]).classed('selected-path')){
+            console.log('is this true', d3.select(n[i]).classed('selected-path'))
             d3.select(n[i]).classed('selected-path', false);
             console.log('in path groups', scales);
             pathSelected(null, scales);
         }else{
             d3.select(n[i]).classed('selected-path', true);
+            console.log('in pathgroups to draw paths', scales)
             pathSelected(d, scales);
         }
-      
     });
 
     let speciesTitle = pathGroups.append('text').text(d=> {
@@ -202,8 +203,7 @@ export function drawContAtt(predictedAttrGrps){
 
     let innerBars = attributeNodesCont.append('g').classed('inner-bars', true);
 
- /////DO NOT DELETE THIS! YOU NEED TO SEP CONT AND DICRETE ATTR. THIS DRAWS LINE FOR THE CONT
- /////
+ /////DO NOT DELETE THIS! YOU NEED TO SEP CONT AND DICRETE ATTR. THIS DRAWS LINE FOR THE CONT/////
     let innerPaths = continuousPaths(innerTimeline);
  ////////
 

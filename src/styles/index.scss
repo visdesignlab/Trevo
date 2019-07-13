@@ -67,8 +67,9 @@ svg{
   background-color:#fff;
  
 }
-#selected svg{
-
+#selected svg .path-rect{
+  width:100%;
+  height: 35px;
 }
 
 .paths rect.path-rect{

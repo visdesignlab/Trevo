@@ -11,7 +11,7 @@ import {toolbarControl, renderToggles} from './toolbarComponent';
 let wrap = d3.select('#wrapper');
 
 let main = wrap.append('div').attr('id', 'main');
-let selectedPaths = main.append('div').attr('id', 'selected');
+let selectedPaths = wrap.append('div').attr('id', 'selected');
 
 let sidebar = wrap.append('div').attr('id', 'sidebar');
 let toolbarDiv = wrap.append('div').attr('id', 'toolbar');
@@ -239,13 +239,14 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     ////////
     renderTree(nestedData, sidebar);
 
-   // renderDistibutions(normedPaths, main, calculatedScales);
+    renderDistibutions(normedPaths, main, calculatedScales);
 
     renderToggles(normedPaths, toggleSVG, calculatedScales);
-    console.log('cs',calculatedScales)
-    let pathGroups = renderPaths(normedPaths, main, calculatedScales);
+  
+    //let pathGroups = renderPaths(normedPaths, main, calculatedScales);
     
       /// LOWER ATTRIBUTE VISUALIZATION ///
+      /*
     let attributeWrapper = pathGroups.append('g').classed('attribute-wrapper', true);
     let attData = formatAttributeData(normedPaths, calculatedScales)
     let attributeGroups = renderAttributes(attributeWrapper, attData, calculatedScales, null);
@@ -259,7 +260,7 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     //tranforming elements
     main.select('#main-path-view').style('height', ((normedPaths.length + attributeGroups.data().map(m=> m[0]).length)* 30) + 'px');
     attributeWrapper.attr('transform', (d)=> 'translate(140, 25)');
-
+*/
 });
 
 loadData(d3.json, './public/data/geospiza_with_attributes.json').then(data=> {
