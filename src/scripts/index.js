@@ -5,7 +5,7 @@ import {allPaths, pullPath, getPath} from './pathCalc';
 import {formatAttributeData} from './dataFormat';
 import {renderTree, renderAttributes,  drawContAtt, drawDiscreteAtt, renderPaths} from './rendering';
 import {renderDistibutions} from './distributionView';
-import {toolbarControl, renderToggles} from './toolbarComponent';
+import {toolbarControl, renderAttToggles} from './toolbarComponent';
 
 
 let wrap = d3.select('#wrapper');
@@ -13,7 +13,7 @@ let main = wrap.select('#main');
 let selectedPaths = wrap.select('#selected');
 let sidebar = wrap.select('#sidebar');;
 let toolbarDiv = wrap.select('#toolbar');
-let filterDiv = wrap.select('#filter-tab');
+
 
 let tooltip = wrap.append("div")
 .attr("id", "tooltip")
@@ -226,9 +226,12 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
 
    // renderDistibutions(normedPaths, main, calculatedScales);
     toolbarControl(toolbarDiv, normedPaths, main, calculatedScales);
-
-    let toggleSVG = toolbarDiv.append('svg').classed('toggle-svg', true);
     
+    let filterDiv = wrap.select('#filter-tab').classed('hidden', true);
+    console.log(filterDiv);
+    let toggleSVG = filterDiv.append('svg').classed('toggle-svg', true);
+    console.log('TOG SVG',toggleSVG);
+    renderAttToggles(normedPaths, toggleSVG, calculatedScales);
 
     //TREE RENDER
     ////////
@@ -236,7 +239,7 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
 
     renderDistibutions(normedPaths, main, calculatedScales);
 
-    renderToggles(normedPaths, toggleSVG, calculatedScales);
+
   
     //let pathGroups = renderPaths(normedPaths, main, calculatedScales);
     
@@ -248,7 +251,7 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
    
     let attributeHeight = 45;
     pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (Object.keys(d[1].attributes).length + 1))) +')');
-    renderToggles(normedPaths, toggleSVG, attributeGroups, calculatedScales);
+    renderAttToggles(normedPaths, toggleSVG, attributeGroups, calculatedScales);
     drawContAtt(attributeGroups);
     drawDiscreteAtt(attributeGroups, calculatedScales);
 

@@ -9,68 +9,71 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales){
     viewButton.text('View Paths');
 
     let filterButton = toolbar.append('button').attr('id', 'view-filter');
-    filterButton.attr('class', 'btn btn-outline-secondary').text('Filter');
-    filterButton.on('click', ()=> toggleFilters(filterButton));
+    filterButton.attr('class', 'btn btn-outline-secondary').text('Show Filters');
+    filterButton.on('click', ()=> toggleFilters(filterButton, main));
 
-   
     let form = toolbar.append('form').classed('form-inline', true);
     let input = form.append('input').classed('form-control mr-sm-2', true)
     input.attr('type', 'search').attr('placeholder', 'Search').attr('aria-label', 'Search');
     let searchButton = form.append('button').classed('btn btn-outline-success my-2 my-sm-0', true).attr('type', 'submit').append('i').classed("fas fa-search", true)
-  
 
-    viewButton.on('click', function(){
-        if(viewButton.text() === 'View Paths'){
-            viewButton.text('View Summary');
-            main.selectAll('*').remove();//.selectAll('*').remove();
-       
-            ////NEED TO SIMPLIFY THIS///////
-            let pathGroups = renderPaths(normedPaths, main, calculatedScales);
-
-              /// LOWER ATTRIBUTE VISUALIZATION ///
-            let attributeWrapper = pathGroups.append('g').classed('attribute-wrapper', true);
-
-            let attData = formatAttributeData(normedPaths, calculatedScales)
-            let predictedAttrGrps = renderAttributes(attributeWrapper, attData, calculatedScales, null);
-        
-            let attributeHeight = 45;
-            pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (Object.keys(d[1].attributes).length + 1))) +')');
-      
-            drawContAtt(predictedAttrGrps);
-            drawDiscreteAtt(predictedAttrGrps, calculatedScales);
-
-            //tranforming elements
-            main.select('#main-path-view').style('height', ((normedPaths.length + predictedAttrGrps.data().map(m=> m[0]).length)* 30) + 'px');
-            attributeWrapper.attr('transform', (d)=> 'translate(140, 25)');
-            ///////////////////////////////////
-
-        }else{
-            viewButton.text('View Paths');
-            main.selectAll('*').remove();
-            renderDistibutions(normedPaths, main, calculatedScales)
-        }
-    });
-
-    
+    viewButton.on('click', ()=> togglePathView(viewButton, normedPaths, main, calculatedScales));
 }
 
-function toggleFilters(filterButton){
+function toggleFilters(filterButton, main){
     let filterDiv = d3.select('#filter-tab');
-    let main = d3.select('#main');
+   
     if(filterDiv.classed('hidden')){
-        console.log('filter hidden');
+        filterButton.text('Hide Filters');
         filterDiv.classed('hidden', false);
         main.style('padding-top', '200px');
     }else{
-        console.log('filter not hidden');
+        filterButton.text('Show Filters');
         filterDiv.classed('hidden', true);
         main.style('padding-top', '0px');
     }
 }
 
-export function renderToggles(normedPaths, toggleSVG, scales){
+function togglePathView(viewButton, normedPaths, main, calculatedScales){
+   
+    if(viewButton.text() === 'View Paths'){
+        viewButton.text('View Summary');
+        main.selectAll('*').remove();//.selectAll('*').remove();
+   
+        ////NEED TO SIMPLIFY THIS///////
+        let pathGroups = renderPaths(normedPaths, main, calculatedScales);
+
+          /// LOWER ATTRIBUTE VISUALIZATION ///
+        let attributeWrapper = pathGroups.append('g').classed('attribute-wrapper', true);
+        let attData = formatAttributeData(normedPaths, calculatedScales)
+        let predictedAttrGrps = renderAttributes(attributeWrapper, attData, calculatedScales, null);
+        let attributeHeight = 45;
+        pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (Object.keys(d[1].attributes).length + 1))) +')');
+  
+        drawContAtt(predictedAttrGrps);
+        drawDiscreteAtt(predictedAttrGrps, calculatedScales);
+
+        //tranforming elements
+        main.select('#main-path-view').style('height', ((normedPaths.length + predictedAttrGrps.data().map(m=> m[0]).length)* 30) + 'px');
+        attributeWrapper.attr('transform', (d)=> 'translate(140, 25)');
+        ///////////////////////////////////
+
+    }else{
+        viewButton.text('View Paths');
+        main.selectAll('*').remove();
+        renderDistibutions(normedPaths, main, calculatedScales)
+    }
+
+
+}
+
+export function renderAttToggles(normedPaths, toggleSVG, scales){
+
+    console.log(normedPaths, toggleSVG, scales);
 
     let keys = Object.keys(normedPaths[0][0].attributes);
+
+    console.log('keys',keys);
 
     let labelGroups = toggleSVG.selectAll('g').data(keys);
     let labelGroupEnter = labelGroups.enter().append('g'); 
