@@ -227,16 +227,14 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
    // renderDistibutions(normedPaths, main, calculatedScales);
     toolbarControl(toolbarDiv, normedPaths, main, calculatedScales);
     
-    let filterDiv = wrap.select('#filter-tab').classed('hidden', true);
-    console.log(filterDiv);
-    let toggleSVG = filterDiv.append('svg').classed('toggle-svg', true);
-    console.log('TOG SVG',toggleSVG);
-    renderAttToggles(normedPaths, toggleSVG, calculatedScales);
+    let filterDiv = wrap.select('#filter-tab')//.classed('hidden', true);
+   // let toggleSVG = filterDiv.append('svg').classed('toggle-svg', true);
+   
+    renderAttToggles(normedPaths, calculatedScales);
 
     //TREE RENDER
     ////////
     renderTree(nestedData, sidebar);
-
     renderDistibutions(normedPaths, main, calculatedScales);
 
 
@@ -251,7 +249,7 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
    
     let attributeHeight = 45;
     pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (Object.keys(d[1].attributes).length + 1))) +')');
-    renderAttToggles(normedPaths, toggleSVG, attributeGroups, calculatedScales);
+    renderAttToggles(normedPaths, calculatedScales);
     drawContAtt(attributeGroups);
     drawDiscreteAtt(attributeGroups, calculatedScales);
 

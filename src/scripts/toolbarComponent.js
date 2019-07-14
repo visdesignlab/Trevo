@@ -67,21 +67,35 @@ function togglePathView(viewButton, normedPaths, main, calculatedScales){
 
 }
 
-export function renderAttToggles(normedPaths, toggleSVG, scales){
-
-    console.log(normedPaths, toggleSVG, scales);
-
+export function renderAttToggles(normedPaths, scales){
+    ////NEED TO GET RID OF TOGGLE SVG
     let keys = Object.keys(normedPaths[0][0].attributes);
+    let filterBox = d3.select('#filter-tab');
+    let svg = filterBox.append('svg').classed('attr-toggle-svg', true)
+/*
+    let checkDivWrap = filterBox.append('div').classed('custom-sq', true);
+    let checkboxDiv = checkDivWrap.selectAll('.attr-check').data(keys).join('div').classed('attr-check', true);
+    let check = checkboxDiv.append('input').attr('id', (d, i)=> 'box-'+d).attr('type', 'checkbox');
+    let checkedCheck = check.attr('checked', true);
+    checkedCheck.style('background', (d)=> {
+        return scales.filter(f=> f.field === d)[0].catColor;
+    });
 
-    console.log('keys',keys);
-
-    let labelGroups = toggleSVG.selectAll('g').data(keys);
-    let labelGroupEnter = labelGroups.enter().append('g'); 
+    let checkLabel = checkboxDiv.append('label').attr('for', (d, i)=> 'box-'+d).text(d=> d)
+    checkLabel.style('background', (d)=> {
+        return scales.filter(f=> f.field === d)[0].catColor;
+    });
+    */
+   let title = svg.append('text').text('Attributes: ')
+    title.attr('x', 20).attr('y', 10)
+    let labelWrap = svg.append('g').attr('transform', 'translate(20, 25)');
+    let labelGroups = labelWrap.selectAll('g').data(keys).join('g'); 
     
-    labelGroupEnter.attr('transform', (d, i)=> {
-        return 'translate('+ ( (i* 100) + (d.length * 2))+', 20)'});
+    labelGroups.attr('transform', (d, i)=> {
+       // return 'translate('+ ( (i* 100) + (d.length * 2))+', 20)'});
+        return 'translate(0,'+(i* 25)+')'});
 
-    let toggle = labelGroupEnter.append('circle').attr('cx', -10).attr('cy', -4);
+    let toggle = labelGroups.append('circle').attr('cx', 0).attr('cy', 0);
     toggle.classed('toggle shown', true);
     toggle.style('fill', (d, i)=>{
         return scales.filter(f=> f.field === d)[0].catColor;
@@ -100,14 +114,17 @@ export function renderAttToggles(normedPaths, toggleSVG, scales){
         let predictedAttrGrps = renderAttributes(attributeWrapper, attData, scales, null);
 
         d3.select('#main-path-view').style('height', ((normedPaths.length + predictedAttrGrps.data().map(m=> m[0]).length)* 30) + 'px');
+        //d3.selectAll('.paths').attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (newKeys.data().length + 1))) +')');
         d3.selectAll('.paths').attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (newKeys.data().length + 1))) +')');
-    
+        
         drawContAtt(predictedAttrGrps);
         drawDiscreteAtt(predictedAttrGrps, scales);
 
     });
-    let labelText = labelGroupEnter.append('text').text(d=> d).style('font-size', 10);
-    labelGroups = labelGroupEnter.merge(labelGroups);
+    let labelText = labelGroups.append('text').text(d=> d).style('font-size', 10);
+    labelText.attr('transform', 'translate(10, 4)')
+   
+    
 }
 
 function toggleCircle(circle, scales){
