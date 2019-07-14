@@ -12,6 +12,13 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales){
     filterButton.attr('class', 'btn btn-outline-secondary').text('Filter');
     filterButton.on('click', ()=> toggleFilters(filterButton));
 
+   
+    let form = toolbar.append('form').classed('form-inline', true);
+    let input = form.append('input').classed('form-control mr-sm-2', true)
+    input.attr('type', 'search').attr('placeholder', 'Search').attr('aria-label', 'Search');
+    let searchButton = form.append('button').classed('btn btn-outline-success my-2 my-sm-0', true).attr('type', 'submit').append('i').classed("fas fa-search", true)
+  
+
     viewButton.on('click', function(){
         if(viewButton.text() === 'View Paths'){
             viewButton.text('View Summary');
