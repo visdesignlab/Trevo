@@ -133,6 +133,6 @@ function toggleCircle(circle, scales){
         circle.classed('shown', true);
         circle.style('fill', (d, i)=>{
             return scales.filter(f=> f.field === d)[0].catColor;
-        });
+    });
     }
 }
