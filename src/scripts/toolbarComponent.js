@@ -63,8 +63,6 @@ function togglePathView(viewButton, normedPaths, main, calculatedScales){
         main.selectAll('*').remove();
         renderDistibutions(normedPaths, main, calculatedScales)
     }
-
-
 }
 
 export function renderAttToggles(normedPaths, scales){

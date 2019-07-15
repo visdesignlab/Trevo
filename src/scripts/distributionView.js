@@ -3,6 +3,10 @@ import {formatAttributeData} from './dataFormat';
 import * as d3 from "d3";
 
 export function renderDistibutions(normedPaths, mainDiv, scales){
+
+
+    let width = 200;
+    let height = 80
   
     let keys = Object.keys(normedPaths[0][0].attributes);
 
@@ -168,13 +172,43 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
             });
             return states;
         }else{
-            return data.sort();
+   
+            let colorScales = scales.filter(f=> f.field === key)[0].catColor;
+            
+            var max = d3.max(data);
+            var min = d3.min(data);
+
+            let x = d3.scaleLinear().range([0, width]);
+            x.domain([0, 10])
+
+            let y = d3.scaleLinear()
+            .range([height, 0]);
+
+             var histogram = d3.histogram()
+             .value(d=> d)
+             .domain([min, max])
+             .thresholds(x.ticks(10));
+
+            var bins = histogram(data);
+
+            let maxY = d3.max(bins.map(m=> m.length));
+            y.domain([0, maxY]);
+            
+            let newBins = bins.map(h=> {
+                h.x = x;
+                h.y = y;
+                h.color = colorScales;
+                return h;
+            });
+
+           return newBins;
         };
     });
 
     let combinedData = observed.map((ob, i)=> {
         return {'observed': ob, 'predicted': summarizedData[i]}
     })
+
 
     let attributeGroups = svg.selectAll('.combined-attr-grp').data(combinedData);
     let attEnter = attributeGroups.enter().append('g').classed('combined-attr-grp', true);
@@ -242,14 +276,14 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
     .attr("d", d=> area(d.pathData))
     .classed('state-area-sum', true);
 
+    let observedGroup = attributeGroups.append('g').classed('observed-att', true);
+    observedGroup.attr('transform', 'translate(920, 0)');
+    observedGroup.append('rect').attr('width', 200).attr('height', 80).attr('x', 0).attr('y', 0).classed('wrapper-rect', true);
 
     /////////OBSERVED DISCRETE RENDERING///////////////////////
-    let observedDiscrete = attributeGroups.filter(f=> f.predicted.type === 'discrete');
-    let observedGroup = observedDiscrete.append('g').classed('observed-discrete', true);
-    observedGroup.attr('transform', 'translate(920, 0)')
-    let observedWrapRect = observedGroup.append('rect').attr('width', 200).attr('height', 80).attr('x', 0).attr('y', 0);
+    let observedDiscrete = observedGroup.filter(f=> f.predicted.type === 'discrete');
   
-    let stateBars = observedGroup.selectAll('.state-bar').data(d=> d.observed);
+    let stateBars = observedDiscrete.selectAll('.state-bar').data(d=> d.observed);
 
     let rectBarEnter = stateBars.enter().append('g').classed('state-bar', true);
     stateBars = rectBarEnter.merge(stateBars);
@@ -266,7 +300,6 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
             return scale(0) - scale(d.count);
         }).attr('y', (d, i)=> {
             let scale = d3.scaleLinear().domain([0, d.max + 10]).range([0, 80])
-            console.log(d)
             let move = 80 - (scale(d.count));
             return move;
         }).attr('width', 20).style('fill', d=> d.color)
@@ -280,10 +313,33 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
     .style('font-size', 9)
     .attr("transform", "rotate(-35)");
 
- 
-
-    let axs = observedGroup.data()
-    console.log('ax',axs)
 
     //NEED TO FINISH THIS
+
+    /////////OBSERVED Continuous RENDERING///////////////////////
+    let observedContinuous = observedGroup.filter(f=> f.predicted.type === 'continuous');
+
+    let binBars = observedContinuous.selectAll('.bin-bar').data(d=> d.observed).join('g').classed('bin-bar', true);
+    console.log(binBars.data());
+    // append the bar rectangles to the svg element
+    
+    binBars.append("rect")
+        .attr("class", "bar")
+        .attr("x", 1)
+        .attr("transform", function(d, i) {
+            return "translate(" + d.x(i) + "," + d.y(d.length) + ")"; })
+     //   .attr("width", function(d) { return d.x(d.x1) - d.x(d.x0) -1 ; })
+        .attr("width", 10)
+        .attr("height", function(d) { return height - d.y(d.length); })
+        .attr('fill', (d)=> d.color);
+  /*
+    // add the x Axis
+    svg.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x));
+  
+    // add the y Axis
+    svg.append("g")
+        .call(d3.axisLeft(y));
+*/
 }

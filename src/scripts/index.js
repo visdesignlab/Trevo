@@ -227,7 +227,7 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
    // renderDistibutions(normedPaths, main, calculatedScales);
     toolbarControl(toolbarDiv, normedPaths, main, calculatedScales);
     
-    let filterDiv = wrap.select('#filter-tab')//.classed('hidden', true);
+    let filterDiv = wrap.select('#filter-tab').classed('hidden', true);
    // let toggleSVG = filterDiv.append('svg').classed('toggle-svg', true);
    
     renderAttToggles(normedPaths, calculatedScales);
