@@ -12,7 +12,7 @@ export function pathSelected(selectedPath, scales, moveMetric){
         d3.select('div#main').style('padding-top', '0px');
     }else{
         renderSelectedView([selectedPath], selectedDiv, scales);
-        d3.select('div#main').style('padding-top', '230px');
+        d3.select('div#main').style('padding-top', '250px');
 
     }
 }

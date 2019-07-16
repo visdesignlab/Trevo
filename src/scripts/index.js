@@ -215,8 +215,6 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
         return p.map((m, j)=> {
             let node = Object.assign({}, m);
             //INTEGRATE THE DISTNACES HERE WHEN THEY WORK
-          //  node.edgeLength = (j < leafIndex) ? lengths[j] : 1;
-            //console.log(node.edgeLength, prevStep)
             let step = node.edgeLength + prevStep;
             node.edgeMove = (j < leafIndex) ? step : 1;
             prevStep = prevStep + node.edgeLength;
@@ -235,7 +233,7 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     let filterDiv = wrap.select('#filter-tab').classed('hidden', true);
    // let toggleSVG = filterDiv.append('svg').classed('toggle-svg', true);
    
-    renderAttToggles(normedPaths, calculatedScales);
+    renderAttToggles(normedPaths, calculatedScales, 'move');
 
     //TREE RENDER
     ////////

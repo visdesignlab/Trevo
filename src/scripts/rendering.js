@@ -3,7 +3,7 @@ import * as d3 from "d3";
 import {renderSelectedView, pathSelected} from './selectedPaths';
 
 export function renderPaths(normedPaths, main, scales, moveMetric){
-    console.log('in renderPaths', scales)
+
     /////Rendering ///////
     let svg = main.append('svg').attr('id', 'main-path-view'),
     width = +svg.attr("width"),
@@ -16,8 +16,6 @@ export function renderPaths(normedPaths, main, scales, moveMetric){
     let pathGroups = branchPaths(pathWrap, normedPaths, scales, moveMetric);
     return pathGroups;
 }
-
-
 
 export function renderAttributes(attributeWrapper, data, scales, filterArray){
 

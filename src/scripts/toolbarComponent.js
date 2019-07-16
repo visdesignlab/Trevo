@@ -23,7 +23,6 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales){
             }else{
                 renderDistibutions(normedPaths, main, calculatedScales, 'edgeLength');
             }
-           
         }else{
             lengthButton.text('Show Edge Length');
             main.selectAll('*').remove();//.selectAll('*').remove();
@@ -33,7 +32,6 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales){
             }else{
                 renderDistibutions(normedPaths, main, calculatedScales, 'move');
             }
-          
         }
     });
 
@@ -43,9 +41,6 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales){
     let searchButton = form.append('button').classed('btn btn-outline-success my-2 my-sm-0', true).attr('type', 'submit').append('i').classed("fas fa-search", true)
 
     viewButton.on('click', ()=> togglePathView(viewButton, normedPaths, main, calculatedScales));
-
-
-}
 
 function toggleFilters(filterButton, main){
     let filterDiv = d3.select('#filter-tab');
@@ -63,7 +58,7 @@ function toggleFilters(filterButton, main){
 
 function drawPathsAndAttributes(normedPaths, main, calculatedScales, moveMetric){
 
-    let pathGroups = renderPaths(normedPaths, main, calculatedScales, moveMetric);
+  let pathGroups = renderPaths(normedPaths, main, calculatedScales, moveMetric);
 
     /// LOWER ATTRIBUTE VISUALIZATION ///
   let attributeWrapper = pathGroups.append('g').classed('attribute-wrapper', true);
@@ -86,43 +81,27 @@ function togglePathView(viewButton, normedPaths, main, calculatedScales){
     if(viewButton.text() === 'View Paths'){
         viewButton.text('View Summary');
         main.selectAll('*').remove();//.selectAll('*').remove();
-        
         drawPathsAndAttributes(normedPaths, main, calculatedScales, 'move');
-
-
     }else{
         viewButton.text('View Paths');
         main.selectAll('*').remove();
         renderDistibutions(normedPaths, main, calculatedScales, 'move');
     }
 }
+}
 
-export function renderAttToggles(normedPaths, scales){
+export function renderAttToggles(normedPaths, scales, moveMetric){
     ////NEED TO GET RID OF TOGGLE SVG
     let keys = Object.keys(normedPaths[0][0].attributes);
     let filterBox = d3.select('#filter-tab');
     let svg = filterBox.append('svg').classed('attr-toggle-svg', true)
-/*
-    let checkDivWrap = filterBox.append('div').classed('custom-sq', true);
-    let checkboxDiv = checkDivWrap.selectAll('.attr-check').data(keys).join('div').classed('attr-check', true);
-    let check = checkboxDiv.append('input').attr('id', (d, i)=> 'box-'+d).attr('type', 'checkbox');
-    let checkedCheck = check.attr('checked', true);
-    checkedCheck.style('background', (d)=> {
-        return scales.filter(f=> f.field === d)[0].catColor;
-    });
 
-    let checkLabel = checkboxDiv.append('label').attr('for', (d, i)=> 'box-'+d).text(d=> d)
-    checkLabel.style('background', (d)=> {
-        return scales.filter(f=> f.field === d)[0].catColor;
-    });
-    */
    let title = svg.append('text').text('Attributes: ')
     title.attr('x', 20).attr('y', 10)
     let labelWrap = svg.append('g').attr('transform', 'translate(20, 25)');
     let labelGroups = labelWrap.selectAll('g').data(keys).join('g'); 
     
     labelGroups.attr('transform', (d, i)=> {
-       // return 'translate('+ ( (i* 100) + (d.length * 2))+', 20)'});
         return 'translate(0,'+(i* 25)+')'});
 
     let toggle = labelGroups.append('circle').attr('cx', 0).attr('cy', 0);
@@ -130,6 +109,7 @@ export function renderAttToggles(normedPaths, scales){
     toggle.style('fill', (d, i)=>{
         return scales.filter(f=> f.field === d)[0].catColor;
     });
+
     toggle.on('click', function(d, i){
         let togg = d3.select(this);
         toggleCircle(togg, scales);
@@ -147,8 +127,8 @@ export function renderAttToggles(normedPaths, scales){
         //d3.selectAll('.paths').attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (newKeys.data().length + 1))) +')');
         d3.selectAll('.paths').attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (newKeys.data().length + 1))) +')');
         
-        drawContAtt(predictedAttrGrps, 'move');
-        drawDiscreteAtt(predictedAttrGrps, scales);
+        drawContAtt(predictedAttrGrps, moveMetric);
+        drawDiscreteAtt(predictedAttrGrps, scales, moveMetric);
 
     });
     let labelText = labelGroups.append('text').text(d=> d).style('font-size', 10);
@@ -165,6 +145,6 @@ function toggleCircle(circle, scales){
         circle.classed('shown', true);
         circle.style('fill', (d, i)=>{
             return scales.filter(f=> f.field === d)[0].catColor;
-    });
+        });
     }
 }
