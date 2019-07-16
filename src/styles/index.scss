@@ -1,7 +1,7 @@
-$body-color: blue;
+//$body-color: blue;
 
 body {
-  color: $body-color;
+ // color: $body-color;
   width:100%;
   //font-family: 'Quicksand', sans-serif;
   font-family: 'Abel', sans-serif;
@@ -314,4 +314,23 @@ circle.hover-branch{
   stroke: #4c575c;
   stroke-width: 0.4;
   stroke-opacity: 0.7;
+}
+
+.selected-toolbar{
+  display:block;
+  height: 30px;
+  width:100%;
+  margin-left:10px;
+  z-index: 3000;
+}
+
+.x-icon{
+  padding:3px;
+  color:gray;
+  height:25px;
+  width:25px;
+  display:inline-block;
+  float:left;
+
+ 
 }

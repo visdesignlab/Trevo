@@ -18,11 +18,20 @@ export function pathSelected(selectedPath, scales){
 }
 
 export function renderSelectedView(pathData, selectedDiv, scales){
-  
+
+    let selectedToolTest = selectedDiv.select('.selected-toolbar');
+    let selectedTool = selectedToolTest.empty() ? selectedDiv.append('div').classed('selected-toolbar', true) : selectedToolTest;
+    let xIconWrap = selectedTool.append('div').classed('x-icon', true)
+    let xIcon = xIconWrap.append('i').classed("far fa-times-circle", true);
+
+    xIcon.on('click', ()=> pathSelected(null, scales));
+
     let svgTest = selectedDiv.select('svg.select-svg');
     let svg = svgTest.empty()? selectedDiv.append('svg').classed('select-svg', true) : svgTest;
 
-    let pathGroups = branchPaths(svg, pathData, scales, 'move');
+    
+    let selectWrap = svg.append('g').classed('select-wrap', true);
+    let pathGroups = branchPaths(selectWrap, pathData, scales, 'move');
     pathGroups.attr('transform', (d, i)=> 'translate(0,'+(i*60)+')');
 
        /// LOWER ATTRIBUTE VISUALIZATION ///
@@ -37,11 +46,12 @@ export function renderSelectedView(pathData, selectedDiv, scales){
     drawDiscreteAtt(attributeGroups, scales);
    
     //tranforming elements
-    svg.style('height', ((pathData.length + attributeGroups.data().map(m=> m[0]).length)* 50) + 'px');
-    selectedDiv.style('height', ((pathData.length + attributeGroups.data().map(m=> m[0]).length)* 45) + 'px');
+    svg.style('height', ((pathData.length + attributeGroups.data().map(m=> m[0]).length)* 50) + 50 + 'px');
+    selectedDiv.style('height', ((pathData.length + attributeGroups.data().map(m=> m[0]).length)* 45) + 50 + 'px');
     attributeWrapper.attr('transform', (d)=> 'translate(140, 25)');
 
     ////NEED TO GENERALIZE BRANCH FUNCTION IN RENDER TO WORK HERE
 
     return svg;
 }
+
