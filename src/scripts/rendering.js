@@ -137,10 +137,10 @@ export function branchPaths(wrapper, pathData, scales, moveMetric) {
         let notIt = d3.selectAll(n).filter((f, j)=> j != i).classed('selected-path', false);
         if(d3.select(n[i]).classed('selected-path')){
             d3.select(n[i]).classed('selected-path', false);
-            pathSelected(null, scales);
+            pathSelected(null, scales, moveMetric);
         }else{
             d3.select(n[i]).classed('selected-path', true);
-            pathSelected(d, scales);
+            pathSelected(d, scales, moveMetric);
         }
     });
 
@@ -288,7 +288,7 @@ export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric){
 
     attributeNodesDisc.attr('transform', (d)=> {
         let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
-        console.log('d', d, moveMetric)
+       
       
         if(d[0]){
             let distance = (moveMetric === 'move') ? d[0].move : x(d[0].edgeMove);
@@ -297,9 +297,6 @@ export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric){
             let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove);
             return 'translate('+distance+', 0)';
         }
-       // let move = d[0] ? d[0].move : distance;
-       // let finalMove = move ? move : 0;
-       // return 'translate('+finalMove+', 0)'
     });
 
     attributeNodesDisc.append('line').attr('x1', 10).attr('x2', 10).attr('y1', 0).attr('y2', attributeHeight);

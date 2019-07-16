@@ -31,33 +31,52 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
             let filtered = newNormed.map(path=> {
                 return path.filter(n=> n.leaf != true)
             });
+           
+            let maxBranches = filtered.filter(row=> row.length === maxBranch);
+           
+            let maxMove = d3.max(maxBranches.flatMap(f=> f.flatMap(flat=> flat.edgeMove)));
+           // console.log(maxMove)
+
             let data = filtered.map(path=> {
+               
+                let prevStep = 0;
                 return path.map((node, i)=> {
                     let attr = node.attributes[key];
-                    let lastnode = path.length - 1
-            
+                    let lastnode = path.length - 1;
+
+                    let step = node.edgeLength + prevStep;
+                    node.edgeMove = step;
+                    prevStep = prevStep + node.edgeLength;
+
                     if(attr.type === 'discrete'){
                         let thisScale = xScale;
                         thisScale.range([0, 800]);
-                        attr.move = (moveMetric === 'move')? thisScale(i) : thisScale(node.edgeLength);
+                       // attr.move = (moveMetric === 'move')? thisScale(i) : thisScale(node.edgeLength);
+                        attr.move = thisScale(i);
+                        let x = d3.scaleLinear().domain([0, maxMove]).range([0, 800]).clamp(true)
+                        attr.edgeMove = x(node.edgeMove);
+
                         attr.states = node.attributes[key].states.map(s=> {
                             s.move = attr.move;
+                            s.edgeMove = attr.edgeMove;
                             return s;
                         });
-                    }else{
+
+                    }else{//continuous///
+
                         let thisScale = xScale;
                         thisScale.range([0, 790]);
 
                         let metric = function(index, max){
-                            if(moveMetric === 'edgeLength'){
-                                return thisScale(index);
-                            }else if(index < lastnode){
+                            if(index < lastnode){
                                 return thisScale(index);
                             }else{
                                 return thisScale(max - 1);
                             }
                         }
                        attr.move = metric(i, maxBranch);
+                       let x = d3.scaleLinear().domain([0, maxMove]).range([0, 800]).clamp(true)
+                       attr.edgeMove = x(node.edgeMove);
                     }
                     return attr;
                 });
@@ -66,7 +85,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
             return data;
     });
 
-    console.log('add', addMoveToAttributes)
+
 
     let summarizedData = addMoveToAttributes.map(attr=> {
        
@@ -74,6 +93,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
             
            // let binCount = d3.max(attr.map(row=> row.length));
             let moveMap = attr.filter(row=> row.length === maxBranch)[0];
+            console.log(moveMap);
             let stateKeys = attr[0][0].states.map(s=> s.state);
             let distrib = {}
             distrib.stateData = {}
@@ -81,7 +101,10 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
               
                  let distribution = Array(maxBranch).fill({'data':[]}).map((u, i)=> {
                      let newOb = {'data': u.data}
-                     newOb.move = moveMap[i].move
+                  
+                     newOb.move = moveMap[i].move;
+                     newOb.edgeMove = moveMap[i].edgeMove;
+                   
                      return newOb;
                  });
                  attr.forEach((row)=> {
@@ -98,6 +121,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
                          return d.move === drow.move});
                      return filtered;
                  })
+                 
                  let color = data[0][0].color;
                
                  let thisScale = [...scales].filter(f=> f.field == attr.attKey)[0].scales.filter(f=> f.scaleName == key)[0].yScale;
@@ -114,8 +138,13 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
                 let scaleStDev = data.map(branch=> d3.deviation(branch.map(b=> thisScale(b.realVal))))
                 let scaleStUp = scaleMean.map((av, i)=> av + scaleStDev[i]);
                 let scaleStDown = scaleMean.map((av, i)=> av - scaleStDev[i]);
-     
-                let moves = distribution.map(d=> d.move)
+                let x = d3.scaleLinear().range([0, 800]).domain([0, 1]);
+                let moves = distribution.map(d=> {
+                    
+                    let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove);
+                    return distance });
+
+               
 
                 let final = moves.map((m, j)=> {
                      return {
@@ -130,6 +159,8 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
                          'scaleStDown': scaleStDown[j],
                         }
                  });
+
+                 console.log('final', final)
 
                  distrib.stateData[key].pathData = final;
                  distrib.stateData[key].color = color;
@@ -338,7 +369,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
     let observedContinuous = observedGroup.filter(f=> f.predicted.type === 'continuous');
 
     let binBars = observedContinuous.selectAll('.bin-bar').data(d=> d.observed).join('g').classed('bin-bar', true);
-    console.log(binBars.data());
+
     // append the bar rectangles to the svg element
     
     binBars.append("rect")

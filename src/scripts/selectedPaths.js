@@ -3,7 +3,7 @@ import {branchPaths, renderAttributes, drawContAtt, drawDiscreteAtt} from './ren
 import {formatAttributeData} from './dataFormat';
 import {renderAttToggles} from './toolbarComponent';
 
-export function pathSelected(selectedPath, scales){
+export function pathSelected(selectedPath, scales, moveMetric){
 
     let selectedDiv = d3.select('div#selected');
     if(selectedPath === null){
@@ -17,7 +17,7 @@ export function pathSelected(selectedPath, scales){
     }
 }
 
-export function renderSelectedView(pathData, selectedDiv, scales){
+export function renderSelectedView(pathData, selectedDiv, scales, moveMetric){
 
     let selectedToolTest = selectedDiv.select('.selected-toolbar');
     let selectedTool = selectedToolTest.empty() ? selectedDiv.append('div').classed('selected-toolbar', true) : selectedToolTest;
@@ -31,7 +31,7 @@ export function renderSelectedView(pathData, selectedDiv, scales){
 
     
     let selectWrap = svg.append('g').classed('select-wrap', true);
-    let pathGroups = branchPaths(selectWrap, pathData, scales, 'move');
+    let pathGroups = branchPaths(selectWrap, pathData, scales, moveMetric);
     pathGroups.attr('transform', (d, i)=> 'translate(0,'+(i*60)+')');
 
        /// LOWER ATTRIBUTE VISUALIZATION ///
