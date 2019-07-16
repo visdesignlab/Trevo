@@ -37,7 +37,10 @@ function continuousPaths(innerTimeline, moveMetric){
         let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
         let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove)
         return distance })
-    .y(d=> d.scaleVal);
+    .y(d=> {
+        let y = d.yScale;
+        y.range([0, 45]);
+        return y(d.realVal)});
 
     let innerPaths = innerTimeline.append('path')
     .attr("d", lineGen)
@@ -214,20 +217,28 @@ export function drawContAtt(predictedAttrGrps, moveMetric){
     innerBars.attr('transform', (d)=> {
         let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
         let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove)
-        return 'translate('+ distance +', 10)'});
+        return 'translate('+ distance +', 0)'});
       
     let rangeRect = innerBars.append('rect').classed('range-rect', true);
     rangeRect.attr('width', 20).attr('height', (d, i)=> {
-        let range = d.scaledHigh -  d.scaledLow;
+        let y = d.yScale;
+        y.range([0, 45])
+        let range = d.leaf ? 0 : y(d.upperCI95) -  y(d.lowerCI95);
         return range;
     });
     rangeRect.attr('transform', (d, i)=> {
-        let lowMove = d.scaledLow;
-        return 'translate(0, '+ lowMove +')';
+        let y = d.yScale;
+        y.range([0, 45]);
+        let move = d.leaf? 0 : y(d.lowerCI95);
+        return 'translate(0, '+ move +')';
     });
     rangeRect.style('fill', d=> d.color);
     innerBars.append('rect').attr('width', 20).attr('height', 5)
-    .attr('transform', (d, i)=> 'translate(0, '+ d.scaleVal +')')
+    .attr('transform', (d, i)=> {
+        let y = d.yScale;
+        y.range([0, 45]);
+        //let move = d.leaf? 0 : y(d.realVal);
+        return 'translate(0, '+ y(d.realVal) +')'})
     .attr('fill', d=> d.color);
 }
 export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric){
@@ -333,7 +344,6 @@ export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric){
 
     endStateDot.append('circle').attr('cx', 10).attr('cy', 2).attr('r', 7).style('fill', d=> {
         let win = d.states.filter(v=> v.realVal === 1)[0].state;
-       // return scales.filter(f=> f.type == 'discrete')[0].stateColors.filter(c=> c.state === win)[0].color});
        return d.color
     });
     ////NEED TO MAKE A FUNCTION TO ASSIGN COLOR OF STATES//////
