@@ -26,7 +26,7 @@ export function drawPathsAndAttributes(normedPaths, main, calculatedScales, move
 }
 
 export function renderPaths(pathData, main, scales, moveMetric){
-    console.log('moveeeess', moveMetric)
+  
     /////Rendering ///////
     let svg = main.append('svg').attr('id', 'main-path-view');
    
@@ -101,9 +101,12 @@ export function renderPaths(pathData, main, scales, moveMetric){
     }).attr('class', (d, i)=> 'node-'+d.node);
 
     circle.on('mouseover', function(d, i){
-        return nodeGroups.selectAll('.node-'+d.node).classed('hover-branch', true);
+        let hovers = nodeGroups.filter(n=> n.node === d.node);
+       // return nodeGroups.selectAll('.node-'+d.node).classed('hover-branch', true);
+        return hovers.classed('hover-branch', true);
     }).on('mouseout', function(d, i){
-        return d3.selectAll('.node-'+d.node).classed('hover-branch', false);
+        let hovers = nodeGroups.filter(n=> n.node === d.node);
+        return hovers.classed('hover-branch', false);
     });
 
     let speciesNodeLabel = nodeGroups.filter(f=> f.label != undefined).append('text').text(d=> {
@@ -118,11 +121,8 @@ export function renderPaths(pathData, main, scales, moveMetric){
 export function renderAttributes(attributeWrapper, data, scales, filterArray){
 
     let attributeHeight = 45;
-
     let predictedAttrGrps = attributeWrapper.selectAll('g').data((d, i)=> data[i]).enter().append('g');
-
     predictedAttrGrps.attr('transform', (d, i) => 'translate(0, '+(i * (attributeHeight + 5))+')');
-
     return predictedAttrGrps;
 }
 
@@ -146,7 +146,6 @@ function continuousPaths(innerTimeline, moveMetric){
     return innerPaths;
     ///////////////////////////////////////////////////////////
 }
-
 export function renderTree(nestedData, sidebar){
      // set the dimensions and margins of the diagram
      var margin = {top: 10, right: 90, bottom: 50, left: 20},
@@ -199,9 +198,6 @@ export function renderTree(nestedData, sidebar){
  /////END TREE STUFF
  ///////////
 }
-
-
-
 export function drawContAtt(predictedAttrGrps, moveMetric){
 
     let continuousAtt = predictedAttrGrps.filter(d=> {

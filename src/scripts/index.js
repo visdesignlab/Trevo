@@ -227,11 +227,11 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     console.log('normedPaths', normedPaths)
 
    // renderDistibutions(normedPaths, main, calculatedScales);
-    toolbarControl(toolbarDiv, normedPaths, main, calculatedScales, 'move', 'paths');
+    toolbarControl(toolbarDiv, normedPaths, main, calculatedScales, 'edgeLength', 'paths');
     
     let filterDiv = wrap.select('#filter-tab').classed('hidden', true);
    
-    renderAttToggles(filterDiv, normedPaths, calculatedScales, 'move');
+    renderAttToggles(filterDiv, normedPaths, calculatedScales, 'edgeLength');
 
     //TREE RENDER
     ////////
@@ -241,7 +241,7 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     //renderDistibutions(normedPaths, main, calculatedScales, 'move');
     
       /// LOWER ATTRIBUTE VISUALIZATION ///
-      drawPathsAndAttributes(normedPaths, main, calculatedScales, 'move');
+      drawPathsAndAttributes(normedPaths, main, calculatedScales, 'edgeLength');
 });
 
 loadData(d3.json, './public/data/geospiza_with_attributes.json').then(data=> {
