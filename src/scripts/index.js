@@ -2,8 +2,7 @@ import '../styles/index.scss';
 import * as d3 from "d3";
 import {loadData} from './dataLoad';
 import {allPaths, pullPath, getPath} from './pathCalc';
-import {formatAttributeData} from './dataFormat';
-import {renderTree, renderAttributes,  drawContAtt, drawDiscreteAtt, renderPaths} from './rendering';
+import {renderTree, drawPathsAndAttributes} from './rendering';
 import {renderDistibutions} from './distributionView';
 import {toolbarControl, renderAttToggles} from './toolbarComponent';
 
@@ -225,41 +224,24 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
         });
     });
 
-    console.log(normedPaths)
+    console.log('normedPaths', normedPaths)
 
    // renderDistibutions(normedPaths, main, calculatedScales);
-    toolbarControl(toolbarDiv, normedPaths, main, calculatedScales);
+    toolbarControl(toolbarDiv, normedPaths, main, calculatedScales, 'move', 'paths');
     
     let filterDiv = wrap.select('#filter-tab').classed('hidden', true);
-   // let toggleSVG = filterDiv.append('svg').classed('toggle-svg', true);
    
-    renderAttToggles(normedPaths, calculatedScales, 'move');
+    renderAttToggles(filterDiv, normedPaths, calculatedScales, 'move');
 
     //TREE RENDER
     ////////
     renderTree(nestedData, sidebar);
-    renderDistibutions(normedPaths, main, calculatedScales, 'move');
 
-
-  
-    //let pathGroups = renderPaths(normedPaths, main, calculatedScales);
+    ////Render the summary distributions////
+    //renderDistibutions(normedPaths, main, calculatedScales, 'move');
     
       /// LOWER ATTRIBUTE VISUALIZATION ///
-      /*
-    let attributeWrapper = pathGroups.append('g').classed('attribute-wrapper', true);
-    let attData = formatAttributeData(normedPaths, calculatedScales)
-    let attributeGroups = renderAttributes(attributeWrapper, attData, calculatedScales, null);
-   
-    let attributeHeight = 45;
-    pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (Object.keys(d[1].attributes).length + 1))) +')');
-    renderAttToggles(normedPaths, calculatedScales);
-    drawContAtt(attributeGroups);
-    drawDiscreteAtt(attributeGroups, calculatedScales);
-
-    //tranforming elements
-    main.select('#main-path-view').style('height', ((normedPaths.length + attributeGroups.data().map(m=> m[0]).length)* 30) + 'px');
-    attributeWrapper.attr('transform', (d)=> 'translate(140, 25)');
-*/
+      drawPathsAndAttributes(normedPaths, main, calculatedScales, 'move');
 });
 
 loadData(d3.json, './public/data/geospiza_with_attributes.json').then(data=> {

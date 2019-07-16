@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import {branchPaths, renderAttributes, drawContAtt, drawDiscreteAtt} from './rendering';
+import {branchPaths, renderPaths, renderAttributes, drawContAtt, drawDiscreteAtt} from './rendering';
 import {formatAttributeData} from './dataFormat';
 import {renderAttToggles} from './toolbarComponent';
 
@@ -11,7 +11,7 @@ export function pathSelected(selectedPath, scales, moveMetric){
         selectedDiv.style('height', 0);
         d3.select('div#main').style('padding-top', '0px');
     }else{
-        renderSelectedView([selectedPath], selectedDiv, scales);
+        renderSelectedView([selectedPath], selectedDiv, scales, moveMetric);
         d3.select('div#main').style('padding-top', '250px');
 
     }
@@ -29,9 +29,11 @@ export function renderSelectedView(pathData, selectedDiv, scales, moveMetric){
     let svgTest = selectedDiv.select('svg.select-svg');
     let svg = svgTest.empty()? selectedDiv.append('svg').classed('select-svg', true) : svgTest;
 
-    
     let selectWrap = svg.append('g').classed('select-wrap', true);
-    let pathGroups = branchPaths(selectWrap, pathData, scales, moveMetric);
+
+    let pathGroups = renderPaths(pathData, selectWrap, scales, moveMetric);
+    
+    //let pathGroups = branchPaths(selectWrap, pathData, scales, moveMetric);
     pathGroups.attr('transform', (d, i)=> 'translate(0,'+(i*60)+')');
 
        /// LOWER ATTRIBUTE VISUALIZATION ///
@@ -44,7 +46,7 @@ export function renderSelectedView(pathData, selectedDiv, scales, moveMetric){
     
     drawContAtt(attributeGroups);
     drawDiscreteAtt(attributeGroups, scales);
-   
+
     //tranforming elements
     svg.style('height', ((pathData.length + attributeGroups.data().map(m=> m[0]).length)* 50) + 50 + 'px');
     selectedDiv.style('height', ((pathData.length + attributeGroups.data().map(m=> m[0]).length)* 45) + 50 + 'px');

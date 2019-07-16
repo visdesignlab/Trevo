@@ -1,20 +1,118 @@
 import '../styles/index.scss';
 import * as d3 from "d3";
 import {renderSelectedView, pathSelected} from './selectedPaths';
+import {formatAttributeData} from './dataFormat';
 
-export function renderPaths(normedPaths, main, scales, moveMetric){
+export function drawPathsAndAttributes(normedPaths, main, calculatedScales, moveMetric){
 
+    let pathGroups = renderPaths(normedPaths, main, calculatedScales, moveMetric);
+  
+      /// LOWER ATTRIBUTE VISUALIZATION ///
+    let attributeWrapper = pathGroups.append('g').classed('attribute-wrapper', true);
+
+    let attData = formatAttributeData(normedPaths, calculatedScales);
+
+    let predictedAttrGrps = renderAttributes(attributeWrapper, attData, calculatedScales, null);
+    let attributeHeight = 45;
+    pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (Object.keys(d[1].attributes).length + 1))) +')');
+  
+    drawContAtt(predictedAttrGrps, moveMetric);
+    drawDiscreteAtt(predictedAttrGrps, calculatedScales, moveMetric);
+  
+    //tranforming elements
+    main.select('#main-path-view').style('height', ((normedPaths.length + predictedAttrGrps.data().map(m=> m[0]).length)* 30) + 'px');
+    attributeWrapper.attr('transform', (d)=> 'translate(140, 25)');
+    ///////////////////////////////////
+}
+
+export function renderPaths(pathData, main, scales, moveMetric){
+    console.log('moveeeess', moveMetric)
     /////Rendering ///////
-    let svg = main.append('svg').attr('id', 'main-path-view'),
-    width = +svg.attr("width"),
-    height = +svg.attr("height");
+    let svg = main.append('svg').attr('id', 'main-path-view');
    
     let pathWrap = svg.append('g').classed('path-wrapper', true);
     pathWrap.attr('transform', (d, i)=> 'translate(0,20)');
 
-    /////Branch Paths/////
-    let pathGroups = branchPaths(pathWrap, normedPaths, scales, moveMetric);
+      /////Counting frequency of nodes//////
+    let branchFrequency = pathData.flatMap(row=> row.flatMap(f=> f.node)).reduce(function (acc, curr) {
+        if (typeof acc[curr] == 'undefined') {
+          acc[curr] = 1;
+        } else {
+          acc[curr] += 1;
+        }
+        return acc;
+        }, {});
+
+     ///Scales for circles ///
+     let circleScale = d3.scaleLog().range([6, 14]).domain([1, d3.max(Object.values(branchFrequency))])
+
+    let pathGroups = pathWrap.selectAll('.paths').data(pathData).join('g').classed('paths', true);
+ 
+    let pathBars = pathGroups.append('rect').classed('path-rect', true);
+    pathBars.attr('y', -8);
+
+    pathGroups.on('mouseover', function(d, i){
+        let treeNode  = d3.select('#sidebar').selectAll('.node');//.filter(f=> d.map(m=> m.name).indexOf(f.name) > -1);
+        let treeLinks  = d3.select('#sidebar').selectAll('.link');//.filter(f=> d.map(m=> m.name).indexOf(f.name) > -1);
+        treeNode.filter(f=> d.map(m=> m.name).indexOf(f.data.name) > -1).classed('hover', true);
+        treeLinks.filter(f=> d.map(m=> m.name).indexOf(f.data.name) > -1).classed('hover', true);
+        return d3.select(this).classed('hover', true);
+    }).on('mouseout', function(d, i){
+        let treeNode  = d3.select('#sidebar').selectAll('.node').classed('hover', false);//.filter(f=> d.map(m=> m.name).indexOf(f.name) > -1);
+        let treeLinks  = d3.select('#sidebar').selectAll('.link').classed('hover', false);
+        return d3.select(this).classed('hover', false)
+    });
+    pathGroups.on('click', (d, i, n)=>{
+        let notIt = d3.selectAll(n).filter((f, j)=> j != i).classed('selected-path', false);
+        if(d3.select(n[i]).classed('selected-path')){
+            d3.select(n[i]).classed('selected-path', false);
+            pathSelected(null, scales, moveMetric);
+        }else{
+            d3.select(n[i]).classed('selected-path', true);
+            pathSelected(d, scales, moveMetric);
+        }
+    });
+
+    let speciesTitle = pathGroups.append('text').text(d=> {
+        let string = d[d.length - 1].label
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    });
+
+    speciesTitle.attr('x', 10).attr('y', 15);
+
+    let timelines = pathGroups.append('g').classed('time-line', true);
+    timelines.attr('transform', (d, i)=> 'translate(150, 0)');
+
+    let lines = timelines.append('line')
+    .attr('x1', 0)
+    .attr('x2', 1000)
+    .attr('y1', 15)
+    .attr('y2', 15);
+
+    let nodeGroups = timelines.selectAll('.node').data((d)=> d).join('g').classed('node', true);
+   
+    nodeGroups.attr('transform', (d)=> {
+        let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
+        let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove)
+        return 'translate('+ distance +', 10)'});
+
+    let circle = nodeGroups.append('circle').attr('cx', 0).attr('cy', 0).attr('r', d=> {
+        return circleScale(branchFrequency[d.node]);
+    }).attr('class', (d, i)=> 'node-'+d.node);
+
+    circle.on('mouseover', function(d, i){
+        return nodeGroups.selectAll('.node-'+d.node).classed('hover-branch', true);
+    }).on('mouseout', function(d, i){
+        return d3.selectAll('.node-'+d.node).classed('hover-branch', false);
+    });
+
+    let speciesNodeLabel = nodeGroups.filter(f=> f.label != undefined).append('text').text(d=> {
+        let string = d.label.charAt(0).toUpperCase() + d.label.slice(1);
+        return string;
+    }).attr('x', 10).attr('y', 5);
+
     return pathGroups;
+  
 }
 
 export function renderAttributes(attributeWrapper, data, scales, filterArray){
@@ -102,91 +200,8 @@ export function renderTree(nestedData, sidebar){
  ///////////
 }
 
-export function branchPaths(wrapper, pathData, scales, moveMetric) {
- 
-    /////Counting frequency of nodes//////
-    let branchFrequency = pathData.flatMap(row=> row.flatMap(f=> f.node)).reduce(function (acc, curr) {
-        if (typeof acc[curr] == 'undefined') {
-          acc[curr] = 1;
-        } else {
-          acc[curr] += 1;
-        }
-        return acc;
-      }, {});
 
-     ///Scales for circles ///
-     let circleScale = d3.scaleLog().range([6, 14]).domain([1, d3.max(Object.values(branchFrequency))])
 
-    let pathGroups = wrapper.selectAll('.paths').data(pathData).join('g').classed('paths', true);
- 
-   // pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (Object.keys(d[1].attributes).length + 1))) +')');
-    let pathBars = pathGroups.append('rect').classed('path-rect', true);//.style('fill', 'red');
-    pathBars.attr('y', -8);
-    pathGroups.on('mouseover', function(d, i){
-        let treeNode  = d3.select('#sidebar').selectAll('.node');//.filter(f=> d.map(m=> m.name).indexOf(f.name) > -1);
-        let treeLinks  = d3.select('#sidebar').selectAll('.link');//.filter(f=> d.map(m=> m.name).indexOf(f.name) > -1);
-        
-        treeNode.filter(f=> d.map(m=> m.name).indexOf(f.data.name) > -1).classed('hover', true);
-        treeLinks.filter(f=> d.map(m=> m.name).indexOf(f.data.name) > -1).classed('hover', true);
-        return d3.select(this).classed('hover', true);
-    }).on('mouseout', function(d, i){
-        let treeNode  = d3.select('#sidebar').selectAll('.node').classed('hover', false);//.filter(f=> d.map(m=> m.name).indexOf(f.name) > -1);
-        let treeLinks  = d3.select('#sidebar').selectAll('.link').classed('hover', false);
-        return d3.select(this).classed('hover', false)
-    });
-    pathGroups.on('click', (d, i, n)=>{
-        let notIt = d3.selectAll(n).filter((f, j)=> j != i).classed('selected-path', false);
-        if(d3.select(n[i]).classed('selected-path')){
-            d3.select(n[i]).classed('selected-path', false);
-            pathSelected(null, scales, moveMetric);
-        }else{
-            d3.select(n[i]).classed('selected-path', true);
-            pathSelected(d, scales, moveMetric);
-        }
-    });
-
-    let speciesTitle = pathGroups.append('text').text(d=> {
-        let string = d[d.length - 1].label
-        return string.charAt(0).toUpperCase() + string.slice(1);
-    });
-
-    speciesTitle.attr('x', 10).attr('y', 15);
-
-    let timelines = pathGroups.append('g').classed('time-line', true);
-    timelines.attr('transform', (d, i)=> 'translate(150, 0)');
-
-    let lines = timelines.append('line')
-    .attr('x1', 0)
-    .attr('x2', 1000)
-    .attr('y1', 15)
-    .attr('y2', 15);
-
-    let nodeGroups = timelines.selectAll('.node').data((d)=> d);
-
-    let nodeGroupEnter = nodeGroups.enter().append('g').classed('node', true);
-    nodeGroups = nodeGroupEnter.merge(nodeGroups);
-    nodeGroups.attr('transform', (d)=> {
-        let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
-        let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove)
-        return 'translate('+ distance +', 10)'});
-
-    let circle = nodeGroups.append('circle').attr('cx', 0).attr('cy', 0).attr('r', d=> {
-        return circleScale(branchFrequency[d.node]);
-    }).attr('class', (d, i)=> 'node-'+d.node);
-
-    circle.on('mouseover', function(d, i){
-        return nodeGroups.selectAll('.node-'+d.node).classed('hover-branch', true);
-    }).on('mouseout', function(d, i){
-        return d3.selectAll('.node-'+d.node).classed('hover-branch', false);
-    });
-
-    let speciesNodeLabel = nodeGroups.filter(f=> f.label != undefined).append('text').text(d=> {
-        let string = d.label.charAt(0).toUpperCase() + d.label.slice(1);
-        return string;
-    }).attr('x', 10).attr('y', 5);
-
-    return pathGroups;
-}
 export function drawContAtt(predictedAttrGrps, moveMetric){
 
     let continuousAtt = predictedAttrGrps.filter(d=> {
