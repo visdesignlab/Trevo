@@ -88,12 +88,14 @@ svg{
   left:0px;
   right:300px;
   background-color:#fff;
+  border-bottom: 1px solid gray;
+ // padding-bottom: 10px;
  
 }
 #selected svg .path-rect{
   width:100%;
   height: 35px;
-  fill: #493267;
+  fill: paleturquoise;
 }
 
 .attr-toggle-svg{

@@ -31,7 +31,6 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales){
 
                 drawPathsAndAttributes(normedPaths, main, calculatedScales, 'move');
             }else{
-                console.log('is this working??')
                 renderDistibutions(normedPaths, main, calculatedScales, 'move');
             }
           

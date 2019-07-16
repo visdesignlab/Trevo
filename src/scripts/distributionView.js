@@ -332,7 +332,6 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
     .style('font-size', 9)
     .attr("transform", "rotate(-35)");
 
-
     //NEED TO FINISH THIS
 
     /////////OBSERVED Continuous RENDERING///////////////////////
