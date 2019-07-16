@@ -210,17 +210,24 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
         p.xScale = xScale.domain([0, maxBranch - 1]);
        // p.xScale = xScale.domain([0, 1]);
         let leafIndex = p.length - 1;
-        let lengths = p.map(l=> l.edgeLength).sort()
+        let lengths = p.map(l=> l.edgeLength);
+        let prevStep = 0;
         return p.map((m, j)=> {
             let node = Object.assign({}, m);
             //INTEGRATE THE DISTNACES HERE WHEN THEY WORK
-            node.edgeLength = (j < leafIndex) ? lengths[j] : 1;
+          //  node.edgeLength = (j < leafIndex) ? lengths[j] : 1;
+            //console.log(node.edgeLength, prevStep)
+            let step = node.edgeLength + prevStep;
+            node.edgeMove = (j < leafIndex) ? step : 1;
+            prevStep = prevStep + node.edgeLength;
          
             node.move = (j < leafIndex) ? p.xScale(j) : p.xScale(maxBranch - 1);
         
             return node;
         });
     });
+
+    console.log(normedPaths)
 
    // renderDistibutions(normedPaths, main, calculatedScales);
     toolbarControl(toolbarDiv, normedPaths, main, calculatedScales);

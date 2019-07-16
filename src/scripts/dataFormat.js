@@ -8,6 +8,7 @@ export function formatAttributeData(normedPaths, scales, filterArray){
                   
                     m.attributes[key].color = scales.filter(f=> f.field === key)[0].catColor;
                     m.attributes[key].move = m.move;
+                    m.attributes[key].edgeMove = m.edgeMove;
                     m.attributes[key].label = key;
                     return m.attributes[key];
                 }else if(m.attributes[key].type === 'discrete'){
@@ -17,6 +18,7 @@ export function formatAttributeData(normedPaths, scales, filterArray){
                         state.winState = m.attributes[key].states.filter(f=> f.realVal === 1)[0].state;
                         state.color = scales.filter(f=> f.field === key)[0].stateColors.filter(f=> f.state === state.winState)[0].color
                         state.move = m.move;
+                        state.edgeMove = m.edgeMove;
                         state.attrLabel = key;
                         return state;
                     }else{
@@ -25,6 +27,7 @@ export function formatAttributeData(normedPaths, scales, filterArray){
                         return states.map((st, j)=> {
                             st.color = scales.filter(f=> f.field === key)[0].stateColors.filter(f=> f.state === st.state)[0].color;
                             st.move = m.move;
+                            st.edgeMove = m.edgeMove;
                             st.attrLabel = key;
                             return st;
                         });

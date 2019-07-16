@@ -30,10 +30,13 @@ export function renderAttributes(attributeWrapper, data, scales, filterArray){
     return predictedAttrGrps;
 }
 
-function continuousPaths(innerTimeline){
+function continuousPaths(innerTimeline, moveMetric){
     //THIS IS THE PATH GENERATOR FOR THE CONTINUOUS VARIABLES1q
     var lineGen = d3.line()
-    .x(d=> d.move)
+    .x(d=> {
+        let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
+        let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove)
+        return distance })
     .y(d=> d.scaleVal);
 
     let innerPaths = innerTimeline.append('path')
@@ -163,8 +166,7 @@ export function branchPaths(wrapper, pathData, scales, moveMetric) {
     nodeGroups = nodeGroupEnter.merge(nodeGroups);
     nodeGroups.attr('transform', (d)=> {
         let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
-        let distance = (moveMetric === 'move') ? d.move : x(d.edgeLength)
-        //'translate('+ d.move +', 10)'});
+        let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove)
         return 'translate('+ distance +', 10)'});
 
     let circle = nodeGroups.append('circle').attr('cx', 0).attr('cy', 0).attr('r', d=> {
@@ -172,7 +174,6 @@ export function branchPaths(wrapper, pathData, scales, moveMetric) {
     }).attr('class', (d, i)=> 'node-'+d.node);
 
     circle.on('mouseover', function(d, i){
-       // d3.selectAll('.node-'+d.node).attr('fill', 'red')
         return nodeGroups.selectAll('.node-'+d.node).classed('hover-branch', true);
     }).on('mouseout', function(d, i){
         return d3.selectAll('.node-'+d.node).classed('hover-branch', false);
@@ -185,7 +186,7 @@ export function branchPaths(wrapper, pathData, scales, moveMetric) {
 
     return pathGroups;
 }
-export function drawContAtt(predictedAttrGrps){
+export function drawContAtt(predictedAttrGrps, moveMetric){
 
     let continuousAtt = predictedAttrGrps.filter(d=> {
         return d[0].type === 'continuous';
@@ -205,13 +206,16 @@ export function drawContAtt(predictedAttrGrps){
     let innerBars = attributeNodesCont.append('g').classed('inner-bars', true);
 
  /////DO NOT DELETE THIS! YOU NEED TO SEP CONT AND DICRETE ATTR. THIS DRAWS LINE FOR THE CONT/////
-    let innerPaths = continuousPaths(innerTimeline);
+    let innerPaths = continuousPaths(innerTimeline, moveMetric);
  ////////
 
     let innerRect = innerBars.append('rect').classed('attribute-inner-bar', true);
     innerRect.attr('height', attributeHeight)
     innerBars.attr('transform', (d)=> {
-        return 'translate('+ d.move +', 0)'});
+        let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
+        let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove)
+        return 'translate('+ distance +', 10)'});
+      
     let rangeRect = innerBars.append('rect').classed('range-rect', true);
     rangeRect.attr('width', 20).attr('height', (d, i)=> {
         let range = d.scaledHigh -  d.scaledLow;
@@ -226,7 +230,7 @@ export function drawContAtt(predictedAttrGrps){
     .attr('transform', (d, i)=> 'translate(0, '+ d.scaleVal +')')
     .attr('fill', d=> d.color);
 }
-export function drawDiscreteAtt(predictedAttrGrps, scales){
+export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric){
 
     let discreteAtt = predictedAttrGrps.filter(d=> {
         return d[d.length - 1].type === 'discrete';
@@ -245,6 +249,7 @@ export function drawDiscreteAtt(predictedAttrGrps, scales){
         let disct = d.map(m=> {
             let test = (m.leaf == true) ? m.states.map(s=> {
                 s.move = m.move;
+                s.edgeMove = m.edgeMove;
                 s.color = m.color;
                 return s
             }) : m;
@@ -262,7 +267,9 @@ export function drawDiscreteAtt(predictedAttrGrps, scales){
 
     var lineGen = d3.line()
     .x(d=> {
-        return d.move + 7})
+        let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
+        let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove)
+        return distance + 7})
     .y(d=> d.scaleVal);
 
     let innerStatePaths = statePath.append('path')
@@ -280,9 +287,20 @@ export function drawDiscreteAtt(predictedAttrGrps, scales){
     attributeNodesDisc = attrNodesDiscEnter.merge(attributeNodesDisc);
 
     attributeNodesDisc.attr('transform', (d)=> {
-        let move = d[0] ? d[0].move : d.move;
-        let finalMove = move ? move : 0;
-        return 'translate('+finalMove+', 0)'});
+        let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
+        console.log('d', d, moveMetric)
+      
+        if(d[0]){
+            let distance = (moveMetric === 'move') ? d[0].move : x(d[0].edgeMove);
+            return 'translate('+distance+', 0)';
+        }else{
+            let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove);
+            return 'translate('+distance+', 0)';
+        }
+       // let move = d[0] ? d[0].move : distance;
+       // let finalMove = move ? move : 0;
+       // return 'translate('+finalMove+', 0)'
+    });
 
     attributeNodesDisc.append('line').attr('x1', 10).attr('x2', 10).attr('y1', 0).attr('y2', attributeHeight);
 

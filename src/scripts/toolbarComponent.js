@@ -61,9 +61,9 @@ function toggleFilters(filterButton, main){
     }
 }
 
-function drawPathsAndAttributes(normedPaths, main, calculatedScales, distanceMetric){
+function drawPathsAndAttributes(normedPaths, main, calculatedScales, moveMetric){
 
-    let pathGroups = renderPaths(normedPaths, main, calculatedScales, distanceMetric);
+    let pathGroups = renderPaths(normedPaths, main, calculatedScales, moveMetric);
 
     /// LOWER ATTRIBUTE VISUALIZATION ///
   let attributeWrapper = pathGroups.append('g').classed('attribute-wrapper', true);
@@ -72,8 +72,8 @@ function drawPathsAndAttributes(normedPaths, main, calculatedScales, distanceMet
   let attributeHeight = 45;
   pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (Object.keys(d[1].attributes).length + 1))) +')');
 
-  drawContAtt(predictedAttrGrps);
-  drawDiscreteAtt(predictedAttrGrps, calculatedScales);
+  drawContAtt(predictedAttrGrps, moveMetric);
+  drawDiscreteAtt(predictedAttrGrps, calculatedScales, moveMetric);
 
   //tranforming elements
   main.select('#main-path-view').style('height', ((normedPaths.length + predictedAttrGrps.data().map(m=> m[0]).length)* 30) + 'px');
@@ -147,7 +147,7 @@ export function renderAttToggles(normedPaths, scales){
         //d3.selectAll('.paths').attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (newKeys.data().length + 1))) +')');
         d3.selectAll('.paths').attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (newKeys.data().length + 1))) +')');
         
-        drawContAtt(predictedAttrGrps);
+        drawContAtt(predictedAttrGrps, 'move');
         drawDiscreteAtt(predictedAttrGrps, scales);
 
     });
