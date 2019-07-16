@@ -12,12 +12,40 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales){
     filterButton.attr('class', 'btn btn-outline-secondary').text('Show Filters');
     filterButton.on('click', ()=> toggleFilters(filterButton, main));
 
+    let lengthButton = toolbar.append('button').attr('id', 'change-length');
+    lengthButton.attr('class', 'btn btn-outline-secondary').text('Show Edge Length');
+    lengthButton.on('click', ()=> {
+        if(lengthButton.text() === 'Show Edge Length'){
+            lengthButton.text('Normalize Edge Lengths');
+            main.selectAll('*').remove();//.selectAll('*').remove();
+            if(viewButton.text() === 'View Summary'){
+                drawPathsAndAttributes(normedPaths, main, calculatedScales, 'edgeLength');
+            }else{
+                renderDistibutions(normedPaths, main, calculatedScales, 'edgeLength');
+            }
+           
+        }else{
+            lengthButton.text('Show Edge Length');
+            main.selectAll('*').remove();//.selectAll('*').remove();
+            if(viewButton.text() === 'View Summary'){
+
+                drawPathsAndAttributes(normedPaths, main, calculatedScales, 'move');
+            }else{
+                console.log('is this working??')
+                renderDistibutions(normedPaths, main, calculatedScales, 'move');
+            }
+          
+        }
+    });
+
     let form = toolbar.append('form').classed('form-inline', true);
     let input = form.append('input').classed('form-control mr-sm-2', true)
     input.attr('type', 'search').attr('placeholder', 'Search').attr('aria-label', 'Search');
     let searchButton = form.append('button').classed('btn btn-outline-success my-2 my-sm-0', true).attr('type', 'submit').append('i').classed("fas fa-search", true)
 
     viewButton.on('click', ()=> togglePathView(viewButton, normedPaths, main, calculatedScales));
+
+
 }
 
 function toggleFilters(filterButton, main){
@@ -34,34 +62,39 @@ function toggleFilters(filterButton, main){
     }
 }
 
+function drawPathsAndAttributes(normedPaths, main, calculatedScales, distanceMetric){
+
+    let pathGroups = renderPaths(normedPaths, main, calculatedScales, distanceMetric);
+
+    /// LOWER ATTRIBUTE VISUALIZATION ///
+  let attributeWrapper = pathGroups.append('g').classed('attribute-wrapper', true);
+  let attData = formatAttributeData(normedPaths, calculatedScales)
+  let predictedAttrGrps = renderAttributes(attributeWrapper, attData, calculatedScales, null);
+  let attributeHeight = 45;
+  pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (Object.keys(d[1].attributes).length + 1))) +')');
+
+  drawContAtt(predictedAttrGrps);
+  drawDiscreteAtt(predictedAttrGrps, calculatedScales);
+
+  //tranforming elements
+  main.select('#main-path-view').style('height', ((normedPaths.length + predictedAttrGrps.data().map(m=> m[0]).length)* 30) + 'px');
+  attributeWrapper.attr('transform', (d)=> 'translate(140, 25)');
+  ///////////////////////////////////
+}
+
 function togglePathView(viewButton, normedPaths, main, calculatedScales){
    
     if(viewButton.text() === 'View Paths'){
         viewButton.text('View Summary');
         main.selectAll('*').remove();//.selectAll('*').remove();
-   
-        ////NEED TO SIMPLIFY THIS///////
-        let pathGroups = renderPaths(normedPaths, main, calculatedScales);
+        
+        drawPathsAndAttributes(normedPaths, main, calculatedScales, 'move');
 
-          /// LOWER ATTRIBUTE VISUALIZATION ///
-        let attributeWrapper = pathGroups.append('g').classed('attribute-wrapper', true);
-        let attData = formatAttributeData(normedPaths, calculatedScales)
-        let predictedAttrGrps = renderAttributes(attributeWrapper, attData, calculatedScales, null);
-        let attributeHeight = 45;
-        pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (Object.keys(d[1].attributes).length + 1))) +')');
-  
-        drawContAtt(predictedAttrGrps);
-        drawDiscreteAtt(predictedAttrGrps, calculatedScales);
-
-        //tranforming elements
-        main.select('#main-path-view').style('height', ((normedPaths.length + predictedAttrGrps.data().map(m=> m[0]).length)* 30) + 'px');
-        attributeWrapper.attr('transform', (d)=> 'translate(140, 25)');
-        ///////////////////////////////////
 
     }else{
         viewButton.text('View Paths');
         main.selectAll('*').remove();
-        renderDistibutions(normedPaths, main, calculatedScales)
+        renderDistibutions(normedPaths, main, calculatedScales, 'move');
     }
 }
 

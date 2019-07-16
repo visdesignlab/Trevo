@@ -125,7 +125,7 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     let mappedEdges = edges.rows.map((edge, i)=> {
         let attrKeys = Object.keys(calculatedAtt);
         let index = calculatedAtt[attrKeys[0]].rows.map(m=> m['nodeLabels']).indexOf(edge.V2);
-        edge.edgelength = edgeLen.rows[i].x;
+        edge.edgeLength = edgeLen.rows[i].x;
         edge.node = edge.V2;
         if(index > -1){ 
             attrKeys.forEach(attr=> {
@@ -210,16 +210,14 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
         p.xScale = xScale.domain([0, maxBranch - 1]);
        // p.xScale = xScale.domain([0, 1]);
         let leafIndex = p.length - 1;
+        let lengths = p.map(l=> l.edgeLength).sort()
         return p.map((m, j)=> {
             let node = Object.assign({}, m);
-
             //INTEGRATE THE DISTNACES HERE WHEN THEY WORK
-
-           // let prevStep = (j > 0) ?  p[j-1].edgelength : 0;
-            //let moveStep = (prevStep == 0) ? 0 : (m.edgelength + prevStep); 
+            node.edgeLength = (j < leafIndex) ? lengths[j] : 1;
+         
             node.move = (j < leafIndex) ? p.xScale(j) : p.xScale(maxBranch - 1);
-           // node.move = (j < leafIndex) ? p.xScale(m.edgelength) : p.xScale(1);
-          // node.move = p.xScale(step);
+        
             return node;
         });
     });
@@ -235,7 +233,7 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     //TREE RENDER
     ////////
     renderTree(nestedData, sidebar);
-    renderDistibutions(normedPaths, main, calculatedScales);
+    renderDistibutions(normedPaths, main, calculatedScales, 'move');
 
 
   

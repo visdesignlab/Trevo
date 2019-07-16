@@ -2,7 +2,7 @@ import '../styles/index.scss';
 import {formatAttributeData} from './dataFormat';
 import * as d3 from "d3";
 
-export function renderDistibutions(normedPaths, mainDiv, scales){
+export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
 
 
     let width = 200;
@@ -15,7 +15,14 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
     formatAttributeData(newNormed, scales, null);
 
     let maxBranch = d3.max(newNormed.map(p=> p.length)) - 1;
-    let xScale = d3.scaleLinear().domain([0, (maxBranch - 1)]).clamp(true)
+
+    let xScale = d3.scaleLinear();
+    if(moveMetric === 'move'){
+        xScale.domain([0, (maxBranch - 1)]).clamp(true);
+    }else{
+        xScale.domain([0, 1]).clamp(true);
+    }
+   
   
     let svg = mainDiv.append('svg');
     svg.attr('id', 'main-summary-view');
@@ -28,11 +35,11 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
                 return path.map((node, i)=> {
                     let attr = node.attributes[key];
                     let lastnode = path.length - 1
-                
+            
                     if(attr.type === 'discrete'){
                         let thisScale = xScale;
                         thisScale.range([0, 800]);
-                        attr.move = thisScale(i);
+                        attr.move = (moveMetric === 'move')? thisScale(i) : thisScale(node.edgeLength);
                         attr.states = node.attributes[key].states.map(s=> {
                             s.move = attr.move;
                             return s;
@@ -40,7 +47,17 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
                     }else{
                         let thisScale = xScale;
                         thisScale.range([0, 790]);
-                        attr.move = (i < lastnode) ? xScale(i): xScale(maxBranch - 1);
+
+                        let metric = function(index, max){
+                            if(moveMetric === 'edgeLength'){
+                                return thisScale(index);
+                            }else if(index < lastnode){
+                                return thisScale(index);
+                            }else{
+                                return thisScale(max - 1);
+                            }
+                        }
+                       attr.move = metric(i, maxBranch);
                     }
                     return attr;
                 });
@@ -48,6 +65,8 @@ export function renderDistibutions(normedPaths, mainDiv, scales){
             data.attKey = key;
             return data;
     });
+
+    console.log('add', addMoveToAttributes)
 
     let summarizedData = addMoveToAttributes.map(attr=> {
        

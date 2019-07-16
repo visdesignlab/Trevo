@@ -2,7 +2,7 @@ import '../styles/index.scss';
 import * as d3 from "d3";
 import {renderSelectedView, pathSelected} from './selectedPaths';
 
-export function renderPaths(normedPaths, main, scales){
+export function renderPaths(normedPaths, main, scales, moveMetric){
     console.log('in renderPaths', scales)
     /////Rendering ///////
     let svg = main.append('svg').attr('id', 'main-path-view'),
@@ -13,7 +13,7 @@ export function renderPaths(normedPaths, main, scales){
     pathWrap.attr('transform', (d, i)=> 'translate(0,20)');
 
     /////Branch Paths/////
-    let pathGroups = branchPaths(pathWrap, normedPaths, scales);
+    let pathGroups = branchPaths(pathWrap, normedPaths, scales, moveMetric);
     return pathGroups;
 }
 
@@ -98,8 +98,8 @@ export function renderTree(nestedData, sidebar){
  ///////////
 }
 
-export function branchPaths(wrapper, pathData, scales) {
-    console.log('pathdata scales in branch paths', scales)
+export function branchPaths(wrapper, pathData, scales, moveMetric) {
+ 
     /////Counting frequency of nodes//////
     let branchFrequency = pathData.flatMap(row=> row.flatMap(f=> f.node)).reduce(function (acc, curr) {
         if (typeof acc[curr] == 'undefined') {
@@ -133,13 +133,10 @@ export function branchPaths(wrapper, pathData, scales) {
     pathGroups.on('click', (d, i, n)=>{
         let notIt = d3.selectAll(n).filter((f, j)=> j != i).classed('selected-path', false);
         if(d3.select(n[i]).classed('selected-path')){
-            console.log('is this true', d3.select(n[i]).classed('selected-path'))
             d3.select(n[i]).classed('selected-path', false);
-            console.log('in path groups', scales);
             pathSelected(null, scales);
         }else{
             d3.select(n[i]).classed('selected-path', true);
-            console.log('in pathgroups to draw paths', scales)
             pathSelected(d, scales);
         }
     });
@@ -164,7 +161,11 @@ export function branchPaths(wrapper, pathData, scales) {
 
     let nodeGroupEnter = nodeGroups.enter().append('g').classed('node', true);
     nodeGroups = nodeGroupEnter.merge(nodeGroups);
-    nodeGroups.attr('transform', (d)=> 'translate('+ d.move +', 10)');
+    nodeGroups.attr('transform', (d)=> {
+        let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
+        let distance = (moveMetric === 'move') ? d.move : x(d.edgeLength)
+        //'translate('+ d.move +', 10)'});
+        return 'translate('+ distance +', 10)'});
 
     let circle = nodeGroups.append('circle').attr('cx', 0).attr('cy', 0).attr('r', d=> {
         return circleScale(branchFrequency[d.node]);
