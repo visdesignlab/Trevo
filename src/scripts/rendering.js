@@ -26,11 +26,14 @@ export function drawPathsAndAttributes(normedPaths, main, calculatedScales, move
 }
 
 export function renderPaths(pathData, main, scales, moveMetric){
-  
+
+    ////YOU SHOULD MOVE THESE APPENDING THINGS OUT OF HERE///////
     /////Rendering ///////
-    let svg = main.append('svg').attr('id', 'main-path-view');
-   
-    let pathWrap = svg.append('g').classed('path-wrapper', true);
+    let svgTest = main.select('#main-path-view');
+    let svg = svgTest.empty() ? main.append('svg').attr('id', 'main-path-view') : svgTest;
+
+    let pathWrapTest = svg.select('.path-wrapper');
+    let pathWrap = pathWrapTest.empty() ? svg.append('g').classed('path-wrapper', true) : pathWrapTest;
     pathWrap.attr('transform', (d, i)=> 'translate(0,20)');
 
       /////Counting frequency of nodes//////
@@ -64,12 +67,13 @@ export function renderPaths(pathData, main, scales, moveMetric){
     });
     pathGroups.on('click', (d, i, n)=>{
         let notIt = d3.selectAll(n).filter((f, j)=> j != i).classed('selected-path', false);
+     
         if(d3.select(n[i]).classed('selected-path')){
             d3.select(n[i]).classed('selected-path', false);
-            pathSelected(null, scales, moveMetric);
+            pathSelected(null, notIt.data(), scales, moveMetric);
         }else{
             d3.select(n[i]).classed('selected-path', true);
-            pathSelected(d, scales, moveMetric);
+            pathSelected(d, notIt.data(), scales, moveMetric);
         }
     });
 

@@ -224,8 +224,6 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
         });
     });
 
-    console.log('normedPaths', normedPaths)
-
    // renderDistibutions(normedPaths, main, calculatedScales);
     toolbarControl(toolbarDiv, normedPaths, main, calculatedScales, 'edgeLength', 'paths');
     
@@ -241,7 +239,7 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     //renderDistibutions(normedPaths, main, calculatedScales, 'move');
     
       /// LOWER ATTRIBUTE VISUALIZATION ///
-      drawPathsAndAttributes(normedPaths, main, calculatedScales, 'edgeLength');
+    drawPathsAndAttributes(normedPaths, main, calculatedScales, 'edgeLength');
 });
 
 loadData(d3.json, './public/data/geospiza_with_attributes.json').then(data=> {
