@@ -361,6 +361,6 @@ export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric){
     });
     ////NEED TO MAKE A FUNCTION TO ASSIGN COLOR OF STATES//////
 
-    endStateDot.append('text').text(d=> d.states[0].state).attr('transform', 'translate(15, 17)').style('font-size', 10);
+    endStateDot.append('text').text(d=> d.winState).attr('transform', 'translate(15, 17)').style('font-size', 10);
 }
 
