@@ -70,7 +70,7 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
                 'max': max, 
                 'min':  min,
                 'yScale': d3.scaleLinear().range([0, 43]).domain([min, max]).clamp(true),
-                'satScale': d3.scaleLinear().range([.2, 1]).domain([min, max]),
+                'satScale': d3.scaleLinear().range([0, 1]).domain([min, max]),
                 'catColor': colorKeeper[i],
             };
         }else{

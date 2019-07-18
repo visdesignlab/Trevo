@@ -3,7 +3,7 @@ import * as d3 from "d3";
 import {renderSelectedView, pathSelected} from './selectedPaths';
 import {formatAttributeData} from './dataFormat';
 
-export function drawPathsAndAttributes(normedPaths, main, calculatedScales, moveMetric){
+export function drawPathsAndAttributes(normedPaths, main, calculatedScales, moveMetric, collapsed){
 
     let pathGroups = renderPaths(normedPaths, main, calculatedScales, moveMetric);
   
@@ -12,12 +12,12 @@ export function drawPathsAndAttributes(normedPaths, main, calculatedScales, move
 
     let attData = formatAttributeData(normedPaths, calculatedScales);
 
-    let predictedAttrGrps = renderAttributes(attributeWrapper, attData, calculatedScales, null);
-    let attributeHeight = 45;
+    let predictedAttrGrps = renderAttributes(attributeWrapper, attData, calculatedScales, null, collapsed);
+    let attributeHeight = collapsed? 20 : 45;
     pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (Object.keys(d[1].attributes).length + 1))) +')');
   
-    drawContAtt(predictedAttrGrps, moveMetric);
-    drawDiscreteAtt(predictedAttrGrps, calculatedScales, moveMetric);
+    drawContAtt(predictedAttrGrps, moveMetric, collapsed);
+    drawDiscreteAtt(predictedAttrGrps, calculatedScales, moveMetric, collapsed);
   
     //tranforming elements
     main.select('#main-path-view').style('height', ((normedPaths.length + predictedAttrGrps.data().map(m=> m[0]).length)* 30) + 'px');
@@ -122,16 +122,17 @@ export function renderPaths(pathData, main, scales, moveMetric){
   
 }
 
-export function renderAttributes(attributeWrapper, data, scales, filterArray){
+export function renderAttributes(attributeWrapper, data, scales, filterArray, collapsed){
 
-    let attributeHeight = 45;
+    let attributeHeight = collapsed? 20 : 45;
     let predictedAttrGrps = attributeWrapper.selectAll('g').data((d, i)=> data[i]).join('g');
     predictedAttrGrps.attr('transform', (d, i) => 'translate(0, '+(i * (attributeHeight + 5))+')');
     return predictedAttrGrps;
 }
 
-function continuousPaths(innerTimeline, moveMetric){
+function continuousPaths(innerTimeline, moveMetric, collapsed){
     //THIS IS THE PATH GENERATOR FOR THE CONTINUOUS VARIABLES1q
+    let height = collapsed? 20 : 45;
     var lineGen = d3.line()
     .x(d=> {
         let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
@@ -139,7 +140,7 @@ function continuousPaths(innerTimeline, moveMetric){
         return distance })
     .y(d=> {
         let y = d.yScale;
-        y.range([0, 45]);
+        y.range([0, height]);
         return y(d.realVal)});
 
     let innerPaths = innerTimeline.append('path')
@@ -202,6 +203,62 @@ export function renderTree(nestedData, sidebar){
  /////END TREE STUFF
  ///////////
 }
+export function drawContAtt(predictedAttrGrps, moveMetric, collapsed){
+
+    let continuousAtt = predictedAttrGrps.filter(d=> {
+        return d[0].type === 'continuous';
+    });
+
+    let attributeHeight = collapsed ? 20 : 45;
+    let attrLabel = continuousAtt.append('text').text(d=> d[0].label);
+    attrLabel.classed('attribute-label', true);
+    attrLabel.attr('transform', 'translate(-15, 20)');
+    let innerTimeline = continuousAtt.append('g').classed('attribute-time-line', true);
+    let attribRectCont = innerTimeline.append('rect').classed('attribute-rect', true);
+    attribRectCont.attr('height', attributeHeight);//.data(normedPaths);//.attr('transform', (d, i)=> 'translate(0, 0)');
+    let attributeNodesCont = innerTimeline.selectAll('g').data(d=> d).join('g').classed('attribute-node', true);
+   // attributeNodesCont = attrNodesContEnter.merge(attributeNodesCont);
+
+    let innerBars = attributeNodesCont.append('g').classed('inner-bars', true);
+
+ /////DO NOT DELETE THIS! YOU NEED TO SEP CONT AND DICRETE ATTR. THIS DRAWS LINE FOR THE CONT/////
+    let innerPaths = continuousPaths(innerTimeline, moveMetric, collapsed);
+ ////////
+
+    let innerRect = innerBars.append('rect').classed('attribute-inner-bar', true);
+    innerRect.attr('height', attributeHeight)
+    innerBars.attr('transform', (d)=> {
+        let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
+        let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove)
+        return 'translate('+ distance +', 0)'});
+      
+    let rangeRect = innerBars.append('rect').classed('range-rect', true);
+    rangeRect.attr('width', 20).attr('height', (d, i)=> {
+        let y = d.yScale;
+        y.range([0, attributeHeight])
+        let range = d.leaf ? 0 : y(d.upperCI95) -  y(d.lowerCI95);
+        return range;
+    });
+    rangeRect.attr('transform', (d, i)=> {
+        let y = d.yScale;
+        y.range([0, attributeHeight]);
+        let move = d.leaf? 0 : y(d.lowerCI95);
+        return 'translate(0, '+ move +')';
+    });
+    rangeRect.style('fill', d=> d.color);
+    rangeRect.style('opacity', (d)=> {
+        console.log(d.satScale(d.realVal));
+        return d.satScale(d.realVal);
+    })
+    innerBars.append('rect').attr('width', 20).attr('height', 5)
+    .attr('transform', (d, i)=> {
+        let y = d.yScale;
+        y.range([0, attributeHeight]);
+        //let move = d.leaf? 0 : y(d.realVal);
+        return 'translate(0, '+ y(d.realVal) +')'})
+    .attr('fill', d=> d.color);
+}
+/*
 export function drawContAtt(predictedAttrGrps, moveMetric){
 
     let continuousAtt = predictedAttrGrps.filter(d=> {
@@ -256,14 +313,15 @@ export function drawContAtt(predictedAttrGrps, moveMetric){
         //let move = d.leaf? 0 : y(d.realVal);
         return 'translate(0, '+ y(d.realVal) +')'})
     .attr('fill', d=> d.color);
-}
-export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric){
+}*/
+
+export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric, collapsed){
 
     let discreteAtt = predictedAttrGrps.filter(d=> {
         return d[d.length - 1].type === 'discrete';
     });
 
-    let attributeHeight = 45;
+    let attributeHeight = collapsed? 20 : 45;
     let attrLabel = discreteAtt.append('text').text(d=> d[d.length - 1].label);
     attrLabel.classed('attribute-label', true);
     attrLabel.attr('transform', 'translate(-15, 20)');
@@ -308,7 +366,6 @@ export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric){
     attribRectDisc.attr('height', attributeHeight);//.data(normedPaths);//.attr('transform', (d, i)=> 'translate(0, 0)');
     let attributeNodesDisc = innerTimelineDis.selectAll('.attribute-node-discrete').data(d=> {
         return d}).join('g').classed('attribute-node-discrete', true);
-   // attributeNodesDisc = attrNodesDiscEnter.merge(attributeNodesDisc);
 
     attributeNodesDisc.attr('transform', (d)=> {
         let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
@@ -355,7 +412,6 @@ export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric){
         return att[0] === undefined});
 
     endStateDot.append('circle').attr('cx', 10).attr('cy', 2).attr('r', 7).style('fill', d=> {
-        let win = d.states.filter(v=> v.realVal === 1)[0].state;
        return d.color
     });
     ////NEED TO MAKE A FUNCTION TO ASSIGN COLOR OF STATES//////

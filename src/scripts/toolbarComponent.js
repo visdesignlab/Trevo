@@ -49,7 +49,7 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, mov
 
     let scrunchButton = toolbar.append('button').attr('id', 'scrunch');
     scrunchButton.attr('class', 'btn btn-outline-secondary').text('Collapse Attributes');
-    scrunchButton.on('click', ()=> toggleScrunch(scrunchButton));
+    scrunchButton.on('click', ()=> toggleScrunch(scrunchButton, normedPaths, main, calculatedScales));
 
     let form = toolbar.append('form').classed('form-inline', true);
     let input = form.append('input').classed('form-control mr-sm-2', true)
@@ -94,11 +94,15 @@ function togglePathView(viewButton, normedPaths, main, calculatedScales){
 }
 }
 
-function toggleScrunch(button){
+function toggleScrunch(button, normedPaths, main, calculatedScales){
     if(button.text() === 'Collapse Attributes'){
         button.text('Expand Attributes');
+        main.selectAll('*').remove();//.selectAll('*').remove();
+        drawPathsAndAttributes(normedPaths, main, calculatedScales, 'move', true);
     }else{
         button.text('Collapse Attributes');
+        main.selectAll('*').remove();//.selectAll('*').remove();
+        drawPathsAndAttributes(normedPaths, main, calculatedScales, 'move', false);
     }
 }
 
