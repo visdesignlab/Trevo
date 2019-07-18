@@ -125,7 +125,7 @@ export function renderPaths(pathData, main, scales, moveMetric){
 export function renderAttributes(attributeWrapper, data, scales, filterArray){
 
     let attributeHeight = 45;
-    let predictedAttrGrps = attributeWrapper.selectAll('g').data((d, i)=> data[i]).enter().append('g');
+    let predictedAttrGrps = attributeWrapper.selectAll('g').data((d, i)=> data[i]).join('g');
     predictedAttrGrps.attr('transform', (d, i) => 'translate(0, '+(i * (attributeHeight + 5))+')');
     return predictedAttrGrps;
 }
@@ -176,7 +176,7 @@ export function renderTree(nestedData, sidebar){
  // adds the links between the nodes
      var link = g.selectAll(".link")
      .data( treenodes.descendants().slice(1))
-     .enter().append("path")
+     .join("path")
      .attr("class", "link")
      .attr("d", function(d) {
          return "M" + d.y + "," + d.x
@@ -188,7 +188,7 @@ export function renderTree(nestedData, sidebar){
      // adds each node as a group
      var node = g.selectAll(".node")
      .data(treenodes.descendants())
-     .enter().append("g")
+     .join("g")
      .attr("class", function(d) { 
      return "node" + 
      (d.children ? " node--internal" : " node--leaf"); })
@@ -215,9 +215,8 @@ export function drawContAtt(predictedAttrGrps, moveMetric){
     let innerTimeline = continuousAtt.append('g').classed('attribute-time-line', true);
     let attribRectCont = innerTimeline.append('rect').classed('attribute-rect', true);
     attribRectCont.attr('height', attributeHeight);//.data(normedPaths);//.attr('transform', (d, i)=> 'translate(0, 0)');
-    let attributeNodesCont = innerTimeline.selectAll('g').data(d=> d);
-    let attrNodesContEnter = attributeNodesCont.enter().append('g').classed('attribute-node', true);
-    attributeNodesCont = attrNodesContEnter.merge(attributeNodesCont);
+    let attributeNodesCont = innerTimeline.selectAll('g').data(d=> d).join('g').classed('attribute-node', true);
+   // attributeNodesCont = attrNodesContEnter.merge(attributeNodesCont);
 
     let innerBars = attributeNodesCont.append('g').classed('inner-bars', true);
 
@@ -284,10 +283,8 @@ export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric){
             return disct.map(m=> m.filter(f=> f.state == key)[0]);
         });
         return lines;
-    });
-
-    let pathEnter = statePath.enter().append('g').classed('state-path', true);
-    statePath = pathEnter.merge(statePath);
+    }).join('g').classed('state-path', true);
+   // statePath = pathEnter.merge(statePath);
 
     var lineGen = d3.line()
     .x(d=> {
@@ -306,9 +303,8 @@ export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric){
     let attribRectDisc = innerTimelineDis.append('rect').classed('attribute-rect', true);
     attribRectDisc.attr('height', attributeHeight);//.data(normedPaths);//.attr('transform', (d, i)=> 'translate(0, 0)');
     let attributeNodesDisc = innerTimelineDis.selectAll('.attribute-node-discrete').data(d=> {
-        return d});
-    let attrNodesDiscEnter = attributeNodesDisc.enter().append('g').classed('attribute-node-discrete', true);
-    attributeNodesDisc = attrNodesDiscEnter.merge(attributeNodesDisc);
+        return d}).join('g').classed('attribute-node-discrete', true);
+   // attributeNodesDisc = attrNodesDiscEnter.merge(attributeNodesDisc);
 
     attributeNodesDisc.attr('transform', (d)=> {
         let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
@@ -327,13 +323,12 @@ export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric){
 
     let stateDots = attributeNodesDisc.filter((att, i)=> att[0] != undefined).selectAll('.dots').data(d=> {
         return d
-    });
-    let stateDotsEnter = stateDots.enter().append('circle').attr('cx', 10).attr('cy', (d)=> {
-        return d.scaleVal;
-    }).attr('r', 2).style('fill', d=> d.color);
+    }).join('circle').classed('dots', true);
+    
+    stateDots.attr('cx', 10).attr('cy', (d)=> d.scaleVal).attr('r', 2).style('fill', d=> d.color);
 
-    stateDotsEnter.filter(f=> f.realVal > 0.5).attr('r', 4);
-    stateDots = stateDotsEnter.merge(stateDots);
+    stateDots.filter(f=> f.realVal > 0.5).attr('r', 4);
+   // stateDots = stateDotsEnter.merge(stateDots);
 
     stateDots.on("mouseover", function(d) {
         let tool = d3.select('#tooltip');

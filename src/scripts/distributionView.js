@@ -260,9 +260,8 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
     })
 
 
-    let attributeGroups = svg.selectAll('.combined-attr-grp').data(combinedData);
-    let attEnter = attributeGroups.enter().append('g').classed('combined-attr-grp', true);
-    attributeGroups = attEnter.merge(attributeGroups);
+    let attributeGroups = svg.selectAll('.combined-attr-grp').data(combinedData).join('g').classed('combined-attr-grp', true);
+   // attributeGroups = attEnter.merge(attributeGroups);
     attributeGroups.attr('transform', (d, i)=> 'translate(0,'+(i * 110)+')');
 
     let predictedAttrGrps = attributeGroups.append('g').classed('summary-attr-grp', true);
@@ -277,8 +276,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
     let cont = innerTime.filter(f=> f.predicted.type === 'continuous');
 
     //////////experimenting with continuous rendering///////////////////////////////
-    let contpaths = cont.selectAll('g.summ-paths').data(d=> d.predicted);
-    let contEnter = contpaths.enter().append('g').classed('summ-paths', true);
+    let contpaths = cont.selectAll('g.summ-paths').data(d=> d.predicted).join('g').classed('summ-paths', true);
     contpaths = contEnter.merge(contpaths);
 
     var lineGen = d3.line()
@@ -290,7 +288,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
     .attr("class", "inner-line-sum")
     .style('stroke', (d)=> d[0].color);
 
-    let nodes = contpaths.selectAll('.node-sum').data(d=> d).enter().append('g').attr('class', 'node-sum');
+    let nodes = contpaths.selectAll('.node-sum').data(d=> d).join('g').attr('class', 'node-sum');
     nodes.attr('transform', (d, i) => 'translate('+d.move+', 0)');
     nodes.append('rect').attr('x', 0).attr('y', 0).attr('width', 10).attr('height', 80).classed('inner-node-wrap', true);
     nodes.append('rect').attr('x', 0).attr('y', (d, i)=> d.scaledLow).attr('width', 10).attr('height', (d, i)=> {
@@ -301,9 +299,8 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
     //////////experimenting with discrete rendering///////////////////////////////
     let disc = innerTime.filter(f=> f.predicted.type === 'discrete').classed('discrete-sum', true);
 
-    let stateGroups = disc.selectAll('.state-sum').data(d=> Object.entries(d.predicted.stateData).map(m=> m[1]));
-    let stateEnter = stateGroups.enter().append('g').classed('state-sum', true);
-    stateGroups = stateEnter.merge(stateGroups);
+    let stateGroups = disc.selectAll('.state-sum').data(d=> Object.entries(d.predicted.stateData).map(m=> m[1])).join('g').classed('state-sum', true);
+  //  stateGroups = stateEnter.merge(stateGroups);
 
     var lineGenD = d3.line()
     .x(d=> d.x)
@@ -333,10 +330,8 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
     /////////OBSERVED DISCRETE RENDERING///////////////////////
     let observedDiscrete = observedGroup.filter(f=> f.predicted.type === 'discrete');
   
-    let stateBars = observedDiscrete.selectAll('.state-bar').data(d=> d.observed);
-
-    let rectBarEnter = stateBars.enter().append('g').classed('state-bar', true);
-    stateBars = rectBarEnter.merge(stateBars);
+    let stateBars = observedDiscrete.selectAll('.state-bar').data(d=> d.observed).join('g').classed('state-bar', true);
+   // stateBars = rectBarEnter.merge(stateBars);
 
     stateBars.attr('transform', (d, i)=> {
         d.x.range([0, 180]);
