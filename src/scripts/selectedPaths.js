@@ -19,7 +19,6 @@ export function pathSelected(selectedPath, otherPaths, scales, moveMetric){
           /// LOWER ATTRIBUTE VISUALIZATION ///
         drawPathsAndAttributes(sortedPaths.map(s=> s.data), main, scales, moveMetric);
         main.style('padding-top', '250px');
-
     }
 }
 
@@ -52,7 +51,8 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
     let xIcon = xIconWrap.append('i').classed("far fa-times-circle", true);
     xIcon.on('click', ()=> pathSelected(null, scales));
 
-    let sortByDistanceButton = selectedTool.append('button').text('Sort Most to Least');
+    let sortByDistanceButton = selectedTool.append('button').classed('btn btn-secondary btn-sm', true);
+    sortByDistanceButton.text('Sort Most to Least');
     sortByDistanceButton.on('click', ()=> sortPaths(sortByDistanceButton));
 
     let svgTest = selectedDiv.select('svg.select-svg');

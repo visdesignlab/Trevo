@@ -47,6 +47,10 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, mov
         }
     });
 
+    let scrunchButton = toolbar.append('button').attr('id', 'scrunch');
+    scrunchButton.attr('class', 'btn btn-outline-secondary').text('Collapse Attributes');
+    scrunchButton.on('click', ()=> toggleScrunch(scrunchButton));
+
     let form = toolbar.append('form').classed('form-inline', true);
     let input = form.append('input').classed('form-control mr-sm-2', true)
     input.attr('type', 'search').attr('placeholder', 'Search').attr('aria-label', 'Search');
@@ -88,6 +92,14 @@ function togglePathView(viewButton, normedPaths, main, calculatedScales){
         renderDistibutions(normedPaths, main, calculatedScales, 'move');
     }
 }
+}
+
+function toggleScrunch(button){
+    if(button.text() === 'Collapse Attributes'){
+        button.text('Expand Attributes');
+    }else{
+        button.text('Collapse Attributes');
+    }
 }
 
 export function renderAttToggles(filterDiv, normedPaths, scales, moveMetric){
