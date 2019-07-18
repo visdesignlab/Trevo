@@ -18,7 +18,7 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, mov
     
     let filterButton = toolbar.append('button').attr('id', 'view-filter');
     filterButton.attr('class', 'btn btn-outline-secondary').text('Show Filters');
-    filterButton.on('click', ()=> toggleFilters(filterButton, main));
+    filterButton.on('click', ()=> toggleFilters(filterButton, main, moveMetric, calculatedScales));
 
     let lengthButton = toolbar.append('button').attr('id', 'change-length').attr('class', 'btn btn-outline-secondary');
     if(moveMetric === 'move'){
@@ -54,15 +54,17 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, mov
 
     viewButton.on('click', ()=> togglePathView(viewButton, normedPaths, main, calculatedScales));
 
-function toggleFilters(filterButton, main){
+function toggleFilters(filterButton, main, moveMetric, scales){
     let filterDiv = d3.select('#filter-tab');
    
     if(filterDiv.classed('hidden')){
         filterButton.text('Hide Filters');
         filterDiv.classed('hidden', false);
         main.style('padding-top', '200px');
+        renderAttToggles(filterDiv, normedPaths, calculatedScales, 'edgeLength');
     }else{
         filterButton.text('Show Filters');
+        filterDiv.selectAll('*').remove();
         filterDiv.classed('hidden', true);
         main.style('padding-top', '0px');
     }

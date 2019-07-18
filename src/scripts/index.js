@@ -249,7 +249,7 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     
     let filterDiv = wrap.select('#filter-tab').classed('hidden', true);
    
-    renderAttToggles(filterDiv, normedPaths, calculatedScales, 'edgeLength');
+  //  renderAttToggles(filterDiv, normedPaths, calculatedScales, 'edgeLength');
 
     //TREE RENDER
     ////////
