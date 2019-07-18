@@ -53,9 +53,10 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
     let selectedTool = selectedToolTest.empty() ? selectedDiv.append('div').classed('selected-toolbar', true) : selectedToolTest;
     let xIconWrap = selectedTool.append('div').classed('x-icon', true)
     let xIcon = xIconWrap.append('i').classed("far fa-times-circle", true);
-    let sortByDistance = selectedTool.append('button').text('Sort By Distance');
-
     xIcon.on('click', ()=> pathSelected(null, scales));
+
+    let sortByDistanceButton = selectedTool.append('button').text('Sort Most to Least');
+    sortByDistanceButton.on('click', ()=> sortPaths(sortByDistanceButton));
 
     let svgTest = selectedDiv.select('svg.select-svg');
     let svg = svgTest.empty()? selectedDiv.append('svg').classed('select-svg', true) : svgTest;
@@ -108,5 +109,13 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
     ////NEED TO GENERALIZE BRANCH FUNCTION IN RENDER TO WORK HERE
 
     return svg;
+}
+
+function sortPaths(sortButton){
+    if(sortButton.text() === 'Sort Most to Least'){
+        sortButton.text('Sort Least to Most');
+    }else{
+        sortButton.text('Sort Most to Least');
+    }
 }
 
