@@ -111,7 +111,6 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
         let attr = {};
         
         let chosenOne = leafChar.rows[leafCharIndex.indexOf(leaf.label)];
-        console.log(chosenOne)
 
         keys.forEach((k)=> {
             let scaleOb = calculatedScales.filter(f=> f.field == k)[0];
