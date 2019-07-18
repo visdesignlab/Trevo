@@ -35,6 +35,18 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
 
     let leafChar = await loadData(d3.json, './public/data/anolisLeafChar.json', '');
 
+    let labels = await loadData(d3.json, './public/data/anolis-labels.json', '');
+
+    console.log('labels', leaves);
+
+  
+
+    ////MATCHING LABELSS TO THE STUFF/////
+
+    let mappendLeaves = labels.rows.map(m=> {
+        let label = m.x
+    })
+
     ///MAKE A ESTIMATED SCALES THING
     let calculatedAtt = {
         'awesomeness' : await loadData(d3.json, './public/data/anolis-awesomeness-res.json', 'continuous'),
