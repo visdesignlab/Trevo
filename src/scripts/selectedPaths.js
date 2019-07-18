@@ -15,10 +15,7 @@ export function pathSelected(selectedPath, otherPaths, scales, moveMetric){
         let sortedPaths = sortOtherPaths(selectedPath, otherPaths);
 
         let main = d3.select('div#main');
-        
-
-        console.log(sortedPaths.map(s=> s.data))
-       
+         
           /// LOWER ATTRIBUTE VISUALIZATION ///
         drawPathsAndAttributes(sortedPaths.map(s=> s.data), main, scales, moveMetric);
         main.style('padding-top', '250px');
@@ -65,28 +62,6 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
 
     let selectedGroups = renderPaths(pathData, selectWrap, scales, moveMetric);
     selectedGroups.attr('transform', (d, i)=> 'translate(0,'+(i*60)+')');
-
-  //  console.log('thispath', pathData[0].filter(f=> f.leaf)[0]);
-/*
-    let thisSpecies = pathData[0].filter(f=> f.leaf)[0];
-    let chosenPath = pathData[0].reverse().map(m=> m.node)
-    
-    let rankedPaths = otherPaths.map(path=> {
-        let step = 0;
-        let test = path.reverse().map((node, i)=> {
-            if(chosenPath.indexOf(node.node))
-            return {'indexOf': chosenPath.indexOf(node.node), 'pathIndex': i, 'node': node, 'chosen': chosenPath[chosenPath.indexOf(node.node)] }
-        }).filter(f=> f.indexOf > -1);
-
-        let distance = (test[0].indexOf + test[0].pathIndex);
-       // console.log(distance)
-
-        return {'data':path, 'distance': distance }
-
-    });
-    let sortedData = rankedPaths.sort(function(a, b){return a.distance - b.distance});
-    console.log(testest);
-    */
 
     //////PLAYING WITH FUNCTION TO CALULATE DISTANCES
 

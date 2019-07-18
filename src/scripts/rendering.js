@@ -245,6 +245,10 @@ export function drawContAtt(predictedAttrGrps, moveMetric){
         return 'translate(0, '+ move +')';
     });
     rangeRect.style('fill', d=> d.color);
+    rangeRect.style('opacity', (d)=> {
+        console.log(d.satScale(d.realVal));
+        return d.satScale(d.realVal);
+    })
     innerBars.append('rect').attr('width', 20).attr('height', 5)
     .attr('transform', (d, i)=> {
         let y = d.yScale;

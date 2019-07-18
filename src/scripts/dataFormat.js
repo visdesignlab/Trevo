@@ -11,6 +11,7 @@ export function formatAttributeData(normedPaths, scales, filterArray){
                     m.attributes[key].edgeMove = m.edgeMove;
                     m.attributes[key].label = key;
                     m.attributes[key].yScale = scales.filter(s=> s.field === key)[0].yScale;
+                    m.attributes[key].satScale = scales.filter(s=> s.field === key)[0].satScale;
                     return m.attributes[key];
                 }else if(m.attributes[key].type === 'discrete'){
                     if(m.leaf){
