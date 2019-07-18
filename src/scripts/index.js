@@ -37,14 +37,13 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
 
     let labels = await loadData(d3.json, './public/data/anolis-labels.json', '');
 
-    console.log('labels', leaves);
-
-  
+    console.log('labels', leafChar);
 
     ////MATCHING LABELSS TO THE STUFF/////
 
-    let mappendLeaves = labels.rows.map(m=> {
-        let label = m.x
+    let mappedLeaves = labels.rows.map(m=> {
+        let label = m.x;
+        return label;
     })
 
     ///MAKE A ESTIMATED SCALES THING
@@ -101,18 +100,28 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
 
     let matchedLeaves = leaves.map((leaf, i)=> {
 
-        leaf.label = leafChar.rows[i].species ? leafChar.rows[i].species : leafChar.rows[i][""];
-        leaf.node = leaf.V2
+       // leaf.label = leafChar.rows[i].species ? leafChar.rows[i].species : leafChar.rows[i][""];
+        leaf.label = mappedLeaves[i];
+       
+        let leafCharIndex = leafChar.rows.map(m=> m[""]);
+      
+
+        leaf.node = leaf.V2;
         let keys = calculatedScales.map(m=> m.field);
         let attr = {};
         
+        let chosenOne = leafChar.rows[leafCharIndex.indexOf(leaf.label)];
+        console.log(chosenOne)
+
         keys.forEach((k)=> {
             let scaleOb = calculatedScales.filter(f=> f.field == k)[0];
            
             if(scaleOb.type === 'discrete'){
-                let thisScale = scaleOb.scales.filter(f=> f.scaleName == leafChar.rows[i][k])[0].yScale;
+               // let thisScale = scaleOb.scales.filter(f=> f.scaleName == leafChar.rows[i][k])[0].yScale;
+                let thisScale = scaleOb.scales.filter(f=> f.scaleName == chosenOne[k])[0].yScale;
                 let states = scaleOb.scales.map(m=> m.scaleName).map(state=> {
-                    let value = (state === leafChar.rows[i][k])? 1 : 0;
+                   // let value = (state === leafChar.rows[i][k])? 1 : 0;
+                    let value = (state === chosenOne[k])? 1 : 0;
                     return {'state': state,  scaleVal: thisScale(value), realVal: value}
                 })
             
@@ -120,7 +129,7 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
                 attr[k] = {'states': states, 'label': k, 'type': scaleOb.type, leaf: true}
             }else if(scaleOb.type === 'continuous'){
                 let scale = scaleOb.yScale;
-                attr[k] = {'scaleVal': scale(leafChar.rows[i][k]), 'scaledHigh': 0, 'scaledLow': 0, 'realVal':  leafChar.rows[i][k], 'type': scaleOb.type, leaf: true}
+                attr[k] = {'scaleVal': scale(chosenOne[k]), 'scaledHigh': 0, 'scaledLow': 0, 'realVal': chosenOne[k], 'type': scaleOb.type, leaf: true}
 
             }else{
                 attr[k] = 'error in leaf matching';
