@@ -13,7 +13,7 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, mov
     }else if(pathView === 'summary'){
         viewButton.text('View Paths');
     }else{
-        console.error('pathView parameter not found')
+        console.error('pathView parameter not found');
     }
     
     let filterButton = toolbar.append('button').attr('id', 'view-filter');
@@ -66,7 +66,11 @@ function toggleFilters(filterButton, main, moveMetric, scales){
         filterDiv.classed('hidden', false);
         main.style('padding-top', '200px');
         renderAttToggles(filterDiv, normedPaths, calculatedScales, 'edgeLength');
-        stateChange(filterDiv, normedPaths);
+
+        let keys = Object.keys(normedPaths[0][0].attributes);
+        let button1 = stateChange(filterDiv, keys, 'predicted-state', 'From');
+        let button2 = stateChange(filterDiv, keys, 'observed-state', 'To');
+
     }else{
         filterButton.text('Show Filters');
         filterDiv.selectAll('*').remove();
@@ -122,8 +126,7 @@ export function renderAttToggles(filterDiv, normedPaths, scales, moveMetric){
     let labelWrap = svg.append('g').attr('transform', 'translate(20, 25)');
     let labelGroups = labelWrap.selectAll('g').data(keys).join('g'); 
     
-    labelGroups.attr('transform', (d, i)=> {
-        return 'translate(0,'+(i* 25)+')'});
+    labelGroups.attr('transform', (d, i)=> 'translate(0,'+(i* 25)+')');
 
     let toggle = labelGroups.append('circle').attr('cx', 0).attr('cy', 0);
     toggle.classed('toggle shown', true);
@@ -167,27 +170,16 @@ function toggleCircle(circle, scales){
     }
 }
 
-export function stateChange(filterDiv, normedPaths){
+export function stateChange(selectorDiv, keys, selectId, label){
 
-    let keys = Object.keys(normedPaths[0][0].attributes);
-    console.log('keys', keys)
-    //<div class="dropdown">
-    let dropDownWrapper = filterDiv.append('div').classed('btn-group dropdown', true);
-    let dropButton = dropDownWrapper.append('button').classed("btn btn-secondary dropdown-toggle", true);
-   
-    dropButton.text('From State')
-    dropButton.attr('type', 'button')
-    .attr('id', 'state-change-drop-predicted')
-    .attr("data-toggle", "dropdown")
-    .attr("aria-haspopup", "true")
-    .attr("aria-expanded", "true");
-  
-    let dropdown = dropDownWrapper.append('div').classed('dropdown-menu', true).attr("aria-labelledby", "state-change-drop-predicted");
-
-    let drops = dropdown.selectAll('a').data(keys).join('a').classed('dropdown-item', true);
-    drops.text(d=> d);
-
-    dropButton.on('click', ()=> console.log(dropButton.attributes))
-   
-
+    let dropDownWrapper = selectorDiv.append('div').classed('selector', true);
+    let header = dropDownWrapper.append('h3').text(label);
+    	// create the drop down menu of cities
+	return dropDownWrapper
+    .append("select")
+    .attr("id", selectId)
+    .selectAll("option")
+    .data(keys).join("option")
+    .text(d=> d)
+    .attr("value", d=> d);
 }
