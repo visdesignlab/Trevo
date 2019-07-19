@@ -28,7 +28,14 @@ export function getPath(edgeArray, leaf, pathKeeper, source, target){
         return pathKeeper.reverse();
     }
 }
-
+/**
+ * 
+ * @param {*} pathArray 
+ * @param {*} nodes 
+ * @param {*} arrayOfArray 
+ * @param {*} nameArray 
+ * @param {*} depth 
+ */
 export function pullPath(pathArray, nodes, arrayOfArray, nameArray, depth){
     nodes.forEach((node, i)=> {
         node.depth = depth;

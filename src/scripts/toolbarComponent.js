@@ -66,6 +66,7 @@ function toggleFilters(filterButton, main, moveMetric, scales){
         filterDiv.classed('hidden', false);
         main.style('padding-top', '200px');
         renderAttToggles(filterDiv, normedPaths, calculatedScales, 'edgeLength');
+        stateChange(filterDiv, normedPaths);
     }else{
         filterButton.text('Show Filters');
         filterDiv.selectAll('*').remove();
@@ -73,6 +74,21 @@ function toggleFilters(filterButton, main, moveMetric, scales){
         main.style('padding-top', '0px');
     }
 }
+
+}
+
+function toggleScrunch(button, normedPaths, main, calculatedScales){
+    if(button.text() === 'Collapse Attributes'){
+        button.text('Expand Attributes');
+        main.selectAll('*').remove();//.selectAll('*').remove();
+        drawPathsAndAttributes(normedPaths, main, calculatedScales, 'move', true);
+    }else{
+        button.text('Collapse Attributes');
+        main.selectAll('*').remove();//.selectAll('*').remove();
+        drawPathsAndAttributes(normedPaths, main, calculatedScales, 'move', false);
+    }
+}
+
 /**
  * 
  * @param {*} viewButton button that changes the actual view the text of the button determines what the view should change to 
@@ -90,19 +106,6 @@ function togglePathView(viewButton, normedPaths, main, calculatedScales){
         viewButton.text('View Paths');
         main.selectAll('*').remove();
         renderDistibutions(normedPaths, main, calculatedScales, 'move');
-    }
-}
-}
-
-function toggleScrunch(button, normedPaths, main, calculatedScales){
-    if(button.text() === 'Collapse Attributes'){
-        button.text('Expand Attributes');
-        main.selectAll('*').remove();//.selectAll('*').remove();
-        drawPathsAndAttributes(normedPaths, main, calculatedScales, 'move', true);
-    }else{
-        button.text('Collapse Attributes');
-        main.selectAll('*').remove();//.selectAll('*').remove();
-        drawPathsAndAttributes(normedPaths, main, calculatedScales, 'move', false);
     }
 }
 
@@ -162,4 +165,29 @@ function toggleCircle(circle, scales){
         circle.classed('shown', true);
         circle.style('fill', (d, i)=> scales.filter(f=> f.field === d)[0].catColor);
     }
+}
+
+export function stateChange(filterDiv, normedPaths){
+
+    let keys = Object.keys(normedPaths[0][0].attributes);
+    console.log('keys', keys)
+    //<div class="dropdown">
+    let dropDownWrapper = filterDiv.append('div').classed('btn-group dropdown', true);
+    let dropButton = dropDownWrapper.append('button').classed("btn btn-secondary dropdown-toggle", true);
+   
+    dropButton.text('From State')
+    dropButton.attr('type', 'button')
+    .attr('id', 'state-change-drop-predicted')
+    .attr("data-toggle", "dropdown")
+    .attr("aria-haspopup", "true")
+    .attr("aria-expanded", "true");
+  
+    let dropdown = dropDownWrapper.append('div').classed('dropdown-menu', true).attr("aria-labelledby", "state-change-drop-predicted");
+
+    let drops = dropdown.selectAll('a').data(keys).join('a').classed('dropdown-item', true);
+    drops.text(d=> d);
+
+    dropButton.on('click', ()=> console.log(dropButton.attributes))
+   
+
 }

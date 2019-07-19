@@ -18,6 +18,7 @@ let tooltip = wrap.append("div")
 .attr("id", "tooltip")
 .style("opacity", 0);
 
+
 loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges => {
 
     //helper function to create array of unique elements
@@ -37,7 +38,7 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
 
     let labels = await loadData(d3.json, './public/data/anolis-labels.json', '');
 
-    console.log('labels', leafChar);
+  //  console.log('labels', leafChar);
 
     ////MATCHING LABELSS TO THE STUFF/////
 
@@ -262,10 +263,24 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
       /// LOWER ATTRIBUTE VISUALIZATION ///
     drawPathsAndAttributes(normedPaths, main, calculatedScales, 'edgeLength');
 });
-
+/*
 loadData(d3.json, './public/data/geospiza_with_attributes.json').then(data=> {
     let pathArray = pullPath([], [data], [], [], 0);
+
+    //console.log('pa',pathArray);
 });
+
+loadData(d3.json, './public/data/geospiza_rich_ASR_wingL.json').then(data=> {
+    let pathArray = pullPath([], [data], [], [], 0);
+
+    console.log('pa RICH',pathArray);
+});
+
+loadData(d3.json, './public/data/anolis_rich_ASR_pad_vs_tail.json').then(data=> {
+    let pathArray = pullPath([], [data], [], [], 0);
+
+    console.log('anolis RICH',pathArray);
+});*/
 
 
 
