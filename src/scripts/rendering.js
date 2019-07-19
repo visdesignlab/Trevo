@@ -247,7 +247,6 @@ export function drawContAtt(predictedAttrGrps, moveMetric, collapsed){
     });
     rangeRect.style('fill', d=> d.color);
     rangeRect.style('opacity', (d)=> {
-        console.log(d.satScale(d.realVal));
         return d.satScale(d.realVal);
     })
     innerBars.append('rect').attr('width', 20).attr('height', 5)
@@ -258,62 +257,6 @@ export function drawContAtt(predictedAttrGrps, moveMetric, collapsed){
         return 'translate(0, '+ y(d.realVal) +')'})
     .attr('fill', d=> d.color);
 }
-/*
-export function drawContAtt(predictedAttrGrps, moveMetric){
-
-    let continuousAtt = predictedAttrGrps.filter(d=> {
-        return d[0].type === 'continuous';
-    });
-
-    let attributeHeight = 45;
-    let attrLabel = continuousAtt.append('text').text(d=> d[0].label);
-    attrLabel.classed('attribute-label', true);
-    attrLabel.attr('transform', 'translate(-15, 20)');
-    let innerTimeline = continuousAtt.append('g').classed('attribute-time-line', true);
-    let attribRectCont = innerTimeline.append('rect').classed('attribute-rect', true);
-    attribRectCont.attr('height', attributeHeight);//.data(normedPaths);//.attr('transform', (d, i)=> 'translate(0, 0)');
-    let attributeNodesCont = innerTimeline.selectAll('g').data(d=> d).join('g').classed('attribute-node', true);
-   // attributeNodesCont = attrNodesContEnter.merge(attributeNodesCont);
-
-    let innerBars = attributeNodesCont.append('g').classed('inner-bars', true);
-
- /////DO NOT DELETE THIS! YOU NEED TO SEP CONT AND DICRETE ATTR. THIS DRAWS LINE FOR THE CONT/////
-    let innerPaths = continuousPaths(innerTimeline, moveMetric);
- ////////
-
-    let innerRect = innerBars.append('rect').classed('attribute-inner-bar', true);
-    innerRect.attr('height', attributeHeight)
-    innerBars.attr('transform', (d)=> {
-        let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
-        let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove)
-        return 'translate('+ distance +', 0)'});
-      
-    let rangeRect = innerBars.append('rect').classed('range-rect', true);
-    rangeRect.attr('width', 20).attr('height', (d, i)=> {
-        let y = d.yScale;
-        y.range([0, 45])
-        let range = d.leaf ? 0 : y(d.upperCI95) -  y(d.lowerCI95);
-        return range;
-    });
-    rangeRect.attr('transform', (d, i)=> {
-        let y = d.yScale;
-        y.range([0, 45]);
-        let move = d.leaf? 0 : y(d.lowerCI95);
-        return 'translate(0, '+ move +')';
-    });
-    rangeRect.style('fill', d=> d.color);
-    rangeRect.style('opacity', (d)=> {
-        console.log(d.satScale(d.realVal));
-        return d.satScale(d.realVal);
-    })
-    innerBars.append('rect').attr('width', 20).attr('height', 5)
-    .attr('transform', (d, i)=> {
-        let y = d.yScale;
-        y.range([0, 45]);
-        //let move = d.leaf? 0 : y(d.realVal);
-        return 'translate(0, '+ y(d.realVal) +')'})
-    .attr('fill', d=> d.color);
-}*/
 
 export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric, collapsed){
 

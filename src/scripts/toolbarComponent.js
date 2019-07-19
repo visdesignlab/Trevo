@@ -160,8 +160,6 @@ function toggleCircle(circle, scales){
         circle.style('fill', '#fff');
     }else{
         circle.classed('shown', true);
-        circle.style('fill', (d, i)=>{
-            return scales.filter(f=> f.field === d)[0].catColor;
-        });
+        circle.style('fill', (d, i)=> scales.filter(f=> f.field === d)[0].catColor);
     }
 }
