@@ -103,13 +103,17 @@ svg{
   height:200px;
 }
 
-.dropdown{
+.selector{
   width:200px;
+  display: inline-block;
+}
+.select-wrapper{
+  widows: 350px;
   display: inline-block;
 }
 
 .form-inline{
-  width:200px;
+  width:120px;
   display: inline;
 }
 

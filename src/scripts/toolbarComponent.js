@@ -68,8 +68,10 @@ function toggleFilters(filterButton, main, moveMetric, scales){
         renderAttToggles(filterDiv, normedPaths, calculatedScales, 'edgeLength');
 
         let keys = Object.keys(normedPaths[0][0].attributes);
-        let button1 = stateChange(filterDiv, keys, 'predicted-state', 'From');
-        let button2 = stateChange(filterDiv, keys, 'observed-state', 'To');
+        let selectWrapper = filterDiv.append('div').classed('select-wrapper', true);
+        selectWrapper.append('h3').text('State Transition:')
+        let button1 = stateChange(selectWrapper, keys, 'predicted-state', 'From');
+        let button2 = stateChange(selectWrapper, keys, 'observed-state', 'To');
 
     }else{
         filterButton.text('Show Filters');
@@ -173,7 +175,7 @@ function toggleCircle(circle, scales){
 export function stateChange(selectorDiv, keys, selectId, label){
 
     let dropDownWrapper = selectorDiv.append('div').classed('selector', true);
-    let header = dropDownWrapper.append('h3').text(label);
+    let header = dropDownWrapper.append('h5').text(label);
     	// create the drop down menu of cities
 	return dropDownWrapper
     .append("select")

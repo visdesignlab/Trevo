@@ -33,9 +33,7 @@ export function sortOtherPaths(pathData, otherPaths){
             if(chosenPath.indexOf(node.node))
             return {'indexOf': chosenPath.indexOf(node.node), 'pathIndex': i, 'node': node, 'chosen': chosenPath[chosenPath.indexOf(node.node)] }
         }).filter(f=> f.indexOf > -1);
-
         let distance = (test[0].indexOf + test[0].pathIndex);
-
         return {'data':path.reverse(), 'distance': distance }
 
     });
