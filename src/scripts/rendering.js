@@ -275,7 +275,7 @@ export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric, collapsed
     
     let statePath = innerTimelineDis.selectAll('g').data(d=> {
         let disct = d.map(m=> {
-            console.log('mmm', m)
+           
             let test = (m.leaf == true) ? m.states.map(s=> {
                 s.move = m.move;
                 s.edgeMove = m.edgeMove;
@@ -298,7 +298,7 @@ export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric, collapsed
         let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove)
         return distance + 7})
     .y(d=> {
-       // console.log('line',d)
+       
         let y = d3.scaleLinear().domain([0, 1]).range([1, attributeHeight-2])
         //d.scaleVal
         return y(d.realVal);

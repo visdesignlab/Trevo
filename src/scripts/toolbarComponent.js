@@ -71,6 +71,22 @@ function toggleFilters(filterButton, main, moveMetric, scales){
         let selectWrapper = filterDiv.append('div').classed('select-wrapper', true);
         selectWrapper.append('h4').text('State Transition:');
         let attButton = stateChange(selectWrapper, keys, 'attr-select', 'Trait:');
+
+        console.log(attButton);
+
+        attButton.on("change", function(d) {
+            var selectedOption = d3.select(this).property("value");
+
+            let options = scales.filter(f=> f.field === selectedOption)[0];
+            console.log(options)
+            if(options.type === "discrete"){
+                let optKeys = options.scales.map(s=> s.scaleName);
+                let button1 = stateChange(selectWrapper, optKeys, 'predicted-state', 'From');
+                let button2 = stateChange(selectWrapper, optKeys, 'observed-state', 'To');
+            }
+         })
+
+
       
        // let button1 = stateChange(selectWrapper, keys, 'predicted-state', 'From');
        // let button2 = stateChange(selectWrapper, keys, 'observed-state', 'To');
@@ -183,23 +199,19 @@ export function stateChange(selectorDiv, keys, selectId, label){
     	// create the drop down menu of cities
 	let selectOp = dropDownWrapper
     .append("select")
-    .attr("id", selectId)
+    .attr("id", selectId);
     
     let options = selectOp.selectAll("option")
     .data(keys).join("option");
 
-    options.text(d=> d)
-    .attr("value", d=> d);
+    options.text(d=> d).attr("value", d=> d);
+/*
+    d3.select("#"+selectId).on("change", function(d) {
+       var selectedOption = d3.select(this).property("value");
+      console.log('work work work', selectedOption);
+    })*/
 
-    options.on('click', (d)=>{
-        console.log('d', d)
-    });
+    return d3.select('#'+ selectId);
 
-
-
-   // console.log('d', options.nodes().map(m=> m.nodeValue))
-
-   //console.log(options.nodes())
-  // console.log(options.onclick())
 
 }
