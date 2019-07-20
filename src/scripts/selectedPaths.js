@@ -13,9 +13,7 @@ export function pathSelected(selectedPath, otherPaths, scales, moveMetric){
     }else{
         renderSelectedView([selectedPath], otherPaths, selectedDiv, scales, moveMetric);
         let sortedPaths = sortOtherPaths(selectedPath, otherPaths);
-
         let main = d3.select('div#main');
-         
           /// LOWER ATTRIBUTE VISUALIZATION ///
         drawPathsAndAttributes(sortedPaths.map(s=> s.data), main, scales, moveMetric);
         main.style('padding-top', '250px');
@@ -45,6 +43,8 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
 
     let selectedToolTest = selectedDiv.select('.selected-toolbar');
     let selectedTool = selectedToolTest.empty() ? selectedDiv.append('div').classed('selected-toolbar', true) : selectedToolTest;
+    selectedTool.selectAll('*').remove();
+
     let xIconWrap = selectedTool.append('div').classed('x-icon', true)
     let xIcon = xIconWrap.append('i').classed("far fa-times-circle", true);
     xIcon.on('click', ()=> pathSelected(null, scales));
