@@ -5,7 +5,6 @@ export function formatAttributeData(normedPaths, scales, filterArray){
         return keys.map((key)=> {
             return path.map((m)=> {
                 if(m.attributes[key].type === 'continuous'){
-                  
                     m.attributes[key].color = scales.filter(f=> f.field === key)[0].catColor;
                     m.attributes[key].move = m.move;
                     m.attributes[key].edgeMove = m.edgeMove;
@@ -16,7 +15,6 @@ export function formatAttributeData(normedPaths, scales, filterArray){
                 }else if(m.attributes[key].type === 'discrete'){
                     if(m.leaf){
                         let state = m.attributes[key];
-                       
                         state.winState = m.attributes[key].states.filter(f=> f.realVal === 1)[0].state;
                         state.color = scales.filter(f=> f.field === key)[0].stateColors.filter(f=> f.state === state.winState)[0].color
                         state.move = m.move;
@@ -25,7 +23,6 @@ export function formatAttributeData(normedPaths, scales, filterArray){
                         return state;
                     }else{
                         let states = m.attributes[key].states ? m.attributes[key].states : m.attributes[key];//.filter(f => f.state != undefined);
-                       
                         return states.map((st, j)=> {
                             st.color = scales.filter(f=> f.field === key)[0].stateColors.filter(f=> f.state === st.state)[0].color;
                             st.move = m.move;

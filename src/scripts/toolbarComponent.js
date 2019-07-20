@@ -69,11 +69,13 @@ function toggleFilters(filterButton, main, moveMetric, scales){
 
         let keys = Object.keys(normedPaths[0][0].attributes);
         let selectWrapper = filterDiv.append('div').classed('select-wrapper', true);
-        selectWrapper.append('h3').text('State Transition:');
-        let button1 = stateChange(selectWrapper, keys, 'predicted-state', 'From');
-        let button2 = stateChange(selectWrapper, keys, 'observed-state', 'To');
-        let sumbit = selectWrapper.append('button').classed('state-filter-submit btn btn-outline-secondary', true);
-        sumbit.text('Filter');
+        selectWrapper.append('h4').text('State Transition:');
+        let attButton = stateChange(selectWrapper, keys, 'attr-select', 'Trait:');
+      
+       // let button1 = stateChange(selectWrapper, keys, 'predicted-state', 'From');
+       // let button2 = stateChange(selectWrapper, keys, 'observed-state', 'To');
+       // let sumbit = selectWrapper.append('button').classed('state-filter-submit btn btn-outline-secondary', true);
+       // sumbit.text('Filter');
 
     }else{
         filterButton.text('Show Filters');
@@ -179,11 +181,25 @@ export function stateChange(selectorDiv, keys, selectId, label){
     let dropDownWrapper = selectorDiv.append('div').classed('selector', true);
     let header = dropDownWrapper.append('h5').text(label);
     	// create the drop down menu of cities
-	return dropDownWrapper
+	let selectOp = dropDownWrapper
     .append("select")
     .attr("id", selectId)
-    .selectAll("option")
-    .data(keys).join("option")
-    .text(d=> d)
+    
+    let options = selectOp.selectAll("option")
+    .data(keys).join("option");
+
+    options.text(d=> d)
     .attr("value", d=> d);
+
+    options.on('click', (d)=>{
+        console.log('d', d)
+    });
+
+
+
+   // console.log('d', options.nodes().map(m=> m.nodeValue))
+
+   //console.log(options.nodes())
+  // console.log(options.onclick())
+
 }
