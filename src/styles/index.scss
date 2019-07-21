@@ -171,6 +171,14 @@ rect.attribute-rect-sum,
   width:20px;
 }
 
+g.range rect{
+  fill: #fff;
+  stroke: gray;
+  stroke-width: 0.5;
+  //opacity: 0.6;
+  
+}
+
 .paths line{
   stroke: #4c575c;
   stroke-width: 1;

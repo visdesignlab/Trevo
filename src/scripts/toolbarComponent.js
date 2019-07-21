@@ -74,16 +74,65 @@ function toggleFilters(filterButton, main, moveMetric, scales){
 
         console.log(attButton);
 
+        let attProps = selectWrapper.append('div').classed('attribute-properties', true);
+
         attButton.on("change", function(d) {
             var selectedOption = d3.select(this).property("value");
 
             let options = scales.filter(f=> f.field === selectedOption)[0];
-            console.log(options)
+            
+            attProps.selectAll('*').remove();
+
             if(options.type === "discrete"){
+                let optionArray = ['Any'];
                 let optKeys = options.scales.map(s=> s.scaleName);
-                let button1 = stateChange(selectWrapper, optKeys, 'predicted-state', 'From');
-                let button2 = stateChange(selectWrapper, optKeys, 'observed-state', 'To');
+                optionArray = optionArray.concat(optKeys);
+                let button1 = stateChange(attProps, optionArray, 'predicted-state', 'From');
+                let button2 = stateChange(attProps, optionArray, 'observed-state', 'To');
+            }else{
+                
+                let yScale = d3.scaleLinear().domain([options.min, options.max]).range([0, 30]);
+                let continRanges = attProps.append('svg');
+                continRanges.attr('wdith', 200).attr('height', 60);
+                let data = [{'label':'From', 'type': 'predicted'}, {'label':'To', 'type': 'observed'}]
+                let ranges = continRanges.selectAll('.range').data(data).join('g').classed('range', true)
+
+                let brushBars = ranges.append('g');
+                ranges.attr('transform', (d, i)=> 'translate('+((i*100)+ (25)+',10)'));
+                let labels = brushBars.append('text').text((d)=> d.label+ ': ');
+                labels.attr('x', -25).attr('y', 20)
+                let wrapperRect = brushBars.append('rect').attr('width', 20).attr('height', 50);
+                wrapperRect.attr('x', 10);
+                
+                console.log(brushBars)
+                let brushMoved = function(){
+                    console.log('moved')
+                    var s = d3.event.selection;
+                    if (s == null) {
+                      handle.attr("display", "none");
+                      circle.classed("active", false);
+                    } else {
+                      var sx = s.map(yScale.invert);
+                      console.log(sx)
+                     // circle.classed("active", function(d) { return sx[0] <= d && d <= sx[1]; });
+                      //handle.attr("display", null).attr("transform", function(d, i) { return "translate(" + s[i] + "," + height / 2 + ")"; });
+                    }
+                }
+               
+
+                let xBrush = d3.brushY().extent([[10,0], [30, 50]]).on("end", brushMoved);
+
+           
+
+              let brushGroup = ranges.append('g').call(xBrush);
+
+              brushGroup.call(xBrush.move, [0, 50]);
+
+
+
             }
+            let submit = attProps.append('button').classed('btn btn-outline-success', true);
+            submit.text('Filter');
          })
 
 
