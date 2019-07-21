@@ -90,6 +90,56 @@ function toggleFilters(filterButton, normedPaths, main, moveMetric, scales){
                 let button2 = stateChange(attProps, optionArray, 'observed-state', 'To');
                 let submit = attProps.append('button').classed('btn btn-outline-success', true);
                 submit.text('Filter');
+
+                submit.on('click', ()=> {
+                   
+                    let fromState = button1.node().classList[0];
+                    let toState = button2.node().classList[0];
+                      ////GOING TO ADD FILTERING HERE//// NEED TO BREAK INTO ITS OWN THING/////
+                
+                    let test = normedPaths.filter(path=> {
+                     
+                        let filterPred = path.filter(f=> f.leaf != true).map(node=> {
+                            let states = node.attributes[selectedOption].states;
+                            if(fromState === 'Any'){
+                                return true;
+                            }else{
+                                return states.filter(st=> st.state === fromState)[0].realVal > 0.75;
+                            }
+                            
+                        });
+                        let filterObs = path.filter(f=> f.leaf === true).map(node=> {
+                          //console.log(node.attributes[selectedOption]);
+                          let win = node.attributes[selectedOption].winState;
+                          if(toState === 'Any'){
+                              return true;
+                          }else{
+                              return win === toState;
+                          }
+                            
+                        });
+                        console.log(filterPred, filterObs);
+                        console.log(filterPred.indexOf(true) > -1, filterObs.indexOf(true) > -1)
+
+                        return filterPred.indexOf(true) > -1 && filterObs.indexOf(true) > -1
+                    });
+
+                    console.log(test);
+                    ////DRAW THE PATHS
+                    drawPathsAndAttributes(test, main, scales, moveMetric);
+
+                    /////ADD THE FILTER TO THE TOOLBAR/////
+                    let filterToolbar = d3.select("#toolbar");
+
+                    let filterButton = filterToolbar.append('span').classed('badge badge-info', true);
+                    let label = filterButton.append('h5').text(selectedOption + "  " + "From: "+ fromState + " To: "+ toState);
+                    let xSpan = label.append('i').classed('close fas fa-times', true);
+                    xSpan.on('click', ()=> {
+                        drawPathsAndAttributes(normedPaths, main, scales, moveMetric);
+                        filterButton.remove();
+                    })
+
+                })
             }else{
                 
                 let yScale = d3.scaleLinear().domain([options.min, options.max]).range([60, 0]);
@@ -152,9 +202,10 @@ function toggleFilters(filterButton, normedPaths, main, moveMetric, scales){
 
                     /////ADD THE FILTER TO THE TOOLBAR/////
                     let filterToolbar = d3.select("#toolbar");
-                    let filterButton = filterToolbar.append('button').classed('btn btn-outline-success', true)
-                    filterButton.text(selectedOption + "  ");
-                    let xSpan = filterButton.append('span').classed('far fa-times-circle', true);
+
+                    let filterButton = filterToolbar.append('span').classed('badge badge-info', true);
+                    let label = filterButton.append('h5').text(selectedOption + "  ");
+                    let xSpan = label.append('i').classed('close fas fa-times', true);
                     xSpan.on('click', ()=> {
                         drawPathsAndAttributes(normedPaths, main, scales, moveMetric);
                         filterButton.remove();
@@ -268,19 +319,17 @@ export function stateChange(selectorDiv, keys, selectId, label){
     	// create the drop down menu of cities
 	let selectOp = dropDownWrapper
     .append("select")
-    .attr("id", selectId);
+    .attr("id", selectId).attr('class', 'Any');
     
     let options = selectOp.selectAll("option")
     .data(keys).join("option");
 
     options.text(d=> d).attr("value", d=> d);
-/*
+
     d3.select("#"+selectId).on("change", function(d) {
        var selectedOption = d3.select(this).property("value");
-      console.log('work work work', selectedOption);
-    })*/
+       d3.select(this).attr('class', selectedOption);
+    })
 
     return d3.select('#'+ selectId);
-
-
 }
