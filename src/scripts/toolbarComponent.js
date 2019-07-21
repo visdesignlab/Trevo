@@ -133,7 +133,7 @@ function toggleFilters(filterButton, normedPaths, main, moveMetric, scales){
                     let predictedFilter = selections[0].map(yScale.invert).sort();
                     let observedFilter = selections[1].map(yScale.invert).sort();
 
-                    ////GOING TO ADD FILTERING HERE
+                    ////GOING TO ADD FILTERING HERE//// NEED TO BREAK INTO ITS OWN THING/////
 
                     let test = normedPaths.filter(path=> {
                         let filterArray = path.map(node=> {
@@ -147,8 +147,19 @@ function toggleFilters(filterButton, normedPaths, main, moveMetric, scales){
                         return filterArray.indexOf(false) === -1
                     })
 
-                    console.log(test)
+                    ////DRAW THE PATHS
                     drawPathsAndAttributes(test, main, scales, moveMetric);
+
+                    /////ADD THE FILTER TO THE TOOLBAR/////
+                    let filterToolbar = d3.select("#toolbar");
+                    let filterButton = filterToolbar.append('button').classed('btn btn-outline-success', true)
+                    filterButton.text(selectedOption + "  ");
+                    let xSpan = filterButton.append('span').classed('far fa-times-circle', true);
+                    xSpan.on('click', ()=> {
+                        drawPathsAndAttributes(normedPaths, main, scales, moveMetric);
+                        filterButton.remove();
+                    })
+                    
                 })
             }
          })

@@ -74,6 +74,12 @@ svg{
   border-bottom: 1px solid gray;
   padding-top:10px;
 }
+#filter-toolbar{
+  width:100%;
+
+  top:50px;
+  position:fixed;
+}
 
 #filter-tab.hidden{
   height:0;
