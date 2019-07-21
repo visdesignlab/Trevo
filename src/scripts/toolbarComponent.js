@@ -18,7 +18,7 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, mov
     
     let filterButton = toolbar.append('button').attr('id', 'view-filter');
     filterButton.attr('class', 'btn btn-outline-secondary').text('Show Filters');
-    filterButton.on('click', ()=> toggleFilters(filterButton, main, moveMetric, calculatedScales));
+    filterButton.on('click', ()=> toggleFilters(filterButton, normedPaths, main, moveMetric, calculatedScales));
 
     let lengthButton = toolbar.append('button').attr('id', 'change-length').attr('class', 'btn btn-outline-secondary');
     if(moveMetric === 'move'){
@@ -57,22 +57,21 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, mov
     let searchButton = form.append('button').classed('btn btn-outline-success my-2 my-sm-0', true).attr('type', 'submit').append('i').classed("fas fa-search", true)
 
     viewButton.on('click', ()=> togglePathView(viewButton, normedPaths, main, calculatedScales));
+}
 
-function toggleFilters(filterButton, main, moveMetric, scales){
+function toggleFilters(filterButton, normedPaths, main, moveMetric, scales){
     let filterDiv = d3.select('#filter-tab');
    
     if(filterDiv.classed('hidden')){
         filterButton.text('Hide Filters');
         filterDiv.classed('hidden', false);
         main.style('padding-top', '200px');
-        renderAttToggles(filterDiv, normedPaths, calculatedScales, 'edgeLength');
+        renderAttToggles(filterDiv, normedPaths, scales, 'edgeLength');
 
         let keys = Object.keys(normedPaths[0][0].attributes);
         let selectWrapper = filterDiv.append('div').classed('select-wrapper', true);
         selectWrapper.append('h4').text('State Transition:');
         let attButton = stateChange(selectWrapper, keys, 'attr-select', 'Trait:');
-
-        console.log(attButton);
 
         let attProps = selectWrapper.append('div').classed('attribute-properties', true);
 
@@ -89,9 +88,12 @@ function toggleFilters(filterButton, main, moveMetric, scales){
                 optionArray = optionArray.concat(optKeys);
                 let button1 = stateChange(attProps, optionArray, 'predicted-state', 'From');
                 let button2 = stateChange(attProps, optionArray, 'observed-state', 'To');
+                let submit = attProps.append('button').classed('btn btn-outline-success', true);
+                submit.text('Filter');
             }else{
                 
-                let yScale = d3.scaleLinear().domain([options.min, options.max]).range([0, 30]);
+                let yScale = d3.scaleLinear().domain([options.min, options.max]).range([60, 0]);
+               
                 let continRanges = attProps.append('svg');
                 continRanges.attr('wdith', 200).attr('height', 60);
                 let data = [{'label':'From', 'type': 'predicted'}, {'label':'To', 'type': 'observed'}]
@@ -103,44 +105,53 @@ function toggleFilters(filterButton, main, moveMetric, scales){
                 labels.attr('x', -25).attr('y', 20)
                 let wrapperRect = brushBars.append('rect').attr('width', 20).attr('height', 50);
                 wrapperRect.attr('x', 10);
+
+                ranges.append("g")
+                .attr("class", "axis axis--y")
+                .attr("transform", "translate(30,0)")
+                .call(d3.axisRight(yScale).ticks(3));
                 
-                console.log(brushBars)
                 let brushMoved = function(){
-                    console.log('moved')
                     var s = d3.event.selection;
                     if (s == null) {
                       handle.attr("display", "none");
-                      circle.classed("active", false);
+                    
                     } else {
                       var sx = s.map(yScale.invert);
-                      console.log(sx)
-                     // circle.classed("active", function(d) { return sx[0] <= d && d <= sx[1]; });
-                      //handle.attr("display", null).attr("transform", function(d, i) { return "translate(" + s[i] + "," + height / 2 + ")"; });
                     }
                 }
-               
-
                 let xBrush = d3.brushY().extent([[10,0], [30, 50]]).on("end", brushMoved);
+                let brushGroup = ranges.append('g').call(xBrush);
+                brushGroup.call(xBrush.move, [0, 50]);
 
-           
+                let submit = attProps.append('button').classed('btn btn-outline-success', true);
+                submit.text('Filter');
 
-              let brushGroup = ranges.append('g').call(xBrush);
+                submit.on('click', ()=> {
+                    let selections = brushGroup._groups[0].map(m=> m.__brush.selection.map(s=> s[1]));
+                    
+                    let predictedFilter = selections[0].map(yScale.invert).sort();
+                    let observedFilter = selections[1].map(yScale.invert).sort();
 
-              brushGroup.call(xBrush.move, [0, 50]);
+                    ////GOING TO ADD FILTERING HERE
 
+                    let test = normedPaths.filter(path=> {
+                        let filterArray = path.map(node=> {
+                            let numb = node.attributes[selectedOption].realVal;
+                            if(node.leaf == true){
+                                return numb > observedFilter[0] && numb < observedFilter[1];
+                            }else{
+                                return numb > predictedFilter[0] && numb < predictedFilter[1];
+                            }
+                        });
+                        return filterArray.indexOf(false) === -1
+                    })
 
-
+                    console.log(test)
+                    drawPathsAndAttributes(test, main, scales, moveMetric);
+                })
             }
-            let submit = attProps.append('button').classed('btn btn-outline-success', true);
-            submit.text('Filter');
          })
-
-
-      
-       // let button1 = stateChange(selectWrapper, keys, 'predicted-state', 'From');
-       // let button2 = stateChange(selectWrapper, keys, 'observed-state', 'To');
-       // let sumbit = selectWrapper.append('button').classed('state-filter-submit btn btn-outline-secondary', true);
-       // sumbit.text('Filter');
 
     }else{
         filterButton.text('Show Filters');
@@ -148,8 +159,6 @@ function toggleFilters(filterButton, main, moveMetric, scales){
         filterDiv.classed('hidden', true);
         main.style('padding-top', '0px');
     }
-}
-
 }
 
 function toggleScrunch(button, normedPaths, main, calculatedScales){
