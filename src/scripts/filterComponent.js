@@ -15,39 +15,10 @@ export function toggleFilters(filterButton, normedPaths, main, moveMetric, scale
         main.style('padding-top', '200px');
 
         renderAttToggles(filterDiv, normedPaths, scales, 'edgeLength');
-        stateFilter(filterDiv, normedPaths, main, moveMetric, scales)
+        stateFilter(filterDiv, normedPaths, main, moveMetric, scales);
+        queryFilter(filterDiv, normedPaths, main, moveMetric, scales);
 
-        let searchDiv = filterDiv.append('div').classed('search-bar-div', true);
-        searchDiv.append('h5').text('Search Filter:');
-        let form = searchDiv.append('form').classed('form-inline', true);
-        let input = form.append('input').classed('form-control mr-sm-2', true)
-        input.attr('type', 'search').attr('placeholder', 'Search').attr('aria-label', 'Search');
-        let searchButton = form.append('button').classed('btn btn-outline-success my-2 my-sm-0', true).attr('type', 'button').append('i').classed("fas fa-search", true)
-        searchButton.on('click', ()=> {
-
-            let queryArray = input.node().value.split(' ').map(m=> m.toLowerCase());
-
-            let test = normedPaths.filter(path=> {
-                let species = path.filter(node=> node.leaf === true)[0].label;
-                return queryArray.indexOf(species) > -1;
-            });
-
-             ////DRAW THE PATHS
-            drawPathsAndAttributes(test, main, scales, moveMetric);
-            let filterToolbar = d3.select("#toolbar");
-            let filterButton = filterToolbar.append('button').classed('btn btn-info', true);
-            let span = filterButton.append('span').classed('badge', true);
-            span.text(test.length);
-            filterButton.append('h6').text('Query Filter');
-            let xSpan = filterButton.append('i').classed('close fas fa-times', true);
-            xSpan.on('click', ()=> {
-                drawPathsAndAttributes(normedPaths, main, scales, moveMetric);
-                filterButton.remove();
-            });
-            
-        })
-
-
+        
     }else{
         filterButton.text('Show Filters');
         filterDiv.selectAll('*').remove();
@@ -58,7 +29,8 @@ export function toggleFilters(filterButton, normedPaths, main, moveMetric, scale
 
 function stateFilter(filterDiv, normedPaths, main, moveMetric, scales){
     let keys = Object.keys(normedPaths[0][0].attributes);
-        let selectWrapper = filterDiv.append('div').classed('select-wrapper', true);
+        let selectWrapper = filterDiv.append('div').classed('filter-wrap', true);
+        selectWrapper.style('width', '200px');
         selectWrapper.append('h4').text('State Transition:');
         let attButton = stateChange(selectWrapper, keys, 'attr-select', 'Trait:');
 
@@ -204,12 +176,51 @@ function stateFilter(filterDiv, normedPaths, main, moveMetric, scales){
             }
          });
 }
+
+function queryFilter(filterDiv, normedPaths, main, moveMetric, scales){
+
+    let searchDiv = filterDiv.append('div').classed('search-bar-div', true);
+        searchDiv.append('h5').text('Search Filter:');
+        let form = searchDiv.append('form').classed('form-inline', true);
+        let input = form.append('input').classed('form-control mr-sm-2', true)
+        input.attr('type', 'search').attr('placeholder', 'Search').attr('aria-label', 'Search');
+        let searchButton = form.append('button').classed('btn btn-outline-success my-2 my-sm-0', true).attr('type', 'button').append('i').classed("fas fa-search", true)
+        searchButton.on('click', ()=> {
+
+            let queryArray = input.node().value.split(' ').map(m=> m.toLowerCase());
+
+            let test = normedPaths.filter(path=> {
+                let species = path.filter(node=> node.leaf === true)[0].label;
+                return queryArray.indexOf(species) > -1;
+            });
+
+             ////DRAW THE PATHS
+            drawPathsAndAttributes(test, main, scales, moveMetric);
+            let filterToolbar = d3.select("#toolbar");
+            let filterButton = filterToolbar.append('button').classed('btn btn-info', true);
+            let span = filterButton.append('span').classed('badge', true);
+            span.text(test.length);
+            filterButton.append('h6').text('Query Filter');
+            let xSpan = filterButton.append('i').classed('close fas fa-times', true);
+            xSpan.on('click', ()=> {
+                drawPathsAndAttributes(normedPaths, main, scales, moveMetric);
+                filterButton.remove();
+            });
+            d3.select('#main-path-view').style('height', ()=>{
+                return ((test.length * 60) + (Object.keys(test[0][0].attributes).length * 100) + 'px')
+            });
+        });
+
+}
 function renderAttToggles(filterDiv, normedPaths, scales, moveMetric){
 
     ////NEED TO GET RID OF TOGGLE SVG
     let keys = Object.keys(normedPaths[0][0].attributes);
+
+    let wrapper = filterDiv.append('div').classed('filter-wrap', true);
+    wrapper.style('width', '150px');
    
-    let svg = filterDiv.append('svg').classed('attr-toggle-svg', true)
+    let svg = wrapper.append('svg').classed('attr-toggle-svg', true)
 
    let title = svg.append('text').text('Attributes: ')
     title.attr('x', 20).attr('y', 10);

@@ -109,8 +109,14 @@ svg{
 }
 
 .attr-toggle-svg{
-  width: 120px;
-  height:200px;
+  width: inherit;
+  height:180px;
+}
+
+.filter-wrap{
+  display:inline-block;
+  float:left;
+  padding:5px;
 }
 
 .selector{
