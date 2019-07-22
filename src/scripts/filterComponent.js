@@ -13,8 +13,8 @@ export function toggleFilters(filterButton, normedPaths, main, moveMetric, scale
         filterButton.text('Hide Filters');
         filterDiv.classed('hidden', false);
         main.style('padding-top', '200px');
-        renderAttToggles(filterDiv, normedPaths, scales, 'edgeLength');
 
+        renderAttToggles(filterDiv, normedPaths, scales, 'edgeLength');
         stateFilter(filterDiv, normedPaths, main, moveMetric, scales)
 
         let searchDiv = filterDiv.append('div').classed('search-bar-div', true);
@@ -22,8 +22,23 @@ export function toggleFilters(filterButton, normedPaths, main, moveMetric, scale
         let form = searchDiv.append('form').classed('form-inline', true);
         let input = form.append('input').classed('form-control mr-sm-2', true)
         input.attr('type', 'search').attr('placeholder', 'Search').attr('aria-label', 'Search');
-        let searchButton = form.append('button').classed('btn btn-outline-success my-2 my-sm-0', true).attr('type', 'submit').append('i').classed("fas fa-search", true)
-    
+        let searchButton = form.append('button').classed('btn btn-outline-success my-2 my-sm-0', true).attr('type', 'button').append('i').classed("fas fa-search", true)
+        searchButton.on('click', ()=> {
+
+            let queryArray = input.node().value.split(' ').map(m=> m.toLowerCase());
+            console.log(queryArray)
+
+            let test = normedPaths.filter(path=> {
+                let species = path.filter(node=> node.leaf === true)[0].label;
+                
+                return queryArray.indexOf(species) > -1;
+
+            })
+
+             ////DRAW THE PATHS
+            drawPathsAndAttributes(test, main, scales, moveMetric);
+            
+        })
 
 
     }else{
@@ -63,9 +78,7 @@ function stateFilter(filterDiv, normedPaths, main, moveMetric, scales){
                     let fromState = button1.node().classList[0];
                     let toState = button2.node().classList[0];
                       ////GOING TO ADD FILTERING HERE//// NEED TO BREAK INTO ITS OWN THING/////
-                
                     let test = normedPaths.filter(path=> {
-                     
                         let filterPred = path.filter(f=> f.leaf != true).map(node=> {
                             let states = node.attributes[selectedOption].states;
                             if(fromState === 'Any'){
@@ -73,7 +86,6 @@ function stateFilter(filterDiv, normedPaths, main, moveMetric, scales){
                             }else{
                                 return states.filter(st=> st.state === fromState)[0].realVal > 0.75;
                             }
-                            
                         });
                         let filterObs = path.filter(f=> f.leaf === true).map(node=> {
                           //console.log(node.attributes[selectedOption]);
@@ -89,7 +101,6 @@ function stateFilter(filterDiv, normedPaths, main, moveMetric, scales){
                         return filterPred.indexOf(true) > -1 && filterObs.indexOf(true) > -1
                     });
 
-                    console.log(test);
                     ////DRAW THE PATHS
                     drawPathsAndAttributes(test, main, scales, moveMetric);
 
