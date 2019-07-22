@@ -1,7 +1,6 @@
 import '../styles/index.scss';
 import {formatAttributeData} from './dataFormat';
 import {renderAttributes,  drawContAtt, drawDiscreteAtt, renderPaths, drawPathsAndAttributes} from './rendering';
-import {renderDistibutions} from './distributionView';
 import * as d3 from "d3";
 
 
@@ -15,8 +14,8 @@ export function toggleFilters(filterButton, normedPaths, main, moveMetric, scale
         main.style('padding-top', '200px');
 
         renderAttToggles(filterDiv, normedPaths, scales, 'edgeLength');
-        stateFilter(filterDiv, normedPaths, main, moveMetric, scales);
-        queryFilter(filterDiv, normedPaths, main, moveMetric, scales);
+        stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, scales);
+        queryFilter(filterDiv, filterButton, normedPaths, main, moveMetric, scales);
 
         
     }else{
@@ -27,12 +26,12 @@ export function toggleFilters(filterButton, normedPaths, main, moveMetric, scale
     }
 }
 
-function stateFilter(filterDiv, normedPaths, main, moveMetric, scales){
-    let keys = Object.keys(normedPaths[0][0].attributes);
+function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, scales){
+    let keys = ['Select a Trait'].concat(Object.keys(normedPaths[0][0].attributes));
         let selectWrapper = filterDiv.append('div').classed('filter-wrap', true);
         selectWrapper.style('width', '200px');
-        selectWrapper.append('h4').text('State Transition:');
-        let attButton = stateChange(selectWrapper, keys, 'attr-select', 'Trait:');
+        selectWrapper.append('h6').text('State Transition:');
+        let attButton = stateChange(selectWrapper, keys, 'attr-select', '');
 
         let attProps = selectWrapper.append('div').classed('attribute-properties', true);
 
@@ -85,18 +84,24 @@ function stateFilter(filterDiv, normedPaths, main, moveMetric, scales){
                     /////ADD THE FILTER TO THE TOOLBAR/////
                     let filterToolbar = d3.select("#toolbar");
 
-                    let filterButton = filterToolbar.append('button').classed('btn btn-info', true);
-                    let span = filterButton.append('span').classed('badge', true);
+                    let button = filterToolbar.append('button').classed('btn btn-info', true);
+                    let span = button.append('span').classed('badge badge-light', true);
                     span.text(test.length);
-                    filterButton.append('h6').text(fromState)
-                    filterButton.append('i').classed('fas fa-arrow-right', true);
-                    filterButton.append('h6').text(toState + '  ');
+                    button.append('h6').text(fromState)
+                    button.append('i').classed('fas fa-arrow-right', true);
+                    button.append('h6').text(toState + '  ');
                    
-                    let xSpan = filterButton.append('i').classed('close fas fa-times', true);
+                    let xSpan = button.append('i').classed('close fas fa-times', true);
                     xSpan.on('click', ()=> {
                         drawPathsAndAttributes(normedPaths, main, scales, moveMetric);
-                        filterButton.remove();
+                        button.remove();
                     });
+
+                    ////HIDE THE FILTER BAR/////
+                    filterButton.text('Show Filters');
+                    filterDiv.selectAll('*').remove();
+                    filterDiv.classed('hidden', true);
+                    main.style('padding-top', '0px');
                 });
             }else{
                 
@@ -163,24 +168,30 @@ function stateFilter(filterDiv, normedPaths, main, moveMetric, scales){
 
                     let formater = d3.format(".2s");
 
-                    let filterButton = filterToolbar.append('button').classed('btn btn-info', true);
-                    let span = filterButton.append('span').classed('badge', true);
+                    let button = filterToolbar.append('button').classed('btn btn-info', true);
+                    let span = button.append('span').classed('badge badge-light', true);
                     span.text(test.length);
-                    let label = filterButton.append('h6').text(selectedOption + "  Predicted: "+ formater(predictedFilter[0]) + "-" + formater(predictedFilter[1]) + " Observed: " + formater(observedFilter[0]) + "-" + formater(observedFilter[1]));
+                    let label = button.append('h6').text(selectedOption + "  Predicted: "+ formater(predictedFilter[0]) + "-" + formater(predictedFilter[1]) + " Observed: " + formater(observedFilter[0]) + "-" + formater(observedFilter[1]));
                     let xSpan = label.append('i').classed('close fas fa-times', true);
                     xSpan.on('click', ()=> {
                         drawPathsAndAttributes(normedPaths, main, scales, moveMetric);
-                        filterButton.remove();
+                        button.remove();
                     });
-                })
+
+                    ////HIDE THE FILTER BAR/////
+                    filterButton.text('Show Filters');
+                    filterDiv.selectAll('*').remove();
+                    filterDiv.classed('hidden', true);
+                    main.style('padding-top', '0px');
+                });
             }
          });
 }
 
-function queryFilter(filterDiv, normedPaths, main, moveMetric, scales){
+function queryFilter(filterDiv, filterButton, normedPaths, main, moveMetric, scales){
 
     let searchDiv = filterDiv.append('div').classed('search-bar-div', true);
-        searchDiv.append('h5').text('Search Filter:');
+        searchDiv.append('h6').text('Search Filter:');
         let form = searchDiv.append('form').classed('form-inline', true);
         let input = form.append('input').classed('form-control mr-sm-2', true)
         input.attr('type', 'search').attr('placeholder', 'Search').attr('aria-label', 'Search');
@@ -197,18 +208,24 @@ function queryFilter(filterDiv, normedPaths, main, moveMetric, scales){
              ////DRAW THE PATHS
             drawPathsAndAttributes(test, main, scales, moveMetric);
             let filterToolbar = d3.select("#toolbar");
-            let filterButton = filterToolbar.append('button').classed('btn btn-info', true);
-            let span = filterButton.append('span').classed('badge', true);
+            let button = filterToolbar.append('button').classed('btn btn-info', true);
+            let span = button.append('span').classed('badge badge-light', true);
             span.text(test.length);
-            filterButton.append('h6').text('Query Filter');
-            let xSpan = filterButton.append('i').classed('close fas fa-times', true);
+            button.append('h6').text('Query Filter');
+            let xSpan = button.append('i').classed('close fas fa-times', true);
             xSpan.on('click', ()=> {
                 drawPathsAndAttributes(normedPaths, main, scales, moveMetric);
-                filterButton.remove();
+                button.remove();
             });
             d3.select('#main-path-view').style('height', ()=>{
                 return ((test.length * 60) + (Object.keys(test[0][0].attributes).length * 100) + 'px')
             });
+
+            ////HIDE THE FILTER BAR/////
+            filterButton.text('Show Filters');
+            filterDiv.selectAll('*').remove();
+            filterDiv.classed('hidden', true);
+            main.style('padding-top', '0px');
         });
 
 }
