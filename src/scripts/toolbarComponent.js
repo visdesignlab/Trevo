@@ -51,11 +51,7 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, mov
     scrunchButton.attr('class', 'btn btn-outline-secondary').text('Collapse Attributes');
     scrunchButton.on('click', ()=> toggleScrunch(scrunchButton, normedPaths, main, calculatedScales));
 
-    let form = toolbar.append('form').classed('form-inline', true);
-    let input = form.append('input').classed('form-control mr-sm-2', true)
-    input.attr('type', 'search').attr('placeholder', 'Search').attr('aria-label', 'Search');
-    let searchButton = form.append('button').classed('btn btn-outline-success my-2 my-sm-0', true).attr('type', 'submit').append('i').classed("fas fa-search", true)
-
+   
     viewButton.on('click', ()=> togglePathView(viewButton, normedPaths, main, calculatedScales));
 }
 
@@ -217,10 +213,19 @@ function toggleFilters(filterButton, normedPaths, main, moveMetric, scales){
                     xSpan.on('click', ()=> {
                         drawPathsAndAttributes(normedPaths, main, scales, moveMetric);
                         filterButton.remove();
-                    })
+                    });
                 })
             }
-         })
+         });
+
+        let searchDiv = filterDiv.append('div').classed('search-bar-div', true);
+        searchDiv.append('h5').text('Search Filter:')
+        let form = searchDiv.append('form').classed('form-inline', true);
+        let input = form.append('input').classed('form-control mr-sm-2', true)
+        input.attr('type', 'search').attr('placeholder', 'Search').attr('aria-label', 'Search');
+        let searchButton = form.append('button').classed('btn btn-outline-success my-2 my-sm-0', true).attr('type', 'submit').append('i').classed("fas fa-search", true)
+    
+
 
     }else{
         filterButton.text('Show Filters');
