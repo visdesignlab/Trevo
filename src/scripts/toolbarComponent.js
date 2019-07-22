@@ -207,16 +207,17 @@ function toggleFilters(filterButton, normedPaths, main, moveMetric, scales){
                     /////ADD THE FILTER TO THE TOOLBAR/////
                     let filterToolbar = d3.select("#toolbar");
 
+                    let formater = d3.format(".2s");
+
                     let filterButton = filterToolbar.append('button').classed('btn btn-info', true);
                     let span = filterButton.append('span').classed('badge', true);
                     span.text(test.length);
-                    let label = filterButton.append('h6').text(selectedOption + "  ");
+                    let label = filterButton.append('h6').text(selectedOption + "  Predicted: "+ formater(predictedFilter[0]) + "-" + formater(predictedFilter[1]) + " Observed: " + formater(observedFilter[0]) + "-" + formater(observedFilter[1]));
                     let xSpan = label.append('i').classed('close fas fa-times', true);
                     xSpan.on('click', ()=> {
                         drawPathsAndAttributes(normedPaths, main, scales, moveMetric);
                         filterButton.remove();
                     })
-                    
                 })
             }
          })
