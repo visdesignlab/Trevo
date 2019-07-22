@@ -19,7 +19,6 @@ export function pathSelected(selectedPath, otherPaths, scales, moveMetric){
         main.style('padding-top', '250px');
     }
 }
-
 export function sortOtherPaths(pathData, otherPaths){
 
     let thisSpecies = pathData.filter(f=> f.leaf)[0];
@@ -38,7 +37,6 @@ export function sortOtherPaths(pathData, otherPaths){
     let sortedData = rankedPaths.sort(function(a, b){return a.distance - b.distance});
     return sortedData;
 }
-
 export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, moveMetric){
 
     let selectedToolTest = selectedDiv.select('.selected-toolbar');
@@ -49,7 +47,31 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
     let xIcon = xIconWrap.append('i').classed("far fa-times-circle", true);
     xIcon.on('click', ()=> pathSelected(null, scales));
 
-    let sortByDistanceButton = selectedTool.append('button').classed('btn btn-secondary btn-sm', true);
+
+    ////ADD RADIO HERE/////
+
+//<div class="form-check form-check-inline">
+/*
+  <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="option1">
+  <label class="form-check-label" for="inlineRadio1">1</label>
+</div>
+<div class="form-check form-check-inline">
+  <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" value="option2">
+  <label class="form-check-label" for="inlineRadio2">2</label>
+</div>
+<div class="form-check form-check-inline">
+  <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio3" value="option3" disabled>
+  <label class="form-check-label" for="inlineRadio3">3 (disabled)</label>
+//</input></div>
+*/
+    let radioData = [{}]
+    let radioWarp = selectedTool.append('div').classed('form-check form-check-inline', true)
+
+    ///////////////////////
+
+    let sortByDistanceDiv = selectedTool.append('div').style('display', 'inline-block')
+    sortByDistanceDiv.append('text').text('Topology: ')
+    let sortByDistanceButton = sortByDistanceDiv.append('button').classed('btn btn-secondary btn-sm', true);
     sortByDistanceButton.text('Sort Most to Least');
     sortByDistanceButton.on('click', ()=> sortPaths(sortByDistanceButton));
 
@@ -78,6 +100,8 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
     svg.style('height', ((pathData.length + attributeGroups.data().map(m=> m[0]).length)* 50) + 50 + 'px');
     selectedDiv.style('height', ((pathData.length + attributeGroups.data().map(m=> m[0]).length)* 45) + 50 + 'px');
     attributeWrapper.attr('transform', (d)=> 'translate(140, 25)');
+
+    d3.selectAll('.selected-path').classed('selected-path', false)
 
     ////NEED TO GENERALIZE BRANCH FUNCTION IN RENDER TO WORK HERE
 

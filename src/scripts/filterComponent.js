@@ -191,10 +191,10 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
 function queryFilter(filterDiv, filterButton, normedPaths, main, moveMetric, scales){
 
     let searchDiv = filterDiv.append('div').classed('search-bar-div', true);
-        searchDiv.append('h6').text('Search Filter:');
+        searchDiv.append('h6').text('Query Filter:');
         let form = searchDiv.append('form').classed('form-inline', true);
         let input = form.append('input').classed('form-control mr-sm-2', true)
-        input.attr('type', 'search').attr('placeholder', 'Search').attr('aria-label', 'Search');
+        input.attr('type', 'search').attr('placeholder', 'Search by Species').attr('aria-label', 'Search');
         let searchButton = form.append('button').classed('btn btn-outline-success my-2 my-sm-0', true).attr('type', 'button').append('i').classed("fas fa-search", true)
         searchButton.on('click', ()=> {
 
@@ -297,7 +297,6 @@ function stateChange(selectorDiv, keys, selectId, label){
 
     return d3.select('#'+ selectId);
 }
-
 function toggleCircle(circle, scales){
     if(circle.classed('shown')){
         circle.classed('shown', false);
