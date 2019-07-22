@@ -116,10 +116,8 @@ function toggleFilters(filterButton, normedPaths, main, moveMetric, scales){
                           }else{
                               return win === toState;
                           }
-                            
                         });
-                        console.log(filterPred, filterObs);
-                        console.log(filterPred.indexOf(true) > -1, filterObs.indexOf(true) > -1)
+                       
 
                         return filterPred.indexOf(true) > -1 && filterObs.indexOf(true) > -1
                     });
@@ -131,9 +129,15 @@ function toggleFilters(filterButton, normedPaths, main, moveMetric, scales){
                     /////ADD THE FILTER TO THE TOOLBAR/////
                     let filterToolbar = d3.select("#toolbar");
 
-                    let filterButton = filterToolbar.append('span').classed('badge badge-info', true);
-                    let label = filterButton.append('h5').text(selectedOption + "  " + "From: "+ fromState + " To: "+ toState);
-                    let xSpan = label.append('i').classed('close fas fa-times', true);
+                    let filterButton = filterToolbar.append('button').classed('btn btn-info', true);
+                    let span = filterButton.append('span').classed('badge', true);
+                    span.text(test.length);
+                   // filterButton.append('h5').text(selectedOption + "  ");
+                    filterButton.append('h6').text(fromState)
+                    filterButton.append('i').classed('fas fa-arrow-right', true);
+                    filterButton.append('h6').text(toState + '  ');
+                   
+                    let xSpan = filterButton.append('i').classed('close fas fa-times', true);
                     xSpan.on('click', ()=> {
                         drawPathsAndAttributes(normedPaths, main, scales, moveMetric);
                         filterButton.remove();
@@ -203,8 +207,10 @@ function toggleFilters(filterButton, normedPaths, main, moveMetric, scales){
                     /////ADD THE FILTER TO THE TOOLBAR/////
                     let filterToolbar = d3.select("#toolbar");
 
-                    let filterButton = filterToolbar.append('span').classed('badge badge-info', true);
-                    let label = filterButton.append('h5').text(selectedOption + "  ");
+                    let filterButton = filterToolbar.append('button').classed('btn btn-info', true);
+                    let span = filterButton.append('span').classed('badge', true);
+                    span.text(test.length);
+                    let label = filterButton.append('h6').text(selectedOption + "  ");
                     let xSpan = label.append('i').classed('close fas fa-times', true);
                     xSpan.on('click', ()=> {
                         drawPathsAndAttributes(normedPaths, main, scales, moveMetric);
@@ -315,7 +321,7 @@ function toggleCircle(circle, scales){
 export function stateChange(selectorDiv, keys, selectId, label){
 
     let dropDownWrapper = selectorDiv.append('div').classed('selector', true);
-    let header = dropDownWrapper.append('h5').text(label);
+    let header = dropDownWrapper.append('h6').text(label);
     	// create the drop down menu of cities
 	let selectOp = dropDownWrapper
     .append("select")
