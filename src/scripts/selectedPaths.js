@@ -48,32 +48,62 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
     xIcon.on('click', ()=> pathSelected(null, scales));
 
 
-    ////ADD RADIO HERE/////
-
-//<div class="form-check form-check-inline">
-/*
-  <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="option1">
-  <label class="form-check-label" for="inlineRadio1">1</label>
-</div>
-<div class="form-check form-check-inline">
-  <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" value="option2">
-  <label class="form-check-label" for="inlineRadio2">2</label>
-</div>
-<div class="form-check form-check-inline">
-  <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio3" value="option3" disabled>
-  <label class="form-check-label" for="inlineRadio3">3 (disabled)</label>
-//</input></div>
-*/
-    let radioData = [{}]
-    let radioWarp = selectedTool.append('div').classed('form-check form-check-inline', true)
-
     ///////////////////////
 
-    let sortByDistanceDiv = selectedTool.append('div').style('display', 'inline-block')
-    sortByDistanceDiv.append('text').text('Topology: ')
+    let sortByDistanceDiv = selectedTool.append('div').style('display', 'inline-block');
+    sortByDistanceDiv.append('text').text('Topology: ');
     let sortByDistanceButton = sortByDistanceDiv.append('button').classed('btn btn-secondary btn-sm', true);
     sortByDistanceButton.text('Sort Most to Least');
     sortByDistanceButton.on('click', ()=> sortPaths(sortByDistanceButton));
+    
+    /////////////Sorting by attribute///////////////
+    let attrKeys = scales.map(m=> m.field);
+    let attrSortWrap = selectedTool.append('div').style('display', 'inline-block');
+    attrSortWrap.append('h6').text('Sort by: ').style('display', 'inline');
+
+   let radioDiv = attrSortWrap.selectAll('div.attr-radio').data(attrKeys).join('div').classed('attr-radio form-check form-check-inline', true);
+   let radio = radioDiv.append('input').attr('type', 'radio').property('name', 'attribute-radio-sort').property('value', d=> d).attr('id', (d, i)=> 'radio-'+i).classed("form-check-input", true);
+   radioDiv.append('label').text(d=> d).property('for', (d, i)=> 'radio-'+i).classed("form-check-label", true);
+
+   radio.on('click', (d, i)=> {
+    console.log(pathData)
+    let leaf = pathData.map(node=> node.filter(d=> d.leaf === true)[0])[0]
+    console.log(leaf.attributes[d]);  
+ 
+    let sorted = [...otherPaths].sort(function(a, b){
+        return a.filter(n=> n.leaf === true)[0].attributes[d].realVal - b.filter(n=> n.leaf === true)[0].attributes[d].realVal;
+    });
+
+    console.log(sorted);
+
+    let main = d3.select('div#main');
+    /// LOWER ATTRIBUTE VISUALIZATION ///
+    drawPathsAndAttributes(sorted.reverse(), main, scales, moveMetric);
+    main.style('padding-top', '250px');
+
+   
+    let paths = main.select('svg#main-path-view').selectAll('.paths');
+
+    let high = paths.filter(path=> {
+        let leafOther = path.filter(node=> node.leaf === true)[0];
+        return leafOther.attributes[d].realVal > leaf.attributes[d].realVal;
+    });
+    high.classed('high', true);
+
+    let low = paths.filter(path=> {
+        let leafOther = path.filter(node=> node.leaf === true)[0];
+        return leafOther.attributes[d].realVal < leaf.attributes[d].realVal;
+    });
+    low.classed('low', true);
+
+    let same = paths.filter(path=> {
+        let leafOther = path.filter(node=> node.leaf === true)[0];
+        return leafOther.attributes[d].realVal === leaf.attributes[d].realVal;
+    });
+    same.classed('same', true);
+
+});
+   /////////////////////////////////////////////////
 
     let svgTest = selectedDiv.select('svg.select-svg');
     let svg = svgTest.empty()? selectedDiv.append('svg').classed('select-svg', true) : svgTest;
@@ -101,7 +131,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
     selectedDiv.style('height', ((pathData.length + attributeGroups.data().map(m=> m[0]).length)* 45) + 50 + 'px');
     attributeWrapper.attr('transform', (d)=> 'translate(140, 25)');
 
-    d3.selectAll('.selected-path').classed('selected-path', false)
+    d3.selectAll('.selected-path').classed('selected-path', false);
 
     ////NEED TO GENERALIZE BRANCH FUNCTION IN RENDER TO WORK HERE
 

@@ -113,6 +113,10 @@ svg{
   height:180px;
 }
 
+.attr-radio{
+  padding:3px;
+}
+
 .filter-wrap{
   display:inline-block;
   float:left;
@@ -136,6 +140,24 @@ svg{
 .paths rect.path-rect{
   //fill: white;
   fill: gainsboro;
+  //stroke-width: .8px;
+ // stroke: gray;
+  width:1250px;
+  height: 32px;
+}
+
+.paths.high rect.path-rect{
+  //fill: white;
+  fill: #FE6666;
+  //stroke-width: .8px;
+ // stroke: gray;
+  width:1250px;
+  height: 32px;
+}
+
+.paths.low rect.path-rect{
+  //fill: white;
+  fill: #66CCFE;
   //stroke-width: .8px;
  // stroke: gray;
   width:1250px;
