@@ -26,17 +26,24 @@ export function toggleFilters(filterButton, normedPaths, main, moveMetric, scale
         searchButton.on('click', ()=> {
 
             let queryArray = input.node().value.split(' ').map(m=> m.toLowerCase());
-            console.log(queryArray)
 
             let test = normedPaths.filter(path=> {
                 let species = path.filter(node=> node.leaf === true)[0].label;
-                
                 return queryArray.indexOf(species) > -1;
-
-            })
+            });
 
              ////DRAW THE PATHS
             drawPathsAndAttributes(test, main, scales, moveMetric);
+            let filterToolbar = d3.select("#toolbar");
+            let filterButton = filterToolbar.append('button').classed('btn btn-info', true);
+            let span = filterButton.append('span').classed('badge', true);
+            span.text(test.length);
+            filterButton.append('h6').text('Query Filter');
+            let xSpan = filterButton.append('i').classed('close fas fa-times', true);
+            xSpan.on('click', ()=> {
+                drawPathsAndAttributes(normedPaths, main, scales, moveMetric);
+                filterButton.remove();
+            });
             
         })
 
@@ -88,7 +95,6 @@ function stateFilter(filterDiv, normedPaths, main, moveMetric, scales){
                             }
                         });
                         let filterObs = path.filter(f=> f.leaf === true).map(node=> {
-                          //console.log(node.attributes[selectedOption]);
                           let win = node.attributes[selectedOption].winState;
                           if(toState === 'Any'){
                               return true;
@@ -110,7 +116,6 @@ function stateFilter(filterDiv, normedPaths, main, moveMetric, scales){
                     let filterButton = filterToolbar.append('button').classed('btn btn-info', true);
                     let span = filterButton.append('span').classed('badge', true);
                     span.text(test.length);
-                   // filterButton.append('h5').text(selectedOption + "  ");
                     filterButton.append('h6').text(fromState)
                     filterButton.append('i').classed('fas fa-arrow-right', true);
                     filterButton.append('h6').text(toState + '  ');
@@ -119,8 +124,8 @@ function stateFilter(filterDiv, normedPaths, main, moveMetric, scales){
                     xSpan.on('click', ()=> {
                         drawPathsAndAttributes(normedPaths, main, scales, moveMetric);
                         filterButton.remove();
-                    })
-                })
+                    });
+                });
             }else{
                 
                 let yScale = d3.scaleLinear().domain([options.min, options.max]).range([60, 0]);
@@ -243,7 +248,6 @@ function renderAttToggles(filterDiv, normedPaths, scales, moveMetric){
     let labelText = labelGroups.append('text').text(d=> d).style('font-size', 10);
     labelText.attr('transform', 'translate(10, 4)')  
 }
-
 function stateChange(selectorDiv, keys, selectId, label){
 
     let dropDownWrapper = selectorDiv.append('div').classed('selector', true);
