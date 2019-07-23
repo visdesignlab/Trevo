@@ -81,7 +81,6 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
     drawPathsAndAttributes(sorted.reverse(), main, scales, moveMetric);
     main.style('padding-top', '250px');
 
-   
     let paths = main.select('svg#main-path-view').selectAll('.paths');
 
     let high = paths.filter(path=> {
