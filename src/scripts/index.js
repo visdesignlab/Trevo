@@ -2,7 +2,8 @@ import '../styles/index.scss';
 import * as d3 from "d3";
 import {loadData} from './dataLoad';
 import {allPaths, pullPath, getPath} from './pathCalc';
-import {renderTree, drawPathsAndAttributes} from './rendering';
+import {drawPathsAndAttributes} from './rendering';
+import {renderTree} from './sidebarComponent';
 import {renderDistibutions} from './distributionView';
 import {toolbarControl, renderAttToggles} from './toolbarComponent';
 
@@ -250,12 +251,31 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     toolbarControl(toolbarDiv, normedPaths, main, calculatedScales, 'edgeLength', 'paths');
     
     let filterDiv = wrap.select('#filter-tab').classed('hidden', true);
-   
-  //  renderAttToggles(filterDiv, normedPaths, calculatedScales, 'edgeLength');
 
-    //TREE RENDER
+  ///SIDBAR STUFF
+    let treeButton = sidebar.append('button').text('Filter by Tree').classed('btn btn-outline-secondary', true);  
+
+  //TREE RENDER
     ////////
-    renderTree(nestedData, sidebar);
+    let tree = renderTree(nestedData, sidebar);
+
+    console.log('tree', tree);
+
+    function updateBrush(){
+        
+        console.log(d3.event.selection);
+        let nodes = sidebar.select('svg').select('g').selectAll('.node');
+        console.log(nodes.data())
+        let selectedNodes = nodes.filter(n=> (n.y > d3.event.selection[0][0]) && (n.y < d3.event.selection[1][0]) && (n.x > d3.event.selection[0][1]) && (n.x < d3.event.selection[1][1])).classed('selected', true);
+        console.log(selectedNodes)
+    }
+
+    treeButton.on('click', ()=> {
+        let treeBrush = d3.brush().extent([[0, 0], [400, 600]]).on('end', updateBrush);
+        let treeBrushG = sidebar.select('svg').append('g').classed('tree-brush', true).call(treeBrush);
+
+
+    });
 
     ////Render the summary distributions////
     //renderDistibutions(normedPaths, main, calculatedScales, 'move');

@@ -155,6 +155,10 @@ svg{
   height: 32px;
 }
 
+g.selected circle{
+  fill:orange;
+}
+
 .paths.low rect.path-rect{
   //fill: white;
   fill: #66CCFE;
