@@ -5,7 +5,7 @@ import {toggleFilters} from './filterComponent';
 import {renderDistibutions} from './distributionView';
 import * as d3 from "d3";
 
-export function toolbarControl(toolbar, normedPaths, main, calculatedScales, moveMetric, pathView){
+export function toolbarControl(toolbar, normedPaths, filterKeep, main, calculatedScales, moveMetric, pathView){
 
     let viewButton = toolbar.append('button').attr('id', 'view-toggle').attr('attr' , 'button').attr('class', 'btn btn-outline-secondary') ;
 
@@ -19,7 +19,7 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, mov
     
     let filterButton = toolbar.append('button').attr('id', 'view-filter');
     filterButton.attr('class', 'btn btn-outline-secondary').text('Show Filters');
-    filterButton.on('click', ()=> toggleFilters(filterButton, normedPaths, main, moveMetric, calculatedScales));
+    filterButton.on('click', ()=> toggleFilters(filterButton, normedPaths, filterKeep, main, moveMetric, calculatedScales));
 
     let lengthButton = toolbar.append('button').attr('id', 'change-length').attr('class', 'btn btn-outline-secondary');
     if(moveMetric === 'move'){

@@ -57,8 +57,10 @@ export function renderPaths(pathData, main, scales, moveMetric){
     pathGroups.on('mouseover', function(d, i){
         let treeNode  = d3.select('#sidebar').selectAll('.node');//.filter(f=> d.map(m=> m.name).indexOf(f.name) > -1);
         let treeLinks  = d3.select('#sidebar').selectAll('.link');//.filter(f=> d.map(m=> m.name).indexOf(f.name) > -1);
-        treeNode.filter(f=> d.map(m=> m.name).indexOf(f.data.name) > -1).classed('hover', true);
-        treeLinks.filter(f=> d.map(m=> m.name).indexOf(f.data.name) > -1).classed('hover', true);
+        treeNode.filter(f=> {
+            return d.map(m=> m.node).indexOf(f.data.node) > -1
+        }).classed('hover', true);
+        treeLinks.filter(f=> d.map(m=> m.node).indexOf(f.data.node) > -1).classed('hover', true);
         return d3.select(this).classed('hover', true);
     }).on('mouseout', function(d, i){
         let treeNode  = d3.select('#sidebar').selectAll('.node').classed('hover', false);//.filter(f=> d.map(m=> m.name).indexOf(f.name) > -1);

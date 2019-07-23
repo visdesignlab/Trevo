@@ -1,7 +1,7 @@
 import '../styles/index.scss';
 import * as d3 from "d3";
 import {loadData} from './dataLoad';
-import {calculateScales, matchLeaves, matchEdges, normPaths} from './dataFormat';
+import {calculateScales, matchLeaves, matchEdges, normPaths, filterKeeper} from './dataFormat';
 import {allPaths, pullPath, getPath} from './pathCalc';
 import {drawPathsAndAttributes} from './rendering';
 import {renderTree, buildTreeStructure} from './sidebarComponent';
@@ -40,11 +40,6 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
 
     let labels = await loadData(d3.json, './public/data/anolis-labels.json', '');
 
-    ////MATCHING LABELSS TO THE STUFF/////
-    let mappedLeaves = labels.rows.map(m=> {
-        let label = m.x;
-        return label;
-    })
 
     ///MAKE A ESTIMATED SCALES THING
     let calculatedAtt = {
@@ -69,11 +64,14 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
 
     ///CALCULATES PATHS FROM THE DATA////
     let paths = allPaths(matchedEdges, matchedLeaves, "V1", "V2");
-
+ 
    let normedPaths = normPaths(paths, calculatedAtt, calculatedScales);
 
+   ////TESTING FOR FILTERARRAY 
+   let filterKeep = new Array();
+   
    // renderDistibutions(normedPaths, main, calculatedScales);
-    toolbarControl(toolbarDiv, normedPaths, main, calculatedScales, 'edgeLength', 'paths');
+    toolbarControl(toolbarDiv, normedPaths, filterKeep, main, calculatedScales, 'edgeLength', 'paths');
     
     let filterDiv = wrap.select('#filter-tab').classed('hidden', true);
 

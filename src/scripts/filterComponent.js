@@ -5,9 +5,10 @@ import * as d3 from "d3";
 
 
 ///NEED TO BREAK THESE OUT INTO SEPARATE FILTERS
-export function toggleFilters(filterButton, normedPaths, main, moveMetric, scales){
+export function toggleFilters(filterButton, normedPaths, filterKeep, main, moveMetric, scales){
     let filterDiv = d3.select('#filter-tab');
-   
+    console.log(filterKeep);
+
     if(filterDiv.classed('hidden')){
         filterButton.text('Hide Filters');
         filterDiv.classed('hidden', false);
@@ -17,7 +18,6 @@ export function toggleFilters(filterButton, normedPaths, main, moveMetric, scale
         stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, scales);
         queryFilter(filterDiv, filterButton, normedPaths, main, moveMetric, scales);
 
-        
     }else{
         filterButton.text('Show Filters');
         filterDiv.selectAll('*').remove();
@@ -96,6 +96,8 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                         drawPathsAndAttributes(normedPaths, main, scales, moveMetric);
                         button.remove();
                     });
+
+                    
 
                     ////HIDE THE FILTER BAR/////
                     filterButton.text('Show Filters');
