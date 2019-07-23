@@ -262,18 +262,36 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     console.log('tree', tree);
 
     function updateBrush(){
-        
-        console.log(d3.event.selection);
         let nodes = sidebar.select('svg').select('g').selectAll('.node');
-        console.log(nodes.data())
         let selectedNodes = nodes.filter(n=> (n.y > d3.event.selection[0][0]) && (n.y < d3.event.selection[1][0]) && (n.x > d3.event.selection[0][1]) && (n.x < d3.event.selection[1][1])).classed('selected', true);
-        console.log(selectedNodes)
+        console.log(selectedNodes.data().map(n=> n.data.node));
+
+        let filterArray = selectedNodes.data().map(n=> n.data.node);
+        let test = normedPaths.filter(path=> {
+            console.log(path);
+            let nodeNames = path.map(no=> no.node);
+            let booArray = nodeNames.map(id=> selectedNodes.data().map(n=> n.data.node).indexOf(id) > -1);
+            return booArray.indexOf(true) > -1
+        });
+
+        console.log(test)
+        drawPathsAndAttributes(test, main, calculatedScales, 'edgeLength');
+        
+        let button = toolbarDiv.append('button').classed('btn btn-info', true);
+        let span = button.append('span').classed('badge badge-light', true);
+        span.text(test.length);
+        let label = button.append('h6').text('Tree Filter');
+        let xSpan = label.append('i').classed('close fas fa-times', true);
+        xSpan.on('click', ()=> {
+            drawPathsAndAttributes(normedPaths, main, scales, moveMetric);
+            button.remove();
+        });
     }
 
     treeButton.on('click', ()=> {
         let treeBrush = d3.brush().extent([[0, 0], [400, 600]]).on('end', updateBrush);
         let treeBrushG = sidebar.select('svg').append('g').classed('tree-brush', true).call(treeBrush);
-
+        
 
     });
 
