@@ -74,7 +74,6 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                           }
                         });
                        
-
                         return filterPred.indexOf(true) > -1 && filterObs.indexOf(true) > -1
                     });
 

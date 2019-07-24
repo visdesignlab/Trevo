@@ -21,8 +21,9 @@ export function buildTreeStructure(paths, edges){
     return nestedData;
 }
 
-
 export function renderTree(nestedData, normedPaths, calculatedScales, sidebar){
+
+    let treeBrush = d3.brush().extent([[0, 0], [400, 600]]);
 
     function updateBrush(){
         let sidebar = d3.select('#sidebar');
@@ -38,25 +39,50 @@ export function renderTree(nestedData, normedPaths, calculatedScales, sidebar){
             let booArray = nodeNames.map(id=> selectedNodes.data().map(n=> n.data.node).indexOf(id) > -1);
             return booArray.indexOf(true) > -1
         });
+
         drawPathsAndAttributes(test, main, calculatedScales, 'edgeLength');
-        
+         ///DIMMING THE FILTERED OUT NODES//////
+
+                    ////Class Tree Links////
+        let treeLinks  = d3.select('#sidebar').selectAll('.link');
+        let treeNode  = d3.select('#sidebar').selectAll('.node');
+
+        let nodeList = test.flatMap(path=> path.map(node => node.node));
+
+        d3.selectAll('.link-not-there').classed('link-not-there', false);
+        d3.selectAll('.node-not-there').classed('node-not-there', false);
+
+        let missingLinks = treeLinks.filter(f=> nodeList.indexOf(f.data.node) === -1);
+        missingLinks.classed('link-not-there', true);
+
+        let missingNodes = treeNode.filter(f=> nodeList.indexOf(f.data.node) === -1);
+        missingNodes.classed('node-not-there', true);
+
+        ///END NODE DIMMING///////
+
         let button = toolbarDiv.append('button').classed('btn btn-info', true);
         let span = button.append('span').classed('badge badge-light', true);
         span.text(test.length);
         let label = button.append('h6').text('Tree Filter');
         let xSpan = label.append('i').classed('close fas fa-times', true);
-        xSpan.on('click', ()=> {
-            drawPathsAndAttributes(normedPaths, main, scales, moveMetric);
+        xSpan.on('click', async ()=> {
+            await drawPathsAndAttributes(normedPaths, main, calculatedScales, 'edgeLength');
+            d3.selectAll('.selected').classed('selected', false);
+            d3.selectAll('.link-not-there').classed('link-not-there', false);
+            d3.selectAll('.node-not-there').classed('node-not-there', false);
+          
+          
             button.remove();
+
+            d3.select(this).call(treeBrush.move, null);
         });
     }
 
     ///SIDBAR STUFF
     let treeButton = sidebar.append('button').text('Filter by Tree').classed('btn btn-outline-secondary', true);  
 
-
     treeButton.on('click', ()=> {
-        let treeBrush = d3.brush().extent([[0, 0], [400, 600]]).on('end', updateBrush);
+        treeBrush.on('end', updateBrush);
         let treeBrushG = sidebar.select('svg').append('g').classed('tree-brush', true).call(treeBrush);
         
     });
