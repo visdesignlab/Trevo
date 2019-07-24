@@ -51,8 +51,6 @@ export function toolbarControl(toolbar, normedPaths, filterKeep, main, calculate
     let scrunchButton = toolbar.append('button').attr('id', 'scrunch');
     scrunchButton.attr('class', 'btn btn-outline-secondary').text('Collapse Attributes');
     scrunchButton.on('click', ()=> toggleScrunch(scrunchButton, normedPaths, main, calculatedScales));
-
-   
     viewButton.on('click', ()=> togglePathView(viewButton, normedPaths, main, calculatedScales));
 }
 
@@ -60,11 +58,11 @@ function toggleScrunch(button, normedPaths, main, calculatedScales){
     if(button.text() === 'Collapse Attributes'){
         button.text('Expand Attributes');
         main.selectAll('*').remove();//.selectAll('*').remove();
-        drawPathsAndAttributes(normedPaths, main, calculatedScales, 'move', true);
+        drawPathsAndAttributes(normedPaths, main, calculatedScales, 'edgeLength', true);
     }else{
         button.text('Collapse Attributes');
         main.selectAll('*').remove();//.selectAll('*').remove();
-        drawPathsAndAttributes(normedPaths, main, calculatedScales, 'move', false);
+        drawPathsAndAttributes(normedPaths, main, calculatedScales, 'edgeLength', false);
     }
 }
 

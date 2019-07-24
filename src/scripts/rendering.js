@@ -288,12 +288,11 @@ export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric, collapsed
     }).join('circle').classed('dots', true);
     
     stateDots.attr('cx', 10).attr('cy', (d)=> {
-        let y = d3.scaleLinear().domain([0, 1]).range([attributeHeight - 2, 1])
+        let y = d3.scaleLinear().domain([0, 1]).range([attributeHeight - 2, 2])
         return y(d.realVal);
     }).attr('r', 2).style('fill', d=> d.color);
 
     stateDots.filter(f=> f.realVal > 0.5).attr('r', 4);
-   // stateDots = stateDotsEnter.merge(stateDots);
 
     stateDots.on("mouseover", function(d) {
         let tool = d3.select('#tooltip');
