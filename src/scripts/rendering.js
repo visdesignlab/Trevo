@@ -5,7 +5,7 @@ import {formatAttributeData} from './dataFormat';
 import {filterMaster} from './filterComponent';
 
 export function drawPathsAndAttributes(normedPaths, main, calculatedScales, moveMetric, collapsed){
-
+    main.select('#main-path-view').selectAll('*').remove();
     let pathGroups = renderPaths(normedPaths, main, calculatedScales, moveMetric);
   
       /// LOWER ATTRIBUTE VISUALIZATION ///
