@@ -128,7 +128,7 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                
                 let continRanges = attProps.append('svg');
                 continRanges.attr('wdith', 200).attr('height', 60);
-                let data = [{'label':'From', 'type': 'predicted'}, {'label':'To', 'type': 'observed'}]
+                let data = [{'label':'Ancestors', 'type': 'predicted'}, {'label':'Leaves', 'type': 'observed'}]
                 let ranges = continRanges.selectAll('.range').data(data).join('g').classed('range', true)
 
                 let brushBars = ranges.append('g');
@@ -271,14 +271,11 @@ function queryFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
 
 }
 function renderAttToggles(filterDiv, normedPaths, scales, moveMetric){
-    console.log(filterDiv, normedPaths, scales, moveMetric);
+   
     ////NEED TO GET RID OF TOGGLE SVG
     let keys = Object.keys(normedPaths[0][0].attributes);
     let presentFilters = filterMaster.filter(f=> f.type === 'hide-attribute');
     let noShow = presentFilters.length > 0 ? presentFilters.map(m=> m.attribute) : [];
-
-    console.log(noShow)
-    console.log(keys)
 
     let wrapper = filterDiv.append('div').classed('filter-wrap', true);
     wrapper.style('width', '150px');
@@ -296,7 +293,7 @@ function renderAttToggles(filterDiv, normedPaths, scales, moveMetric){
     let toggle = labelGroups.append('circle').attr('cx', 0).attr('cy', 0);
     toggle.classed('toggle', true);
     let shownToggs = toggle.filter(t=> noShow.indexOf(t) === -1);
-    console.log(shownToggs)
+   
     shownToggs.classed('shown', true);
     shownToggs.style('fill', (d, i)=>{
         return scales.filter(f=> f.field === d)[0].catColor;

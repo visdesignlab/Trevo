@@ -62,9 +62,16 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
 
     let xIconWrap = selectedTool.append('div').classed('x-icon', true)
     let xIcon = xIconWrap.append('i').classed("far fa-times-circle", true);
-    xIcon.on('click', ()=> pathSelected(null, scales));
+    xIcon.on('click', ()=> {
+        d3.selectAll('.high').classed('high', false);
+        d3.selectAll('.low').classed('low', false);
+        treeNodes.select('.selected').classed('selected', false);
+        pathSelected(null, scales)
+    });
 
     ///////////////////////
+
+ 
 
     let sortByDistanceDiv = selectedTool.append('div').style('display', 'inline-block');
     sortByDistanceDiv.append('text').text('Topology: ');
