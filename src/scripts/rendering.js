@@ -5,16 +5,16 @@ import {formatAttributeData} from './dataFormat';
 import {filterMaster} from './filterComponent';
 
 export function drawPathsAndAttributes(normedPaths, main, calculatedScales, moveMetric, collapsed){
+
     main.select('#main-path-view').selectAll('*').remove();
+
     let pathGroups = renderPaths(normedPaths, main, calculatedScales, moveMetric);
   
       /// LOWER ATTRIBUTE VISUALIZATION ///
     let attributeWrapper = pathGroups.append('g').classed('attribute-wrapper', true);
+    let attrHide = filterMaster.filter(f=> f.type === 'hide-attribute');
 
-    console.log(filterMaster.filter(f=> f.type === 'hide-attribute'))
-    let attrHide = filterMaster.filter(f=> f.type === 'hide-attribute')
-  
-    let attKeys = attrHide.length > 0 ? calculatedScales.filter(f=> f.field != attrHide[0].attribute) : null;
+    let attKeys = attrHide.length > 0 ? calculatedScales.filter(f=> f.field != attrHide[0].attribute).map(m=> m.field) : null;
     
     let attData = formatAttributeData(normedPaths, calculatedScales, attKeys);
 
@@ -24,9 +24,11 @@ export function drawPathsAndAttributes(normedPaths, main, calculatedScales, move
   
     drawContAtt(predictedAttrGrps, moveMetric, collapsed);
     drawDiscreteAtt(predictedAttrGrps, calculatedScales, moveMetric, collapsed);
+
+    let attrHeight = attKeys === null ? calculatedScales.length : attKeys.length;
   
     //tranforming elements
-    main.select('#main-path-view').style('height', ((normedPaths.length + predictedAttrGrps.data().map(m=> m[0]).length)* 30) + 'px');
+    main.select('#main-path-view').style('height', ((normedPaths.length + attrHeight)* 30) + 'px');
     attributeWrapper.attr('transform', (d)=> 'translate(140, 25)');
     ///////////////////////////////////
 }

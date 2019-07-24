@@ -2,6 +2,7 @@ import * as d3 from "d3";
 import {branchPaths, renderPaths, renderAttributes, drawContAtt, drawDiscreteAtt, drawPathsAndAttributes} from './rendering';
 import {formatAttributeData} from './dataFormat';
 import {renderAttToggles} from './toolbarComponent';
+import {filterMaster} from './filterComponent';
 
 export function pathSelected(selectedPath, otherPaths, scales, moveMetric){
 
@@ -13,31 +14,41 @@ export function pathSelected(selectedPath, otherPaths, scales, moveMetric){
     }else{
         renderSelectedView([selectedPath], otherPaths, selectedDiv, scales, moveMetric);
         let sortedPaths = sortOtherPaths(selectedPath, otherPaths);
+        console.log('sortedpaths',sortedPaths)
         let main = d3.select('div#main');
           /// LOWER ATTRIBUTE VISUALIZATION ///
-        drawPathsAndAttributes(sortedPaths.map(s=> s.data), main, scales, moveMetric);
+        drawPathsAndAttributes(sortedPaths.map(s=> s.data), main, scales, moveMetric, false);
+  
         main.style('padding-top', '250px');
     }
 }
 export function sortOtherPaths(pathData, otherPaths){
 
     let thisSpecies = pathData.filter(f=> f.leaf)[0];
-    let chosenPath = pathData.reverse().map(m=> m.node)
+    let chosenPath = pathData.reverse().map(m=> m.node);
     
     let rankedPaths = otherPaths.map(path=> {
         let step = 0;
         let test = path.reverse().map((node, i)=> {
-            if(chosenPath.indexOf(node.node))
+            if(chosenPath.indexOf(node.node));
             return {'indexOf': chosenPath.indexOf(node.node), 'pathIndex': i, 'node': node, 'chosen': chosenPath[chosenPath.indexOf(node.node)] }
         }).filter(f=> f.indexOf > -1);
         let distance = (test[0].indexOf + test[0].pathIndex);
-        return {'data':path.reverse(), 'distance': distance }
+        return {'data':path.reverse(), 'distance': distance };
 
     });
     let sortedData = rankedPaths.sort(function(a, b){return a.distance - b.distance});
+
+    console.log('sorted data in sorted data', sortedData);
     return sortedData;
 }
 export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, moveMetric){
+
+   ////FILTER MASTER TO HIDE ATTRIBUTES THAT ARE DESELECTED FROM FILTERBAR
+    let attrHide = filterMaster.filter(f=> f.type === 'hide-attribute').length > 0 ? filterMaster.filter(f=> f.type === 'hide-attribute').map(m=> m.attribute) : [];
+    let attrFilter = attrHide.length > 0 ? scales.filter(sc=> {
+        return attrHide.indexOf(sc.field) === -1;
+    }).map(m=> m.field) : null;
 
     let selectedToolTest = selectedDiv.select('.selected-toolbar');
     let selectedTool = selectedToolTest.empty() ? selectedDiv.append('div').classed('selected-toolbar', true) : selectedToolTest;
@@ -46,7 +57,6 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
     let xIconWrap = selectedTool.append('div').classed('x-icon', true)
     let xIcon = xIconWrap.append('i').classed("far fa-times-circle", true);
     xIcon.on('click', ()=> pathSelected(null, scales));
-
 
     ///////////////////////
 
@@ -116,7 +126,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
 
        /// LOWER ATTRIBUTE VISUALIZATION ///
     let attributeWrapper = selectedGroups.append('g').classed('attribute-wrapper', true);
-    let attData = formatAttributeData(pathData, scales)
+    let attData = formatAttributeData(pathData, scales, attrFilter);
     let attributeGroups = renderAttributes(attributeWrapper, attData, scales, null);
       
     let attributeHeight = 45;

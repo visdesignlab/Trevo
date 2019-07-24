@@ -201,6 +201,7 @@ export function filterKeeper(){
 }
 
 export function formatAttributeData(normedPaths, scales, filterArray){
+    console.log('filterArray',filterArray)
     let keys = (filterArray == null)? Object.keys(normedPaths[0][0].attributes): filterArray;
    
     let newData = normedPaths.map(path=> {
