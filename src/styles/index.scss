@@ -296,6 +296,22 @@ line.half{
 g.node.hover-branch circle{
   fill:#FE9D0B;
 }
+g.node.high circle{
+  fill: #FE6666 !important;
+  r:4px;
+}
+
+g.node.low circle{
+  fill: #1D77A4 !important;
+  r:4px;
+}
+
+g.node.selected circle{
+  fill: #FE9D0B !important;
+  stroke: gray;
+  stroke-width: 1px;
+  r:5px;
+}
 
 .toggle.shown {
   r: 7;

@@ -42,6 +42,14 @@ export function sortOtherPaths(pathData, otherPaths){
 }
 export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, moveMetric){
 
+    console.log(pathData)
+
+    let selectedSpecies = pathData.flatMap(p=> p.filter(f=> f.leaf === true).map(n=> n.node));
+    let treeNodes = d3.select('#sidebar').select('svg').selectAll('.node');
+    treeNodes.filter(node=> selectedSpecies.indexOf(node.data.node) > -1).classed('selected', true);
+
+    console.log(selectedSpecies);
+
    ////FILTER MASTER TO HIDE ATTRIBUTES THAT ARE DESELECTED FROM FILTERBAR
     let attrHide = filterMaster.filter(f=> f.type === 'hide-attribute').length > 0 ? filterMaster.filter(f=> f.type === 'hide-attribute').map(m=> m.attribute) : [];
     let attrFilter = attrHide.length > 0 ? scales.filter(sc=> {
@@ -74,15 +82,12 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
    radioDiv.append('label').text(d=> d).property('for', (d, i)=> 'radio-'+i).classed("form-check-label", true);
 
    radio.on('click', (d, i)=> {
-    console.log(pathData)
+   
     let leaf = pathData.map(node=> node.filter(d=> d.leaf === true)[0])[0]
-    console.log(leaf.attributes[d]);  
  
     let sorted = [...otherPaths].sort(function(a, b){
         return a.filter(n=> n.leaf === true)[0].attributes[d].realVal - b.filter(n=> n.leaf === true)[0].attributes[d].realVal;
     });
-
-    console.log(sorted);
 
     let main = d3.select('div#main');
     /// LOWER ATTRIBUTE VISUALIZATION ///
@@ -97,11 +102,19 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
     });
     high.classed('high', true);
 
+    let highLeaves = high.data().map(path=> path.filter(f=> f.leaf === true)[0].node);
+    
+    treeNodes.filter(f=> highLeaves.indexOf(f.data.node) > -1).classed('high', true);
+
     let low = paths.filter(path=> {
         let leafOther = path.filter(node=> node.leaf === true)[0];
         return leafOther.attributes[d].realVal < leaf.attributes[d].realVal;
     });
     low.classed('low', true);
+
+    let lowLeaves = low.data().map(path=> path.filter(f=> f.leaf === true)[0].node);
+
+    treeNodes.filter(f=> lowLeaves.indexOf(f.data.node) > -1).classed('low', true);
 
     let same = paths.filter(path=> {
         let leafOther = path.filter(node=> node.leaf === true)[0];
