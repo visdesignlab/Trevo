@@ -2,6 +2,7 @@ import '../styles/index.scss';
 import * as d3 from "d3";
 import {renderSelectedView, pathSelected} from './selectedPaths';
 import {formatAttributeData} from './dataFormat';
+import {filterMaster} from './filterComponent';
 
 export function drawPathsAndAttributes(normedPaths, main, calculatedScales, moveMetric, collapsed){
 
@@ -68,6 +69,8 @@ export function renderPaths(pathData, main, scales, moveMetric){
         return d3.select(this).classed('hover', false)
     });
     pathGroups.on('click', (d, i, n)=>{
+
+        console.log('filterMasta', filterMaster);
         let notIt = d3.selectAll(n).filter((f, j)=> j != i).classed('selected-path', false);
      
         if(d3.select(n[i]).classed('selected-path')){
@@ -207,7 +210,6 @@ export function drawContAtt(predictedAttrGrps, moveMetric, collapsed){
     .attr('transform', (d, i)=> {
         let y = d.yScale;
         y.range([attributeHeight, 0]);
-        //let move = d.leaf? 0 : y(d.realVal);
         return 'translate(0, '+ y(d.realVal) +')'})
     .attr('fill', d=> d.color);
 }

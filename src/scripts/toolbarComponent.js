@@ -3,7 +3,6 @@ import {formatAttributeData} from './dataFormat';
 import {drawPathsAndAttributes} from './rendering';
 import {toggleFilters} from './filterComponent';
 import {renderDistibutions} from './distributionView';
-import * as d3 from "d3";
 
 export function toolbarControl(toolbar, normedPaths, filterKeep, main, calculatedScales, moveMetric, pathView){
 
@@ -54,6 +53,7 @@ export function toolbarControl(toolbar, normedPaths, filterKeep, main, calculate
     viewButton.on('click', ()=> togglePathView(viewButton, normedPaths, main, calculatedScales));
 }
 
+////COLLAPSES THE NODES DOWN
 function toggleScrunch(button, normedPaths, main, calculatedScales){
     if(button.text() === 'Collapse Attributes'){
         button.text('Expand Attributes');

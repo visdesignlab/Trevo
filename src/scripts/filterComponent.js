@@ -3,6 +3,8 @@ import {formatAttributeData} from './dataFormat';
 import {renderAttributes,  drawContAtt, drawDiscreteAtt, renderPaths, drawPathsAndAttributes} from './rendering';
 import * as d3 from "d3";
 
+export let filterMaster = [];
+
 
 ///NEED TO BREAK THESE OUT INTO SEPARATE FILTERS
 export function toggleFilters(filterButton, normedPaths, filterKeep, main, moveMetric, scales){
@@ -14,7 +16,7 @@ export function toggleFilters(filterButton, normedPaths, filterKeep, main, moveM
         filterDiv.classed('hidden', false);
         main.style('padding-top', '200px');
 
-        renderAttToggles(filterDiv, normedPaths, scales, 'edgeLength');
+        renderAttToggles(filterDiv, normedPaths, filterKeep, scales, 'edgeLength');
         stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, scales);
         queryFilter(filterDiv, filterButton, normedPaths, main, moveMetric, scales);
 
@@ -52,7 +54,6 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                 submit.text('Filter');
 
                 submit.on('click', ()=> {
-                   
                     let fromState = button1.node().classList[0];
                     let toState = button2.node().classList[0];
                       ////GOING TO ADD FILTERING HERE//// NEED TO BREAK INTO ITS OWN THING/////
@@ -183,13 +184,10 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
 
                     ///DIMMING THE FILTERED OUT NODES//////
 
-
                     ////Class Tree Links////
                     let treeLinks  = d3.select('#sidebar').selectAll('.link');
                     let treeNode  = d3.select('#sidebar').selectAll('.node');
 
-
-                 
                     let nodeList = test.flatMap(path=> path.map(node => node.node));
 
                     d3.selectAll('.link-not-there').classed('link-not-there', false);
@@ -272,7 +270,7 @@ function queryFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
         });
 
 }
-function renderAttToggles(filterDiv, normedPaths, scales, moveMetric){
+function renderAttToggles(filterDiv, normedPaths, filterKeep, scales, moveMetric){
 
     ////NEED TO GET RID OF TOGGLE SVG
     let keys = Object.keys(normedPaths[0][0].attributes);
@@ -299,6 +297,13 @@ function renderAttToggles(filterDiv, normedPaths, scales, moveMetric){
     toggle.on('click', function(d, i){
         let togg = d3.select(this);
         toggleCircle(togg, scales);
+       // console.log('filterKeep', filterKeep, d);
+
+        //filterKeep.push({'attribute-hide': true, 'attribute':d, 'before-data': [...normedPaths]});
+        filterMaster.push({'type':'hide-attribute', 'attribute':d, 'before-data': [...normedPaths]});
+
+       // console.log(filterKeep);
+
         let newKeys = d3.selectAll('.shown');
         let attributeWrapper = d3.selectAll('.attribute-wrapper');
         attributeWrapper.selectAll('g').remove();
