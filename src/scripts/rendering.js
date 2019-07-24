@@ -26,7 +26,7 @@ export function drawPathsAndAttributes(normedPaths, main, calculatedScales, move
 }
 
 export function renderPaths(pathData, main, scales, moveMetric){
-    console.log('pathData in render',pathData)
+    
     ////YOU SHOULD MOVE THESE APPENDING THINGS OUT OF HERE///////
     /////Rendering ///////
     let svgTest = main.select('#main-path-view');
@@ -144,7 +144,7 @@ function continuousPaths(innerTimeline, moveMetric, collapsed){
         return distance })
     .y(d=> {
         let y = d.yScale;
-        y.range([0, height]);
+        y.range([height, 0]);
         return y(d.realVal)});
 
     let innerPaths = innerTimeline.append('path')
@@ -188,14 +188,15 @@ export function drawContAtt(predictedAttrGrps, moveMetric, collapsed){
     let rangeRect = innerBars.append('rect').classed('range-rect', true);
     rangeRect.attr('width', 20).attr('height', (d, i)=> {
         let y = d.yScale;
-        y.range([0, attributeHeight])
-        let range = d.leaf ? 0 : y(d.upperCI95) -  y(d.lowerCI95);
+        y.range([attributeHeight, 0])
+        let range = d.leaf ? 0 : y(d.lowerCI95) - y(d.upperCI95);
         return range;
     });
     rangeRect.attr('transform', (d, i)=> {
         let y = d.yScale;
-        y.range([0, attributeHeight]);
-        let move = d.leaf? 0 : y(d.lowerCI95);
+        y.range([attributeHeight, 0]);
+        //let move = d.leaf? 0 : y(d.lowerCI95);
+        let move = d.leaf? 0 : y(d.upperCI95);
         return 'translate(0, '+ move +')';
     });
     rangeRect.style('fill', d=> d.color);
@@ -205,7 +206,7 @@ export function drawContAtt(predictedAttrGrps, moveMetric, collapsed){
     innerBars.append('rect').attr('width', 20).attr('height', 5)
     .attr('transform', (d, i)=> {
         let y = d.yScale;
-        y.range([0, attributeHeight]);
+        y.range([attributeHeight, 0]);
         //let move = d.leaf? 0 : y(d.realVal);
         return 'translate(0, '+ y(d.realVal) +')'})
     .attr('fill', d=> d.color);
@@ -252,7 +253,7 @@ export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric, collapsed
         return distance + 7})
     .y(d=> {
        
-        let y = d3.scaleLinear().domain([0, 1]).range([1, attributeHeight-2])
+        let y = d3.scaleLinear().domain([0, 1]).range([attributeHeight-2, 1])
         //d.scaleVal
         return y(d.realVal);
     });
@@ -287,7 +288,7 @@ export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric, collapsed
     }).join('circle').classed('dots', true);
     
     stateDots.attr('cx', 10).attr('cy', (d)=> {
-        let y = d3.scaleLinear().domain([0, 1]).range([1, attributeHeight - 2])
+        let y = d3.scaleLinear().domain([0, 1]).range([attributeHeight - 2, 1])
         return y(d.realVal);
     }).attr('r', 2).style('fill', d=> d.color);
 
