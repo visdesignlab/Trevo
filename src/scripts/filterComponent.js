@@ -7,16 +7,16 @@ export let filterMaster = [];
 
 
 ///NEED TO BREAK THESE OUT INTO SEPARATE FILTERS
-export function toggleFilters(filterButton, normedPaths, filterKeep, main, moveMetric, scales){
+export function toggleFilters(filterButton, normedPaths, main, moveMetric, scales){
     let filterDiv = d3.select('#filter-tab');
-    console.log(filterKeep);
+
 
     if(filterDiv.classed('hidden')){
         filterButton.text('Hide Filters');
         filterDiv.classed('hidden', false);
         main.style('padding-top', '200px');
 
-        renderAttToggles(filterDiv, normedPaths, filterKeep, scales, 'edgeLength');
+        renderAttToggles(filterDiv, normedPaths, scales, 'edgeLength');
         stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, scales);
         queryFilter(filterDiv, filterButton, normedPaths, main, moveMetric, scales);
 
@@ -270,10 +270,15 @@ function queryFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
         });
 
 }
-function renderAttToggles(filterDiv, normedPaths, filterKeep, scales, moveMetric){
-
+function renderAttToggles(filterDiv, normedPaths, scales, moveMetric){
+    console.log(filterDiv, normedPaths, scales, moveMetric);
     ////NEED TO GET RID OF TOGGLE SVG
     let keys = Object.keys(normedPaths[0][0].attributes);
+    let presentFilters = filterMaster.filter(f=> f.type === 'hide-attribute');
+    let noShow = presentFilters.length > 0 ? presentFilters.map(m=> m.attribute) : [];
+
+    console.log(noShow)
+    console.log(keys)
 
     let wrapper = filterDiv.append('div').classed('filter-wrap', true);
     wrapper.style('width', '150px');
@@ -289,24 +294,22 @@ function renderAttToggles(filterDiv, normedPaths, filterKeep, scales, moveMetric
     labelGroups.attr('transform', (d, i)=> 'translate(0,'+(i* 25)+')');
 
     let toggle = labelGroups.append('circle').attr('cx', 0).attr('cy', 0);
-    toggle.classed('toggle shown', true);
-    toggle.style('fill', (d, i)=>{
+    toggle.classed('toggle', true);
+    let shownToggs = toggle.filter(t=> noShow.indexOf(t) === -1);
+    console.log(shownToggs)
+    shownToggs.classed('shown', true);
+    shownToggs.style('fill', (d, i)=>{
         return scales.filter(f=> f.field === d)[0].catColor;
     });
 
     toggle.on('click', function(d, i){
         let togg = d3.select(this);
         toggleCircle(togg, scales);
-       // console.log('filterKeep', filterKeep, d);
-
-        //filterKeep.push({'attribute-hide': true, 'attribute':d, 'before-data': [...normedPaths]});
+   
         filterMaster.push({'type':'hide-attribute', 'attribute':d, 'before-data': [...normedPaths]});
-
-       // console.log(filterKeep);
 
         let newKeys = d3.selectAll('.shown');
         let hideKeys = scales.filter(sc=> newKeys.data().indexOf(sc.field) === -1);
-        console.log('hide keys', hideKeys);
         let newFilMaster = filterMaster.filter(f=> f.type != 'hide-attribute');
         hideKeys.forEach(key=> {
             newFilMaster.push({'type':'hide-attribute', 'attribute':key.field, 'before-data': [...normedPaths]});

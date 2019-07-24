@@ -66,12 +66,9 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     let paths = allPaths(matchedEdges, matchedLeaves, "V1", "V2");
  
    let normedPaths = normPaths(paths, calculatedAtt, calculatedScales);
-
-   ////TESTING FOR FILTERARRAY 
-   let filterKeep = new Array();
    
    // renderDistibutions(normedPaths, main, calculatedScales);
-    toolbarControl(toolbarDiv, normedPaths, filterKeep, main, calculatedScales, 'edgeLength', 'paths');
+    toolbarControl(toolbarDiv, normedPaths, main, calculatedScales, 'edgeLength', 'paths');
     
     let filterDiv = wrap.select('#filter-tab').classed('hidden', true);
 
