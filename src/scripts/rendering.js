@@ -107,11 +107,16 @@ export function renderPaths(pathData, main, scales, moveMetric){
     }).attr('class', (d, i)=> 'node-'+d.node);
 
     circle.on('mouseover', function(d, i){
+        console.log('d', d)
         let hovers = nodeGroups.filter(n=> n.node === d.node);
-       // return nodeGroups.selectAll('.node-'+d.node).classed('hover-branch', true);
+        let treeNode  = d3.select('#sidebar').selectAll('.node');
+        let selectedBranch = treeNode.filter(f=> f.data.node === d.node).classed('selected-branch', true);
+        console.log(selectedBranch);//.select('circle').attr('r', 5);
+
         return hovers.classed('hover-branch', true);
     }).on('mouseout', function(d, i){
         let hovers = nodeGroups.filter(n=> n.node === d.node);
+        d3.selectAll('.selected-branch').classed('selected-branch', false);
         return hovers.classed('hover-branch', false);
     });
 

@@ -277,6 +277,11 @@ line.half{
   opacity: .1;
 }
 
+.selected-branch circle{
+  r: 8px !important;
+  fill:orange !important;
+}
+
 .inner-node-wrap{
   stroke: gray;
   stroke-width: 1px;
