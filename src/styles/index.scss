@@ -331,9 +331,21 @@ g.node.hover-branch circle{
 
 .link {
   fill: none;
-  stroke: #ccc;
+  stroke: gray;
   stroke-width: 2px;
 }
+
+.link-not-there{
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 2px;
+  opacity:.5 !important;
+}
+.node-not-there{
+  fill:#ccc;
+  opacity:.3;
+}
+
 .link.hover {
   fill: none;
   stroke: red;

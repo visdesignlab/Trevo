@@ -56,7 +56,6 @@ export function toolbarControl(toolbar, normedPaths, filterKeep, main, calculate
     viewButton.on('click', ()=> togglePathView(viewButton, normedPaths, main, calculatedScales));
 }
 
-
 function toggleScrunch(button, normedPaths, main, calculatedScales){
     if(button.text() === 'Collapse Attributes'){
         button.text('Expand Attributes');
@@ -68,8 +67,6 @@ function toggleScrunch(button, normedPaths, main, calculatedScales){
         drawPathsAndAttributes(normedPaths, main, calculatedScales, 'move', false);
     }
 }
-
-
 
 /**
  * 

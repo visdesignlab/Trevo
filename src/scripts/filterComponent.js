@@ -81,6 +81,23 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                     ////DRAW THE PATHS
                     drawPathsAndAttributes(test, main, scales, moveMetric);
 
+                    ////Class Tree Links////
+                    let treeLinks  = d3.select('#sidebar').selectAll('.link');
+                    let treeNode  = d3.select('#sidebar').selectAll('.node');
+
+                    let nodeList = test.flatMap(path=> path.map(node => node.node));
+
+                    d3.selectAll('.link-not-there').classed('link-not-there', false);
+                    d3.selectAll('.node-not-there').classed('node-not-there', false);
+
+                    let missingLinks = treeLinks.filter(f=> nodeList.indexOf(f.data.node) === -1);
+                    missingLinks.classed('link-not-there', true);
+
+                    let missingNodes = treeNode.filter(f=> nodeList.indexOf(f.data.node) === -1);
+                    missingNodes.classed('node-not-there', true);
+
+                    ///END NODE DIMMING///////
+
                     /////ADD THE FILTER TO THE TOOLBAR/////
                     let filterToolbar = d3.select("#toolbar");
 
@@ -94,10 +111,10 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                     let xSpan = button.append('i').classed('close fas fa-times', true);
                     xSpan.on('click', ()=> {
                         drawPathsAndAttributes(normedPaths, main, scales, moveMetric);
+                        d3.selectAll('.link-not-there').classed('link-not-there', false);
+                        d3.selectAll('.node-not-there').classed('node-not-there', false);
                         button.remove();
                     });
-
-                    
 
                     ////HIDE THE FILTER BAR/////
                     filterButton.text('Show Filters');
@@ -165,6 +182,28 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                     ////DRAW THE PATHS
                     drawPathsAndAttributes(test, main, scales, moveMetric);
 
+                    ///DIMMING THE FILTERED OUT NODES//////
+
+
+                    ////Class Tree Links////
+                    let treeLinks  = d3.select('#sidebar').selectAll('.link');
+                    let treeNode  = d3.select('#sidebar').selectAll('.node');
+
+
+                 
+                    let nodeList = test.flatMap(path=> path.map(node => node.node));
+
+                    d3.selectAll('.link-not-there').classed('link-not-there', false);
+                    d3.selectAll('.node-not-there').classed('node-not-there', false);
+
+                    let missingLinks = treeLinks.filter(f=> nodeList.indexOf(f.data.node) === -1);
+                    missingLinks.classed('link-not-there', true);
+
+                    let missingNodes = treeNode.filter(f=> nodeList.indexOf(f.data.node) === -1);
+                    missingNodes.classed('node-not-there', true);
+
+                    ///END NODE DIMMING///////
+
                     /////ADD THE FILTER TO THE TOOLBAR/////
                     let filterToolbar = d3.select("#toolbar");
 
@@ -177,6 +216,9 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                     let xSpan = label.append('i').classed('close fas fa-times', true);
                     xSpan.on('click', ()=> {
                         drawPathsAndAttributes(normedPaths, main, scales, moveMetric);
+                        ////removeing the dimmed class to the unfilterd paths////
+                        d3.selectAll('.link-not-there').classed('link-not-there', false);
+                        d3.selectAll('.node-not-there').classed('node-not-there', false);
                         button.remove();
                     });
 
