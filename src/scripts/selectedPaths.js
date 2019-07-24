@@ -38,8 +38,6 @@ export function sortOtherPaths(pathData, otherPaths){
 
     });
     let sortedData = rankedPaths.sort(function(a, b){return a.distance - b.distance});
-
-    console.log('sorted data in sorted data', sortedData);
     return sortedData;
 }
 export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, moveMetric){

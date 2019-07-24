@@ -18,17 +18,19 @@ export function drawPathsAndAttributes(normedPaths, main, calculatedScales, move
     
     let attData = formatAttributeData(normedPaths, calculatedScales, attKeys);
 
+    let attrMove = attKeys === null ? calculatedScales.length : attKeys.length;
+
     let predictedAttrGrps = renderAttributes(attributeWrapper, attData, calculatedScales, null, collapsed);
     let attributeHeight = collapsed? 20 : 45;
-    pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (Object.keys(d[1].attributes).length + 1))) +')');
+    pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 10)* attrMove + 10)) +')');
   
     drawContAtt(predictedAttrGrps, moveMetric, collapsed);
     drawDiscreteAtt(predictedAttrGrps, calculatedScales, moveMetric, collapsed);
 
-    let attrHeight = attKeys === null ? calculatedScales.length : attKeys.length;
+    
   
     //tranforming elements
-    main.select('#main-path-view').style('height', ((normedPaths.length + attrHeight)* 30) + 'px');
+    main.select('#main-path-view').style('height', ((normedPaths.length + attrMove)* 30) + 'px');
     attributeWrapper.attr('transform', (d)=> 'translate(140, 25)');
     ///////////////////////////////////
 }
@@ -77,7 +79,6 @@ export function renderPaths(pathData, main, scales, moveMetric){
     });
     pathGroups.on('click', (d, i, n)=>{
 
-        console.log('filterMasta', filterMaster);
         let notIt = d3.selectAll(n).filter((f, j)=> j != i).classed('selected-path', false);
      
         if(d3.select(n[i]).classed('selected-path')){
