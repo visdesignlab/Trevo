@@ -70,10 +70,7 @@ export function renderTree(nestedData, normedPaths, calculatedScales, sidebar){
             d3.selectAll('.selected').classed('selected', false);
             d3.selectAll('.link-not-there').classed('link-not-there', false);
             d3.selectAll('.node-not-there').classed('node-not-there', false);
-          
-          
             button.remove();
-
             d3.select(this).call(treeBrush.move, null);
         });
     }
@@ -133,6 +130,21 @@ export function renderTree(nestedData, normedPaths, calculatedScales, sidebar){
     // adds the circle to the node
     node.append("circle")
     .attr("r", 3);
+
+    node.on('mouseover', (d, i, n)=> {
+        let paths = d3.select('#main-path-view').selectAll('.paths');
+        let selectedPaths = paths.filter(path=> {
+            let nodes = path.map(m=> m.node);
+            return nodes.indexOf(d.data.node) > -1;
+        }).classed('hover', true);
+        selectedPaths.selectAll('g').filter(g=> g.node === d.data.node).classed('selected', true);
+        d3.select(n[i]).classed('selected-branch', true);
+
+    }).on('mouseout', (d, i, n)=> {
+        d3.selectAll('.paths.hover').classed('hover', false);
+        d3.selectAll('g.selected').classed('selected', false);
+        d3.select(n[i]).classed('selected-branch', false);
+    });
 
     return node;
 /////END TREE STUFF
