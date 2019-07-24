@@ -11,7 +11,12 @@ export function drawPathsAndAttributes(normedPaths, main, calculatedScales, move
       /// LOWER ATTRIBUTE VISUALIZATION ///
     let attributeWrapper = pathGroups.append('g').classed('attribute-wrapper', true);
 
-    let attData = formatAttributeData(normedPaths, calculatedScales);
+    console.log(filterMaster.filter(f=> f.type === 'hide-attribute'))
+    let attrHide = filterMaster.filter(f=> f.type === 'hide-attribute')
+  
+    let attKeys = attrHide.length > 0 ? calculatedScales.filter(f=> f.field != attrHide[0].attribute) : null;
+    
+    let attData = formatAttributeData(normedPaths, calculatedScales, attKeys);
 
     let predictedAttrGrps = renderAttributes(attributeWrapper, attData, calculatedScales, null, collapsed);
     let attributeHeight = collapsed? 20 : 45;

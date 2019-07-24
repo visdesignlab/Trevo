@@ -1,5 +1,5 @@
 import '../styles/index.scss';
-import {formatAttributeData} from './dataFormat';
+import {formatAttributeData, calculateScales} from './dataFormat';
 import {renderAttributes,  drawContAtt, drawDiscreteAtt, renderPaths, drawPathsAndAttributes} from './rendering';
 import * as d3 from "d3";
 
@@ -305,6 +305,13 @@ function renderAttToggles(filterDiv, normedPaths, filterKeep, scales, moveMetric
        // console.log(filterKeep);
 
         let newKeys = d3.selectAll('.shown');
+        let hideKeys = scales.filter(sc=> newKeys.data().indexOf(sc.field) === -1);
+        console.log('hide keys', hideKeys);
+        let newFilMaster = filterMaster.filter(f=> f.type != 'hide-attribute');
+        hideKeys.forEach(key=> {
+            newFilMaster.push({'type':'hide-attribute', 'attribute':key.field, 'before-data': [...normedPaths]});
+        });
+        filterMaster = newFilMaster;
         let attributeWrapper = d3.selectAll('.attribute-wrapper');
         attributeWrapper.selectAll('g').remove();
         let attributeHeight = 45;
