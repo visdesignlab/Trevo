@@ -3,8 +3,11 @@ import {formatAttributeData} from './dataFormat';
 import {drawPathsAndAttributes} from './rendering';
 import {toggleFilters} from './filterComponent';
 import {renderDistibutions} from './distributionView';
+import {dataMaster} from './index'
 
 export function toolbarControl(toolbar, normedPaths, main, calculatedScales, moveMetric, pathView){
+
+    console.log('global', dataMaster)
 
     let viewButton = toolbar.append('button').attr('id', 'view-toggle').attr('attr' , 'button').attr('class', 'btn btn-outline-secondary') ;
 

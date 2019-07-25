@@ -8,6 +8,8 @@ import {renderTree, buildTreeStructure} from './sidebarComponent';
 import {renderDistibutions} from './distributionView';
 import {toolbarControl, renderAttToggles} from './toolbarComponent';
 
+export const dataMaster = [];
+
 
 let wrap = d3.select('#wrapper');
 let main = wrap.select('#main');
@@ -66,6 +68,8 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     let paths = allPaths(matchedEdges, matchedLeaves, "V1", "V2");
  
    let normedPaths = normPaths(paths, calculatedAtt, calculatedScales);
+
+   dataMaster.push(normedPaths);
    
    // renderDistibutions(normedPaths, main, calculatedScales);
     toolbarControl(toolbarDiv, normedPaths, main, calculatedScales, 'edgeLength', 'paths');

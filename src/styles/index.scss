@@ -306,7 +306,7 @@ g.node.low circle{
   r:4px;
 }
 
-g.node.selected circle{
+#sidebar g.node.selected circle{
   fill: #FE9D0B !important;
   stroke: gray;
   stroke-width: 1px;

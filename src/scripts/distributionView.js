@@ -93,7 +93,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
             
            // let binCount = d3.max(attr.map(row=> row.length));
             let moveMap = attr.filter(row=> row.length === maxBranch)[0];
-            console.log(moveMap);
+        
             let stateKeys = attr[0][0].states.map(s=> s.state);
             let distrib = {}
             distrib.stateData = {}
@@ -261,7 +261,6 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
 
 
     let attributeGroups = svg.selectAll('.combined-attr-grp').data(combinedData).join('g').classed('combined-attr-grp', true);
-   // attributeGroups = attEnter.merge(attributeGroups);
     attributeGroups.attr('transform', (d, i)=> 'translate(0,'+(i * 110)+')');
 
     let predictedAttrGrps = attributeGroups.append('g').classed('summary-attr-grp', true);
@@ -277,7 +276,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
 
     //////////experimenting with continuous rendering///////////////////////////////
     let contpaths = cont.selectAll('g.summ-paths').data(d=> d.predicted).join('g').classed('summ-paths', true);
-    contpaths = contEnter.merge(contpaths);
+   // contpaths = contEnter.merge(contpaths);
 
     var lineGen = d3.line()
     .x(d=> d.move)

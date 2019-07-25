@@ -2,6 +2,7 @@ import '../styles/index.scss';
 import {formatAttributeData, calculateScales} from './dataFormat';
 import {renderAttributes,  drawContAtt, drawDiscreteAtt, renderPaths, drawPathsAndAttributes} from './rendering';
 import * as d3 from "d3";
+import {dataMaster} from './index'
 
 export let filterMaster = [];
 
@@ -39,9 +40,7 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
 
         attButton.on("change", function(d) {
             var selectedOption = d3.select(this).property("value");
-
             let options = scales.filter(f=> f.field === selectedOption)[0];
-            
             attProps.selectAll('*').remove();
 
             if(options.type === "discrete"){
@@ -56,27 +55,17 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                 submit.on('click', ()=> {
                     let fromState = button1.node().classList[0];
                     let toState = button2.node().classList[0];
+
                       ////GOING TO ADD FILTERING HERE//// NEED TO BREAK INTO ITS OWN THING/////
-                    let test = normedPaths.filter(path=> {
-                        let filterPred = path.filter(f=> f.leaf != true).map(node=> {
-                            let states = node.attributes[selectedOption].states;
-                            if(fromState === 'Any'){
-                                return true;
-                            }else{
-                                return states.filter(st=> st.state === fromState)[0].realVal > 0.75;
-                            }
-                        });
-                        let filterObs = path.filter(f=> f.leaf === true).map(node=> {
-                          let win = node.attributes[selectedOption].winState;
-                          if(toState === 'Any'){
-                              return true;
-                          }else{
-                              return win === toState;
-                          }
-                        });
-                       
-                        return filterPred.indexOf(true) > -1 && filterObs.indexOf(true) > -1
-                    });
+                    let lastFilter = filterMaster.filter(f=> f['filter-type'] === 'data-filter');
+                    let data = lastFilter.length > 0 ? lastFilter[lastFilter.length - 1].data : dataMaster;
+
+                    console.log('data', data);
+              
+                    let test = discreteFilter(data, selectedOption, fromState, toState);
+
+                    filterMaster.push({'filter-type': 'data-filter', 'attribute-type': 'discrete', 'attribute': selectedOption, 'states': [fromState, toState], 'data': test});
+                    console.log('fm',filterMaster);
 
                     ////DRAW THE PATHS
                     drawPathsAndAttributes(test, main, scales, moveMetric);
@@ -160,24 +149,20 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                 submit.text('Filter');
 
                 submit.on('click', ()=> {
+
                     let selections = brushGroup._groups[0].map(m=> m.__brush.selection.map(s=> s[1]));
                     
                     let predictedFilter = selections[0].map(yScale.invert).sort();
                     let observedFilter = selections[1].map(yScale.invert).sort();
 
-                    ////GOING TO ADD FILTERING HERE//// NEED TO BREAK INTO ITS OWN THING/////
+                    let lastFilter = filterMaster.filter(f=> f['filter-type'] === 'data-filter');
+                    let data = lastFilter.length > 0 ? lastFilter[lastFilter.length - 1].data : dataMaster[0];
 
-                    let test = normedPaths.filter(path=> {
-                        let filterArray = path.map(node=> {
-                            let numb = node.attributes[selectedOption].realVal;
-                            if(node.leaf == true){
-                                return numb > observedFilter[0] && numb < observedFilter[1];
-                            }else{
-                                return numb > predictedFilter[0] && numb < predictedFilter[1];
-                            }
-                        });
-                        return filterArray.indexOf(false) === -1
-                    })
+                    let test = continuousFilter(data, selectedOption, predictedFilter, observedFilter);
+
+                    ////GOING TO ADD FILTERING HERE//// NEED TO BREAK INTO ITS OWN THING/////
+                    let filterOb = {'filter-type': 'data-filter', 'attribute-type': 'continuous', 'attribute': selectedOption, 'ranges': [predictedFilter, observedFilter], 'before-data': [...normedPaths], 'data': [...test]}
+                    filterMaster.push(filterOb);
 
                     ////DRAW THE PATHS
                     drawPathsAndAttributes(test, main, scales, moveMetric);
@@ -207,11 +192,14 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                     let formater = d3.format(".2s");
 
                     let button = filterToolbar.append('button').classed('btn btn-info', true);
+                    d3.select(button).datum(filterOb);
                     let span = button.append('span').classed('badge badge-light', true);
                     span.text(test.length);
                     let label = button.append('h6').text(selectedOption + "  Predicted: "+ formater(predictedFilter[0]) + "-" + formater(predictedFilter[1]) + " Observed: " + formater(observedFilter[0]) + "-" + formater(observedFilter[1]));
                     let xSpan = label.append('i').classed('close fas fa-times', true);
                     xSpan.on('click', ()=> {
+                        console.log(filterMaster[filterMaster.length - 1])
+                        console.log(filterOb)
                         drawPathsAndAttributes(normedPaths, main, scales, moveMetric);
                         ////removeing the dimmed class to the unfilterd paths////
                         d3.selectAll('.link-not-there').classed('link-not-there', false);
@@ -227,6 +215,46 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                 });
             }
          });
+}
+
+function continuousFilter(data, selectedOption, predicted, observed){
+
+    return data.filter(path=> {
+        let filterArray = path.map(node=> {
+            let numb = node.attributes[selectedOption].realVal;
+            if(node.leaf == true){
+                return numb > observed[0] && numb < observed[1];
+            }else{
+                return numb > predicted[0] && numb < predicted[1];
+            }
+        });
+        return filterArray.indexOf(false) === -1
+    });
+    
+}
+
+function discreteFilter(data, selectedOption, fromState, toState){
+
+    return data.filter(path=> {
+        let filterPred = path.filter(f=> f.leaf != true).map(node=> {
+            let states = node.attributes[selectedOption].states;
+            if(fromState === 'Any'){
+                return true;
+            }else{
+                return states.filter(st=> st.state === fromState)[0].realVal > 0.75;
+            }
+        });
+        let filterObs = path.filter(f=> f.leaf === true).map(node=> {
+          let win = node.attributes[selectedOption].winState;
+          if(toState === 'Any'){
+              return true;
+          }else{
+              return win === toState;
+          }
+        });
+        return filterPred.indexOf(true) > -1 && filterObs.indexOf(true) > -1
+    });
+
 }
 
 function queryFilter(filterDiv, filterButton, normedPaths, main, moveMetric, scales){
@@ -303,7 +331,7 @@ function renderAttToggles(filterDiv, normedPaths, scales, moveMetric){
         let togg = d3.select(this);
         toggleCircle(togg, scales);
    
-        filterMaster.push({'type':'hide-attribute', 'attribute':d, 'before-data': [...normedPaths]});
+        filterMaster.push({'filter-type':'hide-attribute', 'attribute':d, 'before-data': [...normedPaths]});
 
         let newKeys = d3.selectAll('.shown');
         let hideKeys = scales.filter(sc=> newKeys.data().indexOf(sc.field) === -1);
