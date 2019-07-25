@@ -58,14 +58,12 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
 
                       ////GOING TO ADD FILTERING HERE//// NEED TO BREAK INTO ITS OWN THING/////
                     let lastFilter = filterMaster.filter(f=> f['filter-type'] === 'data-filter');
-                    let data = lastFilter.length > 0 ? lastFilter[lastFilter.length - 1].data : dataMaster;
-
-                    console.log('data', data);
+                    let data = lastFilter.length > 0 ? lastFilter[lastFilter.length - 1].data : dataMaster[0];
               
                     let test = discreteFilter(data, selectedOption, fromState, toState);
 
-                    filterMaster.push({'filter-type': 'data-filter', 'attribute-type': 'discrete', 'attribute': selectedOption, 'states': [fromState, toState], 'data': test});
-                    console.log('fm',filterMaster);
+                    let filterOb = {'filter-type': 'data-filter', 'attribute-type': 'discrete', 'filterFunction':discreteFilter, 'attribute': selectedOption, 'states': [fromState, toState], 'data': test};
+                    filterMaster.push(filterOb);
 
                     ////DRAW THE PATHS
                     drawPathsAndAttributes(test, main, scales, moveMetric);
@@ -161,7 +159,7 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                     let test = continuousFilter(data, selectedOption, predictedFilter, observedFilter);
 
                     ////GOING TO ADD FILTERING HERE//// NEED TO BREAK INTO ITS OWN THING/////
-                    let filterOb = {'filter-type': 'data-filter', 'attribute-type': 'continuous', 'attribute': selectedOption, 'ranges': [predictedFilter, observedFilter], 'before-data': [...normedPaths], 'data': [...test]}
+                    let filterOb = {'filterType': 'data-filter', 'attribute-type': 'continuous', 'filterFunction':continuousFilter, 'attribute': selectedOption, 'ranges': [predictedFilter, observedFilter], 'before-data': [...normedPaths], 'data': [...test]}
                     filterMaster.push(filterOb);
 
                     ////DRAW THE PATHS
@@ -199,7 +197,15 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                     let xSpan = label.append('i').classed('close fas fa-times', true);
                     xSpan.on('click', ()=> {
                         console.log(filterMaster[filterMaster.length - 1])
-                        console.log(filterOb)
+                        console.log('filterrr', filterMaster.filter(f=> f.filterType === 'data-filter'))
+                        console.log(filterOb);
+                        let filterLine = filterMaster.filter(f=> f.filterType === 'data-filter').filter(f=> filterOb.attribute != f.attribute);
+                        console.log('filterLine',filterLine);
+                        let thisData = dataMaster[0];
+                        filterLine.forEach(fil=> {
+                            console.log(fil)
+                        })
+
                         drawPathsAndAttributes(normedPaths, main, scales, moveMetric);
                         ////removeing the dimmed class to the unfilterd paths////
                         d3.selectAll('.link-not-there').classed('link-not-there', false);
