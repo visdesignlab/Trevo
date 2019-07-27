@@ -3,6 +3,7 @@ import {branchPaths, renderPaths, renderAttributes, drawContAtt, drawDiscreteAtt
 import {formatAttributeData} from './dataFormat';
 import {renderAttToggles} from './toolbarComponent';
 import {filterMaster} from './filterComponent';
+import {dataMaster} from './index'
 
 export function pathSelected(selectedPath, otherPaths, scales, moveMetric){
 

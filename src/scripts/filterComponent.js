@@ -114,21 +114,24 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                 let yScale = d3.scaleLinear().domain([options.min, options.max]).range([60, 0]);
                
                 let continRanges = attProps.append('svg');
-                continRanges.attr('wdith', 200).attr('height', 60);
+                continRanges.attr('width', 200).attr('height', 100);
                 let data = [{'label':'Ancestors', 'type': 'predicted'}, {'label':'Leaves', 'type': 'observed'}]
-                let ranges = continRanges.selectAll('.range').data(data).join('g').classed('range', true)
+                let ranges = continRanges.selectAll('.range').data(data).join('g').classed('range', true);
+
+                ranges.attr('transform', (d, i)=> 'translate('+((i*125)+',20)'));
 
                 let brushBars = ranges.append('g');
-                ranges.attr('transform', (d, i)=> 'translate('+((i*100)+ (25)+',10)'));
-                let labels = brushBars.append('text').text((d)=> d.label+ ': ');
-                labels.attr('x', -25).attr('y', 20)
+                brushBars.attr('transform', 'translate(10, 10)');
+
+                let labels = ranges.append('text').text((d)=> d.label+ ': ');
+                labels.attr('x', 0).attr('y', 0);
                 let wrapperRect = brushBars.append('rect').attr('width', 20).attr('height', 50);
                 wrapperRect.attr('x', 10);
 
-                ranges.append("g")
+                brushBars.append("g")
                 .attr("class", "axis axis--y")
-                .attr("transform", "translate(30,0)")
-                .call(d3.axisRight(yScale).ticks(3));
+                .attr("transform", "translate(10,0)")
+                .call(d3.axisLeft(yScale).ticks(3));
                 
                 let brushMoved = function(){
                     var s = d3.event.selection;
@@ -139,9 +142,9 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                       var sx = s.map(yScale.invert);
                     }
                 }
-                let xBrush = d3.brushY().extent([[10,0], [30, 50]]).on("end", brushMoved);
-                let brushGroup = ranges.append('g').call(xBrush);
-                brushGroup.call(xBrush.move, [0, 50]);
+                let xBrush = d3.brushY().extent([[10,0], [30, 60]]).on("end", brushMoved);
+                let brushGroup = brushBars.append('g').call(xBrush);
+                brushGroup.call(xBrush.move, [0, 60]);
 
                 let submit = attProps.append('button').classed('btn btn-outline-success', true);
                 submit.text('Filter');
@@ -196,11 +199,9 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                     let label = button.append('h6').text(selectedOption + "  Predicted: "+ formater(predictedFilter[0]) + "-" + formater(predictedFilter[1]) + " Observed: " + formater(observedFilter[0]) + "-" + formater(observedFilter[1]));
                     let xSpan = label.append('i').classed('close fas fa-times', true);
                     xSpan.on('click', ()=> {
-                        console.log(filterMaster[filterMaster.length - 1])
-                        console.log('filterrr', filterMaster.filter(f=> f.filterType === 'data-filter'))
-                        console.log(filterOb);
+                       
                         let filterLine = filterMaster.filter(f=> f.filterType === 'data-filter').filter(f=> filterOb.attribute != f.attribute);
-                        console.log('filterLine',filterLine);
+                      
                         let thisData = dataMaster[0];
                         filterLine.forEach(fil=> {
                             console.log(fil)
