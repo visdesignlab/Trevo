@@ -57,7 +57,9 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                     let toState = button2.node().classList[0];
 
                       ////GOING TO ADD FILTERING HERE//// NEED TO BREAK INTO ITS OWN THING/////
-                    let lastFilter = filterMaster.filter(f=> f['filter-type'] === 'data-filter');
+                      
+                    let lastFilter = filterMaster.filter(f=> f['filterType'] === 'data-filter');
+                    console.log(lastFilter);
                     let data = lastFilter.length > 0 ? lastFilter[lastFilter.length - 1].data : dataMaster[0];
               
                     let test = discreteFilter(data, selectedOption, fromState, toState);
@@ -157,6 +159,8 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                     let observedFilter = selections[1].map(yScale.invert).sort();
 
                     let lastFilter = filterMaster.filter(f=> f['filter-type'] === 'data-filter');
+
+                    this.console.log('last', lastFilter);
                     let data = lastFilter.length > 0 ? lastFilter[lastFilter.length - 1].data : dataMaster[0];
 
                     let test = continuousFilter(data, selectedOption, predictedFilter, observedFilter);
@@ -204,8 +208,8 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                       
                         let thisData = dataMaster[0];
                         filterLine.forEach(fil=> {
-                            console.log(fil)
-                        })
+                            console.log(fil);
+                        });
 
                         drawPathsAndAttributes(normedPaths, main, scales, moveMetric);
                         ////removeing the dimmed class to the unfilterd paths////

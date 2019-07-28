@@ -3,6 +3,8 @@ import * as d3 from "d3";
 import {renderSelectedView, pathSelected} from './selectedPaths';
 import {formatAttributeData} from './dataFormat';
 import {drawPathsAndAttributes} from './rendering';
+import {dataMaster} from './index';
+import {filterMaster} from './filterComponent';
 
 function getNested(node, edgeArray){
     node.children = edgeArray.filter(f=> String(f.V1) === String(node.node));
@@ -25,6 +27,14 @@ export function renderTree(nestedData, normedPaths, calculatedScales, sidebar){
 
     let treeBrush = d3.brush().extent([[0, 0], [400, 600]]);
 
+    function treeFilter(data, selectedNodes){
+        return data.filter(path=> {
+            let nodeNames = path.map(no=> no.node);
+            let booArray = nodeNames.map(id=> selectedNodes.indexOf(id) > -1);
+            return booArray.indexOf(true) > -1
+        });
+    }
+
     function updateBrush(){
         let sidebar = d3.select('#sidebar');
         let main = d3.select('#main');
@@ -34,11 +44,11 @@ export function renderTree(nestedData, normedPaths, calculatedScales, sidebar){
         let selectedNodes = nodes.filter(n=> (n.y > d3.event.selection[0][0]) && (n.y < d3.event.selection[1][0]) && (n.x > d3.event.selection[0][1]) && (n.x < d3.event.selection[1][1])).classed('selected', true);
     
         let filterArray = selectedNodes.data().map(n=> n.data.node);
-        let test = normedPaths.filter(path=> {
-            let nodeNames = path.map(no=> no.node);
-            let booArray = nodeNames.map(id=> selectedNodes.data().map(n=> n.data.node).indexOf(id) > -1);
-            return booArray.indexOf(true) > -1
-        });
+      
+        let test = treeFilter(normedPaths, filterArray);
+
+        let filterOb = {'filterType': 'data-filter', 'attribute-type': 'topology', 'filterFunction':treeFilter, 'before-data': [...normedPaths], 'data': [...test]}
+        filterMaster.push(filterOb);
 
         drawPathsAndAttributes(test, main, calculatedScales, 'edgeLength');
          ///DIMMING THE FILTERED OUT NODES//////
@@ -81,7 +91,6 @@ export function renderTree(nestedData, normedPaths, calculatedScales, sidebar){
     treeButton.on('click', ()=> {
         treeBrush.on('end', updateBrush);
         let treeBrushG = sidebar.select('svg').append('g').classed('tree-brush', true).call(treeBrush);
-        
     });
     // set the dimensions and margins of the diagram
     var margin = {top: 10, right: 90, bottom: 50, left: 20},
