@@ -64,7 +64,7 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
               
                     let test = discreteFilter(data, selectedOption, fromState, toState);
 
-                    let filterOb = {'filter-type': 'data-filter', 'attribute-type': 'discrete', 'filterFunction':discreteFilter, 'attribute': selectedOption, 'states': [fromState, toState], 'data': test};
+                    let filterOb = {'filterType': 'data-filter', 'attribute-type': 'discrete', 'filterFunction':discreteFilter, 'attribute': selectedOption, 'states': [fromState, toState], 'data': test};
                     filterMaster.push(filterOb);
 
                     ////DRAW THE PATHS
@@ -158,9 +158,9 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                     let predictedFilter = selections[0].map(yScale.invert).sort();
                     let observedFilter = selections[1].map(yScale.invert).sort();
 
-                    let lastFilter = filterMaster.filter(f=> f['filter-type'] === 'data-filter');
+                    let lastFilter = filterMaster.filter(f=> f['filterType'] === 'data-filter');
 
-                    this.console.log('last', lastFilter);
+                    console.log('last', lastFilter);
                     let data = lastFilter.length > 0 ? lastFilter[lastFilter.length - 1].data : dataMaster[0];
 
                     let test = continuousFilter(data, selectedOption, predictedFilter, observedFilter);
