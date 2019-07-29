@@ -13,10 +13,10 @@ export function pathSelected(selectedPath, otherPaths, scales, moveMetric){
         selectedDiv.style('height', 0);
         d3.select('div#main').style('padding-top', '0px');
         let main = d3.select('div#main');
-        drawPathsAndAttributes(otherPaths, main, scales, moveMetric, false);
+        drawPathsAndAttributes([...otherPaths], main, scales, moveMetric, false);
     }else{
         renderSelectedView([selectedPath], otherPaths, selectedDiv, scales, moveMetric);
-        let sortedPaths = sortOtherPaths(selectedPath, otherPaths);
+        let sortedPaths = sortOtherPaths([...selectedPath], otherPaths);
         let main = d3.select('div#main');
           /// LOWER ATTRIBUTE VISUALIZATION ///
         drawPathsAndAttributes(sortedPaths.map(s=> s.data), main, scales, moveMetric, false);
