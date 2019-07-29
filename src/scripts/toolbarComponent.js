@@ -7,7 +7,7 @@ import {dataMaster} from './index'
 
 export function toolbarControl(toolbar, normedPaths, main, calculatedScales, moveMetric, pathView){
 
-    console.log('global', dataMaster)
+    console.log('toolbarcontrol', moveMetric);
 
     let viewButton = toolbar.append('button').attr('id', 'view-toggle').attr('attr' , 'button').attr('class', 'btn btn-outline-secondary') ;
 
@@ -33,7 +33,7 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, mov
     lengthButton.on('click', ()=> {
         if(lengthButton.text() === 'Show Edge Length'){
             lengthButton.text('Normalize Edge Length');
-            main.selectAll('*').remove();//.selectAll('*').remove();
+            main.selectAll('*').remove();
             if(viewButton.text() === 'View Summary'){
                 drawPathsAndAttributes(normedPaths, main, calculatedScales, 'edgeLength');
             }else{
@@ -41,8 +41,9 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, mov
             }
         }else{
             lengthButton.text('Show Edge Length');
-            main.selectAll('*').remove();//.selectAll('*').remove();
+            main.selectAll('*').remove();
             if(viewButton.text() === 'View Summary'){
+                console.log('moveMetric', moveMetric)
                 drawPathsAndAttributes(normedPaths, main, calculatedScales, moveMetric);
             }else{
                 renderDistibutions(normedPaths, main, calculatedScales, moveMetric);
@@ -53,7 +54,7 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, mov
     let scrunchButton = toolbar.append('button').attr('id', 'scrunch');
     scrunchButton.attr('class', 'btn btn-outline-secondary').text('Collapse Attributes');
     scrunchButton.on('click', ()=> toggleScrunch(scrunchButton, normedPaths, main, calculatedScales));
-    viewButton.on('click', ()=> togglePathView(viewButton, normedPaths, main, calculatedScales));
+    viewButton.on('click', ()=> togglePathView(viewButton, normedPaths, main, calculatedScales, moveMetric));
 }
 
 ////COLLAPSES THE NODES DOWN
@@ -76,16 +77,16 @@ function toggleScrunch(button, normedPaths, main, calculatedScales){
  * @param {*} main 
  * @param {*} calculatedScales 
  */
-function togglePathView(viewButton, normedPaths, main, calculatedScales){
+function togglePathView(viewButton, normedPaths, main, calculatedScales, moveMetric){
    
     if(viewButton.text() === 'View Paths'){
         viewButton.text('View Summary');
         main.selectAll('*').remove();//.selectAll('*').remove();
-        drawPathsAndAttributes(normedPaths, main, calculatedScales, 'move');
+        drawPathsAndAttributes(normedPaths, main, calculatedScales, moveMetric);
     }else{
         viewButton.text('View Paths');
         main.selectAll('*').remove();
-        renderDistibutions(normedPaths, main, calculatedScales, 'move');
+        renderDistibutions(normedPaths, main, calculatedScales, moveMetric);
     }
 }
 

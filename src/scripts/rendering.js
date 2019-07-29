@@ -3,6 +3,7 @@ import * as d3 from "d3";
 import {renderSelectedView, pathSelected} from './selectedPaths';
 import {formatAttributeData} from './dataFormat';
 import {filterMaster} from './filterComponent';
+import {dataMaster} from './index'
 
 export function drawPathsAndAttributes(normedPaths, main, calculatedScales, moveMetric, collapsed){
 

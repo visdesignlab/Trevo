@@ -15,7 +15,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
     formatAttributeData(newNormed, scales, null);
 
     let maxBranch = d3.max(newNormed.map(p=> p.length)) - 1;
-
+    console.log('moveMetric', moveMetric);
     let xScale = d3.scaleLinear();
     if(moveMetric === 'move'){
         xScale.domain([0, (maxBranch - 1)]).clamp(true);
@@ -33,9 +33,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
             });
            
             let maxBranches = filtered.filter(row=> row.length === maxBranch);
-           
             let maxMove = d3.max(maxBranches.flatMap(f=> f.flatMap(flat=> flat.edgeMove)));
-           // console.log(maxMove)
 
             let data = filtered.map(path=> {
                
@@ -50,23 +48,18 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
 
                     if(attr.type === 'discrete'){
                         let thisScale = xScale;
-                        thisScale.range([0, 800]);
-                       // attr.move = (moveMetric === 'move')? thisScale(i) : thisScale(node.edgeLength);
+                        thisScale.range([0, 790]);
                         attr.move = thisScale(i);
-                        let x = d3.scaleLinear().domain([0, maxMove]).range([0, 800]).clamp(true)
+                        let x = d3.scaleLinear().domain([0, maxMove]).range([0, 790]).clamp(true);
                         attr.edgeMove = x(node.edgeMove);
-
                         attr.states = node.attributes[key].states.map(s=> {
                             s.move = attr.move;
                             s.edgeMove = attr.edgeMove;
                             return s;
                         });
-
                     }else{//continuous///
-
                         let thisScale = xScale;
                         thisScale.range([0, 790]);
-
                         let metric = function(index, max){
                             if(index < lastnode){
                                 return thisScale(index);
@@ -75,7 +68,8 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
                             }
                         }
                        attr.move = metric(i, maxBranch);
-                       let x = d3.scaleLinear().domain([0, maxMove]).range([0, 800]).clamp(true)
+                    
+                       let x = d3.scaleLinear().domain([0, maxMove]).range([0, 790]).clamp(true)
                        attr.edgeMove = x(node.edgeMove);
                     }
                     return attr;
@@ -84,8 +78,6 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
             data.attKey = key;
             return data;
     });
-
-
 
     let summarizedData = addMoveToAttributes.map(attr=> {
        
@@ -101,23 +93,22 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
               
                  let distribution = Array(maxBranch).fill({'data':[]}).map((u, i)=> {
                      let newOb = {'data': u.data}
-                  
                      newOb.move = moveMap[i].move;
                      newOb.edgeMove = moveMap[i].edgeMove;
-                   
                      return newOb;
                  });
                  attr.forEach((row)=> {
-                     let test = row.filter(r=> r.leaf != true).map(node=> node.states.filter(s=> s.state === key)[0])
+                     let test = row.filter(r=> r.leaf != true).map(node=> node.states.filter(s=> s.state === key)[0]);
                      test.forEach((t, i)=> {
                          let newT = t;
                          distribution[i].data.push(newT);
-                        });
+                    });
                  });
                  
                  distrib.stateData[key] = {};
                  let data = distribution.map(drow=> {
                      let filtered = drow.data.filter(d=> {
+                         console.log('d', d)
                          return d.move === drow.move});
                      return filtered;
                  })
@@ -138,13 +129,10 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
                 let scaleStDev = data.map(branch=> d3.deviation(branch.map(b=> thisScale(b.realVal))))
                 let scaleStUp = scaleMean.map((av, i)=> av + scaleStDev[i]);
                 let scaleStDown = scaleMean.map((av, i)=> av - scaleStDev[i]);
-                let x = d3.scaleLinear().range([0, 800]).domain([0, 1]);
+                let x = d3.scaleLinear().range([0, 790]).domain([0, 1]);
                 let moves = distribution.map(d=> {
-                    
                     let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove);
                     return distance });
-
-               
 
                 let final = moves.map((m, j)=> {
                      return {
@@ -279,7 +267,9 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
    // contpaths = contEnter.merge(contpaths);
 
     var lineGen = d3.line()
-    .x(d=> d.move)
+    .x(d=> {
+        if(moveMetric === 'move'){return d.move}
+        else{return d.edgeMove }})
     .y(d=> d.scaleVal);
 
     let line = contpaths.append('path')
@@ -288,7 +278,13 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
     .style('stroke', (d)=> d[0].color);
 
     let nodes = contpaths.selectAll('.node-sum').data(d=> d).join('g').attr('class', 'node-sum');
-    nodes.attr('transform', (d, i) => 'translate('+d.move+', 0)');
+    nodes.attr('transform', (d, i) => {
+        if(moveMetric === 'move'){
+            return 'translate('+ d.move +', 0)'
+        }else{
+            return 'translate('+ d.edgeMove +', 0)';
+        }
+    });
     nodes.append('rect').attr('x', 0).attr('y', 0).attr('width', 10).attr('height', 80).classed('inner-node-wrap', true);
     nodes.append('rect').attr('x', 0).attr('y', (d, i)=> d.scaledLow).attr('width', 10).attr('height', (d, i)=> {
         return (d.scaledHigh - d.scaledLow);
@@ -313,13 +309,17 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
     });
 
     let area = d3.area()
-    .x(d => d.x)
+    .x(d => {
+        console.log(d);
+        return d.x})
     .y0(d => d.scaleStDown)
     .y1(d => d.scaleStUp)
     
     let areaG =   stateGroups.append("path")
     .attr("fill", d=> d.color)
-    .attr("d", d=> area(d.pathData))
+    .attr("d", d=> {
+        console.log(d.pathData)
+        return area(d.pathData)})
     .classed('state-area-sum', true);
 
     let observedGroup = attributeGroups.append('g').classed('observed-att', true);
@@ -334,7 +334,9 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
 
     stateBars.attr('transform', (d, i)=> {
         d.x.range([0, 180]);
-        return 'translate('+ d.x(i)+ ',0)'});
+        console.log('d', d)
+        return 'translate('+ d.x(i)+ ',0)';
+    });
 
     let stateRects = stateBars.append('rect').classed('graph-bars', true);
    
