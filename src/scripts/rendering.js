@@ -6,7 +6,7 @@ import {filterMaster} from './filterComponent';
 import {dataMaster} from './index'
 
 export function drawPathsAndAttributes(normedPaths, main, calculatedScales, moveMetric, collapsed){
-
+    console.log('normed', normedPaths)
     main.select('#main-path-view').selectAll('*').remove();
 
     let pathGroups = renderPaths(normedPaths, main, calculatedScales, moveMetric);
@@ -27,8 +27,6 @@ export function drawPathsAndAttributes(normedPaths, main, calculatedScales, move
   
     drawContAtt(predictedAttrGrps, moveMetric, collapsed);
     drawDiscreteAtt(predictedAttrGrps, calculatedScales, moveMetric, collapsed);
-
-    
   
     //tranforming elements
     main.select('#main-path-view').style('height', ((normedPaths.length + attrMove)* 30) + 'px');
@@ -92,7 +90,8 @@ export function renderPaths(pathData, main, scales, moveMetric){
     });
 
     let speciesTitle = pathGroups.append('text').text(d=> {
-        let string = d[d.length - 1].label
+       // let string = d[d.length - 1].label
+       let string = d.filter(f=> f.leaf === true)[0].label;
         return string.charAt(0).toUpperCase() + string.slice(1);
     });
 
@@ -130,6 +129,8 @@ export function renderPaths(pathData, main, scales, moveMetric){
     });
 
     let speciesNodeLabel = nodeGroups.filter(f=> f.label != undefined).append('text').text(d=> {
+        //let string = d.label.charAt(0).toUpperCase() + d.label.slice(1);
+        console.log('ddd', d);
         let string = d.label.charAt(0).toUpperCase() + d.label.slice(1);
         return string;
     }).attr('x', 10).attr('y', 5);

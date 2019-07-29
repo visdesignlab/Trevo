@@ -108,10 +108,11 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
                  distrib.stateData[key] = {};
                  let data = distribution.map(drow=> {
                      let filtered = drow.data.filter(d=> {
-                         console.log('d', d)
                          return d.move === drow.move});
                      return filtered;
                  })
+
+                 console.log('distrib', distrib)
                  
                  let color = data[0][0].color;
                
@@ -148,7 +149,9 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
                         }
                  });
 
-                 console.log('final', final)
+                 console.log('final', final);
+                 console.log('distribution', distribution);
+                 console.log('distrib', distrib)
 
                  distrib.stateData[key].pathData = final;
                  distrib.stateData[key].color = color;

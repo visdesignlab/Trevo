@@ -12,10 +12,11 @@ export function pathSelected(selectedPath, otherPaths, scales, moveMetric){
         d3.select('div#selected').selectAll('*').remove();
         selectedDiv.style('height', 0);
         d3.select('div#main').style('padding-top', '0px');
+        let main = d3.select('div#main');
+        drawPathsAndAttributes(otherPaths, main, scales, moveMetric, false);
     }else{
         renderSelectedView([selectedPath], otherPaths, selectedDiv, scales, moveMetric);
         let sortedPaths = sortOtherPaths(selectedPath, otherPaths);
-        console.log('sortedpaths',sortedPaths)
         let main = d3.select('div#main');
           /// LOWER ATTRIBUTE VISUALIZATION ///
         drawPathsAndAttributes(sortedPaths.map(s=> s.data), main, scales, moveMetric, false);
@@ -43,13 +44,9 @@ export function sortOtherPaths(pathData, otherPaths){
 }
 export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, moveMetric){
 
-    console.log(pathData)
-
     let selectedSpecies = pathData.flatMap(p=> p.filter(f=> f.leaf === true).map(n=> n.node));
     let treeNodes = d3.select('#sidebar').select('svg').selectAll('.node');
     treeNodes.filter(node=> selectedSpecies.indexOf(node.data.node) > -1).classed('selected', true);
-
-    console.log(selectedSpecies);
 
    ////FILTER MASTER TO HIDE ATTRIBUTES THAT ARE DESELECTED FROM FILTERBAR
     let attrHide = filterMaster.filter(f=> f.type === 'hide-attribute').length > 0 ? filterMaster.filter(f=> f.type === 'hide-attribute').map(m=> m.attribute) : [];
@@ -67,7 +64,8 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
         d3.selectAll('.high').classed('high', false);
         d3.selectAll('.low').classed('low', false);
         treeNodes.select('.selected').classed('selected', false);
-        pathSelected(null, scales)
+        
+        pathSelected(null, dataMaster[0], scales, moveMetric)
     });
 
     ///////////////////////
