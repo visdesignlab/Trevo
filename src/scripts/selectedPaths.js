@@ -125,7 +125,6 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
         return leafOther.attributes[d].realVal === leaf.attributes[d].realVal;
     });
     same.classed('same', true);
-
 });
    /////////////////////////////////////////////////
 
@@ -141,8 +140,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
 
     let nodes = selectedGroups.select('.time-line').selectAll('.node');
     nodes.on('mouseover', (d, i)=> {
-       // console.log('d from node', d);
-       // console.log('otherpaths',otherPaths);
+      
         let nearest = otherPaths.filter(path=> {
             let nodearray = path.flatMap(f=> f.node);
             return nodearray.indexOf(d.node) > -1;
