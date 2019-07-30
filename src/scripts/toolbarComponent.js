@@ -43,7 +43,6 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, mov
             lengthButton.text('Show Edge Length');
             main.selectAll('*').remove();
             if(viewButton.text() === 'View Summary'){
-                console.log('moveMetric', moveMetric)
                 drawPathsAndAttributes(normedPaths, main, calculatedScales, moveMetric);
             }else{
                 renderDistibutions(normedPaths, main, calculatedScales, moveMetric);

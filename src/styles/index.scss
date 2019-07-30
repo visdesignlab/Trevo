@@ -93,19 +93,16 @@ svg{
 #selected{
   position: fixed;
   padding-top:5px;
-  //padding:2em;
   top:50px;
   left:0px;
   right:300px;
   background-color:#fff;
   border-bottom: 1px solid gray;
- // padding-bottom: 10px;
- 
 }
 #selected svg .path-rect{
   width:100%;
   height: 35px;
-  fill: paleturquoise;
+  fill: #FFE082;
 }
 
 .attr-toggle-svg{
