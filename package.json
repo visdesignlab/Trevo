@@ -2,7 +2,6 @@
   "name": "Evo-Bio-Design-Study",
   "version": "1.0.0",
   "description": "Design Study for Mulitvariate Networks in Evolutionary Biology",
-  "homepage" : ".",
   "scripts": {
     "build": "webpack --config webpack/webpack.config.prod.js  --colors",
     "start": "webpack-dev-server --open --config webpack/webpack.config.dev.js",
