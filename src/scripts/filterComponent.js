@@ -2,7 +2,7 @@ import '../styles/index.scss';
 import {formatAttributeData, calculateScales} from './dataFormat';
 import {renderAttributes,  drawContAtt, drawDiscreteAtt, renderPaths, drawPathsAndAttributes} from './rendering';
 import * as d3 from "d3";
-import {dataMaster} from './index'
+import {dataMaster} from './index';
 
 export let filterMaster = [];
 
@@ -93,7 +93,7 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                     let button = filterToolbar.append('button').classed('btn btn-info', true);
                     let span = button.append('span').classed('badge badge-light', true);
                     span.text(test.length);
-                    button.append('h6').text(fromState)
+                    button.append('h6').text(fromState);
                     button.append('i').classed('fas fa-arrow-right', true);
                     button.append('h6').text(toState + '  ');
                    
@@ -117,7 +117,7 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                
                 let continRanges = attProps.append('svg');
                 continRanges.attr('width', 200).attr('height', 100);
-                let data = [{'label':'Ancestors', 'type': 'predicted'}, {'label':'Leaves', 'type': 'observed'}]
+                let data = [{'label':'Ancestors', 'type': 'predicted'}, {'label':'Leaves', 'type': 'observed'}];
                 let ranges = continRanges.selectAll('.range').data(data).join('g').classed('range', true);
 
                 ranges.attr('transform', (d, i)=> 'translate('+((i*125)+',20)'));
@@ -143,7 +143,7 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                     } else {
                       var sx = s.map(yScale.invert);
                     }
-                }
+                };
                 let xBrush = d3.brushY().extent([[10,0], [30, 60]]).on("end", brushMoved);
                 let brushGroup = brushBars.append('g').call(xBrush);
                 brushGroup.call(xBrush.move, [0, 60]);
@@ -166,7 +166,7 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                     let test = continuousFilter(data, selectedOption, predictedFilter, observedFilter);
 
                     ////GOING TO ADD FILTERING HERE//// NEED TO BREAK INTO ITS OWN THING/////
-                    let filterOb = {'filterType': 'data-filter', 'attribute-type': 'continuous', 'filterFunction':continuousFilter, 'attribute': selectedOption, 'ranges': [predictedFilter, observedFilter], 'before-data': [...normedPaths], 'data': [...test]}
+                    let filterOb = {'filterType': 'data-filter', 'attribute-type': 'continuous', 'filterFunction':continuousFilter, 'attribute': selectedOption, 'ranges': [predictedFilter, observedFilter], 'before-data': [...normedPaths], 'data': [...test]};
                     filterMaster.push(filterOb);
 
                     ////DRAW THE PATHS
@@ -239,7 +239,7 @@ function continuousFilter(data, selectedOption, predicted, observed){
                 return numb > predicted[0] && numb < predicted[1];
             }
         });
-        return filterArray.indexOf(false) === -1
+        return filterArray.indexOf(false) === -1;
     });
     
 }
@@ -263,7 +263,7 @@ function discreteFilter(data, selectedOption, fromState, toState){
               return win === toState;
           }
         });
-        return filterPred.indexOf(true) > -1 && filterObs.indexOf(true) > -1
+        return filterPred.indexOf(true) > -1 && filterObs.indexOf(true) > -1;
     });
 
 }
@@ -273,9 +273,9 @@ function queryFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
     let searchDiv = filterDiv.append('div').classed('search-bar-div', true);
         searchDiv.append('h6').text('Query Filter:');
         let form = searchDiv.append('form').classed('form-inline', true);
-        let input = form.append('input').classed('form-control mr-sm-2', true)
+        let input = form.append('input').classed('form-control mr-sm-2', true);
         input.attr('type', 'search').attr('placeholder', 'Search by Species').attr('aria-label', 'Search');
-        let searchButton = form.append('button').classed('btn btn-outline-success my-2 my-sm-0', true).attr('type', 'button').append('i').classed("fas fa-search", true)
+        let searchButton = form.append('button').classed('btn btn-outline-success my-2 my-sm-0', true).attr('type', 'button').append('i').classed("fas fa-search", true);
         searchButton.on('click', ()=> {
 
             let queryArray = input.node().value.split(' ').map(m=> m.toLowerCase());
@@ -298,7 +298,7 @@ function queryFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                 button.remove();
             });
             d3.select('#main-path-view').style('height', ()=>{
-                return ((test.length * 60) + (Object.keys(test[0][0].attributes).length * 100) + 'px')
+                return ((test.length * 60) + (Object.keys(test[0][0].attributes).length * 100) + 'px');
             });
 
             ////HIDE THE FILTER BAR/////
@@ -319,9 +319,9 @@ function renderAttToggles(filterDiv, normedPaths, scales, moveMetric){
     let wrapper = filterDiv.append('div').classed('filter-wrap', true);
     wrapper.style('width', '150px');
    
-    let svg = wrapper.append('svg').classed('attr-toggle-svg', true)
+    let svg = wrapper.append('svg').classed('attr-toggle-svg', true);
 
-   let title = svg.append('text').text('Attributes: ')
+   let title = svg.append('text').text('Attributes: ');
     title.attr('x', 20).attr('y', 10);
     
     let labelWrap = svg.append('g').attr('transform', 'translate(20, 25)');
@@ -368,7 +368,7 @@ function renderAttToggles(filterDiv, normedPaths, scales, moveMetric){
 
     });
     let labelText = labelGroups.append('text').text(d=> d).style('font-size', 10);
-    labelText.attr('transform', 'translate(10, 4)')  
+    labelText.attr('transform', 'translate(10, 4)');  
 }
 function stateChange(selectorDiv, keys, selectId, label){
 
@@ -387,7 +387,7 @@ function stateChange(selectorDiv, keys, selectId, label){
     d3.select("#"+selectId).on("change", function(d) {
        var selectedOption = d3.select(this).property("value");
        d3.select(this).attr('class', selectedOption);
-    })
+    });
 
     return d3.select('#'+ selectId);
 }

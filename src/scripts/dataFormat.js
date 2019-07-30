@@ -23,7 +23,7 @@ export function calculateScales(calculatedAtt, colorKeeper){
                 'field': d,
                 'type':'discrete',
                 'stateColors': scaleCat.map((sc, i)=> {
-                    return {'state': sc, 'color': colorKeeper[i]}
+                    return {'state': sc, 'color': colorKeeper[i]};
                 }),
                 'catColor': colorKeeper[i],
                 'scales': scaleCat.map(sc=> {
@@ -39,7 +39,7 @@ export function calculateScales(calculatedAtt, colorKeeper){
                     'yScale': d3.scaleLinear().range([45, 0]).domain([min, max]),
                 };
                 
-            }) }
+            }) };
         }
     });
 }
@@ -50,7 +50,7 @@ export function matchLeaves(labels, leaves, leafChar, calculatedScales){
     let  mappedLeafLabels = labels.rows.map(m=> {
         let label = m.x;
         return label;
-    })
+    });
 
     return leaves.map((leaf, i)=> {
       
@@ -71,14 +71,14 @@ export function matchLeaves(labels, leaves, leafChar, calculatedScales){
                  let thisScale = scaleOb.scales.filter(f=> f.scaleName == chosenOne[k])[0].yScale;
                  let states = scaleOb.scales.map(m=> m.scaleName).map(state=> {
                      let value = (state === chosenOne[k])? 1 : 0;
-                     return {'state': state,  scaleVal: thisScale(value), realVal: value}
-                 })
+                     return {'state': state,  scaleVal: thisScale(value), realVal: value};
+                 });
              
                  //let states = {'state': leafChar.rows[i][k],  scaleVal: thisScale(1), realVal: 1}
-                 attr[k] = {'states': states, 'label': k, 'type': scaleOb.type, leaf: true}
+                 attr[k] = {'states': states, 'label': k, 'type': scaleOb.type, leaf: true};
              }else if(scaleOb.type === 'continuous'){
                  let scale = scaleOb.yScale;
-                 attr[k] = {'scaleVal': scale(chosenOne[k]), 'scaledHigh': 0, 'scaledLow': 0, 'realVal': chosenOne[k], 'type': scaleOb.type, leaf: true}
+                 attr[k] = {'scaleVal': scale(chosenOne[k]), 'scaledHigh': 0, 'scaledLow': 0, 'realVal': chosenOne[k], 'type': scaleOb.type, leaf: true};
  
              }else{
                  attr[k] = 'error in leaf matching';
@@ -86,7 +86,7 @@ export function matchLeaves(labels, leaves, leafChar, calculatedScales){
          });
  
          leaf.attributes = attr;
-         leaf.leaf = true
+         leaf.leaf = true;
      
          return leaf;
      });
@@ -109,32 +109,32 @@ export function matchEdges(edges, edgeLen, calculatedAtt, calculatedScales){
                     res.scaledHigh = scale(res.upperCI95);
                     res.realVal = res.estimate;
 
-                    res.type = 'continuous'
-                    edge.attributes = (edge.attributes != undefined)? edge.attributes : {}
+                    res.type = 'continuous';
+                    edge.attributes = (edge.attributes != undefined)? edge.attributes : {};
                     edge.attributes[attr] = res;
                 }else{
                     let scales = calculatedScales.filter(f=> f.field == attr)[0].scales;
                     let row = calculatedAtt[attr].rows[index];
                     let states = scales.map(s=> {
-                        return {'state': s.scaleName,  scaleVal: s.yScale(row[s.scaleName]), realVal: row[s.scaleName]}
+                        return {'state': s.scaleName,  scaleVal: s.yScale(row[s.scaleName]), realVal: row[s.scaleName]};
                     });
-                    edge.attributes = (edge.attributes != undefined)? edge.attributes : {}
+                    edge.attributes = (edge.attributes != undefined)? edge.attributes : {};
                     edge.attributes[attr] = {'states':states, 'type': 'discrete'};
                 }
             });
         }
-        return edge
+        return edge;
     });
 
 }
 
 export function normPaths(paths, calculatedAtt, calculatedScales){
     paths.forEach((p, i)=> {
-        p[0].attributes = {}
+        p[0].attributes = {};
         Object.keys(calculatedAtt).map(att=> { 
             if(calculatedAtt[att].type == 'continuous'){
-                let root = calculatedAtt[att].rows.filter(f=> f.nodeLabels == p[0].node)[0]
-                p[0].attributes[att] = {}
+                let root = calculatedAtt[att].rows.filter(f=> f.nodeLabels == p[0].node)[0];
+                p[0].attributes[att] = {};
                 let scale = calculatedScales.filter(f=> f.field == att)[0].yScale;
                 p[0].attributes[att].scaleVal =  scale(root.estimate);
                 p[0].attributes[att].scaledLow =  scale(root.lowerCI95);
@@ -145,10 +145,10 @@ export function normPaths(paths, calculatedAtt, calculatedScales){
                 p[0].attributes[att].scale = scale;
                 p[0].attributes[att].type = 'continuous';
             }else if(calculatedAtt[att].type == 'discrete'){
-                let root = calculatedAtt[att].rows.filter(f=> f.nodeLabels == p[0].node)[0]
+                let root = calculatedAtt[att].rows.filter(f=> f.nodeLabels == p[0].node)[0];
                 let scales = calculatedScales.filter(f=> f.field == att)[0].scales;
                 let rootAttr = scales.map(s=> {
-                    return {'state': s.scaleName,  scaleVal: s.yScale(root[s.scaleName]), realVal: root[s.scaleName]}
+                    return {'state': s.scaleName,  scaleVal: s.yScale(root[s.scaleName]), realVal: root[s.scaleName]};
                 });
                 p[0].attributes[att] = {'states':rootAttr, 'type': 'discrete'};
                
@@ -193,15 +193,15 @@ export function filterKeeper(){
     this.addFilter = function(filter){
         this.filterArray.push(filter);
         return this.filterArray;
-    }
+    };
     this.removeFilter = function(index){
         this.filterArray = this.filterArray.filter((f, i)=> i != index);
         return this.filterArray;
-    }
+    };
 }
 
 export function formatAttributeData(normedPaths, scales, filterArray){
-    console.log('filterArray',filterArray)
+    console.log('filterArray',filterArray);
     let keys = (filterArray == null)? Object.keys(normedPaths[0][0].attributes): filterArray;
    
     let newData = normedPaths.map(path=> {
@@ -219,7 +219,7 @@ export function formatAttributeData(normedPaths, scales, filterArray){
                     if(m.leaf){
                         let state = m.attributes[key];
                         state.winState = m.attributes[key].states.filter(f=> f.realVal === 1)[0].state;
-                        state.color = scales.filter(f=> f.field === key)[0].stateColors.filter(f=> f.state === state.winState)[0].color
+                        state.color = scales.filter(f=> f.field === key)[0].stateColors.filter(f=> f.state === state.winState)[0].color;
                         state.move = m.move;
                         state.edgeMove = m.edgeMove;
                         state.attrLabel = key;

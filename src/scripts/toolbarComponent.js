@@ -3,13 +3,13 @@ import {formatAttributeData} from './dataFormat';
 import {drawPathsAndAttributes} from './rendering';
 import {toggleFilters} from './filterComponent';
 import {renderDistibutions} from './distributionView';
-import {dataMaster} from './index'
+import {dataMaster} from './index';
 
 export function toolbarControl(toolbar, normedPaths, main, calculatedScales, moveMetric, pathView){
 
     console.log('toolbarcontrol', moveMetric);
 
-    let viewButton = toolbar.append('button').attr('id', 'view-toggle').attr('attr' , 'button').attr('class', 'btn btn-outline-secondary') ;
+    let viewButton = toolbar.append('button').attr('id', 'view-toggle').attr('attr' , 'button').attr('class', 'btn btn-outline-secondary');
 
     if(pathView === 'paths'){
         viewButton.text('View Summary');

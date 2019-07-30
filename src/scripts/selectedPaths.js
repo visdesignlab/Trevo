@@ -3,7 +3,7 @@ import {branchPaths, renderPaths, renderAttributes, drawContAtt, drawDiscreteAtt
 import {formatAttributeData} from './dataFormat';
 import {renderAttToggles} from './toolbarComponent';
 import {filterMaster} from './filterComponent';
-import {dataMaster} from './index'
+import {dataMaster} from './index';
 
 export function pathSelected(selectedPath, otherPaths, scales, moveMetric){
 
@@ -33,13 +33,13 @@ export function sortOtherPaths(pathData, otherPaths){
         let step = 0;
         let test = path.reverse().map((node, i)=> {
             if(chosenPath.indexOf(node.node));
-            return {'indexOf': chosenPath.indexOf(node.node), 'pathIndex': i, 'node': node, 'chosen': chosenPath[chosenPath.indexOf(node.node)] }
+            return {'indexOf': chosenPath.indexOf(node.node), 'pathIndex': i, 'node': node, 'chosen': chosenPath[chosenPath.indexOf(node.node)] };
         }).filter(f=> f.indexOf > -1);
         let distance = (test[0].indexOf + test[0].pathIndex);
         return {'data':path.reverse(), 'distance': distance };
 
     });
-    let sortedData = rankedPaths.sort(function(a, b){return a.distance - b.distance});
+    let sortedData = rankedPaths.sort(function(a, b){return a.distance - b.distance;});
     return sortedData;
 }
 export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, moveMetric){
@@ -58,14 +58,14 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
     let selectedTool = selectedToolTest.empty() ? selectedDiv.append('div').classed('selected-toolbar', true) : selectedToolTest;
     selectedTool.selectAll('*').remove();
 
-    let xIconWrap = selectedTool.append('div').classed('x-icon', true)
+    let xIconWrap = selectedTool.append('div').classed('x-icon', true);
     let xIcon = xIconWrap.append('i').classed("far fa-times-circle", true);
     xIcon.on('click', ()=> {
         d3.selectAll('.high').classed('high', false);
         d3.selectAll('.low').classed('low', false);
         treeNodes.select('.selected').classed('selected', false);
         
-        pathSelected(null, dataMaster[0], scales, moveMetric)
+        pathSelected(null, dataMaster[0], scales, moveMetric);
     });
 
     ///////////////////////
@@ -87,7 +87,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
 
    radio.on('click', (d, i)=> {
    
-    let leaf = pathData.map(node=> node.filter(d=> d.leaf === true)[0])[0]
+    let leaf = pathData.map(node=> node.filter(d=> d.leaf === true)[0])[0];
  
     let sorted = [...otherPaths].sort(function(a, b){
         return a.filter(n=> n.leaf === true)[0].attributes[d].realVal - b.filter(n=> n.leaf === true)[0].attributes[d].realVal;

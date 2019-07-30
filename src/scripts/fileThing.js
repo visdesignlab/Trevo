@@ -295,7 +295,7 @@ export const nodeFile = `index,_key,_id
 194,199,anolis_nodes/199
 195,198,anolis_nodes/198
 196,197,anolis_nodes/197
-197,184,anolis_nodes/184`
+197,184,anolis_nodes/184`;
 
 export const edgeFile = `index,_from,_to,length,_key,_id
 0,anolis_nodes/101,anolis_nodes/102,0.04468414858,0,anolis_edges/0
@@ -495,4 +495,4 @@ export const edgeFile = `index,_from,_to,length,_key,_id
 194,anolis_nodes/199,anolis_nodes/97,0.17835427469999998,194,anolis_edges/194
 195,anolis_nodes/198,anolis_nodes/98,0.3160600254,195,anolis_edges/195
 196,anolis_nodes/197,anolis_nodes/99,0.5296226856,196,anolis_edges/196
-197,anolis_nodes/184,anolis_nodes/100,0.8949333739,197,anolis_edges/197`
+197,anolis_nodes/184,anolis_nodes/100,0.8949333739,197,anolis_edges/197`;

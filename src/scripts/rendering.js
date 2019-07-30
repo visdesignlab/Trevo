@@ -3,10 +3,10 @@ import * as d3 from "d3";
 import {renderSelectedView, pathSelected} from './selectedPaths';
 import {formatAttributeData} from './dataFormat';
 import {filterMaster} from './filterComponent';
-import {dataMaster} from './index'
+import {dataMaster} from './index';
 
 export function drawPathsAndAttributes(normedPaths, main, calculatedScales, moveMetric, collapsed){
-    console.log('normed', normedPaths)
+    console.log('normed', normedPaths);
     main.select('#main-path-view').selectAll('*').remove();
 
     let pathGroups = renderPaths(normedPaths, main, calculatedScales, moveMetric);
@@ -56,7 +56,7 @@ export function renderPaths(pathData, main, scales, moveMetric){
         }, {});
 
      ///Scales for circles ///
-     let circleScale = d3.scaleLog().range([6, 14]).domain([1, d3.max(Object.values(branchFrequency))])
+     let circleScale = d3.scaleLog().range([6, 14]).domain([1, d3.max(Object.values(branchFrequency))]);
 
     let pathGroups = pathWrap.selectAll('.paths').data(pathData).join('g').classed('paths', true);
  
@@ -67,14 +67,14 @@ export function renderPaths(pathData, main, scales, moveMetric){
         let treeNode  = d3.select('#sidebar').selectAll('.node');
         let treeLinks  = d3.select('#sidebar').selectAll('.link');
         treeNode.filter(f=> {
-            return d.map(m=> m.node).indexOf(f.data.node) > -1
+            return d.map(m=> m.node).indexOf(f.data.node) > -1;
         }).classed('hover', true);
         treeLinks.filter(f=> d.map(m=> m.node).indexOf(f.data.node) > -1).classed('hover', true);
         return d3.select(this).classed('hover', true);
     }).on('mouseout', function(d, i){
         let treeNode  = d3.select('#sidebar').selectAll('.node').classed('hover', false);
         let treeLinks  = d3.select('#sidebar').selectAll('.link').classed('hover', false);
-        return d3.select(this).classed('hover', false)
+        return d3.select(this).classed('hover', false);
     });
     pathGroups.on('click', (d, i, n)=>{
 
@@ -110,8 +110,8 @@ export function renderPaths(pathData, main, scales, moveMetric){
    
     nodeGroups.attr('transform', (d)=> {
         let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
-        let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove)
-        return 'translate('+ distance +', 10)'});
+        let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove);
+        return 'translate('+ distance +', 10)';});
 
     let circle = nodeGroups.append('circle').attr('cx', 0).attr('cy', 0).attr('r', d=> {
         return circleScale(branchFrequency[d.node]);
@@ -153,12 +153,12 @@ function continuousPaths(innerTimeline, moveMetric, collapsed){
     var lineGen = d3.line()
     .x(d=> {
         let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
-        let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove)
-        return distance })
+        let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove);
+        return distance; })
     .y(d=> {
         let y = d.yScale;
         y.range([height, 0]);
-        return y(d.realVal)});
+        return y(d.realVal);});
 
     let innerPaths = innerTimeline.append('path')
     .attr("d", lineGen)
@@ -192,16 +192,16 @@ export function drawContAtt(predictedAttrGrps, moveMetric, collapsed){
  ////////
 
     let innerRect = innerBars.append('rect').classed('attribute-inner-bar', true);
-    innerRect.attr('height', attributeHeight)
+    innerRect.attr('height', attributeHeight);
     innerBars.attr('transform', (d)=> {
         let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
-        let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove)
-        return 'translate('+ distance +', 0)'});
+        let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove);
+        return 'translate('+ distance +', 0)';});
       
     let rangeRect = innerBars.append('rect').classed('range-rect', true);
     rangeRect.attr('width', 20).attr('height', (d, i)=> {
         let y = d.yScale;
-        y.range([attributeHeight, 0])
+        y.range([attributeHeight, 0]);
         let range = d.leaf ? 0 : y(d.lowerCI95) - y(d.upperCI95);
         return range;
     });
@@ -215,12 +215,12 @@ export function drawContAtt(predictedAttrGrps, moveMetric, collapsed){
     rangeRect.style('fill', d=> d.color);
     rangeRect.style('opacity', (d)=> {
         return d.satScale(d.realVal);
-    })
+    });
     innerBars.append('rect').attr('width', 20).attr('height', 5)
     .attr('transform', (d, i)=> {
         let y = d.yScale;
         y.range([attributeHeight, 0]);
-        return 'translate(0, '+ y(d.realVal) +')'})
+        return 'translate(0, '+ y(d.realVal) +')';})
     .attr('fill', d=> d.color);
 }
 
@@ -237,7 +237,7 @@ export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric, collapsed
 
     let innerTimelineDis = discreteAtt.append('g').classed('attribute-time-line', true);
 
-    innerTimelineDis.append('line').classed('half', true).attr('x1', 0).attr('y1', 22).attr('x2', 1010).attr('y2', 22)
+    innerTimelineDis.append('line').classed('half', true).attr('x1', 0).attr('y1', 22).attr('x2', 1010).attr('y2', 22);
     
     let statePath = innerTimelineDis.selectAll('g').data(d=> {
         let disct = d.map(m=> {
@@ -246,7 +246,7 @@ export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric, collapsed
                 s.move = m.move;
                 s.edgeMove = m.edgeMove;
                 s.color = m.color;
-                return s
+                return s;
             }) : m;
             return test;
         });
@@ -261,11 +261,11 @@ export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric, collapsed
     var lineGen = d3.line()
     .x(d=> {
         let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
-        let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove)
-        return distance + 7})
+        let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove);
+        return distance + 7;})
     .y(d=> {
        
-        let y = d3.scaleLinear().domain([0, 1]).range([attributeHeight-2, 1])
+        let y = d3.scaleLinear().domain([0, 1]).range([attributeHeight-2, 1]);
         //d.scaleVal
         return y(d.realVal);
     });
@@ -275,12 +275,12 @@ export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric, collapsed
     .attr("class", "inner-line")
     .style('stroke-width', 0.7)
     .style('stroke', (d)=> {
-        return d[0].color});
+        return d[0].color;});
 
     let attribRectDisc = innerTimelineDis.append('rect').classed('attribute-rect', true);
     attribRectDisc.attr('height', attributeHeight);//.data(normedPaths);//.attr('transform', (d, i)=> 'translate(0, 0)');
     let attributeNodesDisc = innerTimelineDis.selectAll('.attribute-node-discrete').data(d=> {
-        return d}).join('g').classed('attribute-node-discrete', true);
+        return d;}).join('g').classed('attribute-node-discrete', true);
 
     attributeNodesDisc.attr('transform', (d)=> {
         let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
@@ -296,11 +296,11 @@ export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric, collapsed
     attributeNodesDisc.append('line').attr('x1', 10).attr('x2', 10).attr('y1', 0).attr('y2', attributeHeight);
 
     let stateDots = attributeNodesDisc.filter((att, i)=> att[0] != undefined).selectAll('.dots').data(d=> {
-        return d
+        return d;
     }).join('circle').classed('dots', true);
     
     stateDots.attr('cx', 10).attr('cy', (d)=> {
-        let y = d3.scaleLinear().domain([0, 1]).range([attributeHeight - 2, 2])
+        let y = d3.scaleLinear().domain([0, 1]).range([attributeHeight - 2, 2]);
         return y(d.realVal);
     }).attr('r', 2).style('fill', d=> d.color);
 
@@ -311,7 +311,7 @@ export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric, collapsed
         tool.transition()
           .duration(200)
           .style("opacity", .9);
-        let f = d3.format(".3f")
+        let f = d3.format(".3f");
         tool.html(d.state + ": " + f(d.realVal))
           .style("left", (d3.event.pageX) + "px")
           .style("top", (d3.event.pageY - 28) + "px");
@@ -324,10 +324,10 @@ export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric, collapsed
         });
 
     let endStateDot = attributeNodesDisc.filter((att, i)=> {
-        return att[0] === undefined});
+        return att[0] === undefined;});
 
     endStateDot.append('circle').attr('cx', 10).attr('cy', 2).attr('r', 7).style('fill', d=> {
-       return d.color
+       return d.color;
     });
     ////NEED TO MAKE A FUNCTION TO ASSIGN COLOR OF STATES//////
 
