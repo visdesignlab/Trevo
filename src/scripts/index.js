@@ -4,7 +4,7 @@ import {loadData} from './dataLoad';
 import {calculateScales, matchLeaves, matchEdges, normPaths, filterKeeper} from './dataFormat';
 import {allPaths, pullPath, getPath} from './pathCalc';
 import {drawPathsAndAttributes} from './rendering';
-import {renderTree, buildTreeStructure} from './sidebarComponent';
+import {renderTree, buildTreeStructure, renderTreeButtons} from './sidebarComponent';
 import {renderDistibutions} from './distributionView';
 import {toolbarControl, renderAttToggles} from './toolbarComponent';
 
@@ -79,7 +79,9 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     ////////TREE RENDER IN SIDEBAR////////
     let nestedData = buildTreeStructure(paths, edges);
 
-    let tree = renderTree(nestedData, normedPaths, calculatedScales, sidebar);
+    renderTreeButtons(nestedData, normedPaths, calculatedScales, sidebar, false);
+
+    let tree = renderTree(nestedData, normedPaths, calculatedScales, sidebar, false);
     ////Render the summary distributions////
     //renderDistibutions(normedPaths, main, calculatedScales, 'move');
     
