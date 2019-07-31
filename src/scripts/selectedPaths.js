@@ -163,8 +163,9 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
     drawContAtt(attributeGroups);
     drawDiscreteAtt(attributeGroups, scales);
 
+    //sizeAndMove(svg, attributeWrapper, pathData, (attrMove * attributeHeight));
     //tranforming elements
-    svg.style('height', ((pathData.length + attributeGroups.data().map(m=> m[0]).length)* 50) + 50 + 'px');
+    svg.style('height', ((pathData.length + attributeGroups.data().map(m=> m[0]).length)* 250) + 50 + 'px');
     selectedDiv.style('height', ((pathData.length + attributeGroups.data().map(m=> m[0]).length)* 45) + 50 + 'px');
     attributeWrapper.attr('transform', (d)=> 'translate(140, 25)');
 
