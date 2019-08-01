@@ -9,7 +9,7 @@ export function drawPathsAndAttributes(normedPaths, main, calculatedScales, move
 
     
     let collapsed = d3.select('#scrunch').attr('value');
-    console.log('in attr render',collapsed)
+    console.log('filter master', filterMaster)
   
     main.select('#main-path-view').selectAll('*').remove();
 
@@ -17,17 +17,17 @@ export function drawPathsAndAttributes(normedPaths, main, calculatedScales, move
   
       /// LOWER ATTRIBUTE VISUALIZATION ///
     let attributeWrapper = pathGroups.append('g').classed('attribute-wrapper', true);
-    let attrHide = filterMaster.filter(f=> f.type === 'hide-attribute');
+    let attrHide = filterMaster.filter(f=> f.type === 'hide-attribute').map(m=> m.attribute);
 
-    let attKeys = attrHide.length > 0 ? calculatedScales.filter(f=> f.field != attrHide[0].attribute).map(m=> m.field) : null;
-    
+    let attKeys = attrHide.length > 0 ? calculatedScales.filter(f=> attrHide.indexOf(f.field) === -1).map(m=> m.field) : null;
+
     let attData = formatAttributeData(normedPaths, calculatedScales, attKeys);
 
     let attrMove = attKeys === null ? calculatedScales.length : attKeys.length;
 
     let predictedAttrGrps = renderAttributes(attributeWrapper, attData, calculatedScales, null, collapsed);
-    let attributeHeight = (collapsed === 'true')? 20 : 45;
-    pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 10)* attrMove + 10)) +')');
+    let attributeHeight = (collapsed === 'true')? 22 : 45;
+    pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (attrMove + 1))) +')');
     
     drawContAtt(predictedAttrGrps, moveMetric, collapsed);
     drawDiscreteAtt(predictedAttrGrps, calculatedScales, moveMetric, collapsed);

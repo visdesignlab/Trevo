@@ -340,7 +340,7 @@ function renderAttToggles(filterDiv, normedPaths, main, scales, moveMetric){
         let togg = d3.select(this);
         toggleCircle(togg, scales);
    
-        filterMaster.push({'filter-type':'hide-attribute', 'attribute':d, 'before-data': [...normedPaths]});
+        filterMaster.push({'type':'hide-attribute', 'attribute':d, 'before-data': [...normedPaths]});
 
         let newKeys = d3.selectAll('.shown');
         let hideKeys = scales.filter(sc=> newKeys.data().indexOf(sc.field) === -1);
@@ -349,6 +349,8 @@ function renderAttToggles(filterDiv, normedPaths, main, scales, moveMetric){
             newFilMaster.push({'type':'hide-attribute', 'attribute':key.field, 'before-data': [...normedPaths]});
         });
         filterMaster = newFilMaster;
+
+        console.log('filtermaster in render att toggles', filterMaster)
 
 
         ////DRAW THE PATHS
