@@ -153,12 +153,12 @@ export function renderAttributes(attributeWrapper, data, scales, filterArray, co
 function collapsedPathGen(data){
     data.map((p, i)=>{
         let step = i === 0 ? 0 : 1;
-        let test = (p.realVal > data[i-step].realVal) ? 0 : 1;
+        let test = (p.realVal > data[i-step].realVal) ? 1 : 18;
         p.change = test;
     })
 }
 
-function continuousPaths(innerTimeline, moveMetric, collapsed){
+async function continuousPaths(innerTimeline, moveMetric, collapsed){
 
     innerTimeline.data().forEach(path => {
         collapsedPathGen(path, moveMetric);
@@ -175,7 +175,7 @@ function continuousPaths(innerTimeline, moveMetric, collapsed){
         let y = d.yScale;
         y.range([height, 0]);
         if(collapsed){
-            return y(d.change);
+            return d.change;
         }else{
             return y(d.realVal);
         }
