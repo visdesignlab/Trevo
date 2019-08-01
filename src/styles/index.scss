@@ -234,13 +234,17 @@ line.half{
   stroke-opacity: 0.7;
 }
 
-.paths circle{
+.paths .node circle{
   fill: #4c575c;
+  stroke: gainsboro;
+  stroke-width: 2;
  // opacity: 0.8;
 }
 
 .paths.hover circle{
   fill: #b7ed7e;
+  stroke: gray;
+  stroke-width: 2;
  // opacity: 0.8;
 }
 

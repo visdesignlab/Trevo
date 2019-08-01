@@ -7,6 +7,7 @@ export function calculateScales(calculatedAtt, colorKeeper){
         if(calculatedAtt[d].type == 'continuous'){
             let max = d3.max(calculatedAtt[d].rows.map(m=> m.upperCI95));
             let min = d3.min(calculatedAtt[d].rows.map(m=> m.lowerCI95));
+            let mean = d3.mean(calculatedAtt[d].rows.map(m=> m.realVal));
            // console.log(calculatedAtt[d].type, max, min, calculatedAtt)
             return {
                 'field': d, 
@@ -14,8 +15,9 @@ export function calculateScales(calculatedAtt, colorKeeper){
                 'max': max, 
                 'min':  min,
                 'yScale': d3.scaleLinear().range([0, 43]).domain([min, max]).clamp(true),
-                'satScale': d3.scaleLinear().range([0, 1]).domain([min, max]),
-                'catColor': colorKeeper[i],
+                'satScale': d3.scaleLinear().range([0, .9]).domain([min, max]),
+                'colorScale': d3.scaleLinear().range([colorKeeper[i][0], '#f23929']).domain([min, max]),
+                'catColor': colorKeeper[i][0],
             };
         }else{
             let scaleCat = calculatedAtt[d].fields.filter(f=> f!= 'nodeLabels');
@@ -23,9 +25,9 @@ export function calculateScales(calculatedAtt, colorKeeper){
                 'field': d,
                 'type':'discrete',
                 'stateColors': scaleCat.map((sc, i)=> {
-                    return {'state': sc, 'color': colorKeeper[i]};
+                    return {'state': sc, 'color': colorKeeper[i][0]};
                 }),
-                'catColor': colorKeeper[i],
+                'catColor': colorKeeper[i][0],
                 'scales': scaleCat.map(sc=> {
                 let scaleName = sc;
                
@@ -214,6 +216,7 @@ export function formatAttributeData(normedPaths, scales, filterArray){
                     m.attributes[key].label = key;
                     m.attributes[key].yScale = scales.filter(s=> s.field === key)[0].yScale;
                     m.attributes[key].satScale = scales.filter(s=> s.field === key)[0].satScale;
+                    m.attributes[key].colorScale = scales.filter(s=> s.field === key)[0].colorScale;
                     return m.attributes[key];
                 }else if(m.attributes[key].type === 'discrete'){
                     if(m.leaf){

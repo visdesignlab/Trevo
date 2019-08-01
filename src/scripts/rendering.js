@@ -234,21 +234,20 @@ export function drawContAtt(predictedAttrGrps, moveMetric, collapsed){
         return 'translate(0, '+ move +')';
     });
     rangeRect.style('fill', (d)=> {
-        let colorScale = d3.scaleLinear().range(['blue', 'red']).domain([0, 1]);
-        console.log(colorScale(d.realVal))
-        return colorScale(d.realVal);
-       //return d.color
+        return d.colorScale(d.realVal);
     });
     rangeRect.attr('opacity', (d)=> {
-        console.log(d.satScale(d.realVal))
         return d.satScale(d.realVal);
     });
-    innerBars.append('rect').attr('width', 20).attr('height', 5)
-    .attr('transform', (d, i)=> {
-        let y = d.yScale;
-        y.range([attributeHeight, 0]);
-        return 'translate(0, '+ y(d.realVal) +')';})
-    .attr('fill', d=> d.color);
+    if(collapsed != true){
+        innerBars.append('rect').attr('width', 20).attr('height', 5)
+        .attr('transform', (d, i)=> {
+            let y = d.yScale;
+            y.range([attributeHeight, 0]);
+            return 'translate(0, '+ y(d.realVal) +')';})
+        .attr('fill', d=> d.color);
+    }
+   
 }
 
 export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric, collapsed){
