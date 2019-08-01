@@ -9,6 +9,7 @@ import {renderDistibutions} from './distributionView';
 import {toolbarControl, renderAttToggles} from './toolbarComponent';
 
 export const dataMaster = [];
+export const collapsed = false;
 
 
 let wrap = d3.select('#wrapper');

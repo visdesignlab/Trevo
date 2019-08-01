@@ -5,7 +5,11 @@ import {formatAttributeData} from './dataFormat';
 import {filterMaster} from './filterComponent';
 import {dataMaster} from './index';
 
-export function drawPathsAndAttributes(normedPaths, main, calculatedScales, moveMetric, collapsed){
+export function drawPathsAndAttributes(normedPaths, main, calculatedScales, moveMetric){
+
+    
+    let collapsed = d3.select('#scrunch').attr('value');
+    console.log('in attr render',collapsed)
   
     main.select('#main-path-view').selectAll('*').remove();
 
@@ -22,7 +26,7 @@ export function drawPathsAndAttributes(normedPaths, main, calculatedScales, move
     let attrMove = attKeys === null ? calculatedScales.length : attKeys.length;
 
     let predictedAttrGrps = renderAttributes(attributeWrapper, attData, calculatedScales, null, collapsed);
-    let attributeHeight = collapsed? 20 : 45;
+    let attributeHeight = (collapsed === 'true')? 20 : 45;
     pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 10)* attrMove + 10)) +')');
     
     drawContAtt(predictedAttrGrps, moveMetric, collapsed);
@@ -144,7 +148,7 @@ export function renderPaths(pathData, main, scales, moveMetric){
 
 export function renderAttributes(attributeWrapper, data, scales, filterArray, collapsed){
 
-    let attributeHeight = collapsed? 20 : 45;
+    let attributeHeight = (collapsed === 'true')? 20 : 45;
     let predictedAttrGrps = attributeWrapper.selectAll('g').data((d, i)=> data[i]).join('g');
     predictedAttrGrps.attr('transform', (d, i) => 'translate(0, '+(i * (attributeHeight + 5))+')');
     return predictedAttrGrps;
@@ -165,7 +169,7 @@ async function continuousPaths(innerTimeline, moveMetric, collapsed){
     });
 
     //THIS IS THE PATH GENERATOR FOR THE CONTINUOUS VARIABLES
-    let height = collapsed? 20 : 45;
+    let height = (collapsed === 'true')? 20 : 45;
     var lineGen = d3.line()
     .x(d=> {
         let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
@@ -174,7 +178,7 @@ async function continuousPaths(innerTimeline, moveMetric, collapsed){
     .y(d=> {
         let y = d.yScale;
         y.range([height, 0]);
-        if(collapsed){
+        if(collapsed === 'true'){
             return d.change;
         }else{
             return y(d.realVal);
@@ -196,7 +200,7 @@ export function drawContAtt(predictedAttrGrps, moveMetric, collapsed){
         return d[0].type === 'continuous';
     });
 
-    let attributeHeight = collapsed ? 20 : 45;
+    let attributeHeight = (collapsed === 'true') ? 20 : 45;
     let attrLabel = continuousAtt.append('text').text(d=> d[0].label);
     attrLabel.classed('attribute-label', true);
     attrLabel.attr('transform', 'translate(-15, 20)');
@@ -224,13 +228,13 @@ export function drawContAtt(predictedAttrGrps, moveMetric, collapsed){
         let y = d.yScale;
         y.range([attributeHeight, 0]);
         let range = d.leaf ? 0 : y(d.lowerCI95) - y(d.upperCI95);
-        let barHeight = collapsed ? 20 : range;
+        let barHeight = (collapsed === 'true') ? 20 : range;
         return barHeight;
     });
     rangeRect.attr('transform', (d, i)=> {
         let y = d.yScale;
         y.range([attributeHeight, 0]);
-        let move = (d.leaf || collapsed) ? 0 : y(d.upperCI95);
+        let move = (d.leaf || (collapsed === 'true')) ? 0 : y(d.upperCI95);
         return 'translate(0, '+ move +')';
     });
     rangeRect.style('fill', (d)=> {
@@ -239,7 +243,7 @@ export function drawContAtt(predictedAttrGrps, moveMetric, collapsed){
     rangeRect.attr('opacity', (d)=> {
         return d.satScale(d.realVal);
     });
-    if(collapsed != true){
+    if(collapsed != 'true'){
         innerBars.append('rect').attr('width', 20).attr('height', 5)
         .attr('transform', (d, i)=> {
             let y = d.yScale;
@@ -252,11 +256,14 @@ export function drawContAtt(predictedAttrGrps, moveMetric, collapsed){
 
 export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric, collapsed){
 
+    console.log('collapsed in draw discrete', collapsed, d3.select('#scrunch').attr('value'))
+    
+
     let discreteAtt = predictedAttrGrps.filter(d=> {
         return d[d.length - 1].type === 'discrete';
     });
 
-    let attributeHeight = collapsed? 20 : 45;
+    let attributeHeight = (collapsed === 'true')? 20 : 45;
     let attrLabel = discreteAtt.append('text').text(d=> d[d.length - 1].label);
     attrLabel.classed('attribute-label', true);
     attrLabel.attr('transform', 'translate(-15, 20)');

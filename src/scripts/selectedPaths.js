@@ -86,9 +86,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
    radioDiv.append('label').text(d=> d).property('for', (d, i)=> 'radio-'+i).classed("form-check-label", true);
 
    radio.on('click', (d, i)=> {
-   
     let leaf = pathData.map(node=> node.filter(d=> d.leaf === true)[0])[0];
- 
     let sorted = [...otherPaths].sort(function(a, b){
         return a.filter(n=> n.leaf === true)[0].attributes[d].realVal - b.filter(n=> n.leaf === true)[0].attributes[d].realVal;
     });

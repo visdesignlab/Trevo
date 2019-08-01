@@ -1,6 +1,6 @@
 import '../styles/index.scss';
 import {formatAttributeData, calculateScales} from './dataFormat';
-import {renderAttributes,  drawContAtt, drawDiscreteAtt, renderPaths, drawPathsAndAttributes} from './rendering';
+import {renderAttributes,  drawContAtt, drawDiscreteAtt, renderPaths, drawPathsAndAttributes, sizeAndMove} from './rendering';
 import * as d3 from "d3";
 import {dataMaster} from './index';
 
@@ -10,7 +10,6 @@ export let filterMaster = [];
 ///NEED TO BREAK THESE OUT INTO SEPARATE FILTERS
 export function toggleFilters(filterButton, normedPaths, main, moveMetric, scales){
     let filterDiv = d3.select('#filter-tab');
-
 
     if(filterDiv.classed('hidden')){
         filterButton.text('Hide Filters');
@@ -67,6 +66,8 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                     let filterOb = {'filterType': 'data-filter', 'attribute-type': 'discrete', 'filterFunction':discreteFilter, 'attribute': selectedOption, 'states': [fromState, toState], 'data': test};
                     filterMaster.push(filterOb);
 
+                    console.log(d3.select('#scrunch').attr('value'))
+
                     ////DRAW THE PATHS
                     drawPathsAndAttributes(test, main, scales, moveMetric);
 
@@ -99,7 +100,7 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                    
                     let xSpan = button.append('i').classed('close fas fa-times', true);
                     xSpan.on('click', ()=> {
-                        drawPathsAndAttributes(normedPaths, main, scales, moveMetric);
+                        drawPathsAndAttributes(normedPaths, main, scales, moveMetric, d3.select('#scrunch').attr('value'));
                         d3.selectAll('.link-not-there').classed('link-not-there', false);
                         d3.selectAll('.node-not-there').classed('node-not-there', false);
                         button.remove();
@@ -154,10 +155,8 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                 submit.on('click', ()=> {
 
                     let selections = brushGroup._groups[0].map(m=> m.__brush.selection.map(s=> s[1]));
-                    
                     let predictedFilter = selections[0].map(yScale.invert).sort();
                     let observedFilter = selections[1].map(yScale.invert).sort();
-
                     let lastFilter = filterMaster.filter(f=> f['filterType'] === 'data-filter');
 
                     console.log('last', lastFilter);
@@ -310,7 +309,7 @@ function queryFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
 
 }
 function renderAttToggles(filterDiv, normedPaths, scales, moveMetric){
-   
+
     ////NEED TO GET RID OF TOGGLE SVG
     let keys = Object.keys(normedPaths[0][0].attributes);
     let presentFilters = filterMaster.filter(f=> f.type === 'hide-attribute');
@@ -353,18 +352,27 @@ function renderAttToggles(filterDiv, normedPaths, scales, moveMetric){
         filterMaster = newFilMaster;
         let attributeWrapper = d3.selectAll('.attribute-wrapper');
         attributeWrapper.selectAll('g').remove();
-        let attributeHeight = 45;
+        
       
           /// LOWER ATTRIBUTE VISUALIZATION ///
-      
-        let attData =  formatAttributeData(normedPaths, scales, newKeys.data());
-        let predictedAttrGrps = renderAttributes(attributeWrapper, attData, scales, null);
+          let collapsed = d3.select('#scrunch').attr('value');
+          let attrHide = filterMaster.filter(f=> f.type === 'hide-attribute');
+          let attKeys = attrHide.length > 0 ? scales.filter(f=> f.field != attrHide[0].attribute).map(m=> m.field) : null;
+          let attrMove = attKeys === null ? scales.length : attKeys.length;
+          let attributeHeight = (collapsed === 'true')? 20 : 45;
 
-        d3.select('#main-path-view').style('height', ((normedPaths.length + predictedAttrGrps.data().map(m=> m[0]).length)* 30) + 'px');
-        d3.selectAll('.paths').attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (newKeys.data().length + 1))) +')');
+          ////
+
+        let attData =  formatAttributeData(normedPaths, scales, newKeys.data());
+        let predictedAttrGrps = renderAttributes(attributeWrapper, attData, scales, null, collapsed);
+
+        //d3.select('#main-path-view').style('height', ((normedPaths.length + predictedAttrGrps.data().map(m=> m[0]).length)* 30) + 'px');
+       // d3.selectAll('.paths').attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (newKeys.data().length + 1))) +')');
         
-        drawContAtt(predictedAttrGrps, moveMetric);
-        drawDiscreteAtt(predictedAttrGrps, scales, moveMetric);
+        drawContAtt(predictedAttrGrps, moveMetric, collapsed);
+        drawDiscreteAtt(predictedAttrGrps, scales, moveMetric, collapsed);
+
+        sizeAndMove(d3.select('#main-path-view'), attributeWrapper, normedPaths, (attrMove * attributeHeight))
 
     });
     let labelText = labelGroups.append('text').text(d=> d).style('font-size', 10);

@@ -3,11 +3,11 @@ import {formatAttributeData} from './dataFormat';
 import {drawPathsAndAttributes} from './rendering';
 import {toggleFilters} from './filterComponent';
 import {renderDistibutions} from './distributionView';
-import {dataMaster} from './index';
+import {dataMaster, collapsed} from './index';
 
 export function toolbarControl(toolbar, normedPaths, main, calculatedScales, moveMetric, pathView){
 
-    console.log('toolbarcontrol', moveMetric);
+    console.log('collapsing?', collapsed);
 
     let viewButton = toolbar.append('button').attr('id', 'view-toggle').attr('attr' , 'button').attr('class', 'btn btn-outline-secondary');
 
@@ -52,6 +52,7 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, mov
 
     let scrunchButton = toolbar.append('button').attr('id', 'scrunch');
     scrunchButton.attr('class', 'btn btn-outline-secondary').text('Collapse Attributes');
+    scrunchButton.attr('value', false);
     scrunchButton.on('click', ()=> toggleScrunch(scrunchButton, normedPaths, main, calculatedScales));
     viewButton.on('click', ()=> togglePathView(viewButton, normedPaths, main, calculatedScales, moveMetric));
 }
@@ -60,12 +61,14 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, mov
 function toggleScrunch(button, normedPaths, main, calculatedScales){
     if(button.text() === 'Collapse Attributes'){
         button.text('Expand Attributes');
-        main.selectAll('*').remove();//.selectAll('*').remove();
-        drawPathsAndAttributes(normedPaths, main, calculatedScales, 'edgeLength', true);
+        main.selectAll('*').remove();
+        button.attr('value', true);
+        drawPathsAndAttributes(normedPaths, main, calculatedScales, 'edgeLength');
     }else{
         button.text('Collapse Attributes');
-        main.selectAll('*').remove();//.selectAll('*').remove();
-        drawPathsAndAttributes(normedPaths, main, calculatedScales, 'edgeLength', false);
+        main.selectAll('*').remove();
+        button.attr('value', false);
+        drawPathsAndAttributes(normedPaths, main, calculatedScales, 'edgeLength');
     }
 }
 
