@@ -190,8 +190,7 @@ line.half {
 
 .range-rect {
   width: 20px;
-  fill: #32C1FE;
-  opacity: 0.4; }
+  fill: #32C1FE; }
 
 .inner-line {
   stroke: #32C1FE;
