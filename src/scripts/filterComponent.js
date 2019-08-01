@@ -16,7 +16,7 @@ export function toggleFilters(filterButton, normedPaths, main, moveMetric, scale
         filterDiv.classed('hidden', false);
         main.style('padding-top', '200px');
 
-        renderAttToggles(filterDiv, normedPaths, scales, 'edgeLength');
+        renderAttToggles(filterDiv, normedPaths, main, scales, 'edgeLength');
         stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, scales);
         queryFilter(filterDiv, filterButton, normedPaths, main, moveMetric, scales);
 
@@ -159,7 +159,6 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                     let observedFilter = selections[1].map(yScale.invert).sort();
                     let lastFilter = filterMaster.filter(f=> f['filterType'] === 'data-filter');
 
-                    console.log('last', lastFilter);
                     let data = lastFilter.length > 0 ? lastFilter[lastFilter.length - 1].data : dataMaster[0];
 
                     let test = continuousFilter(data, selectedOption, predictedFilter, observedFilter);
@@ -308,7 +307,7 @@ function queryFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
         });
 
 }
-function renderAttToggles(filterDiv, normedPaths, scales, moveMetric){
+function renderAttToggles(filterDiv, normedPaths, main, scales, moveMetric){
 
     ////NEED TO GET RID OF TOGGLE SVG
     let keys = Object.keys(normedPaths[0][0].attributes);
@@ -350,6 +349,12 @@ function renderAttToggles(filterDiv, normedPaths, scales, moveMetric){
             newFilMaster.push({'type':'hide-attribute', 'attribute':key.field, 'before-data': [...normedPaths]});
         });
         filterMaster = newFilMaster;
+
+
+        ////DRAW THE PATHS
+        drawPathsAndAttributes(normedPaths, main, scales, moveMetric);
+
+        /*
         let attributeWrapper = d3.selectAll('.attribute-wrapper');
         attributeWrapper.selectAll('g').remove();
         
@@ -373,10 +378,11 @@ function renderAttToggles(filterDiv, normedPaths, scales, moveMetric){
         drawDiscreteAtt(predictedAttrGrps, scales, moveMetric, collapsed);
 
         sizeAndMove(d3.select('#main-path-view'), attributeWrapper, normedPaths, (attrMove * attributeHeight))
-
+*/
     });
     let labelText = labelGroups.append('text').text(d=> d).style('font-size', 10);
     labelText.attr('transform', 'translate(10, 4)');  
+    
 }
 function stateChange(selectorDiv, keys, selectId, label){
 
