@@ -24,7 +24,7 @@ export function drawPathsAndAttributes(normedPaths, main, calculatedScales, move
     let predictedAttrGrps = renderAttributes(attributeWrapper, attData, calculatedScales, null, collapsed);
     let attributeHeight = collapsed? 20 : 45;
     pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 10)* attrMove + 10)) +')');
-  
+    
     drawContAtt(predictedAttrGrps, moveMetric, collapsed);
     drawDiscreteAtt(predictedAttrGrps, calculatedScales, moveMetric, collapsed);
     sizeAndMove(main.select('#main-path-view'), attributeWrapper, normedPaths, (attrMove * attributeHeight))
@@ -150,8 +150,21 @@ export function renderAttributes(attributeWrapper, data, scales, filterArray, co
     return predictedAttrGrps;
 }
 
+function collapsedPathGen(data){
+    data.map((p, i)=>{
+        let step = i === 0 ? 0 : 1;
+        let test = (p.realVal > data[i-step].realVal) ? 0 : 1;
+        p.change = test;
+    })
+}
+
 function continuousPaths(innerTimeline, moveMetric, collapsed){
-    //THIS IS THE PATH GENERATOR FOR THE CONTINUOUS VARIABLES1q
+
+    innerTimeline.data().forEach(path => {
+        collapsedPathGen(path, moveMetric);
+    });
+
+    //THIS IS THE PATH GENERATOR FOR THE CONTINUOUS VARIABLES
     let height = collapsed? 20 : 45;
     var lineGen = d3.line()
     .x(d=> {
@@ -161,7 +174,12 @@ function continuousPaths(innerTimeline, moveMetric, collapsed){
     .y(d=> {
         let y = d.yScale;
         y.range([height, 0]);
-        return y(d.realVal);});
+        if(collapsed){
+            return y(d.change);
+        }else{
+            return y(d.realVal);
+        }
+    });
 
     let innerPaths = innerTimeline.append('path')
     .attr("d", lineGen)
@@ -206,17 +224,23 @@ export function drawContAtt(predictedAttrGrps, moveMetric, collapsed){
         let y = d.yScale;
         y.range([attributeHeight, 0]);
         let range = d.leaf ? 0 : y(d.lowerCI95) - y(d.upperCI95);
-        return range;
+        let barHeight = collapsed ? 20 : range;
+        return barHeight;
     });
     rangeRect.attr('transform', (d, i)=> {
         let y = d.yScale;
         y.range([attributeHeight, 0]);
-        //let move = d.leaf? 0 : y(d.lowerCI95);
-        let move = d.leaf? 0 : y(d.upperCI95);
+        let move = (d.leaf || collapsed) ? 0 : y(d.upperCI95);
         return 'translate(0, '+ move +')';
     });
-    rangeRect.style('fill', d=> d.color);
-    rangeRect.style('opacity', (d)=> {
+    rangeRect.style('fill', (d)=> {
+        let colorScale = d3.scaleLinear().range(['blue', 'red']).domain([0, 1]);
+        console.log(colorScale(d.realVal))
+        return colorScale(d.realVal);
+       //return d.color
+    });
+    rangeRect.attr('opacity', (d)=> {
+        console.log(d.satScale(d.realVal))
         return d.satScale(d.realVal);
     });
     innerBars.append('rect').attr('width', 20).attr('height', 5)

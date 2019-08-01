@@ -93,14 +93,14 @@ loadData(d3.json, './public/data/geospiza_with_attributes.json').then(data=> {
     let pathArray = pullPath([], [data], [], [], 0);
 
     //console.log('pa',pathArray);
-});
-
-loadData(d3.json, './public/data/geospiza_rich_ASR_wingL.json').then(data=> {
+});*/
+/*
+loadData(d3.json, './public/data/geospiza_loop_all_asr_features.json').then(data=> {
     let pathArray = pullPath([], [data], [], [], 0);
 
     console.log('pa RICH',pathArray);
-});
-
+});*/
+/*
 loadData(d3.json, './public/data/anolis_rich_ASR_pad_vs_tail.json').then(data=> {
     let pathArray = pullPath([], [data], [], [], 0);
 

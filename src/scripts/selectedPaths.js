@@ -136,8 +136,6 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
     let selectedGroups = renderPaths(pathData, selectWrap, scales, moveMetric);
     selectedGroups.attr('transform', (d, i)=> 'translate(0,'+(i*60)+')');
 
-  //  console.log('sellllected',selectedGroups.select('.time-line').selectAll('.node'))
-
     let nodes = selectedGroups.select('.time-line').selectAll('.node');
     nodes.on('mouseover', (d, i)=> {
       
@@ -145,7 +143,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
             let nodearray = path.flatMap(f=> f.node);
             return nodearray.indexOf(d.node) > -1;
         });
-        console.log(nearest[0], nearest[1]);
+       
         let nearestA = nearest[0];
         let nearestB = nearest[1];
     });

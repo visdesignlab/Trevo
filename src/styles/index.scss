@@ -206,7 +206,7 @@ rect.attribute-rect-sum,
   fill: #fff;
   stroke: gray;
   stroke-width: 0.5;
-  //opacity: 0.6;
+
   width:20px;
 }
 
@@ -214,8 +214,6 @@ g.range rect{
   fill: #fff;
   stroke: gray;
   stroke-width: 0.5;
-  //opacity: 0.6;
-  
 }
 
 .paths line{
@@ -249,7 +247,7 @@ line.half{
 .range-rect{
   width:20px;
   fill:#32C1FE;
-  opacity:0.4;
+  //opacity:0.4;
 }
 
 .inner-line{
