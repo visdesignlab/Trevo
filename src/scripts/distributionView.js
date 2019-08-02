@@ -10,7 +10,8 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
 
     let observedWidth = 200;
     let predictedWidth = 800;
-    let height = 80;
+    let height = 90;
+    let margin = 20
   
     let keys = Object.keys(normedPaths[0][0].attributes);
 
@@ -123,7 +124,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
     let predictedWrap = binnedWrap.append('g').classed('predicted', true);
 
     let branchGroup = predictedWrap.selectAll('g.branch-bin').data(d=> d.branches).join('g').classed('branch-bin', true);
-    branchGroup.attr('transform', (d, i)=> 'translate('+(100 + branchScale(i))+')');
+    branchGroup.attr('transform', (d, i)=> 'translate('+(100 + branchScale(i))+', 0)');
 
     let continDist = branchGroup.filter(f=> f.type === 'continuous');
 
@@ -134,7 +135,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
         return y(i); 
     })
     .y0(d=> {
-        let x = d3.scaleLinear().domain([0, 50]).range([0, 90]).clamp(true);
+        let x = d3.scaleLinear().domain([0, 50]).range([0, 80]).clamp(true);
         return x(0);
     })
     .y1(d=> {
@@ -145,7 +146,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
 
     continDist.each((d, i, nodes)=> {
         let distrib = d3.select(nodes[i]).selectAll('g').data([d.bins]).join('g').classed('distribution', true);
-        distrib.attr('transform', 'translate(11, 80) rotate(-90)');
+        distrib.attr('transform', 'translate(11, '+height+') rotate(-90)');
         let path = distrib.append('path').attr('d', lineGen);
         path.attr("fill", "rgba(133, 193, 233, .4)")
         .style('stroke', "rgba(133, 193, 233, .9)");
@@ -188,7 +189,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
     avRect.attr('transform', (d, i) => {
         if(d.data[0] != undefined){
             let newy = d.data[0].yScale;
-            newy.range([80, 0]);
+            newy.range([height, 0]);
             let mean = d3.mean(d.data.map(m=> m.realVal));
             return 'translate(0,'+newy(mean)+')';
         }else{
@@ -211,22 +212,22 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
         let width = observedWidth / n.length;
         return width;
     }).attr('height', (d, i)=> {
-        let y = d3.scaleLinear().domain([0, Object.keys(d).length]).range([(height - 10), 0])
+        let y = d3.scaleLinear().domain([0, Object.keys(d).length]).range([(height - margin), 0])
         return y(Object.keys(d).length - 2)
     }).attr('fill', 'rgba(133, 193, 233, .5)');
 
     contBars.attr('transform', (d, i, n)=> {
         let movex = observedWidth / n.length;
-        let y = d3.scaleLinear().domain([0, Object.keys(d).length]).range([(height - 10), 0])
+        let y = d3.scaleLinear().domain([0, Object.keys(d).length]).range([(height - margin), 0])
         let movey = height - y(Object.keys(d).length - 2);
         return 'translate('+(movex * i)+', '+movey+')'});
 
     contOb.each((d, i, nodes)=> {
         let xvalues = d.leafData.data.map(m=> m.realVal);
         let x = d3.scaleLinear().domain([d3.min(xvalues), d3.max(xvalues)]).range([0, observedWidth])
-        let y = d3.scaleLinear().domain([0, d3.max(d.leafData.bins.map(b=> Object.keys(b).length)) - 2]).range([(height - 10), 0]);
+        let y = d3.scaleLinear().domain([0, d3.max(d.leafData.bins.map(b=> Object.keys(b).length)) - 2]).range([(height - margin), 0]);
         d3.select(nodes[i]).append('g').classed('x-axis', true).call(d3.axisBottom(x)).attr('transform', 'translate(0, '+height+')');
-        d3.select(nodes[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y)).attr('transform', 'translate(0, '+10+')');
+        d3.select(nodes[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y)).attr('transform', 'translate(0, '+margin+')');
     });
     
 ////Observed Discrete////
@@ -240,15 +241,24 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
         return width;
     }).attr('height', (d, i, n)=> {
         console.log('dd', d, d3.select(n).data());
-        let y = d3.scaleLinear().domain([0, 100]).range([(height -10), 0])
+        let y = d3.scaleLinear().domain([0, 100]).range([(height -margin), 0])
         return y(d.length)
     }).attr('fill', 'rgba(133, 193, 233, .5)');
 
     discBars.attr('transform', (d, i, n)=> {
         let movex = observedWidth / n.length;
-        let y = d3.scaleLinear().domain([0, 100]).range([(height - 10), 0])
-        let movey = height - y(d.length);
+        let y = d3.scaleLinear().domain([0, 100]).range([(height - margin), 0])
+        let movey = (height) - y(d.length);
         return 'translate('+(movex * i)+', '+movey+')'});
+
+    discOb.each((d, i, nodes)=> {
+            console.log('dis', d)
+            let xvalues = d.leafData.data.map(m=> m.realVal);
+          
+            let y = d3.scaleLinear().domain([0, 100]).range([(height - margin), 0]);
+           
+            d3.select(nodes[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y)).attr('transform', 'translate(0, '+margin+')');
+    });
 
 
     /*
