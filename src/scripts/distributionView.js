@@ -153,6 +153,8 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
         newy.range([80, 0]);
         return 'translate(0,'+newy(d.upperCI95)+')'
     });
+
+    rangeRect.attr('fill', "rgba(133, 193, 233, .05)")
     
     /*
 
