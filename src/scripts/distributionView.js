@@ -29,6 +29,9 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
     });
    
     let internalNodes = newNormed.map(path => path.filter(node=> node.leaf != true));
+    let leafNodes = newNormed.flatMap(path => path.filter(node=> node.leaf === true));
+
+
 
     normBins.map((n, i)=> {
         let edges = internalNodes.flatMap(path => path.filter(node=> {
@@ -55,6 +58,10 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
             }
             return {'data': bin.fData, 'range': [bin.base, bin.top], 'index': bin.binI, 'key': key };
         })
+
+        let leafAttr = leafNodes.map(m=> m.attributes[key]);
+
+        let leafData = {'data': leafAttr}
    
         if(scale.type === 'continuous'){
             let max = d3.max(mapNorm.flatMap(m=> m.data).map(v=> v.realVal));
@@ -71,16 +78,31 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
                 n.bins = histogram(n.data);
                 return n;
             });
-       
+
+                //Histogram for observed////
+            let maxO = d3.max(leafAttr.flatMap(v=> v.realVal));
+            let minO = d3.min(leafAttr.flatMap(v=> v.realVal));
+            let xO = d3.scaleLinear().domain([minO, maxO]).range([0, height])
+
+            let histogramO = d3.histogram()
+            .value(function(d) { return d.realVal; })  
+            .domain(xO.domain())  
+            .thresholds(xO.ticks(20)); 
+
+            leafData.bins = histogramO(leafAttr);
+
+
         }else{
             mapNorm.bins = null
+            leafData = null;
         }
-        let newK = {'key': key, 'branches': mapNorm, 'type': scale.type }
-      
+
+        let newK = {'key': key, 'branches': mapNorm, 'type': scale.type, 'leafData': leafData }
         return newK;
     });
 
-    console.log(sortedBins)
+
+    ///////RENDERING//////////
 
     let svg = mainDiv.append('svg');
     svg.attr('id', 'main-summary-view');
@@ -96,11 +118,9 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
     
     let label = binnedWrap.append('text').text(d=> d.key).attr('y', 40).attr('x', 80).style('text-anchor', 'end');
 
-    let branchGroup = binnedWrap.selectAll('g.branch-bin').data(d=> {
-        ///THIS IS RIGHT
-        console.log('data before the branch bins',d);
-        return d.branches}).join('g').classed('branch-bin', true);
- 
+    let predictedWrap = binnedWrap.append('g').classed('predicted', true);
+
+    let branchGroup = predictedWrap.selectAll('g.branch-bin').data(d=> d.branches).join('g').classed('branch-bin', true);
     branchGroup.attr('transform', (d, i)=> 'translate('+(100 + branchScale(i))+')');
 
     let continDist = branchGroup.filter(f=> f.type === 'continuous');
@@ -118,7 +138,6 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
     .y1(d=> {
         let dat = Object.keys(d).length - 1
         let x = d3.scaleLinear().domain([0, 50]).range([0, 80]).clamp(true);
-
         return x(dat); 
     });
 
@@ -154,7 +173,37 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
         return 'translate(0,'+newy(d.upperCI95)+')'
     });
 
-    rangeRect.attr('fill', "rgba(133, 193, 233, .05)")
+    rangeRect.attr('fill', "rgba(133, 193, 233, .05)");
+
+    let avRect = continDist.append('rect').attr('width', 10).attr('height', (d, i)=> {
+        if(d.data[0] != undefined){
+            return 3;
+        }else{
+            return 0;
+        }
+    });
+
+    avRect.attr('transform', (d, i) => {
+        if(d.data[0] != undefined){
+            let newy = d.data[0].yScale;
+            newy.range([80, 0]);
+            let mean = d3.mean(d.data.map(m=> m.realVal));
+            return 'translate(0,'+newy(mean)+')';
+        }else{
+            return 'translate(0,0)';
+        }
+    }).attr('fill', '#004573');
+
+
+    ////OBSERVED CONTIUOUS/////
+
+    let observedWrap = binnedWrap.append('g').classed('observed', true);
+
+    let contOb = observedWrap.filter(f=> f.type === 'continuous');
+
+    console.log(contOb)
+
+
     
     /*
 

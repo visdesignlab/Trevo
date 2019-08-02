@@ -7,8 +7,6 @@ import {dataMaster, collapsed} from './index';
 
 export function toolbarControl(toolbar, normedPaths, main, calculatedScales, moveMetric, pathView){
 
-    console.log('collapsing?', collapsed);
-
     let viewButton = toolbar.append('button').attr('id', 'view-toggle').attr('attr' , 'button').attr('class', 'btn btn-outline-secondary');
 
     if(pathView === 'paths'){
