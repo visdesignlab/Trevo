@@ -6,7 +6,6 @@ import {dataMaster} from './index';
 
 export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
 
-    console.log(filterMaster, dataMaster);
     let pathdata = (filterMaster.length > 0)? filterMaster : dataMaster[0];
 
     let observedWidth = 200;
@@ -44,9 +43,9 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
     });
 
     let sortedBins = keys.map(key=> {
-       // console.log(key);
+        let scale = scales.filter(f=> f.field === key)[0];
+     
         let mapNorm = normBins.map(bin => {
-           // console.log(bin);
             if(bin.data.length > 0){
                 bin.fData = bin.data.map(d=> {
                     return d.attributes[key];
@@ -56,9 +55,32 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
             }
             return {'data': bin.fData, 'range': [bin.base, bin.top], 'index': bin.binI, 'key': key };
         })
-        let newK = {'key': key, 'bins': mapNorm}
+   
+        if(scale.type === 'continuous'){
+            let max = d3.max(mapNorm.flatMap(m=> m.data).map(v=> v.realVal));
+            let min = d3.min(mapNorm.flatMap(m=> m.data).map(v=> v.realVal));
+            let x = d3.scaleLinear().domain([min, max]).range([0, height])
+    
+            let histogram = d3.histogram()
+            .value(function(d) { return d.realVal; })  
+            .domain(x.domain())  
+            .thresholds(x.ticks(20)); 
+  
+            mapNorm.forEach(n=> {
+                n.type = scale.type;
+                n.bins = histogram(n.data);
+                return n;
+            });
+       
+        }else{
+            mapNorm.bins = null
+        }
+        let newK = {'key': key, 'branches': mapNorm, 'type': scale.type }
+      
         return newK;
     });
+
+    console.log(sortedBins)
 
     let svg = mainDiv.append('svg');
     svg.attr('id', 'main-summary-view');
@@ -68,33 +90,43 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
     let wrap = svg.append('g').classed('summary-wrapper', true);
     wrap.attr('transform', 'translate(10, 0)');
 
-    let binnedWrap = wrap.selectAll('.attr-wrap').data(sortedBins).join('g').attr('class', d=> d + ' attr-wrap');
+    let binnedWrap = wrap.selectAll('.attr-wrap').data(sortedBins).join('g').attr('class', d=> d.key + ' attr-wrap');
     
-    binnedWrap.append('text').text(d=> d.key).attr('y', 40).attr('x', 80).style('text-anchor', 'end');
+    let label = binnedWrap.append('text').text(d=> d.key).attr('y', 40).attr('x', 80).style('text-anchor', 'end');
 
-    let branchGroups = binnedWrap.selectAll('.branch-bins').data(d=> d.bins).join('g').classed('branch-bins', true);
+    let branchCont = binnedWrap.filter(d=> d.type === 'continuous').selectAll('.branch-bins').data(d=> d.branches).join('g').classed('branch-bins', true);
 
-
+   
     //TRANFORMING ALL THE GROUPS///
-    binnedWrap.attr('transform', (d, i)=>  'translate(0,'+(i * (height + 5))+')');
-    branchGroups.attr('transform', (d, i)=> 'translate('+(100 + branchScale(i))+')')
-    svg.attr('height', (keys.length * (height + 5)));
+    
+    let contRect = branchCont.append('rect').attr('height', height).attr('width', 5);
+    let continDist = branchCont.append('g').classed('distribution', true);
 
+    console.log(branchCont)
 
-    //////EXPERIMENTING WITH CONTINUOUS////
-
-    let continuousBins = binnedWrap.filter(f=> {
-        return scales.filter(s=> s.type === 'continuous').map(m=> m.field).indexOf(f.key) > -1;
+    var lineGen = d3.line()
+    .y((d, i)=> {
+        console.log('y',d)
+        let y = d3.scaleLinear().domain([0, 16]).range([0, height]);
+        return y(i); 
+    })
+    .x(d=> {
+        let x = d3.scaleLinear().domain([0, 100]).range([0, 100]);
+        return x(d.length); 
     });
 
-    let conGroups = continuousBins.selectAll('.branch-bins')
+    branchCont.append('path').data(d=> {
+        console.log('d', d)
+        return lineGen(d.data.bins);
+        });
 
-    conGroups.append('rect').attr('height', height).attr('width', 5);
+    
 
-    conGroups.selectAll('.distribution').data(d=> {
-        console.log(d.data);
-        return d.data;
-    }).join('g').classed('distribution', true);
+        binnedWrap.attr('transform', (d, i)=>  'translate(0,'+(i * (height + 5))+')');
+        contGroups.attr('transform', (d, i)=> 'translate('+(100 + branchScale(i))+')');
+        svg.attr('height', (keys.length * (height + 5)));
+        
+    
 
 
     /*
