@@ -43,6 +43,22 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
         return n;
     });
 
+    let sortedBins = keys.map(key=> {
+       // console.log(key);
+        let mapNorm = normBins.map(bin => {
+           // console.log(bin);
+            if(bin.data.length > 0){
+                bin.fData = bin.data.map(d=> {
+                    return d.attributes[key];
+                })
+            }else{
+                bin.fData = bin.data = [];
+            }
+            return {'data': bin.fData, 'range': [bin.base, bin.top], 'index': bin.binI, 'key': key };
+        })
+        let newK = {'key': key, 'bins': mapNorm}
+        return newK;
+    });
 
     let svg = mainDiv.append('svg');
     svg.attr('id', 'main-summary-view');
@@ -52,13 +68,12 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
     let wrap = svg.append('g').classed('summary-wrapper', true);
     wrap.attr('transform', 'translate(10, 0)');
 
-    let binnedWrap = wrap.selectAll('.attr-wrap').data(keys).join('g').attr('class', d=> d + ' attr-wrap');
+    let binnedWrap = wrap.selectAll('.attr-wrap').data(sortedBins).join('g').attr('class', d=> d + ' attr-wrap');
     
-    binnedWrap.append('text').text(d=> d).attr('y', 40).attr('x', 80).style('text-anchor', 'end');
+    binnedWrap.append('text').text(d=> d.key).attr('y', 40).attr('x', 80).style('text-anchor', 'end');
 
-    let branchGroups = binnedWrap.selectAll('.branch-bins').data(normBins).join('g').classed('branch-bins', true);
+    let branchGroups = binnedWrap.selectAll('.branch-bins').data(d=> d.bins).join('g').classed('branch-bins', true);
 
-    branchGroups.append('rect').attr('height', height).attr('width', 5);
 
     //TRANFORMING ALL THE GROUPS///
     binnedWrap.attr('transform', (d, i)=>  'translate(0,'+(i * (height + 5))+')');
@@ -66,6 +81,20 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
     svg.attr('height', (keys.length * (height + 5)));
 
 
+    //////EXPERIMENTING WITH CONTINUOUS////
+
+    let continuousBins = binnedWrap.filter(f=> {
+        return scales.filter(s=> s.type === 'continuous').map(m=> m.field).indexOf(f.key) > -1;
+    });
+
+    let conGroups = continuousBins.selectAll('.branch-bins')
+
+    conGroups.append('rect').attr('height', height).attr('width', 5);
+
+    conGroups.selectAll('.distribution').data(d=> {
+        console.log(d.data);
+        return d.data;
+    }).join('g').classed('distribution', true);
 
 
     /*
