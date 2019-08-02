@@ -84,6 +84,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
 
     let svg = mainDiv.append('svg');
     svg.attr('id', 'main-summary-view');
+    svg.attr('height', (keys.length * (height + 5)));
 
     let branchScale = d3.scaleLinear().domain([0, medBranchLength]).range([0, 780]);
 
@@ -91,44 +92,68 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
     wrap.attr('transform', 'translate(10, 0)');
 
     let binnedWrap = wrap.selectAll('.attr-wrap').data(sortedBins).join('g').attr('class', d=> d.key + ' attr-wrap');
+    binnedWrap.attr('transform', (d, i)=>  'translate(0,'+(i * (height + 5))+')');
     
     let label = binnedWrap.append('text').text(d=> d.key).attr('y', 40).attr('x', 80).style('text-anchor', 'end');
 
-    let branchCont = binnedWrap.filter(d=> d.type === 'continuous').selectAll('.branch-bins').data(d=> d.branches).join('g').classed('branch-bins', true);
+    let branchGroup = binnedWrap.selectAll('g.branch-bin').data(d=> {
+        ///THIS IS RIGHT
+        console.log('data before the branch bins',d);
+        return d.branches}).join('g').classed('branch-bin', true);
+ 
+    branchGroup.attr('transform', (d, i)=> 'translate('+(100 + branchScale(i))+')');
 
-   
-    //TRANFORMING ALL THE GROUPS///
-    
-    let contRect = branchCont.append('rect').attr('height', height).attr('width', 5);
-    let continDist = branchCont.append('g').classed('distribution', true);
+    let continDist = branchGroup.filter(f=> f.type === 'continuous');
 
-    console.log(branchCont)
-
-    var lineGen = d3.line()
-    .y((d, i)=> {
-        console.log('y',d)
+    var lineGen = d3.area()
+    .curve(d3.curveCardinal)
+    .x((d, i)=> {
         let y = d3.scaleLinear().domain([0, 16]).range([0, height]);
         return y(i); 
     })
-    .x(d=> {
-        let x = d3.scaleLinear().domain([0, 100]).range([0, 100]);
-        return x(d.length); 
+    .y0(d=> {
+        let x = d3.scaleLinear().domain([0, 50]).range([0, 90]).clamp(true);
+        return x(0);
+    })
+    .y1(d=> {
+        let dat = Object.keys(d).length - 1
+        let x = d3.scaleLinear().domain([0, 50]).range([0, 80]).clamp(true);
+
+        return x(dat); 
     });
 
-    branchCont.append('path').data(d=> {
-        console.log('d', d)
-        return lineGen(d.data.bins);
-        });
+    continDist.each((d, i, nodes)=> {
+        let distrib = d3.select(nodes[i]).selectAll('g').data([d.bins]).join('g').classed('distribution', true);
+        distrib.attr('transform', 'translate(11, 80) rotate(-90)');
+        let path = distrib.append('path').attr('d', lineGen);
+        path.attr("fill", "rgba(133, 193, 233, .4)")
+        .style('stroke', "rgba(133, 193, 233, .9)");
+    })
 
+    let contRect = continDist.append('rect').attr('height', height).attr('width', 10).style('fill', 'none').style('stroke', 'gray');
+    let rangeRect = continDist.selectAll('rect.range').data(d=> {
+
+        let newData = d.data.map(m=> {
+            m.range = d.range;
+            return m;
+        })
+        return newData}).join('rect').classed('range', true);
+
+    rangeRect.attr('width', 10);
+    rangeRect.attr('height', (d, i)=> {
+        if(d.yScale != undefined){
+            let newy = d.yScale;
+            newy.range([80, 0]);
+            return newy(d.lowerCI95) - newy(d.upperCI95)
+        }else{
+            return 0;
+        }
+    }).attr('transform', (d, i) => {
+        let newy = d.yScale;
+        newy.range([80, 0]);
+        return 'translate(0,'+newy(d.upperCI95)+')'
+    });
     
-
-        binnedWrap.attr('transform', (d, i)=>  'translate(0,'+(i * (height + 5))+')');
-        contGroups.attr('transform', (d, i)=> 'translate('+(100 + branchScale(i))+')');
-        svg.attr('height', (keys.length * (height + 5)));
-        
-    
-
-
     /*
 
     let xScale = d3.scaleLinear();
