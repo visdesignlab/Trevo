@@ -93,8 +93,10 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
 
 
         }else{
+            let states = leafAttr[0].states;
             mapNorm.bins = null
-            leafData = null;
+            leafData.bins = states.map(s=> leafAttr.filter(f=> f.winState === s.state));
+            
         }
 
         let newK = {'key': key, 'branches': mapNorm, 'type': scale.type, 'leafData': leafData }
@@ -209,37 +211,46 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
         let width = observedWidth / n.length;
         return width;
     }).attr('height', (d, i)=> {
-        let y = d3.scaleLinear().domain([0, Object.keys(d).length]).range([height, 0])
+        let y = d3.scaleLinear().domain([0, Object.keys(d).length]).range([(height - 10), 0])
         return y(Object.keys(d).length - 2)
     }).attr('fill', 'rgba(133, 193, 233, .5)');
 
     contBars.attr('transform', (d, i, n)=> {
         let movex = observedWidth / n.length;
-        let y = d3.scaleLinear().domain([0, Object.keys(d).length]).range([height, 0])
+        let y = d3.scaleLinear().domain([0, Object.keys(d).length]).range([(height - 10), 0])
         let movey = height - y(Object.keys(d).length - 2);
         return 'translate('+(movex * i)+', '+movey+')'});
 
     contOb.each((d, i, nodes)=> {
         let xvalues = d.leafData.data.map(m=> m.realVal);
         let x = d3.scaleLinear().domain([d3.min(xvalues), d3.max(xvalues)]).range([0, observedWidth])
-        let y = d3.scaleLinear().domain([0, d3.max(d.leafData.bins.map(b=> Object.keys(b).length)) - 2]).range([height, 0]);
+        let y = d3.scaleLinear().domain([0, d3.max(d.leafData.bins.map(b=> Object.keys(b).length)) - 2]).range([(height - 10), 0]);
         d3.select(nodes[i]).append('g').classed('x-axis', true).call(d3.axisBottom(x)).attr('transform', 'translate(0, '+height+')');
-        d3.select(nodes[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y));//.attr('transform', 'translate(0, '+height+')');
+        d3.select(nodes[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y)).attr('transform', 'translate(0, '+10+')');
     });
     
-    /*
-    .append("g")
-        .attr("transform", "translate(0," + height + ")")
-        .call((d, i)=>{
-            console.log('in axis', d, i);
-            //d3.axisBottom(x)
-        });
-  
-    // add the y Axis
-    svg.append("g")
-        .call(d3.axisLeft(y));
-*/
-    
+////Observed Discrete////
+    let discOb =  observedWrap.filter(f=> f.type === 'discrete');
+
+    let discBars = discOb.selectAll('g.ob-bars').data(d=> {
+        return d.leafData.bins}).join('g').classed('ob-bars', true);
+
+    let dRects = discBars.append('rect').attr('width', (d, i, n)=> {
+        let width = observedWidth / n.length;
+        return width;
+    }).attr('height', (d, i, n)=> {
+        console.log('dd', d, d3.select(n).data());
+        let y = d3.scaleLinear().domain([0, 100]).range([(height -10), 0])
+        return y(d.length)
+    }).attr('fill', 'rgba(133, 193, 233, .5)');
+
+    discBars.attr('transform', (d, i, n)=> {
+        let movex = observedWidth / n.length;
+        let y = d3.scaleLinear().domain([0, 100]).range([(height - 10), 0])
+        let movey = height - y(d.length);
+        return 'translate('+(movex * i)+', '+movey+')'});
+
+
     /*
 
     let xScale = d3.scaleLinear();
