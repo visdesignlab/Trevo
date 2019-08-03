@@ -152,9 +152,12 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
     
         let list = d.data.map(m=> m.nodeLabels);
         let selected = pointGroups.filter(p=> list.indexOf(p.node) > -1).classed('selected', true);
+        let treeNode  = d3.select('#sidebar').selectAll('.node');
+        let selectedBranch = treeNode.filter(f=> list.indexOf(f.data.node) > 0).classed('selected-branch', true);
  
     }).on('mouseout', (d, i)=> {
         d3.selectAll(".branch-points.selected").classed('selected', false);
+        d3.selectAll('.selected-branch').classed('selected-branch', false);
     });
 
     var lineGen = d3.area()
