@@ -32,14 +32,12 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
     let internalNodes = newNormed.map(path => path.filter(node=> node.leaf != true));
     let leafNodes = newNormed.flatMap(path => path.filter(node=> node.leaf === true));
 
-
-
     normBins.map((n, i)=> {
         let edges = internalNodes.flatMap(path => path.filter(node=> {
             if(i === 0){
                 return node.edgeLength === 0;
             }else{
-                return node.edgeLength > n.base && node.edgeLength <= n.top;
+                return node.edgeMove > n.base && node.edgeMove <= n.top;
             }
         } ));
         n.data = edges;
@@ -58,7 +56,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
                 bin.fData = bin.data = [];
             }
             return {'data': bin.fData, 'range': [bin.base, bin.top], 'index': bin.binI, 'key': key };
-        })
+        });
 
         let leafAttr = leafNodes.map(m=> m.attributes[key]);
 
@@ -109,12 +107,36 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
 
     let svg = mainDiv.append('svg');
     svg.attr('id', 'main-summary-view');
-    svg.attr('height', (keys.length * (height + 5)));
+    svg.attr('height', (keys.length * (height + 20)));
 
     let branchScale = d3.scaleLinear().domain([0, medBranchLength]).range([0, 780]);
 
+    let branchPoints = svg.append('g').classed('branch-bar', true).attr('transform', 'translate(10, 20)');
+    branchPoints.append('text').text('Root').attr('transform', 'translate(50, 7)');
+    branchPoints.append('text').text('Leaves').attr('transform', 'translate(950, 7)');
+
     let wrap = svg.append('g').classed('summary-wrapper', true);
-    wrap.attr('transform', 'translate(10, 0)');
+    wrap.attr('transform', 'translate(10, 50)');
+
+    let nodeLengthArray = [];
+    let nodeDuplicateCheck = []
+
+    normedPaths.map(path=> {
+        path.filter(n=> n.leaf != true).map(node=> {
+            if(nodeDuplicateCheck.indexOf(node.node) == -1){
+                nodeDuplicateCheck.push(node.node);
+                nodeLengthArray.push({'node': node.node, 'eMove': node.edgeMove });
+            }
+        })
+    });
+
+    let bPointScale = d3.scaleLinear().domain([0, 1]).range([0, 795]);
+    let pointGroups = branchPoints.selectAll('g.branch-points').data(nodeLengthArray).join('g').attr('class', (d, i)=> d.node).classed('branch-points', true);
+    pointGroups.attr('transform', (d, i) => 'translate('+(105 + bPointScale(d.eMove))+', 0)');
+    pointGroups.append('circle').attr('r', 5).attr('fill', "rgba(123, 141, 153, 0.5)");
+
+
+    console.log(nodeLengthArray)
 
     let binnedWrap = wrap.selectAll('.attr-wrap').data(sortedBins).join('g').attr('class', d=> d.key + ' attr-wrap');
     binnedWrap.attr('transform', (d, i)=>  'translate(0,'+(i * (height + 5))+')');
@@ -148,6 +170,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
         let distrib = d3.select(nodes[i]).selectAll('g').data([d.bins]).join('g').classed('distribution', true);
         distrib.attr('transform', 'translate(11, '+height+') rotate(-90)');
         let path = distrib.append('path').attr('d', lineGen);
+        console.log('d', d)
         path.attr("fill", "rgba(133, 193, 233, .4)")
         .style('stroke', "rgba(133, 193, 233, .9)");
     })
@@ -251,14 +274,9 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
         return 'translate('+(movex * i)+', '+movey+')'});
 
     discOb.each((d, i, nodes)=> {
-          
-            let xvalues = d.leafData.data.map(m=> m.realVal);
-            console.log('ddd', d)
-            let colors = scales.filter(s=> s.field === d.key)[0];
 
             let labels = d.leafData.bins.map(b=> b[0].winState)
-           console.log(labels)
-           let xPoint = d3.scalePoint().domain(labels).range([0, observedWidth]).padding(.6)
+            let xPoint = d3.scalePoint().domain(labels).range([0, observedWidth]).padding(.6)
           
             let y = d3.scaleLinear().domain([0, 100]).range([(height - margin), 0]);
            
