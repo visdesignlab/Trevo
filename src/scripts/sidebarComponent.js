@@ -86,9 +86,7 @@ export function renderTreeButtons(nestedData, normedPaths, calculatedScales, sid
     let treeViewButton = sidebar.append('button').text('Show Lengths').classed('btn btn-outline-secondary', true);  
 
     treeViewButton.on('click', ()=> {
-       // treeBrush.on('end', updateBrush);
-       // let treeBrushG = sidebar.select('svg').append('g').classed('tree-brush', true).call(treeBrush);
-       console.log('renderTree')
+  
        sidebar.select('svg').remove();
        if(treeViewButton.text() === 'Show Lengths'){
            renderTree(nestedData, normedPaths, calculatedScales, sidebar, true);
@@ -196,6 +194,10 @@ export function renderTree(nestedData, normedPaths, calculatedScales, sidebar, l
 
     node.on('mouseover', (d, i, n)=> {
         let paths = d3.select('#main-path-view').selectAll('.paths');
+
+        let points = d3.select('#main-summary-view').selectAll('.branch-points');
+        points.filter(f=> f.node === d.data.node).classed('selected', true);
+
         let selectedPaths = paths.filter(path=> {
             let nodes = path.map(m=> m.node);
             return nodes.indexOf(d.data.node) > -1;

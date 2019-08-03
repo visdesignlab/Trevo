@@ -258,7 +258,6 @@ export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric, collapsed
 
     console.log('collapsed in draw discrete', collapsed, d3.select('#scrunch').attr('value'))
     
-
     let discreteAtt = predictedAttrGrps.filter(d=> {
         return d[d.length - 1].type === 'discrete';
     });
@@ -289,7 +288,6 @@ export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric, collapsed
         });
         return lines;
     }).join('g').classed('state-path', true);
-   // statePath = pathEnter.merge(statePath);
 
     var lineGen = d3.line()
     .x(d=> {

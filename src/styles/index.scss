@@ -114,6 +114,11 @@ svg{
   padding:3px;
 }
 
+.branch-points.selected circle{
+  fill: orange;
+  opacity: 0.5;
+}
+
 .filter-wrap{
   display:inline-block;
   float:left;

@@ -112,6 +112,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
     let branchScale = d3.scaleLinear().domain([0, medBranchLength]).range([0, 780]);
 
     let branchPoints = svg.append('g').classed('branch-bar', true).attr('transform', 'translate(10, 20)');
+    branchPoints.append('line').attr('y0', 2).attr('y1', 2).attr('x0', '210').attr('x1', 890).attr('stroke', 'gray').attr('stroke-width', .25)
     branchPoints.append('text').text('Root').attr('transform', 'translate(50, 7)');
     branchPoints.append('text').text('Leaves').attr('transform', 'translate(950, 7)');
 
@@ -135,9 +136,6 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
     pointGroups.attr('transform', (d, i) => 'translate('+(105 + bPointScale(d.eMove))+', 0)');
     pointGroups.append('circle').attr('r', 5).attr('fill', "rgba(123, 141, 153, 0.5)");
 
-
-    console.log(nodeLengthArray)
-
     let binnedWrap = wrap.selectAll('.attr-wrap').data(sortedBins).join('g').attr('class', d=> d.key + ' attr-wrap');
     binnedWrap.attr('transform', (d, i)=>  'translate(0,'+(i * (height + 5))+')');
     
@@ -149,6 +147,15 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
     branchGroup.attr('transform', (d, i)=> 'translate('+(100 + branchScale(i))+', 0)');
 
     let continDist = branchGroup.filter(f=> f.type === 'continuous');
+
+    continDist.on('mouseover', (d, i, node)=> {
+    
+        let list = d.data.map(m=> m.nodeLabels);
+        let selected = pointGroups.filter(p=> list.indexOf(p.node) > -1).classed('selected', true);
+ 
+    }).on('mouseout', (d, i)=> {
+        d3.selectAll(".branch-points.selected").classed('selected', false);
+    });
 
     var lineGen = d3.area()
     .curve(d3.curveCardinal)
