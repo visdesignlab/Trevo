@@ -240,10 +240,9 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
         let width = observedWidth / n.length;
         return width;
     }).attr('height', (d, i, n)=> {
-        console.log('dd', d, d3.select(n).data());
         let y = d3.scaleLinear().domain([0, 100]).range([(height -margin), 0])
         return y(d.length)
-    }).attr('fill', 'rgba(133, 193, 233, .5)');
+    }).attr('fill', (d, i) => d[0].color).attr('opacity', 0.3);
 
     discBars.attr('transform', (d, i, n)=> {
         let movex = observedWidth / n.length;
@@ -252,12 +251,19 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
         return 'translate('+(movex * i)+', '+movey+')'});
 
     discOb.each((d, i, nodes)=> {
-            console.log('dis', d)
+          
             let xvalues = d.leafData.data.map(m=> m.realVal);
+            console.log('ddd', d)
+            let colors = scales.filter(s=> s.field === d.key)[0];
+
+            let labels = d.leafData.bins.map(b=> b[0].winState)
+           console.log(labels)
+           let xPoint = d3.scalePoint().domain(labels).range([0, observedWidth]).padding(.6)
           
             let y = d3.scaleLinear().domain([0, 100]).range([(height - margin), 0]);
            
             d3.select(nodes[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y)).attr('transform', 'translate(0, '+margin+')');
+            d3.select(nodes[i]).append('g').classed('x-axis', true).call(d3.axisBottom(xPoint)).attr('transform', 'translate(0, '+height+')');
     });
 
 
