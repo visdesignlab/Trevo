@@ -46,7 +46,6 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
 
     let sortedBins = keys.map(key=> {
         let scale = scales.filter(f=> f.field === key)[0];
-     
         let mapNorm = normBins.map(bin => {
             if(bin.data.length > 0){
                 bin.fData = bin.data.map(d=> {
@@ -59,13 +58,12 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
         });
 
         let leafAttr = leafNodes.map(m=> m.attributes[key]);
-
         let leafData = {'data': leafAttr}
    
         if(scale.type === 'continuous'){
             let max = d3.max(mapNorm.flatMap(m=> m.data).map(v=> v.realVal));
             let min = d3.min(mapNorm.flatMap(m=> m.data).map(v=> v.realVal));
-            let x = d3.scaleLinear().domain([min, max]).range([0, height])
+            let x = d3.scaleLinear().domain([min, max]).range([0, height]);
     
             let histogram = d3.histogram()
             .value(function(d) { return d.realVal; })  
@@ -78,7 +76,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
                 return n;
             });
 
-                //Histogram for observed////
+            //Histogram for observed////
             let maxO = d3.max(leafAttr.flatMap(v=> v.realVal));
             let minO = d3.min(leafAttr.flatMap(v=> v.realVal));
             let xO = d3.scaleLinear().domain([minO, maxO]).range([0, height])
@@ -90,18 +88,46 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
 
             leafData.bins = histogramO(leafAttr);
 
+            let newK = {'key': key, 'branches': [...mapNorm], 'type': scale.type, 'leafData': leafData}
+            return newK;
 
         }else{
+
             let states = leafAttr[0].states;
+
+      
+         
             mapNorm.bins = null
             leafData.bins = states.map(s=> leafAttr.filter(f=> f.winState === s.state));
+            let x = d3.scaleLinear().domain([0, 1]).range([0, height]);
             
+            mapNorm.map(n=> {
+                n.type = scale.type;
+                let colors = scale.stateColors;
+                n.bins = states.map(state=> {
+                    let color = colors.filter(f=> f.state === state.state);
+                    let chosen = n.data.flatMap(m=> m.states.filter(f=> f.state === state.state)).map(v=> v.realVal);
+                    let average = d3.mean(chosen);
+                    let stDev = d3.deviation(chosen);
+                 
+                    return {'state': state.state, 'average': average, 'stUp': average + stDev, 'stDown': average - stDev, 'color': color[0].color }
+                });
+                
+                return n;
+            });
+
+            let test = states.map(stat=> {
+                let key = stat.state;
+                return mapNorm.flatMap(m=> {
+                    return m.bins.filter(f=> f.state === key);
+                });
+            });
+
+            let newK = {'key': key, 'branches': [...mapNorm], 'type': scale.type, 'leafData': leafData, 'states': test}
+            return newK;
+
         }
-
-        let newK = {'key': key, 'branches': mapNorm, 'type': scale.type, 'leafData': leafData }
-        return newK;
     });
-
 
     ///////RENDERING//////////
 
@@ -149,12 +175,10 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
     let continDist = branchGroup.filter(f=> f.type === 'continuous');
 
     continDist.on('mouseover', (d, i, node)=> {
-    
         let list = d.data.map(m=> m.nodeLabels);
         let selected = pointGroups.filter(p=> list.indexOf(p.node) > -1).classed('selected', true);
         let treeNode  = d3.select('#sidebar').selectAll('.node');
         let selectedBranch = treeNode.filter(f=> list.indexOf(f.data.node) > 0).classed('selected-branch', true);
- 
     }).on('mouseout', (d, i)=> {
         d3.selectAll(".branch-points.selected").classed('selected', false);
         d3.selectAll('.selected-branch').classed('selected-branch', false);
@@ -180,14 +204,13 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
         let distrib = d3.select(nodes[i]).selectAll('g').data([d.bins]).join('g').classed('distribution', true);
         distrib.attr('transform', 'translate(11, '+height+') rotate(-90)');
         let path = distrib.append('path').attr('d', lineGen);
-        console.log('d', d)
         path.attr("fill", "rgba(133, 193, 233, .4)")
         .style('stroke', "rgba(133, 193, 233, .9)");
-    })
+    });
 
     let contRect = continDist.append('rect').attr('height', height).attr('width', 10).style('fill', 'none').style('stroke', 'gray');
-    let rangeRect = continDist.selectAll('rect.range').data(d=> {
 
+    let rangeRect = continDist.selectAll('rect.range').data(d=> {
         let newData = d.data.map(m=> {
             m.range = d.range;
             return m;
@@ -229,6 +252,50 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
             return 'translate(0,0)';
         }
     }).attr('fill', '#004573');
+
+    let discreteDist = branchGroup.filter(f=> f.type === 'discrete');
+    let discreteLine = discreteDist.append('line').attr('x0', 2).attr('x1', 2).attr('y0', 0).attr('y1', height).attr('stroke', 'gray').attr('stroke-width', 0.5)
+
+    let discreteBinWrap = binnedWrap.filter(f=> f.type === 'discrete');
+    let stateGroups = discreteBinWrap.selectAll('g.state').data(d=> d.states).join('g').classed('state', true);
+
+    stateGroups.append('path').attr('d', (p, i)=> {
+        var lineGenD = d3.area()
+        .curve(d3.curveCardinal)
+        .x((d, i)=> {
+            let y = d3.scaleLinear().domain([0, 9]).range([0, predictedWidth + 100]);
+            return y(i); 
+        })
+        .y0(d=> {
+            let x = d3.scaleLinear().domain([0, 1]).range([80, 0]).clamp(true);
+            return x(d.stDown);
+        })
+        .y1(d=> {
+            let x = d3.scaleLinear().domain([0, 1]).range([80, 0]).clamp(true);
+            return x(d.stUp); 
+        });
+        return lineGenD(p);
+
+    }).attr('transform', 'translate(100, 10)').attr('fill', (d, i)=> {
+        return d[0].color;
+    }).attr('opacity', 0.3);
+
+    stateGroups.append('path').attr('d', (p, i)=> {
+        var lineGen = d3.line()
+        .curve(d3.curveCardinal)
+        .x((d, i)=> {
+            let y = d3.scaleLinear().domain([0, 9]).range([0, predictedWidth + 100]);
+            return y(i); 
+        })
+        .y(d=> {
+            let x = d3.scaleLinear().domain([0, 1]).range([80, 0]).clamp(true);
+            return x(d.average); 
+        });
+        return lineGen(p);
+
+    }).attr('transform', 'translate(100, 10)').attr('fill', 'none').attr('stroke', (d, i)=> {
+        return d[0].color;
+    });
 
 
     ////OBSERVED CONTIUOUS/////
