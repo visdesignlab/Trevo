@@ -47,6 +47,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
     let sortedBins = keys.map(key=> {
         let scale = scales.filter(f=> f.field === key)[0];
         let mapNorm = normBins.map(bin => {
+            console.log('normbin', normBins)
             if(bin.data.length > 0){
                 bin.fData = bin.data.map(d=> {
                     return d.attributes[key];
@@ -104,10 +105,11 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
                 let colors = scale.stateColors;
                 n.bins = states.map(state=> {
                     let color = colors.filter(f=> f.state === state.state);
+                  
                     let chosen = n.data.flatMap(m=> m.states.filter(f=> f.state === state.state)).map(v=> v.realVal);
                     let average = d3.mean(chosen);
                     let stDev = d3.deviation(chosen);
-                    return {'state': state.state, 'average': average, 'stUp': average + stDev, 'stDown': average - stDev, 'color': color[0].color }
+                    return {'state': state.state, 'average': average, 'stUp': average + stDev, 'stDown': average - stDev, 'color': color[0].color, 'range': n.range }
                 });
                 
                 return n;
@@ -263,8 +265,15 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
     discreteDist.on('mouseover', (d, i, n)=> {
         let y = d3.scaleLinear().domain([1, 0]).range([0, height]);
         d3.select(n[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(3));
+        let selected = pointGroups.filter(f=> f.eMove >= d.range[0] && f.eMove < d.range[1]).classed('selected', true);
+        let treeNode  = d3.select('#sidebar').selectAll('.node');
+      
+        treeNode.filter(node=> node.data.combEdge >= d.range[0] && node.data.combEdge < d.range[1]).classed('selected-branch', true);
+      //  let selectedBranch = treeNode.filter(f=> list.indexOf(f.data.node) > 0).classed('selected-branch', true);
     }).on('mouseout', (d, i, n)=> {
         d3.select(n[i]).select('.y-axis').remove();
+        d3.selectAll(".branch-points.selected").classed('selected', false);
+        d3.selectAll('.selected-branch').classed('selected-branch', false);
     })
 
     let discreteBinWrap = predictedWrap.filter(f=> f.type === 'discrete');
@@ -372,6 +381,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
     }).on('mouseout', (d, i, n)=> {
         d3.select(n[i]).attr('opacity', 0.3);
         let state = d3.select('g.'+d[0].label).selectAll('g.state').attr('opacity', 0.6);
+     
     })
 
     discOb.each((d, i, nodes)=> {
