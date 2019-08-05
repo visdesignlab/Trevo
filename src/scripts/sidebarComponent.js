@@ -23,22 +23,27 @@ export function buildTreeStructure(paths, edges){
     return nestedData;
 }
 
-function updateBrush(){
+function updateBrush(scales){
     let sidebar = d3.select('#sidebar');
     let main = d3.select('#main');
     let toolbarDiv = d3.select('#toolbar');
+
+    console.log('filterMaster',filterMaster);
+    console.log('dataMaster', dataMaster);
+
+    let data = filterMaster.length === 0 ? dataMaster[0] : dataMaster[0];
 
     let nodes = sidebar.select('svg').select('g').selectAll('.node');
     let selectedNodes = nodes.filter(n=> (n.y > d3.event.selection[0][0]) && (n.y < d3.event.selection[1][0]) && (n.x > d3.event.selection[0][1]) && (n.x < d3.event.selection[1][1])).classed('selected', true);
 
     let filterArray = selectedNodes.data().map(n=> n.data.node);
   
-    let test = treeFilter(normedPaths, filterArray);
+    let test = treeFilter(data, filterArray);
 
-    let filterOb = {'filterType': 'data-filter', 'attribute-type': 'topology', 'filterFunction':treeFilter, 'before-data': [...normedPaths], 'data': [...test]}
+    let filterOb = {'filterType': 'data-filter', 'attribute-type': 'topology', 'filterFunction':treeFilter, 'before-data': [...data], 'data': [...test]}
     filterMaster.push(filterOb);
 
-    drawPathsAndAttributes(test, main, calculatedScales, 'edgeLength');
+    drawPathsAndAttributes(test, main, scales, 'edgeLength');
      ///DIMMING THE FILTERED OUT NODES//////
 
     ////Class Tree Links////
@@ -76,9 +81,9 @@ function updateBrush(){
 export function renderTreeButtons(nestedData, normedPaths, calculatedScales, sidebar){
     ///SIDBAR STUFF
     let treeButton = sidebar.append('button').text('Filter by Tree').classed('btn btn-outline-secondary', true);  
-
+   // let treeBrush = d3.brush().extent([[0, 0], [400, 600]]);
+   let treeBrush = d3.brush().extent([[0, 0], [400, 600]]).on('end', (d, i, n) => updateBrush(calculatedScales));
     treeButton.on('click', ()=> {
-        treeBrush.on('end', updateBrush);
         let treeBrushG = sidebar.select('svg').append('g').classed('tree-brush', true).call(treeBrush);
     });
 
@@ -98,17 +103,15 @@ export function renderTreeButtons(nestedData, normedPaths, calculatedScales, sid
     });
 }
 
+function treeFilter(data, selectedNodes){
+    return data.filter(path=> {
+        let nodeNames = path.map(no=> no.node);
+        let booArray = nodeNames.map(id=> selectedNodes.indexOf(id) > -1);
+        return booArray.indexOf(true) > -1
+    });
+}
+
 export function renderTree(nestedData, normedPaths, calculatedScales, sidebar, length){
-
-    let treeBrush = d3.brush().extent([[0, 0], [400, 600]]);
-
-    function treeFilter(data, selectedNodes){
-        return data.filter(path=> {
-            let nodeNames = path.map(no=> no.node);
-            let booArray = nodeNames.map(id=> selectedNodes.indexOf(id) > -1);
-            return booArray.indexOf(true) > -1
-        });
-    }
 
     // set the dimensions and margins of the diagram
     var margin = {top: 10, right: 90, bottom: 50, left: 20},
@@ -160,14 +163,7 @@ export function renderTree(nestedData, normedPaths, calculatedScales, sidebar, l
             + "C" + (d.y + d.parent.y) / 2 + "," + d.x
             + " " + (d.y + d.parent.y) / 2 + "," + d.parent.x
             + " " + d.parent.y + "," + d.parent.x;
-        }
-        /*
-        return "M" + d.y + "," + d.x
-        + "C" + (d.y + d.parent.y) / 2 + "," + d.x
-        + " " + (d.y + d.parent.y) / 2 + "," + d.parent.x
-        + " " + d.parent.y + "," + d.parent.x;
-        */
-       
+        }       
     });
 
     // adds each node as a group

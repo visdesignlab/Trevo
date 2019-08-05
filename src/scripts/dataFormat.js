@@ -102,7 +102,6 @@ export function matchEdges(edges, edgeLen, calculatedAtt, calculatedScales){
         edge.node = edge.V2;
         if(index > -1){ 
             attrKeys.forEach(attr=> {
-
                 if(calculatedAtt[attr].type == 'continuous'){
                     let scale = calculatedScales.filter(f=> f.field == attr)[0].yScale;
                     let res = calculatedAtt[attr].rows[index];
@@ -110,7 +109,6 @@ export function matchEdges(edges, edgeLen, calculatedAtt, calculatedScales){
                     res.scaledLow = scale(res.lowerCI95);
                     res.scaledHigh = scale(res.upperCI95);
                     res.realVal = res.estimate;
-
                     res.type = 'continuous';
                     edge.attributes = (edge.attributes != undefined)? edge.attributes : {};
                     edge.attributes[attr] = res;
@@ -167,7 +165,7 @@ export function normPaths(paths, calculatedAtt, calculatedScales){
  
     let normedPaths = paths.map((p, i)=> {
         p.xScale = xScale.domain([0, maxBranch - 1]);
-       // p.xScale = xScale.domain([0, 1]);
+     
         let leafIndex = p.length - 1;
         let lengths = p.map(l=> l.edgeLength);
         let prevStep = 0;
