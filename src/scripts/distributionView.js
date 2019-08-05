@@ -107,7 +107,6 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
                     let chosen = n.data.flatMap(m=> m.states.filter(f=> f.state === state.state)).map(v=> v.realVal);
                     let average = d3.mean(chosen);
                     let stDev = d3.deviation(chosen);
-                 
                     return {'state': state.state, 'average': average, 'stUp': average + stDev, 'stDown': average - stDev, 'color': color[0].color }
                 });
                 
@@ -128,9 +127,12 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
 
     ///////RENDERING//////////
 
+    let dataCount = mainDiv.append('div').classed('species-count', true);
+    dataCount.append('text').text("Shown: "+ pathdata.length + " /"+ dataMaster[0].length);
+
     let svg = mainDiv.append('svg');
     svg.attr('id', 'main-summary-view');
-    svg.attr('height', (keys.length * (height + 20)));
+    svg.attr('height', (keys.length * (height + 25)));
 
     let branchScale = d3.scaleLinear().domain([0, medBranchLength]).range([0, 780]);
 
@@ -166,6 +168,8 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
 
     let predictedWrap = binnedWrap.append('g').classed('predicted', true);
 
+    let pathGroup = predictedWrap.append('g').classed('path-wrapper', true);
+
     let branchGroup = predictedWrap.selectAll('g.branch-bin').data(d=> d.branches).join('g').classed('branch-bin', true);
     branchGroup.attr('transform', (d, i)=> 'translate('+(100 + branchScale(i))+', 0)');
 
@@ -176,7 +180,6 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
         let selected = pointGroups.filter(p=> list.indexOf(p.node) > -1).classed('selected', true);
         let treeNode  = d3.select('#sidebar').selectAll('.node');
         let selectedBranch = treeNode.filter(f=> list.indexOf(f.data.node) > 0).classed('selected-branch', true);
-        console.log(node[i], d)
         let y = d3.scaleLinear().domain(d.domain).range([0, height])
         let axis = d3.select(node[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(5));
     }).on('mouseout', (d, i, node)=> {
@@ -256,9 +259,17 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
 
     let discreteDist = branchGroup.filter(f=> f.type === 'discrete');
     let discreteLine = discreteDist.append('line').attr('x0', 2).attr('x1', 2).attr('y0', 0).attr('y1', height).attr('stroke', 'gray').attr('stroke-width', 0.5);
+    let hoverRect = discreteDist.append('rect').attr('height', height).attr('width', 10).attr('opacity', 0);
+    discreteDist.on('mouseover', (d, i, n)=> {
+        let y = d3.scaleLinear().domain([1, 0]).range([0, height]);
+        d3.select(n[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(3));
+    }).on('mouseout', (d, i, n)=> {
+        d3.select(n[i]).select('.y-axis').remove();
+    })
 
-    let discreteBinWrap = binnedWrap.filter(f=> f.type === 'discrete');
-    let stateGroups = discreteBinWrap.selectAll('g.state').data(d=> d.states).join('g').classed('state', true);
+    let discreteBinWrap = predictedWrap.filter(f=> f.type === 'discrete');
+   
+    let stateGroups = discreteBinWrap.selectAll('.path-wrapper').selectAll('g.state').data(d=> d.states).join('g').classed('state', true);
 
     stateGroups.append('path').attr('d', (p, i)=> {
         var lineGenD = d3.area()
@@ -298,9 +309,6 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
         return d[0].color;
     });
 
-    stateGroups.on('mouseover', (d, i, n)=> {
-        console.log(d)
-    });
 
 
     ////OBSERVED CONTIUOUS/////

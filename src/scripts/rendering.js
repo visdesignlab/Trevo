@@ -9,7 +9,6 @@ export function drawPathsAndAttributes(normedPaths, main, calculatedScales, move
 
     
     let collapsed = d3.select('#scrunch').attr('value');
-    console.log('filter master', filterMaster)
   
     main.select('#main-path-view').selectAll('*').remove();
 
