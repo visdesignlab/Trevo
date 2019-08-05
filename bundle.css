@@ -217,6 +217,12 @@ line.half {
   stroke-width: 2px;
   fill: none; }
 
+.species-count {
+  width: 1000px;
+  text-align: center;
+  padding-top: 20px;
+  height: 70px; }
+
 .state-area-sum {
   opacity: .1; }
 
