@@ -73,6 +73,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
             mapNorm.forEach(n=> {
                 n.type = scale.type;
                 n.bins = histogram(n.data);
+                n.domain = [max, min]
                 return n;
             });
 
@@ -94,9 +95,6 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
         }else{
 
             let states = leafAttr[0].states;
-
-      
-         
             mapNorm.bins = null
             leafData.bins = states.map(s=> leafAttr.filter(f=> f.winState === s.state));
             let x = d3.scaleLinear().domain([0, 1]).range([0, height]);
@@ -125,7 +123,6 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
 
             let newK = {'key': key, 'branches': [...mapNorm], 'type': scale.type, 'leafData': leafData, 'states': test}
             return newK;
-
         }
     });
 
@@ -179,9 +176,13 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
         let selected = pointGroups.filter(p=> list.indexOf(p.node) > -1).classed('selected', true);
         let treeNode  = d3.select('#sidebar').selectAll('.node');
         let selectedBranch = treeNode.filter(f=> list.indexOf(f.data.node) > 0).classed('selected-branch', true);
-    }).on('mouseout', (d, i)=> {
+        console.log(node[i], d)
+        let y = d3.scaleLinear().domain(d.domain).range([0, height])
+        let axis = d3.select(node[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y));
+    }).on('mouseout', (d, i, node)=> {
         d3.selectAll(".branch-points.selected").classed('selected', false);
         d3.selectAll('.selected-branch').classed('selected-branch', false);
+        d3.select(node[i]).select('.y-axis').remove();
     });
 
     var lineGen = d3.area()
@@ -254,7 +255,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
     }).attr('fill', '#004573');
 
     let discreteDist = branchGroup.filter(f=> f.type === 'discrete');
-    let discreteLine = discreteDist.append('line').attr('x0', 2).attr('x1', 2).attr('y0', 0).attr('y1', height).attr('stroke', 'gray').attr('stroke-width', 0.5)
+    let discreteLine = discreteDist.append('line').attr('x0', 2).attr('x1', 2).attr('y0', 0).attr('y1', height).attr('stroke', 'gray').attr('stroke-width', 0.5);
 
     let discreteBinWrap = binnedWrap.filter(f=> f.type === 'discrete');
     let stateGroups = discreteBinWrap.selectAll('g.state').data(d=> d.states).join('g').classed('state', true);
