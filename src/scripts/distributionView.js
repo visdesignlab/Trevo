@@ -6,7 +6,7 @@ import {dataMaster} from './index';
 
 export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
 
-    let pathdata = (filterMaster.length > 0)? filterMaster : dataMaster[0];
+    let pathdata = (filterMaster.length > 0)? filterMaster[filterMaster.length - 1].data : dataMaster[0];
 
     let observedWidth = 200;
     let predictedWidth = 800;
@@ -14,7 +14,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
     let margin = 20
   
     let keys = Object.keys(normedPaths[0][0].attributes);
-
+    console.log(pathdata)
     let newNormed = [...pathdata];
 
     formatAttributeData(newNormed, scales, null);
@@ -298,7 +298,8 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
         return lineGenD(p);
 
     }).attr('transform', 'translate(100, 10)').attr('fill', (d, i)=> {
-        return d[0].color;
+        console.log('d', i, d);
+        return d[0] ? d[0].color : '#fff';
     }).attr('opacity', 0.3);
 
     stateGroups.append('path').attr('d', (p, i)=> {
