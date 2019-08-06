@@ -3,7 +3,7 @@ import * as d3 from "d3";
 import {renderSelectedView, pathSelected} from './selectedPaths';
 import {formatAttributeData} from './dataFormat';
 import {dataMaster} from './index';
-import {filterMaster, removeFilter} from './filterComponent';
+import {filterMaster, removeFilter, addFilter} from './filterComponent';
 import { updateMainView } from './viewControl';
 import {getNested} from './pathCalc';
 
@@ -27,10 +27,11 @@ function updateBrush(treeBrush, scales){
   
     let test = treeFilter(data, filterArray);
 
-    let brushId = filterMaster.filter(f=> f.attributType === 'topology').length;
+    let brushId = 'brush-'+ filterMaster.filter(f=> f.attributType === 'topology').length;
 
-    let filterOb = {'filterType': 'data-filter', 'attributType': 'topology', 'filterId': 'brush-'+ brushId, 'filterFunction':treeFilter, 'before-data': [...data], 'data': [...test]}
-    filterMaster.push(filterOb);
+    let filterOb = addFilter('data-filter', 'topology', brushId, treeFilter, [...data], [...test], null);
+
+    console.log('fm', filterMaster)
 
     updateMainView(test, scales, 'edgeLength');
    
@@ -57,12 +58,10 @@ function updateBrush(treeBrush, scales){
     let span = button.append('span').classed('badge badge-light', true);
     span.text(test.length);
     let label = button.append('h6').text('Tree Filter');
-    button.value = filterOb.brushId;
+
     let xSpan = label.append('i').classed('close fas fa-times', true);
     xSpan.on('click', async (d, i, n)=> {
-      
-       
-        removeFilter(filterOb);
+        removeFilter(brushId);
         await updateMainView(data, scales, 'edgeLength');
         d3.selectAll('.selected').classed('selected', false);
         d3.selectAll('.link-not-there').classed('link-not-there', false);

@@ -10,6 +10,8 @@ export function renderDistibutions(mainDiv, scales, moveMetric){
 
     let pathdata = (filterMaster.length > 0)? filterMaster[filterMaster.length - 1].data : dataMaster[0];
 
+    console.log(pathdata)
+
     let observedWidth = 200;
     let predictedWidth = 800;
     let height = 90;

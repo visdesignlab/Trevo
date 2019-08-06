@@ -3,12 +3,25 @@ import {formatAttributeData, calculateScales} from './dataFormat';
 import {renderAttributes,  drawContAtt, drawDiscreteAtt, renderPaths, drawPathsAndAttributes, sizeAndMove} from './renderPathView';
 import * as d3 from "d3";
 import {dataMaster} from './index';
+import { updateMainView } from './viewControl';
 
 export let filterMaster = [];
 
-export function removeFilter(filterOb){
-    let newFilterMaster = filterMaster.filter(f=> f.filterId != filterOb.filterId);
+export function removeFilter(filterId){
+
+    let newFilterMaster = filterMaster.filter(f=> f.filterId != filterId);
     filterMaster = newFilterMaster;
+}
+
+export function addFilter(filterType, attType, filterId, filFunction, oldData, newData, extra){
+    let filterOb = {'filterType': filterType, 'attributeType': attType, 'filterId': filterId, 'filterFunction':filFunction, 'before-data': oldData, 'data': newData}
+    if(extra != null){
+        extra.forEach(ex=> {
+            filterOb[ex[0]] = ex[1];
+        });
+    }
+    filterMaster.push(filterOb);
+    return filterOb;
 }
 
 
@@ -63,15 +76,13 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                       ////GOING TO ADD FILTERING HERE//// NEED TO BREAK INTO ITS OWN THING/////
                       
                     let lastFilter = filterMaster.filter(f=> f['filterType'] === 'data-filter');
-                    console.log(lastFilter);
+              
                     let data = lastFilter.length > 0 ? lastFilter[lastFilter.length - 1].data : dataMaster[0];
               
                     let test = discreteFilter(data, selectedOption, fromState, toState);
 
-                    let filterOb = {'filterType': 'data-filter', 'attribute-type': 'discrete', 'filterFunction':discreteFilter, 'attribute': selectedOption, 'states': [fromState, toState], 'data': test};
-                    filterMaster.push(filterOb);
-
-                    console.log(d3.select('#scrunch').attr('value'))
+                    let filId = 'd-'+filterMaster.filter(f=> f.attributeType === 'discrete').length;
+                    let filterOb = addFilter('data-filter', 'discrete', filId, discreteFilter, [...data], [...test], ['state', [fromState, toState]]);
 
                     ////DRAW THE PATHS
                     drawPathsAndAttributes(test, main, scales, moveMetric);
@@ -105,7 +116,8 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                    
                     let xSpan = button.append('i').classed('close fas fa-times', true);
                     xSpan.on('click', ()=> {
-                        drawPathsAndAttributes(normedPaths, main, scales, moveMetric, d3.select('#scrunch').attr('value'));
+                        removeFilter(filId);
+                        updateMainView(data, scales, 'edgeLength')
                         d3.selectAll('.link-not-there').classed('link-not-there', false);
                         d3.selectAll('.node-not-there').classed('node-not-there', false);
                         button.remove();
@@ -168,12 +180,14 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
 
                     let test = continuousFilter(data, selectedOption, predictedFilter, observedFilter);
 
-                    ////GOING TO ADD FILTERING HERE//// NEED TO BREAK INTO ITS OWN THING/////
-                    let filterOb = {'filterType': 'data-filter', 'attribute-type': 'continuous', 'filterFunction':continuousFilter, 'attribute': selectedOption, 'ranges': [predictedFilter, observedFilter], 'before-data': [...normedPaths], 'data': [...test]};
-                    filterMaster.push(filterOb);
+                    let filId = 'c-'+filterMaster.filter(f=> f.attributeType === 'continuous').length;
+                    let filterOb = addFilter('data-filter', 'continuous', filId, continuousFilter, [...data], [...test], [['ranges', [predictedFilter, observedFilter]], 'attribute', selectedOption]);
+
+                    console.log('fm', filterMaster)
 
                     ////DRAW THE PATHS
-                    drawPathsAndAttributes(test, main, scales, moveMetric);
+                   // drawPathsAndAttributes(test, main, scales, moveMetric);
+                   updateMainView(test, scales, moveMetric)
 
                     ///DIMMING THE FILTERED OUT NODES//////
 
