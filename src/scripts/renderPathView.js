@@ -7,7 +7,6 @@ import {dataMaster} from './index';
 
 export function drawPathsAndAttributes(normedPaths, main, calculatedScales, moveMetric){
 
-    
     let collapsed = d3.select('#scrunch').attr('value');
   
     main.select('#main-path-view').selectAll('*').remove();

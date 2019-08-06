@@ -1,6 +1,6 @@
 import '../styles/index.scss';
 import {formatAttributeData, calculateScales} from './dataFormat';
-import {renderAttributes,  drawContAtt, drawDiscreteAtt, renderPaths, drawPathsAndAttributes, sizeAndMove} from './rendering';
+import {renderAttributes,  drawContAtt, drawDiscreteAtt, renderPaths, drawPathsAndAttributes, sizeAndMove} from './renderPathView';
 import * as d3 from "d3";
 import {dataMaster} from './index';
 
@@ -355,32 +355,6 @@ function renderAttToggles(filterDiv, normedPaths, main, scales, moveMetric){
 
         ////DRAW THE PATHS
         drawPathsAndAttributes(normedPaths, main, scales, moveMetric);
-
-        /*
-        let attributeWrapper = d3.selectAll('.attribute-wrapper');
-        attributeWrapper.selectAll('g').remove();
-        
-      
-          /// LOWER ATTRIBUTE VISUALIZATION ///
-          let collapsed = d3.select('#scrunch').attr('value');
-          let attrHide = filterMaster.filter(f=> f.type === 'hide-attribute');
-          let attKeys = attrHide.length > 0 ? scales.filter(f=> f.field != attrHide[0].attribute).map(m=> m.field) : null;
-          let attrMove = attKeys === null ? scales.length : attKeys.length;
-          let attributeHeight = (collapsed === 'true')? 20 : 45;
-
-          ////
-
-        let attData =  formatAttributeData(normedPaths, scales, newKeys.data());
-        let predictedAttrGrps = renderAttributes(attributeWrapper, attData, scales, null, collapsed);
-
-        //d3.select('#main-path-view').style('height', ((normedPaths.length + predictedAttrGrps.data().map(m=> m[0]).length)* 30) + 'px');
-       // d3.selectAll('.paths').attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (newKeys.data().length + 1))) +')');
-        
-        drawContAtt(predictedAttrGrps, moveMetric, collapsed);
-        drawDiscreteAtt(predictedAttrGrps, scales, moveMetric, collapsed);
-
-        sizeAndMove(d3.select('#main-path-view'), attributeWrapper, normedPaths, (attrMove * attributeHeight))
-*/
     });
     let labelText = labelGroups.append('text').text(d=> d).style('font-size', 10);
     labelText.attr('transform', 'translate(10, 4)');  

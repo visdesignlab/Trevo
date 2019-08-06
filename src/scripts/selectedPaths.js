@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import {branchPaths, renderPaths, renderAttributes, drawContAtt, drawDiscreteAtt, drawPathsAndAttributes} from './rendering';
+import {branchPaths, renderPaths, renderAttributes, drawContAtt, drawDiscreteAtt, drawPathsAndAttributes} from './renderPathView';
 import {formatAttributeData} from './dataFormat';
 import {renderAttToggles} from './toolbarComponent';
 import {filterMaster} from './filterComponent';

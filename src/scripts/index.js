@@ -3,7 +3,7 @@ import * as d3 from "d3";
 import {loadData} from './dataLoad';
 import {calculateScales, matchLeaves, matchEdges, normPaths, filterKeeper} from './dataFormat';
 import {allPaths, pullPath, getPath} from './pathCalc';
-import {drawPathsAndAttributes} from './rendering';
+import {drawPathsAndAttributes} from './renderPathView';
 import {renderTree, buildTreeStructure, renderTreeButtons} from './sidebarComponent';
 import {renderDistibutions} from './distributionView';
 import {toolbarControl, renderAttToggles} from './toolbarComponent';

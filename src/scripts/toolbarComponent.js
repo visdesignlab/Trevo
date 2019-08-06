@@ -1,6 +1,6 @@
 import '../styles/index.scss';
 import {formatAttributeData} from './dataFormat';
-import {drawPathsAndAttributes} from './rendering';
+import {drawPathsAndAttributes} from './renderPathView';
 import {toggleFilters} from './filterComponent';
 import {renderDistibutions} from './distributionView';
 import {dataMaster, collapsed} from './index';

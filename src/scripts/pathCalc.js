@@ -8,6 +8,18 @@
 export function allPaths(edgeArray, leafArray, source, target){
     return leafArray.map(le=> getPath(edgeArray, le, [le], source, target));
 }
+
+export function getNested(node, edgeArray){
+    node.children = edgeArray.filter(f=> String(f.V1) === String(node.node));
+    node.name = String(node.node);
+    if(node.children.length > 0){
+        node.children.forEach(c=> getNested(c, edgeArray));
+    }else{
+        return node;
+    }
+    return node;
+}
+
 /**
  * 
  * @param {array of all graph edges} edgeArray 

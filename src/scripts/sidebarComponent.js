@@ -2,20 +2,11 @@ import '../styles/index.scss';
 import * as d3 from "d3";
 import {renderSelectedView, pathSelected} from './selectedPaths';
 import {formatAttributeData} from './dataFormat';
-import {drawPathsAndAttributes} from './rendering';
 import {dataMaster} from './index';
 import {filterMaster} from './filterComponent';
+import { updateMainView } from './viewControl';
+import {getNested} from './pathCalc';
 
-function getNested(node, edgeArray){
-    node.children = edgeArray.filter(f=> String(f.V1) === String(node.node));
-    node.name = String(node.node);
-    if(node.children.length > 0){
-        node.children.forEach(c=> getNested(c, edgeArray));
-    }else{
-        return node;
-    }
-    return node;
-}
 
 export function buildTreeStructure(paths, edges){
     let root = paths[0][0];
@@ -23,13 +14,9 @@ export function buildTreeStructure(paths, edges){
     return nestedData;
 }
 
-function updateBrush(scales){
+function updateBrush(treeBrush, scales){
     let sidebar = d3.select('#sidebar');
-    let main = d3.select('#main');
     let toolbarDiv = d3.select('#toolbar');
-
-    console.log('filterMaster',filterMaster);
-    console.log('dataMaster', dataMaster);
 
     let data = filterMaster.length === 0 ? dataMaster[0] : dataMaster[0];
 
@@ -43,7 +30,8 @@ function updateBrush(scales){
     let filterOb = {'filterType': 'data-filter', 'attribute-type': 'topology', 'filterFunction':treeFilter, 'before-data': [...data], 'data': [...test]}
     filterMaster.push(filterOb);
 
-    drawPathsAndAttributes(test, main, scales, 'edgeLength');
+    updateMainView(test, scales, 'edgeLength');
+   
      ///DIMMING THE FILTERED OUT NODES//////
 
     ////Class Tree Links////
@@ -69,7 +57,9 @@ function updateBrush(scales){
     let label = button.append('h6').text('Tree Filter');
     let xSpan = label.append('i').classed('close fas fa-times', true);
     xSpan.on('click', async ()=> {
-        await drawPathsAndAttributes(normedPaths, main, calculatedScales, 'edgeLength');
+      
+        
+        await updateMainView(data, scales, 'edgeLength');
         d3.selectAll('.selected').classed('selected', false);
         d3.selectAll('.link-not-there').classed('link-not-there', false);
         d3.selectAll('.node-not-there').classed('node-not-there', false);
@@ -82,7 +72,7 @@ export function renderTreeButtons(nestedData, normedPaths, calculatedScales, sid
     ///SIDBAR STUFF
     let treeButton = sidebar.append('button').text('Filter by Tree').classed('btn btn-outline-secondary', true);  
    // let treeBrush = d3.brush().extent([[0, 0], [400, 600]]);
-   let treeBrush = d3.brush().extent([[0, 0], [400, 600]]).on('end', (d, i, n) => updateBrush(calculatedScales));
+   let treeBrush = d3.brush().extent([[0, 0], [400, 600]]).on('end', (d, i, n) => updateBrush(treeBrush, calculatedScales));
     treeButton.on('click', ()=> {
         let treeBrushG = sidebar.select('svg').append('g').classed('tree-brush', true).call(treeBrush);
     });
@@ -94,11 +84,11 @@ export function renderTreeButtons(nestedData, normedPaths, calculatedScales, sid
   
        sidebar.select('svg').remove();
        if(treeViewButton.text() === 'Show Lengths'){
-           renderTree(nestedData, normedPaths, calculatedScales, sidebar, true);
-           treeViewButton.text('Hide Lengths');
+            renderTree(nestedData, normedPaths, calculatedScales, sidebar, true);
+            treeViewButton.text('Hide Lengths');
        }else{
-        renderTree(nestedData, normedPaths, calculatedScales, sidebar, false);
-        treeViewButton.text('Show Lengths');
+            renderTree(nestedData, normedPaths, calculatedScales, sidebar, false);
+            treeViewButton.text('Show Lengths');
        }
     });
 }
@@ -131,7 +121,7 @@ export function renderTree(nestedData, normedPaths, calculatedScales, sidebar, l
         }
     }
     addingEdgeLength(0, nestedData)
-  //  console.log('new nested', nestedData);
+
 //  assigns the data to a hierarchy using parent-child relationships
     var treenodes = d3.hierarchy(nestedData);
 

@@ -6,6 +6,8 @@ import {dataMaster} from './index';
 
 export function renderDistibutions(mainDiv, scales, moveMetric){
 
+    mainDiv.selectAll('*').remove();
+
     let pathdata = (filterMaster.length > 0)? filterMaster[filterMaster.length - 1].data : dataMaster[0];
 
     let observedWidth = 200;
@@ -156,12 +158,6 @@ export function renderDistibutions(mainDiv, scales, moveMetric){
             }
         })
     });
-
-    
-
-    let test2 = newNormed.flatMap(path=> path.filter(n=> n.leaf != true).map(node=> {return {'node': node.node, 'eMove': node.edgeMove }}));
-
-    console.log(test2.unique(), nodeLengthArray)
 
     let bPointScale = d3.scaleLinear().domain([0, 1]).range([0, 795]);
     let pointGroups = branchPoints.selectAll('g.branch-points').data(nodeLengthArray).join('g').attr('class', (d, i)=> d.node).classed('branch-points', true);
