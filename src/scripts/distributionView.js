@@ -5,8 +5,8 @@ import {filterMaster} from './filterComponent';
 import {dataMaster} from './index';
 
 export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
-    console.log('mainDiv',mainDiv)
-    mainDiv.selectAll('*').remove();
+    
+   // mainDiv.selectAll('*').remove();
 
     let observedWidth = 200;
     let predictedWidth = 800;
@@ -319,7 +319,8 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
         return lineGen(p);
 
     }).attr('transform', 'translate(100, 10)').attr('fill', 'none').attr('stroke', (d, i)=> {
-        return d[0].color;
+        console.log('d with the problem data', d)
+        return d[0] ? d[0].color : '#fff';
     });
 
 
@@ -368,7 +369,10 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
     }).attr('height', (d, i, n)=> {
         let y = d3.scaleLinear().domain([0, 100]).range([(height -margin), 0])
         return y(d.length)
-    }).attr('fill', (d, i) => d[0].color).attr('opacity', 0.3);
+    }).attr('fill', (d, i) => {
+        console.log('new d', d)
+        return d[0] != undefined ? d[0].color : '#fff';
+    }).attr('opacity', 0.3);
 
     discBars.attr('transform', (d, i, n)=> {
         let movex = observedWidth / n.length;
@@ -389,7 +393,9 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
     })
 
     discOb.each((d, i, nodes)=> {
-            let labels = d.leafData.bins.map(b=> b[0].winState)
+            let labels = d.leafData.bins.map(b=> {
+                return b[0] != undefined ? b[0].winState : '';
+                })
             let xPoint = d3.scalePoint().domain(labels).range([0, observedWidth]).padding(.6)
             let y = d3.scaleLinear().domain([0, 100]).range([(height - margin), 0]);
             d3.select(nodes[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(5)).attr('transform', 'translate(0, '+margin+')');
