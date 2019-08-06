@@ -20,7 +20,7 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, mov
     let filterButton = toolbar.append('button').attr('id', 'view-filter');
     filterButton.attr('class', 'btn btn-outline-secondary').text('Show Filters');
     filterButton.on('click', ()=> toggleFilters(filterButton, normedPaths, main, moveMetric, calculatedScales));
-
+/*
     let lengthButton = toolbar.append('button').attr('id', 'change-length').attr('class', 'btn btn-outline-secondary');
     if(moveMetric === 'move'){
         lengthButton.text('Show Edge Length');
@@ -45,10 +45,10 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, mov
                 drawPathsAndAttributes(normedPaths, main, calculatedScales, moveMetric);
             }else{
                 renderDistibutions(main, calculatedScales, moveMetric);
-            }*/
+            }
             updateMainView(calculatedScales, moveMetric);
         }
-    });
+    });*/
 
     let scrunchButton = toolbar.append('button').attr('id', 'scrunch');
     scrunchButton.attr('class', 'btn btn-outline-secondary').text('Collapse Attributes');
@@ -59,7 +59,7 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, mov
 
 ////COLLAPSES THE NODES DOWN
 function toggleScrunch(button, normedPaths, main, calculatedScales){
-    console.log(document.getElementById("scrunch").disabled == true)
+   
     if(button.text() === 'Collapse Attributes'){
         button.text('Expand Attributes');
         main.selectAll('*').remove();
