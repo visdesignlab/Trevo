@@ -15,12 +15,16 @@ export function renderDistibutions(mainDiv, scales, moveMetric){
     let observedWidth = 200;
     let predictedWidth = 800;
     let height = 90;
-    let margin = 20
-  
-    let keys = Object.keys(pathdata[0][0].attributes);
-    let newNormed = [...pathdata];
+    let margin = 20;
 
-    formatAttributeData(newNormed, scales, null);
+    let attrHide = filterMaster.filter(f=> f.type === 'hide-attribute').map(m=> m.attribute);
+    let keys = Object.keys(pathdata[0][0].attributes).filter(f=> attrHide.indexOf(f) === -1);
+    let newNormed = [...pathdata];
+    let keysToHide = attrHide.length > 0 ? scales.filter(f=> attrHide.indexOf(f.field) === -1).map(m=> m.field) : null;
+
+    console.log(keys, keysToHide)
+
+    formatAttributeData(newNormed, scales, keysToHide);
 
     let maxBranch = d3.max(newNormed.map(p=> p.length)) - 1;
     let medBranchLength = d3.median(newNormed.map(p=> p.length)) - 1;

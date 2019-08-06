@@ -186,8 +186,8 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                     console.log('fm', filterMaster)
 
                     ////DRAW THE PATHS
-                   // drawPathsAndAttributes(test, main, scales, moveMetric);
-                   updateMainView(test, scales, moveMetric)
+                 
+                    updateMainView(test, scales, moveMetric)
 
                     ///DIMMING THE FILTERED OUT NODES//////
 
@@ -365,15 +365,15 @@ function renderAttToggles(filterDiv, normedPaths, main, scales, moveMetric){
         let hideKeys = scales.filter(sc=> newKeys.data().indexOf(sc.field) === -1);
         let newFilMaster = filterMaster.filter(f=> f.type != 'hide-attribute');
         hideKeys.forEach(key=> {
-            newFilMaster.push({'type':'hide-attribute', 'attribute':key.field, 'before-data': [...normedPaths]});
+            newFilMaster.push({'type':'hide-attribute', 'attribute':key.field, 'before-data': [...normedPaths], 'data': [...normedPaths]});
         });
         filterMaster = newFilMaster;
 
         console.log('filtermaster in render att toggles', filterMaster)
-
+        updateMainView(normedPaths, scales, moveMetric)
 
         ////DRAW THE PATHS
-        drawPathsAndAttributes(normedPaths, main, scales, moveMetric);
+       // drawPathsAndAttributes(normedPaths, main, scales, moveMetric);
     });
     let labelText = labelGroups.append('text').text(d=> d).style('font-size', 10);
     labelText.attr('transform', 'translate(10, 4)');  
