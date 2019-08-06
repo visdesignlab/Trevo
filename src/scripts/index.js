@@ -80,7 +80,7 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
 
    dataMaster.push(normedPaths);
    
-   // renderDistibutions(normedPaths, main, calculatedScales);
+ 
     toolbarControl(toolbarDiv, normedPaths, main, calculatedScales, 'edgeLength', 'paths');
     
     let filterDiv = wrap.select('#filter-tab').classed('hidden', true);
@@ -92,7 +92,6 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
 
     let tree = renderTree(nestedData, normedPaths, calculatedScales, sidebar, false);
     ////Render the summary distributions////
-    //renderDistibutions(normedPaths, main, calculatedScales, 'move');
     
       /// LOWER ATTRIBUTE VISUALIZATION ///
     drawPathsAndAttributes(normedPaths, main, calculatedScales, 'edgeLength');

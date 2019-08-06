@@ -35,7 +35,7 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, mov
             if(viewButton.text() === 'View Summary'){
                 drawPathsAndAttributes(normedPaths, main, calculatedScales, 'edgeLength');
             }else{
-                renderDistibutions(normedPaths, main, calculatedScales, 'edgeLength');
+                renderDistibutions(main, calculatedScales, 'edgeLength');
             }
         }else{
             lengthButton.text('Show Edge Length');
@@ -43,7 +43,7 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, mov
             if(viewButton.text() === 'View Summary'){
                 drawPathsAndAttributes(normedPaths, main, calculatedScales, moveMetric);
             }else{
-                renderDistibutions(normedPaths, main, calculatedScales, moveMetric);
+                renderDistibutions(main, calculatedScales, moveMetric);
             }
         }
     });
@@ -86,7 +86,7 @@ function togglePathView(viewButton, normedPaths, main, calculatedScales, moveMet
     }else{
         viewButton.text('View Paths');
         main.selectAll('*').remove();
-        renderDistibutions(normedPaths, main, calculatedScales, moveMetric);
+        renderDistibutions(main, calculatedScales, moveMetric);
     }
 }
 

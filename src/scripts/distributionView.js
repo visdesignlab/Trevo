@@ -4,7 +4,7 @@ import * as d3 from "d3";
 import {filterMaster} from './filterComponent';
 import {dataMaster} from './index';
 
-export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
+export function renderDistibutions(mainDiv, scales, moveMetric){
 
     let pathdata = (filterMaster.length > 0)? filterMaster[filterMaster.length - 1].data : dataMaster[0];
 
@@ -13,8 +13,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
     let height = 90;
     let margin = 20
   
-    let keys = Object.keys(normedPaths[0][0].attributes);
-    console.log(pathdata)
+    let keys = Object.keys(pathdata[0][0].attributes);
     let newNormed = [...pathdata];
 
     formatAttributeData(newNormed, scales, null);
@@ -47,7 +46,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
     let sortedBins = keys.map(key=> {
         let scale = scales.filter(f=> f.field === key)[0];
         let mapNorm = normBins.map(bin => {
-            console.log('normbin', normBins)
+
             if(bin.data.length > 0){
                 bin.fData = bin.data.map(d=> {
                     return d.attributes[key];
@@ -149,7 +148,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
     let nodeLengthArray = [];
     let nodeDuplicateCheck = []
 
-    normedPaths.map(path=> {
+    newNormed.map(path=> {
         path.filter(n=> n.leaf != true).map(node=> {
             if(nodeDuplicateCheck.indexOf(node.node) == -1){
                 nodeDuplicateCheck.push(node.node);
@@ -157,6 +156,12 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
             }
         })
     });
+
+    
+
+    let test2 = newNormed.flatMap(path=> path.filter(n=> n.leaf != true).map(node=> {return {'node': node.node, 'eMove': node.edgeMove }}));
+
+    console.log(test2.unique(), nodeLengthArray)
 
     let bPointScale = d3.scaleLinear().domain([0, 1]).range([0, 795]);
     let pointGroups = branchPoints.selectAll('g.branch-points').data(nodeLengthArray).join('g').attr('class', (d, i)=> d.node).classed('branch-points', true);
@@ -207,6 +212,7 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
     });
 
     continDist.each((d, i, nodes)=> {
+        console.log('d for line',d)
         let distrib = d3.select(nodes[i]).selectAll('g').data([d.bins]).join('g').classed('distribution', true);
         distrib.attr('transform', 'translate(11, '+height+') rotate(-90)');
         let path = distrib.append('path').attr('d', lineGen);
@@ -298,7 +304,6 @@ export function renderDistibutions(normedPaths, mainDiv, scales, moveMetric){
         return lineGenD(p);
 
     }).attr('transform', 'translate(100, 10)').attr('fill', (d, i)=> {
-        console.log('d', i, d);
         return d[0] ? d[0].color : '#fff';
     }).attr('opacity', 0.3);
 
