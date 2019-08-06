@@ -5,13 +5,13 @@ import {formatAttributeData} from './dataFormat';
 import {filterMaster} from './filterComponent';
 import {dataMaster} from './index';
 
-export function drawPathsAndAttributes(normedPaths, main, calculatedScales, moveMetric){
+export function drawPathsAndAttributes(pathData, main, calculatedScales, moveMetric){
 
     let collapsed = d3.select('#scrunch').attr('value');
   
     main.select('#main-path-view').selectAll('*').remove();
 
-    let pathGroups = renderPaths(normedPaths, main, calculatedScales, moveMetric);
+    let pathGroups = renderPaths(pathData, main, calculatedScales, moveMetric);
   
       /// LOWER ATTRIBUTE VISUALIZATION ///
     let attributeWrapper = pathGroups.append('g').classed('attribute-wrapper', true);
@@ -19,7 +19,7 @@ export function drawPathsAndAttributes(normedPaths, main, calculatedScales, move
 
     let attKeys = attrHide.length > 0 ? calculatedScales.filter(f=> attrHide.indexOf(f.field) === -1).map(m=> m.field) : null;
 
-    let attData = formatAttributeData(normedPaths, calculatedScales, attKeys);
+    let attData = formatAttributeData(pathData, calculatedScales, attKeys);
 
     let attrMove = attKeys === null ? calculatedScales.length : attKeys.length;
 
@@ -29,7 +29,7 @@ export function drawPathsAndAttributes(normedPaths, main, calculatedScales, move
     
     drawContAtt(predictedAttrGrps, moveMetric, collapsed);
     drawDiscreteAtt(predictedAttrGrps, calculatedScales, moveMetric, collapsed);
-    sizeAndMove(main.select('#main-path-view'), attributeWrapper, normedPaths, (attrMove * attributeHeight))
+    sizeAndMove(main.select('#main-path-view'), attributeWrapper, pathData, (attrMove * attributeHeight))
 
 }
 
@@ -204,9 +204,8 @@ export function drawContAtt(predictedAttrGrps, moveMetric, collapsed){
     attrLabel.attr('transform', 'translate(-15, 20)');
     let innerTimeline = continuousAtt.append('g').classed('attribute-time-line', true);
     let attribRectCont = innerTimeline.append('rect').classed('attribute-rect', true);
-    attribRectCont.attr('height', attributeHeight);//.data(normedPaths);//.attr('transform', (d, i)=> 'translate(0, 0)');
+    attribRectCont.attr('height', attributeHeight);
     let attributeNodesCont = innerTimeline.selectAll('g').data(d=> d).join('g').classed('attribute-node', true);
-   // attributeNodesCont = attrNodesContEnter.merge(attributeNodesCont);
 
     let innerBars = attributeNodesCont.append('g').classed('inner-bars', true);
 
@@ -307,7 +306,7 @@ export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric, collapsed
         return d[0].color;});
 
     let attribRectDisc = innerTimelineDis.append('rect').classed('attribute-rect', true);
-    attribRectDisc.attr('height', attributeHeight);//.data(normedPaths);//.attr('transform', (d, i)=> 'translate(0, 0)');
+    attribRectDisc.attr('height', attributeHeight);
     let attributeNodesDisc = innerTimelineDis.selectAll('.attribute-node-discrete').data(d=> {
         return d;}).join('g').classed('attribute-node-discrete', true);
 

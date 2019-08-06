@@ -1,9 +1,9 @@
 import '../styles/index.scss';
-import {formatAttributeData} from './dataFormat';
+import * as d3 from "d3";
 import {drawPathsAndAttributes} from './renderPathView';
 import {toggleFilters} from './filterComponent';
 import {renderDistibutions} from './distributionView';
-import {dataMaster, collapsed} from './index';
+import { updateMainView } from './viewControl';
 
 export function toolbarControl(toolbar, normedPaths, main, calculatedScales, moveMetric, pathView){
 
@@ -40,11 +40,13 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, mov
         }else{
             lengthButton.text('Show Edge Length');
             main.selectAll('*').remove();
+            /*
             if(viewButton.text() === 'View Summary'){
                 drawPathsAndAttributes(normedPaths, main, calculatedScales, moveMetric);
             }else{
                 renderDistibutions(main, calculatedScales, moveMetric);
-            }
+            }*/
+            updateMainView(calculatedScales, moveMetric);
         }
     });
 
@@ -52,11 +54,12 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, mov
     scrunchButton.attr('class', 'btn btn-outline-secondary').text('Collapse Attributes');
     scrunchButton.attr('value', false);
     scrunchButton.on('click', ()=> toggleScrunch(scrunchButton, normedPaths, main, calculatedScales));
-    viewButton.on('click', ()=> togglePathView(viewButton, normedPaths, main, calculatedScales, moveMetric));
+    viewButton.on('click', ()=> togglePathView(viewButton, calculatedScales, moveMetric));
 }
 
 ////COLLAPSES THE NODES DOWN
 function toggleScrunch(button, normedPaths, main, calculatedScales){
+    console.log(document.getElementById("scrunch").disabled == true)
     if(button.text() === 'Collapse Attributes'){
         button.text('Expand Attributes');
         main.selectAll('*').remove();
@@ -77,17 +80,20 @@ function toggleScrunch(button, normedPaths, main, calculatedScales){
  * @param {*} main 
  * @param {*} calculatedScales 
  */
-function togglePathView(viewButton, normedPaths, main, calculatedScales, moveMetric){
-   
+function togglePathView(viewButton, calculatedScales, moveMetric){
+
     if(viewButton.text() === 'View Paths'){
         viewButton.text('View Summary');
-        main.selectAll('*').remove();//.selectAll('*').remove();
-        drawPathsAndAttributes(normedPaths, main, calculatedScales, moveMetric);
+        document.getElementById("scrunch").disabled = true;
+        d3.select('#scrunch').classed('hidden', true);
+        console.log('changing', document.getElementById("scrunch"))
+     
     }else{
         viewButton.text('View Paths');
-        main.selectAll('*').remove();
-        renderDistibutions(main, calculatedScales, moveMetric);
+        d3.select('#scrunch').classed('hidden', false);
+        document.getElementById("scrunch").disabled = false;
     }
+    updateMainView(calculatedScales, moveMetric);
 }
 
 

@@ -4,13 +4,9 @@ import * as d3 from "d3";
 import {filterMaster} from './filterComponent';
 import {dataMaster} from './index';
 
-export function renderDistibutions(mainDiv, scales, moveMetric){
-
+export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
+    console.log('mainDiv',mainDiv)
     mainDiv.selectAll('*').remove();
-
-    let pathdata = (filterMaster.length > 0)? filterMaster[filterMaster.length - 1].data : dataMaster[0];
-
-    console.log(pathdata)
 
     let observedWidth = 200;
     let predictedWidth = 800;
@@ -18,8 +14,8 @@ export function renderDistibutions(mainDiv, scales, moveMetric){
     let margin = 20;
 
     let attrHide = filterMaster.filter(f=> f.type === 'hide-attribute').map(m=> m.attribute);
-    let keys = Object.keys(pathdata[0][0].attributes).filter(f=> attrHide.indexOf(f) === -1);
-    let newNormed = [...pathdata];
+    let keys = Object.keys(pathData[0][0].attributes).filter(f=> attrHide.indexOf(f) === -1);
+    let newNormed = [...pathData];
     let keysToHide = attrHide.length > 0 ? scales.filter(f=> attrHide.indexOf(f.field) === -1).map(m=> m.field) : null;
 
     console.log(keys, keysToHide)
@@ -137,7 +133,7 @@ export function renderDistibutions(mainDiv, scales, moveMetric){
     ///////RENDERING//////////
 
     let dataCount = mainDiv.append('div').classed('species-count', true);
-    dataCount.append('text').text("Shown: "+ pathdata.length + " /"+ dataMaster[0].length);
+    dataCount.append('text').text("Shown: "+ pathData.length + " /"+ dataMaster[0].length);
 
     let svg = mainDiv.append('svg');
     svg.attr('id', 'main-summary-view');

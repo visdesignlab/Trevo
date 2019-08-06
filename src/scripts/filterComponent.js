@@ -1,6 +1,5 @@
 import '../styles/index.scss';
 import {formatAttributeData, calculateScales} from './dataFormat';
-import {renderAttributes,  drawContAtt, drawDiscreteAtt, renderPaths, drawPathsAndAttributes, sizeAndMove} from './renderPathView';
 import * as d3 from "d3";
 import {dataMaster} from './index';
 import { updateMainView } from './viewControl';
@@ -22,6 +21,12 @@ export function addFilter(filterType, attType, filterId, filFunction, oldData, n
     }
     filterMaster.push(filterOb);
     return filterOb;
+}
+
+export function getLatestData(){
+    console.log(filterMaster);
+    let data = filterMaster.length > 0 ? filterMaster[filterMaster.length - 1].data : dataMaster[0];
+    return data;
 }
 
 
@@ -84,8 +89,7 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                     let filId = 'd-'+filterMaster.filter(f=> f.attributeType === 'discrete').length;
                     let filterOb = addFilter('data-filter', 'discrete', filId, discreteFilter, [...data], [...test], ['state', [fromState, toState]]);
 
-                    ////DRAW THE PATHS
-                    drawPathsAndAttributes(test, main, scales, moveMetric);
+                    updateMainView(scales, moveMetric);
 
                     ////Class Tree Links////
                     let treeLinks  = d3.select('#sidebar').selectAll('.link');
@@ -117,7 +121,7 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                     let xSpan = button.append('i').classed('close fas fa-times', true);
                     xSpan.on('click', ()=> {
                         removeFilter(filId);
-                        updateMainView(data, scales, 'edgeLength')
+                        updateMainView(scales, 'edgeLength')
                         d3.selectAll('.link-not-there').classed('link-not-there', false);
                         d3.selectAll('.node-not-there').classed('node-not-there', false);
                         button.remove();
@@ -187,7 +191,7 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
 
                     ////DRAW THE PATHS
                  
-                    updateMainView(test, scales, moveMetric)
+                    updateMainView(scales, moveMetric)
 
                     ///DIMMING THE FILTERED OUT NODES//////
 
@@ -228,7 +232,7 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                             console.log(fil);
                         });
 
-                        drawPathsAndAttributes(normedPaths, main, scales, moveMetric);
+                        updateMainView(scales, moveMetric);
                         ////removeing the dimmed class to the unfilterd paths////
                         d3.selectAll('.link-not-there').classed('link-not-there', false);
                         d3.selectAll('.node-not-there').classed('node-not-there', false);
@@ -303,7 +307,9 @@ function queryFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
             });
 
              ////DRAW THE PATHS
-            drawPathsAndAttributes(test, main, scales, moveMetric);
+         
+            updateMainView(scales, moveMetric);
+
             let filterToolbar = d3.select("#toolbar");
             let button = filterToolbar.append('button').classed('btn btn-info', true);
             let span = button.append('span').classed('badge badge-light', true);
@@ -311,7 +317,7 @@ function queryFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
             button.append('h6').text('Query Filter');
             let xSpan = button.append('i').classed('close fas fa-times', true);
             xSpan.on('click', ()=> {
-                drawPathsAndAttributes(normedPaths, main, scales, moveMetric);
+                updateMainView(scales, moveMetric);
                 button.remove();
             });
             d3.select('#main-path-view').style('height', ()=>{
@@ -370,10 +376,7 @@ function renderAttToggles(filterDiv, normedPaths, main, scales, moveMetric){
         filterMaster = newFilMaster;
 
         console.log('filtermaster in render att toggles', filterMaster)
-        updateMainView(normedPaths, scales, moveMetric)
-
-        ////DRAW THE PATHS
-       // drawPathsAndAttributes(normedPaths, main, scales, moveMetric);
+        updateMainView(scales, moveMetric)
     });
     let labelText = labelGroups.append('text').text(d=> d).style('font-size', 10);
     labelText.attr('transform', 'translate(10, 4)');  

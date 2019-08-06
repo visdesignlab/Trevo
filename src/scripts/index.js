@@ -5,8 +5,8 @@ import {calculateScales, matchLeaves, matchEdges, normPaths, filterKeeper} from 
 import {allPaths, pullPath, getPath} from './pathCalc';
 import {drawPathsAndAttributes} from './renderPathView';
 import {renderTree, buildTreeStructure, renderTreeButtons} from './sidebarComponent';
-import {renderDistibutions} from './distributionView';
 import {toolbarControl, renderAttToggles} from './toolbarComponent';
+import { updateMainView } from './viewControl';
 
 export const dataMaster = [];
 export const collapsed = false;
@@ -91,10 +91,9 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     renderTreeButtons(nestedData, normedPaths, calculatedScales, sidebar, false);
 
     let tree = renderTree(nestedData, normedPaths, calculatedScales, sidebar, false);
-    ////Render the summary distributions////
     
       /// LOWER ATTRIBUTE VISUALIZATION ///
-    drawPathsAndAttributes(normedPaths, main, calculatedScales, 'edgeLength');
+   updateMainView(calculatedScales, 'edgeLength');
 });
 /*
 loadData(d3.json, './public/data/geospiza_with_attributes.json').then(data=> {

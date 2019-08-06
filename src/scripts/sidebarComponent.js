@@ -1,7 +1,6 @@
 import '../styles/index.scss';
 import * as d3 from "d3";
-import {renderSelectedView, pathSelected} from './selectedPaths';
-import {formatAttributeData} from './dataFormat';
+
 import {dataMaster} from './index';
 import {filterMaster, removeFilter, addFilter} from './filterComponent';
 import { updateMainView } from './viewControl';
@@ -33,7 +32,7 @@ function updateBrush(treeBrush, scales){
 
     console.log('fm', filterMaster)
 
-    updateMainView(test, scales, 'edgeLength');
+    updateMainView(scales, 'edgeLength');
    
      ///DIMMING THE FILTERED OUT NODES//////
 
@@ -62,7 +61,7 @@ function updateBrush(treeBrush, scales){
     let xSpan = label.append('i').classed('close fas fa-times', true);
     xSpan.on('click', async (d, i, n)=> {
         removeFilter(brushId);
-        await updateMainView(data, scales, 'edgeLength');
+        await updateMainView(scales, 'edgeLength');
         d3.selectAll('.selected').classed('selected', false);
         d3.selectAll('.link-not-there').classed('link-not-there', false);
         d3.selectAll('.node-not-there').classed('node-not-there', false);
