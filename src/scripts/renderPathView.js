@@ -254,7 +254,7 @@ export function drawContAtt(predictedAttrGrps, moveMetric, collapsed){
 
 export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric, collapsed){
 
-    console.log('collapsed in draw discrete', collapsed, d3.select('#scrunch').attr('value'))
+  
     
     let discreteAtt = predictedAttrGrps.filter(d=> {
         return d[d.length - 1].type === 'discrete';

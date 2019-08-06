@@ -208,7 +208,7 @@ export function renderDistibutions(mainDiv, scales, moveMetric){
     });
 
     continDist.each((d, i, nodes)=> {
-        console.log('d for line',d)
+       
         let distrib = d3.select(nodes[i]).selectAll('g').data([d.bins]).join('g').classed('distribution', true);
         distrib.attr('transform', 'translate(11, '+height+') rotate(-90)');
         let path = distrib.append('path').attr('d', lineGen);

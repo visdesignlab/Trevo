@@ -6,6 +6,11 @@ import {dataMaster} from './index';
 
 export let filterMaster = [];
 
+export function removeFilter(filterOb){
+    let newFilterMaster = filterMaster.filter(f=> f.filterId != filterOb.filterId);
+    filterMaster = newFilterMaster;
+}
+
 
 ///NEED TO BREAK THESE OUT INTO SEPARATE FILTERS
 export function toggleFilters(filterButton, normedPaths, main, moveMetric, scales){
