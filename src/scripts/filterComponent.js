@@ -1,14 +1,47 @@
 import '../styles/index.scss';
-import {formatAttributeData, calculateScales} from './dataFormat';
+
 import * as d3 from "d3";
 import {dataMaster} from './index';
 import { updateMainView } from './viewControl';
 
 export let filterMaster = [];
 
-export function removeFilter(filterId){
+export function removeFilter(filterId, scales){
+    let dataFilters = filterMaster.filter(f=> f.filterType === 'data-filter');
+    let filterIndex = dataFilters.map(f=> f.filterId).indexOf(filterId);
 
+    if(filterIndex != dataFilters.length - 1){
+   
+        let baseData = filterIndex === 0? dataMaster[0] : dataFilters[filterIndex - 1].data;
+    
+        let testData = [...baseData];
+
+        let filterToolbar = d3.select("#toolbar");
+
+        let badges = filterToolbar.selectAll('.filter-tag').remove();
+  
+        for(let i = filterIndex + 1; i < dataFilters.length; i ++){
+       
+            let fun = dataFilters[i].filterFunction;
+            if(dataFilters[i].attributeType === 'continuous'){
+                let newTestData = fun(testData, dataFilters[i].selectedOption, dataFilters[i].predictedFilter, dataFilters[i].observedFilter);
+                dataFilters[i].data = [...newTestData];
+                dataFilters[i].filterId = 'c-'+ i;
+                //// Re adding in buttons ////
+                addFilterTag(dataFilters[i], scales);
+                testData = newTestData;
+            }else{//discrete
+                let newTestData = fun(dataFilters[i].data, dataFilters[i].selectedOption, dataFilters[i].fromState, dataFilters[i].toState);
+                dataFilters[i].data = [...newTestData];
+                dataFilters[i].filterId = 'd-'+ i;
+                //// Re adding in buttons ////
+                addFilterTag(dataFilters[i], scales);
+                testData = newTestData;
+            }
+        }
+    }
     let newFilterMaster = filterMaster.filter(f=> f.filterId != filterId);
+
     filterMaster = newFilterMaster;
 }
 
@@ -24,11 +57,10 @@ export function addFilter(filterType, attType, filterId, filFunction, oldData, n
 }
 
 export function getLatestData(){
-    console.log(filterMaster);
+
     let data = filterMaster.length > 0 ? filterMaster[filterMaster.length - 1].data : dataMaster[0];
     return data;
 }
-
 
 ///NEED TO BREAK THESE OUT INTO SEPARATE FILTERS
 export function toggleFilters(filterButton, normedPaths, main, moveMetric, scales){
@@ -49,6 +81,51 @@ export function toggleFilters(filterButton, normedPaths, main, moveMetric, scale
         filterDiv.classed('hidden', true);
         main.style('padding-top', '0px');
     }
+}
+
+function addFilterTag(data, scales){
+
+    let filterToolbar = d3.select('#toolbar');
+
+    if(data.attributeType === 'continuous'){
+
+        let formater = d3.format(".2s");
+        let button = filterToolbar.append('button').classed('btn btn-info filter-tag', true);
+        d3.select(button).datum(data);
+        let span = button.append('span').classed('badge badge-light', true);
+        span.text(data.data.length);
+        let label = button.append('h6').text(data.selectedOption + "  Predicted: "+ formater(data.predictedFilter[0]) + "-" + formater(data.predictedFilter[1]) + " Observed: " + formater(data.observedFilter[0]) + "-" + formater(data.observedFilter[1]));
+        let xSpan = label.append('i').classed('close fas fa-times', true);
+        xSpan.on('click', ()=> {
+            let filterLine = filterMaster.filter(f=> f.filterType === 'data-filter').filter(f=> data.attribute != f.attribute);
+            ////YOU NEED TO CHANGE THIS TO REMOVE FILTER FUNCTION
+            removeFilter(data.filterId, scales);
+            updateMainView(scales, 'edgeLength')
+            d3.selectAll('.link-not-there').classed('link-not-there', false);
+            d3.selectAll('.node-not-there').classed('node-not-there', false);
+            button.remove();
+        });
+
+    }else{
+     
+        let button = filterToolbar.append('button').classed('btn btn-info filter-tag', true);
+        let span = button.append('span').classed('badge badge-light', true);
+        span.text(data.data.length);
+        button.append('h6').text(data.state[0]);
+        button.append('i').classed('fas fa-arrow-right', true);
+        button.append('h6').text(data.state[1] + '  ');
+       
+        let xSpan = button.append('i').classed('close fas fa-times', true);
+        xSpan.on('click', ()=> {
+            removeFilter(data.filterId, scales);
+            updateMainView(scales, 'edgeLength')
+            d3.selectAll('.link-not-there').classed('link-not-there', false);
+            d3.selectAll('.node-not-there').classed('node-not-there', false);
+            button.remove();
+        });
+
+    }
+    
 }
 
 function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, scales){
@@ -87,7 +164,7 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                     let test = discreteFilter(data, selectedOption, fromState, toState);
 
                     let filId = 'd-'+filterMaster.filter(f=> f.attributeType === 'discrete').length;
-                    let filterOb = addFilter('data-filter', 'discrete', filId, discreteFilter, [...data], [...test], ['state', [fromState, toState]]);
+                    let filterOb = addFilter('data-filter', 'discrete', filId, discreteFilter, [...data], [...test], [['state', [fromState, toState]]]);
 
                     updateMainView(scales, moveMetric);
 
@@ -111,21 +188,7 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                     /////ADD THE FILTER TO THE TOOLBAR/////
                     let filterToolbar = d3.select("#toolbar");
 
-                    let button = filterToolbar.append('button').classed('btn btn-info', true);
-                    let span = button.append('span').classed('badge badge-light', true);
-                    span.text(test.length);
-                    button.append('h6').text(fromState);
-                    button.append('i').classed('fas fa-arrow-right', true);
-                    button.append('h6').text(toState + '  ');
-                   
-                    let xSpan = button.append('i').classed('close fas fa-times', true);
-                    xSpan.on('click', ()=> {
-                        removeFilter(filId);
-                        updateMainView(scales, 'edgeLength')
-                        d3.selectAll('.link-not-there').classed('link-not-there', false);
-                        d3.selectAll('.node-not-there').classed('node-not-there', false);
-                        button.remove();
-                    });
+                    addFilterTag(filterOb, scales);
 
                     ////HIDE THE FILTER BAR/////
                     filterButton.text('Show Filters');
@@ -185,13 +248,12 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                     let test = continuousFilter(data, selectedOption, predictedFilter, observedFilter);
 
                     let filId = 'c-'+filterMaster.filter(f=> f.attributeType === 'continuous').length;
-                    let filterOb = addFilter('data-filter', 'continuous', filId, continuousFilter, [...data], [...test], [['ranges', [predictedFilter, observedFilter]], 'attribute', selectedOption]);
+                    let filterOb = addFilter('data-filter', 'continuous', filId, continuousFilter, [...data], [...test], [['selectedOption', selectedOption], ['predictedFilter', predictedFilter], ['observedFilter', observedFilter]]);
 
-                    console.log('fm', filterMaster)
+                    updateMainView(scales, moveMetric);
 
-                    ////DRAW THE PATHS
-                 
-                    updateMainView(scales, moveMetric)
+                    /////ADD THE FILTER TO THE TOOLBAR/////
+                    addFilterTag(filterOb, scales);
 
                     ///DIMMING THE FILTERED OUT NODES//////
 
@@ -211,33 +273,6 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                     missingNodes.classed('node-not-there', true);
 
                     ///END NODE DIMMING///////
-
-                    /////ADD THE FILTER TO THE TOOLBAR/////
-                    let filterToolbar = d3.select("#toolbar");
-
-                    let formater = d3.format(".2s");
-
-                    let button = filterToolbar.append('button').classed('btn btn-info', true);
-                    d3.select(button).datum(filterOb);
-                    let span = button.append('span').classed('badge badge-light', true);
-                    span.text(test.length);
-                    let label = button.append('h6').text(selectedOption + "  Predicted: "+ formater(predictedFilter[0]) + "-" + formater(predictedFilter[1]) + " Observed: " + formater(observedFilter[0]) + "-" + formater(observedFilter[1]));
-                    let xSpan = label.append('i').classed('close fas fa-times', true);
-                    xSpan.on('click', ()=> {
-                       
-                        let filterLine = filterMaster.filter(f=> f.filterType === 'data-filter').filter(f=> filterOb.attribute != f.attribute);
-                      
-                        let thisData = dataMaster[0];
-                        filterLine.forEach(fil=> {
-                            console.log(fil);
-                        });
-
-                        updateMainView(scales, moveMetric);
-                        ////removeing the dimmed class to the unfilterd paths////
-                        d3.selectAll('.link-not-there').classed('link-not-there', false);
-                        d3.selectAll('.node-not-there').classed('node-not-there', false);
-                        button.remove();
-                    });
 
                     ////HIDE THE FILTER BAR/////
                     filterButton.text('Show Filters');
@@ -269,6 +304,8 @@ function discreteFilter(data, selectedOption, fromState, toState){
 
     return data.filter(path=> {
         let filterPred = path.filter(f=> f.leaf != true).map(node=> {
+            console.log('node', node);
+            console.log(selectedOption);
             let states = node.attributes[selectedOption].states;
             if(fromState === 'Any'){
                 return true;
@@ -374,8 +411,6 @@ function renderAttToggles(filterDiv, normedPaths, main, scales, moveMetric){
             newFilMaster.push({'type':'hide-attribute', 'attribute':key.field, 'before-data': [...normedPaths], 'data': [...normedPaths]});
         });
         filterMaster = newFilMaster;
-
-        console.log('filtermaster in render att toggles', filterMaster)
         updateMainView(scales, moveMetric)
     });
     let labelText = labelGroups.append('text').text(d=> d).style('font-size', 10);

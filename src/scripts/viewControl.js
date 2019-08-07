@@ -10,10 +10,8 @@ export function updateMainView(scales, moveMetric){
     let data = getLatestData();
     main.selectAll('*').remove();
 
-    console.log('data in get data', data)
-
     if(d3.select('#view-toggle').text() === 'View Paths'){
-        console.log(data, main, scales, moveMetric)
+   
         renderDistibutions(data, main, scales, moveMetric)
     }else{
         drawPathsAndAttributes(data, main, scales, moveMetric);

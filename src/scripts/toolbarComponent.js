@@ -86,7 +86,7 @@ function togglePathView(viewButton, calculatedScales, moveMetric){
         viewButton.text('View Summary');
         document.getElementById("scrunch").disabled = true;
         d3.select('#scrunch').classed('hidden', true);
-        console.log('changing', document.getElementById("scrunch"))
+      
      
     }else{
         viewButton.text('View Paths');

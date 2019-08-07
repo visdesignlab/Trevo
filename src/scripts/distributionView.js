@@ -18,7 +18,7 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
     let newNormed = [...pathData];
     let keysToHide = attrHide.length > 0 ? scales.filter(f=> attrHide.indexOf(f.field) === -1).map(m=> m.field) : null;
 
-    console.log(keys, keysToHide)
+   
 
     formatAttributeData(newNormed, scales, keysToHide);
 
@@ -319,7 +319,6 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
         return lineGen(p);
 
     }).attr('transform', 'translate(100, 10)').attr('fill', 'none').attr('stroke', (d, i)=> {
-        console.log('d with the problem data', d)
         return d[0] ? d[0].color : '#fff';
     });
 
@@ -370,7 +369,7 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
         let y = d3.scaleLinear().domain([0, 100]).range([(height -margin), 0])
         return y(d.length)
     }).attr('fill', (d, i) => {
-        console.log('new d', d)
+       
         return d[0] != undefined ? d[0].color : '#fff';
     }).attr('opacity', 0.3);
 
@@ -386,6 +385,7 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
         state.filter(f=> f[0].state === d[0].winState).attr('opacity', 0.8);
         state.filter(f=> f[0].state != d[0].winState).attr('opacity', 0.1);
         d3.select(n[i]).attr('opacity', 0.9);
+        
     }).on('mouseout', (d, i, n)=> {
         d3.select(n[i]).attr('opacity', 0.3);
         let state = d3.select('g.'+d[0].label).selectAll('g.state').attr('opacity', 0.6);

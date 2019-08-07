@@ -30,7 +30,7 @@ function updateBrush(treeBrush, scales){
 
     let filterOb = addFilter('data-filter', 'topology', brushId, treeFilter, [...data], [...test], null);
 
-    console.log('fm', filterMaster)
+
 
     updateMainView(scales, 'edgeLength');
    
@@ -114,7 +114,7 @@ export function renderTree(nestedData, normedPaths, calculatedScales, sidebar, l
 // declares a tree layout and assigns the size
     var treemap = d3.tree()
     .size([height, width]);
-  //  console.log('nested', nestedData)
+  
     function addingEdgeLength(edge, data){
         data.combEdge = data.edgeLength + edge;
         if(data.children){
