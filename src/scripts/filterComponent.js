@@ -31,8 +31,11 @@ export function removeFilter(filterId, scales){
                 addFilterTag(dataFilters[i], scales);
                 testData = newTestData;
             }else{//discrete
-                let newTestData = fun(dataFilters[i].data, dataFilters[i].selectedOption, dataFilters[i].fromState, dataFilters[i].toState);
+                console.log('in discrete refilter', dataFilters[i]);
+                
+                let newTestData = fun(testData, dataFilters[i].selectedOption, dataFilters[i].fromState, dataFilters[i].toState);
                 dataFilters[i].data = [...newTestData];
+                console.log('in discrete refilter 2', dataFilters[i]);
                 dataFilters[i].filterId = 'd-'+ i;
                 //// Re adding in buttons ////
                 addFilterTag(dataFilters[i], scales);
@@ -164,7 +167,7 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                     let test = discreteFilter(data, selectedOption, fromState, toState);
 
                     let filId = 'd-'+filterMaster.filter(f=> f.attributeType === 'discrete').length;
-                    let filterOb = addFilter('data-filter', 'discrete', filId, discreteFilter, [...data], [...test], [['state', [fromState, toState]]]);
+                    let filterOb = addFilter('data-filter', 'discrete', filId, discreteFilter, [...data], [...test], [['state', [fromState, toState]], ['selectedOption', selectedOption]]);
 
                     updateMainView(scales, moveMetric);
 
@@ -301,16 +304,16 @@ function continuousFilter(data, selectedOption, predicted, observed){
 }
 
 function discreteFilter(data, selectedOption, fromState, toState){
+if(selectedOption != undefined){
 
     return data.filter(path=> {
         let filterPred = path.filter(f=> f.leaf != true).map(node=> {
-            console.log('node', node);
-            console.log(selectedOption);
+          
             let states = node.attributes[selectedOption].states;
             if(fromState === 'Any'){
                 return true;
             }else{
-                return states.filter(st=> st.state === fromState)[0].realVal > 0.75;
+                return states.filter(st=> st.state === fromState).length > 0 && states.filter(st=> st.state === fromState)[0].realVal > 0.75;
             }
         });
         let filterObs = path.filter(f=> f.leaf === true).map(node=> {
@@ -323,6 +326,9 @@ function discreteFilter(data, selectedOption, fromState, toState){
         });
         return filterPred.indexOf(true) > -1 && filterObs.indexOf(true) > -1;
     });
+
+}
+    
 
 }
 

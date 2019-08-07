@@ -200,11 +200,14 @@ export function filterKeeper(){
     };
 }
 
-export function formatAttributeData(normedPaths, scales, filterArray){
-  
-    let keys = (filterArray == null)? Object.keys(normedPaths[0][0].attributes): filterArray;
+export function formatAttributeData(pathData, scales, filterArray){
+   // console.log('normedpaths in format att', data, typeof(data))
+   // let normedPaths = await Promise.resolve(normedPaths);
+  // let normedPaths = data;
+
+    let keys = (filterArray == null)? Object.keys(pathData[0][0].attributes): filterArray;
    
-    let newData = normedPaths.map(path=> {
+    let newData = pathData.map(path=> {
         return keys.map((key)=> {
             return path.map((m)=> {
                 if(m.attributes[key].type === 'continuous'){
