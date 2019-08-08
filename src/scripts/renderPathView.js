@@ -1,9 +1,8 @@
 import '../styles/index.scss';
 import * as d3 from "d3";
-import {renderSelectedView, pathSelected} from './selectedPaths';
+import {pathSelected} from './selectedPaths';
 import {formatAttributeData} from './dataFormat';
 import {filterMaster} from './filterComponent';
-import {dataMaster} from './index';
 
 export async function drawPathsAndAttributes(pathData, main, calculatedScales, moveMetric){
 
@@ -69,6 +68,13 @@ export function renderPaths(pathData, main, scales, moveMetric){
     let pathBars = pathGroups.append('rect').classed('path-rect', true);
     pathBars.attr('y', -8);
 
+    let pathAdd = pathGroups.append('g').classed("fas fa-search-plus", true);
+    pathAdd.attr('transform', 'translate(15, 10)');
+    pathAdd.append('circle').attr('r', 7).attr('fill', '#fff');
+    pathAdd.append('text').text('+').attr('transform', 'translate(-5, 5)');
+
+    pathAdd.style('cursor', 'pointer')
+
     pathGroups.on('mouseover', function(d, i){
         let treeNode  = d3.select('#sidebar').selectAll('.node');
         let treeLinks  = d3.select('#sidebar').selectAll('.link');
@@ -82,7 +88,7 @@ export function renderPaths(pathData, main, scales, moveMetric){
         let treeLinks  = d3.select('#sidebar').selectAll('.link').classed('hover', false);
         return d3.select(this).classed('hover', false);
     });
-    pathGroups.on('click', (d, i, n)=>{
+    pathAdd.on('click', (d, i, n)=>{
 
         let notIt = d3.selectAll(n).filter((f, j)=> j != i).classed('selected-path', false);
      
@@ -101,7 +107,7 @@ export function renderPaths(pathData, main, scales, moveMetric){
         return string.charAt(0).toUpperCase() + string.slice(1);
     });
 
-    speciesTitle.attr('x', 10).attr('y', 15);
+    speciesTitle.attr('x', 25).attr('y', 15);
 
     let timelines = pathGroups.append('g').classed('time-line', true);
     timelines.attr('transform', (d, i)=> 'translate(150, 0)');
