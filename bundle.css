@@ -113,6 +113,7 @@ svg {
   width: 200px;
   display: inline; }
 
+.select-paths rect.select-path-rect,
 .paths rect.path-rect {
   fill: gainsboro;
   width: 1250px;
@@ -160,6 +161,7 @@ rect.graph-bars {
   text-anchor: end;
   color: gray; }
 
+.select-paths rect.attribute-inner-bar,
 .paths rect.attribute-inner-bar {
   fill: #fff;
   stroke: gray;
