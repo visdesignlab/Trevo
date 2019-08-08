@@ -13,7 +13,6 @@ export function pathSelected(selectedPath, otherPaths, scales, moveMetric){
     if(selectedPath === null){
 
         selectedPaths = [];
-        console.log('s', selectedPaths);
 
         d3.select('div#selected').selectAll('*').remove();
         selectedDiv.style('height', 0);
@@ -22,15 +21,13 @@ export function pathSelected(selectedPath, otherPaths, scales, moveMetric){
         drawPathsAndAttributes([...otherPaths], main, scales, moveMetric, false);
     }else{
         selectedPaths.push(selectedPath);
-        console.log('sp', selectedPaths);
 
         renderSelectedView(selectedPaths, otherPaths, selectedDiv, scales, moveMetric);
         let sortedPaths = sortOtherPaths([...selectedPath], otherPaths);
         let main = d3.select('div#main');
           /// LOWER ATTRIBUTE VISUALIZATION ///
         let pathGroups = drawPathsAndAttributes(sortedPaths.map(s=> s.data), main, scales, moveMetric, false);
-        console.log(pathGroups)
-        pathGroups.selectAll('.paths').on('mouseover', (d, i, n)=> console.log(d));
+
         main.style('padding-top', '250px');
     }
 }
@@ -68,16 +65,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
     let selectedToolTest = selectedDiv.select('.selected-toolbar');
     let selectedTool = selectedToolTest.empty() ? selectedDiv.append('div').classed('selected-toolbar', true) : selectedToolTest;
     selectedTool.selectAll('*').remove();
-/*
-    let xIconWrap = selectedTool.append('div').classed('x-icon', true);
-    let xIcon = xIconWrap.append('i').classed("far fa-times-circle", true);
-    xIcon.on('click', ()=> {
-        d3.selectAll('.high').classed('high', false);
-        d3.selectAll('.low').classed('low', false);
-        treeNodes.select('.selected').classed('selected', false);
-        pathSelected(null, dataMaster[0], scales, moveMetric);
-    });
-*/
+
     ///////////////////////
 
     let sortByDistanceDiv = selectedTool.append('div').style('display', 'inline-block');
@@ -95,32 +83,30 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
    let radio = radioDiv.append('input').attr('type', 'radio').property('name', 'attribute-radio-sort').property('value', d=> d).attr('id', (d, i)=> 'radio-'+i).classed("form-check-input", true);
    radioDiv.append('label').text(d=> d).property('for', (d, i)=> 'radio-'+i).classed("form-check-label", true);
 
+   let svgTest = selectedDiv.select('svg.select-svg');
+   let svg = svgTest.empty()? selectedDiv.append('svg').classed('select-svg', true) : svgTest;
 
+   svg.selectAll('*').remove();
+
+   let branchFrequency = pathData.flatMap(row=> row.flatMap(f=> f.node)).reduce(function (acc, curr) {
+    if (typeof acc[curr] == 'undefined') {
+      acc[curr] = 1;
+    } else {
+      acc[curr] += 1;
+    }
+    return acc;
+    }, {});
 
 ///RENDERING SELECTED PATHS////
 if(pathData.length === 1){
 
    /////////////////////////////////////////////////
 
-   let svgTest = selectedDiv.select('svg.select-svg');
-   let svg = svgTest.empty()? selectedDiv.append('svg').classed('select-svg', true) : svgTest;
-
-   let selectWrap = svg.append('g').classed('select-wrap', true);
-
+    let selectWrap = svg.append('g').classed('select-wrap', true);
     selectWrap.attr('transform', (d, i)=> 'translate(0,20)');
 
-      /////Counting frequency of nodes//////
-    let branchFrequency = pathData.flatMap(row=> row.flatMap(f=> f.node)).reduce(function (acc, curr) {
-        if (typeof acc[curr] == 'undefined') {
-          acc[curr] = 1;
-        } else {
-          acc[curr] += 1;
-        }
-        return acc;
-        }, {});
-
-     ///Scales for circles ///
-     let circleScale = d3.scaleLog().range([6, 14]).domain([1, d3.max(Object.values(branchFrequency))]);
+    ///Scales for circles ///
+    let circleScale = d3.scaleLog().range([6, 14]).domain([1, d3.max(Object.values(branchFrequency))]);
 
     let selectedGroups = selectWrap.selectAll('.paths').data(pathData).join('g').classed('paths', true);
  
@@ -145,7 +131,7 @@ if(pathData.length === 1){
     });
 
     /////////
-/*
+
     selectedGroups.on('mouseover', function(d, i){
         let treeNode  = d3.select('#sidebar').selectAll('.node');
         let treeLinks  = d3.select('#sidebar').selectAll('.link');
@@ -159,7 +145,7 @@ if(pathData.length === 1){
         let treeLinks  = d3.select('#sidebar').selectAll('.link').classed('hover', false);
         return d3.select(this).classed('hover', false);
     });
-*/
+
     let speciesTitle = selectedGroups.append('text').text(d=> {
        let string = d.filter(f=> f.leaf === true)[0].label;
         return string.charAt(0).toUpperCase() + string.slice(1);
@@ -216,6 +202,7 @@ if(pathData.length === 1){
       
        let nearestA = nearest[0];
        let nearestB = nearest[1];
+       console.log(nearestA, nearestB)
    });
 
        //////PLAYING WITH FUNCTION TO CALULATE DISTANCES
@@ -237,6 +224,72 @@ if(pathData.length === 1){
        selectedDiv.style('height', ((pathData.length + attributeGroups.data().map(m=> m[0]).length)* 45) + 50 + 'px');
        attributeWrapper.attr('transform', (d)=> 'translate(140, 25)');
        return svg;
+}else{
+
+console.log('selectedpaths', selectedPaths);
+
+let maxBranch = d3.max(selectedPaths.map(p=> p.length));
+let startBranch = selectedPaths.filter(path=> path.length === maxBranch)[0];
+let commonNodeStart = [];
+//FIND THE COMMON BRANCHES BETWEEN ALL OF THE SELECTED///
+selectedPaths.map(path=> {
+    commonNodeStart = path.filter(f=> startBranch.map(m=> m.node).indexOf(f.node) > -1);
+});
+
+console.log('common node branches', commonNodeStart)
+
+//commonNodeStart[commonNodeStart.length - 1].children = 
+let selectWrap = svg.append('g').classed('select-wrap', true);
+selectWrap.attr('transform', (d, i)=> 'translate(0,20)');
+
+///Scales for circles ///
+let circleScale = d3.scaleLog().range([6, 14]).domain([1, d3.max(Object.values(branchFrequency))]);
+
+let selectedGroups = selectWrap.selectAll('.paths').data([commonNodeStart]).join('g').classed('paths', true);
+
+let pathBars = selectedGroups.append('rect').classed('path-rect', true);
+pathBars.attr('y', -8);
+
+//////////
+///Selecting species
+/////////
+let pathRemove = selectedGroups.append('g').classed('x-icon', true);
+pathRemove.attr('transform', 'translate(15, 10)');
+pathRemove.append('circle').attr('r', 7).attr('fill', '#fff');
+pathRemove.append('text').text('x').attr('transform', 'translate(-5, 5)');
+
+pathRemove.style('cursor', 'pointer');
+
+pathRemove.on('click', (d, i, n)=>{
+    d3.selectAll('.high').classed('high', false);
+    d3.selectAll('.low').classed('low', false);
+    treeNodes.select('.selected').classed('selected', false);
+    pathSelected(null, dataMaster[0], scales, moveMetric);
+});
+
+/////////
+
+let timelines = selectedGroups.append('g').classed('time-line', true);
+timelines.attr('transform', (d, i)=> 'translate(150, 0)');
+
+let lines = timelines.append('line')
+.attr('x1', 0)
+.attr('x2', 1000)
+.attr('y1', 15)
+.attr('y2', 15);
+
+let nodeGroups = timelines.selectAll('.node').data((d)=> d).join('g').classed('node', true);
+
+nodeGroups.attr('transform', (d)=> {
+    let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
+    let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove);
+    return 'translate('+ distance +', 10)';});
+
+let circle = nodeGroups.append('circle').attr('cx', 0).attr('cy', 0).attr('r', d=> {
+    return circleScale(branchFrequency[d.node]);
+}).attr('class', (d, i)=> 'node-'+d.node);
+
+
 }
 
     d3.selectAll('.selected-path').classed('selected-path', false);
