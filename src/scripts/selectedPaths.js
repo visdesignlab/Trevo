@@ -233,10 +233,22 @@ let startBranch = selectedPaths.filter(path=> path.length === maxBranch)[0];
 let commonNodeStart = [];
 //FIND THE COMMON BRANCHES BETWEEN ALL OF THE SELECTED///
 selectedPaths.map(path=> {
-    commonNodeStart = path.filter(f=> startBranch.map(m=> m.node).indexOf(f.node) > -1);
+    commonNodeStart = [...path.filter(f=> startBranch.map(m=> m.node).indexOf(f.node) > -1)];
 });
 
-console.log('common node branches', commonNodeStart)
+
+
+commonNodeStart[commonNodeStart.length -1].children = selectedPaths.map(path=> {
+   let nodeIndex = path.map(p=> p.node);
+   let branchArray = [];
+   let thresh = nodeIndex.indexOf(commonNodeStart[commonNodeStart.length -1].node);
+   let subset = path.filter((f, i)=> i > thresh);
+
+   return subset;
+
+});
+
+console.log('common node branches', commonNodeStart);
 
 //commonNodeStart[commonNodeStart.length - 1].children = 
 let selectWrap = svg.append('g').classed('select-wrap', true);
