@@ -6,7 +6,7 @@ import {allPaths, pullPath, getPath} from './pathCalc';
 import {drawPathsAndAttributes} from './renderPathView';
 import {renderTree, buildTreeStructure, renderTreeButtons} from './sidebarComponent';
 import {toolbarControl, renderAttToggles} from './toolbarComponent';
-import { updateMainView } from './viewControl';
+import { updateMainView, initialViewLoad } from './viewControl';
 
 export const dataMaster = [];
 export const collapsed = false;
@@ -93,7 +93,7 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     let tree = renderTree(nestedData, normedPaths, calculatedScales, sidebar, false);
     
       /// LOWER ATTRIBUTE VISUALIZATION ///
-   updateMainView(calculatedScales, 'edgeLength');
+   initialViewLoad(calculatedScales, 'edgeLength');
 });
 /*
 loadData(d3.json, './public/data/geospiza_with_attributes.json').then(data=> {

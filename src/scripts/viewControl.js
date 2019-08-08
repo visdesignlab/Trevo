@@ -8,6 +8,7 @@ export function updateMainView(scales, moveMetric){
 
     let main = d3.select('#main');
     let data = getLatestData();
+
     main.selectAll('*').remove();
 
     if(d3.select('#view-toggle').text() === 'View Paths'){
@@ -15,6 +16,23 @@ export function updateMainView(scales, moveMetric){
         renderDistibutions(data, main, scales, moveMetric)
     }else{
         drawPathsAndAttributes(data, main, scales, moveMetric);
+    }
+
+}
+
+export function initialViewLoad(scales, moveMetric){
+
+    let main = d3.select('#main');
+    let data = getLatestData();
+
+    main.selectAll('*').remove();
+
+    if(data.length > 50){
+        renderDistibutions(data, main, scales, moveMetric);
+        d3.select('#view-toggle').text('View Paths');
+    }else{
+        drawPathsAndAttributes(data, main, scales, moveMetric);
+        d3.select('#view-toggle').text('View Summary');
     }
 
 }
