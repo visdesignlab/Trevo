@@ -218,15 +218,16 @@ export function drawContAtt(predictedAttrGrps, moveMetric, collapsed){
     attrLabel.classed('attribute-label', true);
     attrLabel.attr('transform', 'translate(-15, 20)');
     let innerTimeline = continuousAtt.append('g').classed('attribute-time-line', true);
+    /////DO NOT DELETE THIS! YOU NEED TO SEP CONT AND DICRETE ATTR. THIS DRAWS LINE FOR THE CONT/////
+    let innerPaths = continuousPaths(innerTimeline, moveMetric, collapsed);
+ ////////
     let attribRectCont = innerTimeline.append('rect').classed('attribute-rect', true);
     attribRectCont.attr('height', attributeHeight);
     let attributeNodesCont = innerTimeline.selectAll('g').data(d=> d).join('g').classed('attribute-node', true);
 
     let innerBars = attributeNodesCont.append('g').classed('inner-bars', true);
 
- /////DO NOT DELETE THIS! YOU NEED TO SEP CONT AND DICRETE ATTR. THIS DRAWS LINE FOR THE CONT/////
-    let innerPaths = continuousPaths(innerTimeline, moveMetric, collapsed);
- ////////
+ 
 
     let innerRect = innerBars.append('rect').classed('attribute-inner-bar', true);
     innerRect.attr('height', attributeHeight);
