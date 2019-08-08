@@ -68,12 +68,31 @@ export function renderPaths(pathData, main, scales, moveMetric){
     let pathBars = pathGroups.append('rect').classed('path-rect', true);
     pathBars.attr('y', -8);
 
+    //////////
+    ///Selecting species
+    /////////
     let pathAdd = pathGroups.append('g').classed("fas fa-search-plus", true);
     pathAdd.attr('transform', 'translate(15, 10)');
     pathAdd.append('circle').attr('r', 7).attr('fill', '#fff');
     pathAdd.append('text').text('+').attr('transform', 'translate(-5, 5)');
 
-    pathAdd.style('cursor', 'pointer')
+    pathAdd.style('cursor', 'pointer');
+
+    pathAdd.on('click', (d, i, n)=>{
+
+        let notIt = d3.selectAll(n).filter((f, j)=> j != i).classed('selected-path', false);
+     
+        if(d3.select(n[i]).classed('selected-path')){
+            d3.select(n[i]).classed('selected-path', false);
+            pathSelected(null, notIt.data(), scales, moveMetric);
+        }else{
+            d3.select(n[i]).classed('selected-path', true);
+            console.log(d);
+            pathSelected(d, notIt.data(), scales, moveMetric);
+        }
+    });
+
+    /////////
 
     pathGroups.on('mouseover', function(d, i){
         let treeNode  = d3.select('#sidebar').selectAll('.node');
@@ -87,18 +106,6 @@ export function renderPaths(pathData, main, scales, moveMetric){
         let treeNode  = d3.select('#sidebar').selectAll('.node').classed('hover', false);
         let treeLinks  = d3.select('#sidebar').selectAll('.link').classed('hover', false);
         return d3.select(this).classed('hover', false);
-    });
-    pathAdd.on('click', (d, i, n)=>{
-
-        let notIt = d3.selectAll(n).filter((f, j)=> j != i).classed('selected-path', false);
-     
-        if(d3.select(n[i]).classed('selected-path')){
-            d3.select(n[i]).classed('selected-path', false);
-            pathSelected(null, notIt.data(), scales, moveMetric);
-        }else{
-            d3.select(n[i]).classed('selected-path', true);
-            pathSelected(d, notIt.data(), scales, moveMetric);
-        }
     });
 
     let speciesTitle = pathGroups.append('text').text(d=> {

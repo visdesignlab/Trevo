@@ -14,23 +14,17 @@ export function buildTreeStructure(paths, edges){
 }
 
 function updateBrush(treeBrush, scales){
+    
     let sidebar = d3.select('#sidebar');
     let toolbarDiv = d3.select('#toolbar');
 
     let data = filterMaster.length === 0 ? dataMaster[0] : dataMaster[0];
-
     let nodes = sidebar.select('svg').select('g').selectAll('.node');
     let selectedNodes = nodes.filter(n=> (n.y > d3.event.selection[0][0]) && (n.y < d3.event.selection[1][0]) && (n.x > d3.event.selection[0][1]) && (n.x < d3.event.selection[1][1])).classed('selected', true);
-
     let filterArray = selectedNodes.data().map(n=> n.data.node);
-  
     let test = treeFilter(data, filterArray);
-
     let brushId = 'brush-'+ filterMaster.filter(f=> f.attributType === 'topology').length;
-
     let filterOb = addFilter('data-filter', 'topology', brushId, treeFilter, [...data], [...test], null);
-
-
 
     updateMainView(scales, 'edgeLength');
    

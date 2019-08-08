@@ -142,7 +142,7 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
     let branchScale = d3.scaleLinear().domain([0, medBranchLength]).range([0, 780]);
 
     let branchPoints = svg.append('g').classed('branch-bar', true).attr('transform', 'translate(10, 20)');
-    branchPoints.append('line').attr('y0', 2).attr('y1', 2).attr('x0', '210').attr('x1', 890).attr('stroke', 'gray').attr('stroke-width', .25)
+    branchPoints.append('line').attr('y1', 2).attr('y2', 2).attr('x1', '100').attr('x2', 890).attr('stroke', 'gray').attr('stroke-width', .25)
     branchPoints.append('text').text('Root').attr('transform', 'translate(50, 7)');
     branchPoints.append('text').text('Leaves').attr('transform', 'translate(950, 7)');
 

@@ -9,6 +9,7 @@ import {toolbarControl, renderAttToggles} from './toolbarComponent';
 import { updateMainView, initialViewLoad } from './viewControl';
 
 export const dataMaster = [];
+export const savedSelected = [];
 export const collapsed = false;
 
 

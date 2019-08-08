@@ -84,14 +84,8 @@ function togglePathView(viewButton, calculatedScales, moveMetric){
 
     if(viewButton.text() === 'View Paths'){
         viewButton.text('View Summary');
-        document.getElementById("scrunch").disabled = false;
-      
-      
-     
     }else{
         viewButton.text('View Paths');
-     
-        document.getElementById("scrunch").disabled = true;
     }
     updateMainView(calculatedScales, moveMetric);
 }
