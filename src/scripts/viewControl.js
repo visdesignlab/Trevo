@@ -12,10 +12,11 @@ export function updateMainView(scales, moveMetric){
     main.selectAll('*').remove();
 
     if(d3.select('#view-toggle').text() === 'View Paths'){
-   
-        renderDistibutions(data, main, scales, moveMetric)
+        renderDistibutions(data, main, scales, moveMetric);
+        document.getElementById("scrunch").disabled = true;
     }else{
         drawPathsAndAttributes(data, main, scales, moveMetric);
+        document.getElementById("scrunch").disabled = false;
     }
 
 }
@@ -30,9 +31,11 @@ export function initialViewLoad(scales, moveMetric){
     if(data.length > 50){
         renderDistibutions(data, main, scales, moveMetric);
         d3.select('#view-toggle').text('View Paths');
+        document.getElementById("scrunch").disabled = true;
     }else{
         drawPathsAndAttributes(data, main, scales, moveMetric);
         d3.select('#view-toggle').text('View Summary');
+        document.getElementById("scrunch").disabled = false;
     }
 
 }

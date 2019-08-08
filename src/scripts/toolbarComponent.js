@@ -2,7 +2,6 @@ import '../styles/index.scss';
 import * as d3 from "d3";
 import {drawPathsAndAttributes} from './renderPathView';
 import {toggleFilters} from './filterComponent';
-import {renderDistibutions} from './distributionView';
 import { updateMainView } from './viewControl';
 
 export function toolbarControl(toolbar, normedPaths, main, calculatedScales, moveMetric, pathView){
@@ -20,6 +19,7 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, mov
     let filterButton = toolbar.append('button').attr('id', 'view-filter');
     filterButton.attr('class', 'btn btn-outline-secondary').text('Show Filters');
     filterButton.on('click', ()=> toggleFilters(filterButton, normedPaths, main, moveMetric, calculatedScales));
+    ///LENGTH BUTTON CODE
 /*
     let lengthButton = toolbar.append('button').attr('id', 'change-length').attr('class', 'btn btn-outline-secondary');
     if(moveMetric === 'move'){
@@ -84,14 +84,14 @@ function togglePathView(viewButton, calculatedScales, moveMetric){
 
     if(viewButton.text() === 'View Paths'){
         viewButton.text('View Summary');
-        document.getElementById("scrunch").disabled = true;
-        d3.select('#scrunch').classed('hidden', true);
+        document.getElementById("scrunch").disabled = false;
+      
       
      
     }else{
         viewButton.text('View Paths');
-        d3.select('#scrunch').classed('hidden', false);
-        document.getElementById("scrunch").disabled = false;
+     
+        document.getElementById("scrunch").disabled = true;
     }
     updateMainView(calculatedScales, moveMetric);
 }
