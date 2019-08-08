@@ -28,8 +28,9 @@ export function pathSelected(selectedPath, otherPaths, scales, moveMetric){
         let sortedPaths = sortOtherPaths([...selectedPath], otherPaths);
         let main = d3.select('div#main');
           /// LOWER ATTRIBUTE VISUALIZATION ///
-        drawPathsAndAttributes(sortedPaths.map(s=> s.data), main, scales, moveMetric, false);
-  
+        let pathGroups = drawPathsAndAttributes(sortedPaths.map(s=> s.data), main, scales, moveMetric, false);
+        console.log(pathGroups)
+        pathGroups.selectAll('.paths').on('mouseover', (d, i, n)=> console.log(d));
         main.style('padding-top', '250px');
     }
 }
@@ -203,8 +204,6 @@ if(pathData.length === 1){
         return string;
     }).attr('x', 10).attr('y', 5);
 
-
-
    selectedGroups.attr('transform', (d, i)=> 'translate(0,'+(i*60)+')');
 
    let nodes = selectedGroups.select('.time-line').selectAll('.node');
@@ -234,7 +233,7 @@ if(pathData.length === 1){
    
        //sizeAndMove(svg, attributeWrapper, pathData, (attrMove * attributeHeight));
        //tranforming elements
-       svg.style('height', ((pathData.length + attributeGroups.data().map(m=> m[0]).length)* 250) + 50 + 'px');
+       svg.style('height', '250px');
        selectedDiv.style('height', ((pathData.length + attributeGroups.data().map(m=> m[0]).length)* 45) + 50 + 'px');
        attributeWrapper.attr('transform', (d)=> 'translate(140, 25)');
        return svg;

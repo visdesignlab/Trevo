@@ -4,7 +4,7 @@ import {pathSelected} from './selectedPaths';
 import {formatAttributeData} from './dataFormat';
 import {filterMaster} from './filterComponent';
 
-export async function drawPathsAndAttributes(pathData, main, calculatedScales, moveMetric){
+export function drawPathsAndAttributes(pathData, main, calculatedScales, moveMetric){
 
     let collapsed = d3.select('#scrunch').attr('value');
   
@@ -18,7 +18,7 @@ export async function drawPathsAndAttributes(pathData, main, calculatedScales, m
 
     let attKeys = attrHide.length > 0 ? calculatedScales.filter(f=> attrHide.indexOf(f.field) === -1).map(m=> m.field) : null;
 
-    let attData = await formatAttributeData(pathData, calculatedScales, attKeys);
+    let attData = formatAttributeData(pathData, calculatedScales, attKeys);
 
     let attrMove = attKeys === null ? calculatedScales.length : attKeys.length;
 
@@ -28,7 +28,9 @@ export async function drawPathsAndAttributes(pathData, main, calculatedScales, m
     
     drawContAtt(predictedAttrGrps, moveMetric, collapsed);
     drawDiscreteAtt(predictedAttrGrps, calculatedScales, moveMetric, collapsed);
-    sizeAndMove(main.select('#main-path-view'), attributeWrapper, pathData, (attrMove * attributeHeight))
+    sizeAndMove(main.select('#main-path-view'), attributeWrapper, pathData, (attrMove * attributeHeight));
+
+    return pathGroups;
 
 }
 
