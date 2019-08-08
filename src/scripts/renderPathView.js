@@ -263,6 +263,20 @@ export function drawContAtt(predictedAttrGrps, moveMetric, collapsed){
             return 'translate(0, '+ y(d.realVal) +')';})
         .attr('fill', d=> d.color);
     }
+
+    /////AXIS ON HOVER////
+    innerBars.on('mouseover', (d, i, n)=> {
+        
+        let y = d.yScale;
+        y.range([0, attributeHeight]);
+        d3.select(n[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(5));
+       
+    }).on('mouseout', (d, i, n)=> {
+        d3.select(n[i]).select('g.y-axis')
+        d3.select(n[i]).select('g.y-axis').remove();
+    })
+
+
    
 }
 
@@ -334,7 +348,20 @@ export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric, collapsed
         }
     });
 
+    attributeNodesDisc.append('rect').attr('width', 20).attr('height', attributeHeight).attr('opacity', 0);
+
     attributeNodesDisc.append('line').attr('x1', 10).attr('x2', 10).attr('y1', 0).attr('y2', attributeHeight);
+
+        /////AXIS ON HOVER////
+    attributeNodesDisc.on('mouseover', (d, i, n)=> {
+            let y = d3.scaleLinear().domain([1, 0]);
+            y.range([0, attributeHeight]);
+            d3.select(n[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(3));
+           
+        }).on('mouseout', (d, i, n)=> {
+            d3.select(n[i]).select('g.y-axis')
+            d3.select(n[i]).select('g.y-axis').remove();
+        })
 
     let stateDots = attributeNodesDisc.filter((att, i)=> att[0] != undefined).selectAll('.dots').data(d=> {
         return d;
