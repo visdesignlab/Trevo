@@ -236,13 +236,30 @@ selectedPaths.map(path=> {
     commonNodeStart = [...path.filter(f=> startBranch.map(m=> m.node).indexOf(f.node) > -1)];
 });
 
-commonNodeStart[commonNodeStart.length -1].children = selectedPaths.map(path=> {
+console.log(commonNodeStart)
+
+let children = selectedPaths.map(path=> {
    let nodeIndex = path.map(p=> p.node);
    let branchArray = [];
    let thresh = nodeIndex.indexOf(commonNodeStart[commonNodeStart.length -1].node);
    let subset = path.filter((f, i)=> i > thresh);
-
+    console.log('subs', subset, 'threshold', thresh);
    return subset;
+});
+
+
+
+commonNodeStart[commonNodeStart.length -1].children = children.map((path)=> {
+    let max = d3.max(path.map(p=> p.edgeMove)) - commonNodeStart[commonNodeStart.length -1].edgeMove;
+        return path.map((chil, i, n)=> {
+            chil.parentBase = commonNodeStart[commonNodeStart.length -1].edgeMove;
+            chil.move = chil.edgeMove - commonNodeStart[commonNodeStart.length -1].edgeMove;
+            chil.base = (i === 0)? 0 : n[i-1].edgeMove - commonNodeStart[commonNodeStart.length -1].edgeMove;
+            let parentScale = d3.scaleLinear().domain([0, 1]).range([0, 1000])
+            let scaledParentMove = parentScale(commonNodeStart[commonNodeStart.length -1].edgeMove);
+            chil.xScale = d3.scaleLinear().domain([0, max]).range([0, (1000 - scaledParentMove)]);
+            return chil;
+        });
 });
 
 console.log('common node branches', commonNodeStart);
@@ -305,18 +322,22 @@ childNodeWrap.attr( 'transform', (d, i) => 'translate(0, '+(i*30)+')');
 
 let childNodes = childNodeWrap.selectAll('g.node').data(d=> d).join('g').classed('node', true)
 childNodes.attr('transform', (d, i, n)=> {
-   
-    console.log(d3.select(n[i].parentNode.parentNode).data()[0])
-    let parentstart = d3.select(n[i].parentNode.parentNode).data()[0].edgeMove;
-    let sP = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
-    console.log(parentstart, sP(parentstart), 1000 - (sP(parentstart)))
-    //console.log(n[i].parentNode.parentNode.getBoundingClientRect());
-    let max = d3.max(d3.selectAll(n).data().map(m=> m.edgeLength))
-    let last = i == 0 ? 0 : d3.select(n[i-1]).data()[0].edgeLength;
-    let move = d.edgeLength + last;
-    let x = d3.scaleLinear().domain([0, max]).range([0, (1000 - (sP(parentstart)))]).clamp(true);
-   
-    return 'translate('+ x(move) +', 0)';});
+    return 'translate('+ d.xScale(d.move) +', 0)';});
+
+childNodeWrap.append('path').attr('d', (d, i, n)=> {
+    console.log(d, i, n);
+    console.log(d3.select(n[i].parentNode).attr("transform"))
+    let line = d3.line()
+    .x(function(d){ 
+        console.log(d)
+        return d.xScale(d.move); })
+    .y(function(d, i){ 
+
+        return i; })
+    return line(d);
+});
+//let links = childNodes.append('line').attr('x1', d => d.xScale(d.base)).attr('x2', d => d.xScale(d.move)).attr('y1', 0).attr('y2', 5).attr('stroke', 'red').attr('fill', 'none')
+
 
 childNodes.append('circle').attr('r', 7).attr('fill', 'red').attr('y', 5)
 
