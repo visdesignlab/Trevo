@@ -236,8 +236,6 @@ selectedPaths.map(path=> {
     commonNodeStart = [...path.filter(f=> startBranch.map(m=> m.node).indexOf(f.node) > -1)];
 });
 
-
-
 commonNodeStart[commonNodeStart.length -1].children = selectedPaths.map(path=> {
    let nodeIndex = path.map(p=> p.node);
    let branchArray = [];
@@ -245,7 +243,6 @@ commonNodeStart[commonNodeStart.length -1].children = selectedPaths.map(path=> {
    let subset = path.filter((f, i)=> i > thresh);
 
    return subset;
-
 });
 
 console.log('common node branches', commonNodeStart);
@@ -300,6 +297,28 @@ nodeGroups.attr('transform', (d)=> {
 let circle = nodeGroups.append('circle').attr('cx', 0).attr('cy', 0).attr('r', d=> {
     return circleScale(branchFrequency[d.node]);
 }).attr('class', (d, i)=> 'node-'+d.node);
+
+console.log(nodeGroups.filter(c=> c.children != undefined))
+
+let childNodeWrap = nodeGroups.filter(c=> c.children != undefined).selectAll('g.child').data(d=> d.children).join('g').classed('child', true);
+childNodeWrap.attr( 'transform', (d, i) => 'translate(0, '+(i*30)+')');
+
+let childNodes = childNodeWrap.selectAll('g.node').data(d=> d).join('g').classed('node', true)
+childNodes.attr('transform', (d, i, n)=> {
+   
+    console.log(d3.select(n[i].parentNode.parentNode).data()[0])
+    let parentstart = d3.select(n[i].parentNode.parentNode).data()[0].edgeMove;
+    let sP = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
+    console.log(parentstart, sP(parentstart), 1000 - (sP(parentstart)))
+    //console.log(n[i].parentNode.parentNode.getBoundingClientRect());
+    let max = d3.max(d3.selectAll(n).data().map(m=> m.edgeLength))
+    let last = i == 0 ? 0 : d3.select(n[i-1]).data()[0].edgeLength;
+    let move = d.edgeLength + last;
+    let x = d3.scaleLinear().domain([0, max]).range([0, (1000 - (sP(parentstart)))]).clamp(true);
+   
+    return 'translate('+ x(move) +', 0)';});
+
+childNodes.append('circle').attr('r', 7).attr('fill', 'red').attr('y', 5)
 
 
 }
