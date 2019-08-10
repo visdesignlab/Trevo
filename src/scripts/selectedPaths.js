@@ -51,6 +51,8 @@ export function sortOtherPaths(pathData, otherPaths){
 }
 export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, moveMetric){
 
+    let attributeHeight = 45;
+
     let selectedSpecies = pathData.flatMap(p=> p.filter(f=> f.leaf === true).map(n=> n.node));
     let treeNodes = d3.select('#sidebar').select('svg').selectAll('.node');
     treeNodes.filter(node=> selectedSpecies.indexOf(node.data.node) > -1).classed('selected', true);
@@ -185,7 +187,6 @@ if(pathData.length === 1){
     });
 
     let speciesNodeLabel = nodeGroups.filter(f=> f.label != undefined).append('text').text(d=> {
-      
         let string = d.label.charAt(0).toUpperCase() + d.label.slice(1);
         return string;
     }).attr('x', 10).attr('y', 5);
@@ -212,7 +213,7 @@ if(pathData.length === 1){
        let attData = formatAttributeData(pathData, scales, attrFilter);
        let attributeGroups = renderAttributes(attributeWrapper, attData, scales, null);
          
-       let attributeHeight = 45;
+      
        selectedGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (Object.keys(d[1].attributes).length + 1))) +')');
        
        drawContAtt(attributeGroups);
@@ -226,115 +227,132 @@ if(pathData.length === 1){
        return svg;
 }else{
 
-console.log('selectedpaths', selectedPaths);
+    console.log('selectedpaths', selectedPaths);
 
-let maxBranch = d3.max(selectedPaths.map(p=> p.length));
-let startBranch = selectedPaths.filter(path=> path.length === maxBranch)[0];
-let commonNodeStart = [];
-//FIND THE COMMON BRANCHES BETWEEN ALL OF THE SELECTED///
-selectedPaths.map(path=> {
-    commonNodeStart = [...path.filter(f=> startBranch.map(m=> m.node).indexOf(f.node) > -1)];
-});
-
-let children = selectedPaths.map(path=> {
-   let nodeIndex = path.map(p=> p.node);
-   let thresh = nodeIndex.indexOf(commonNodeStart[commonNodeStart.length -1].node);
-   let subset = path.filter((f, i)=> i > thresh);
-   return subset;
-});
-
-commonNodeStart[commonNodeStart.length -1].children = children.map((path, i)=> {
-    let max = d3.max(path.map(p=> p.edgeMove)) - commonNodeStart[commonNodeStart.length -1].edgeMove;
-        return path.map((chil, j, n)=> {
-            chil.parentBase = commonNodeStart[commonNodeStart.length -1].edgeMove;
-            chil.move = chil.edgeMove - commonNodeStart[commonNodeStart.length -1].edgeMove;
-            chil.base = (j === 0)? 0 : n[j-1].edgeMove - commonNodeStart[commonNodeStart.length -1].edgeMove;
-            let parentScale = d3.scaleLinear().domain([0, 1]).range([0, 1000])
-            let scaledParentMove = parentScale(commonNodeStart[commonNodeStart.length -1].edgeMove);
-            chil.xScale = d3.scaleLinear().domain([0, max]).range([0, (1000 - scaledParentMove)]);
-            chil.level = i;
-            return chil;
-        });
-});
-
-console.log('common node branches', commonNodeStart);
-
-let selectWrap = svg.append('g').classed('select-wrap', true);
-selectWrap.attr('transform', (d, i)=> 'translate(0,20)');
-
-///Scales for circles ///
-let circleScale = d3.scaleLog().range([6, 14]).domain([1, d3.max(Object.values(branchFrequency))]);
-
-let selectedGroups = selectWrap.selectAll('.paths').data([commonNodeStart]).join('g').classed('paths', true);
-
-let pathBars = selectedGroups.append('rect').classed('path-rect', true);
-pathBars.attr('y', -8);
-pathBars.style('height', (children.length * 25));
-
-//////////
-///Selecting species
-/////////
-let pathRemove = selectedGroups.append('g').classed('x-icon', true);
-pathRemove.attr('transform', 'translate(15, 10)');
-pathRemove.append('circle').attr('r', 7).attr('fill', '#fff');
-pathRemove.append('text').text('x').attr('transform', 'translate(-5, 5)');
-
-pathRemove.style('cursor', 'pointer');
-
-pathRemove.on('click', (d, i, n)=>{
-    d3.selectAll('.high').classed('high', false);
-    d3.selectAll('.low').classed('low', false);
-    treeNodes.select('.selected').classed('selected', false);
-    pathSelected(null, dataMaster[0], scales, moveMetric);
-});
-
-/////////
-
-let timelines = selectedGroups.append('g').classed('time-line', true);
-timelines.attr('transform', (d, i)=> 'translate(150, 0)');
-
-let lines = timelines.append('line')
-.attr('x1', 0)
-.attr('x2', (d, i)=> {
-    let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
-    return x(d[d.length - 1].edgeMove)
-})
-.attr('y1', 15)
-.attr('y2', 15);
-
-let nodeGroups = timelines.selectAll('.node').data((d)=> d).join('g').classed('node', true);
-
-nodeGroups.attr('transform', (d)=> {
-    let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
-    let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove);
-    return 'translate('+ distance +', 10)';});
-
-let childNodeWrap = nodeGroups.filter(c=> c.children != undefined).selectAll('g.child').data(d=> d.children).join('g').classed('child', true);
-
-let childNodes = childNodeWrap.selectAll('g.node').data(d=> d).join('g').classed('node', true)
-childNodes.attr('transform', (d, i, n)=> {
-    return 'translate('+ d.xScale(d.move) +', '+(d.level * 20)+')';});
-
-childNodeWrap.append('path').attr('d', (d, i, n)=> {
-    let pathArray = [{'x': 0, 'y': 0 }, {'x': 0, 'y': i }];
-    d.map(m=> {
-        pathArray.push({'x': m.xScale(m.move), 'y': m.level})
+    let maxBranch = d3.max(selectedPaths.map(p=> p.length));
+    let startBranch = selectedPaths.filter(path=> path.length === maxBranch)[0];
+    let commonNodeStart = [];
+    //FIND THE COMMON BRANCHES BETWEEN ALL OF THE SELECTED///
+    selectedPaths.map(path=> {
+        commonNodeStart = [...path.filter(f=> startBranch.map(m=> m.node).indexOf(f.node) > -1)];
     });
-    let line = d3.line()
-    .curve(d3.curveMonotoneY)
-    .x(function(d){ 
-        return d.x; })
-    .y(d=> (d.y * 20))
-    return line(pathArray);
-}).attr('stoke-width', 1).attr('fill', 'none').attr('stroke', 'gray');
 
-let circle = nodeGroups.append('circle').attr('cx', 0).attr('cy', 0).attr('r', d=> {
-    return circleScale(branchFrequency[d.node]);
-}).attr('class', (d, i)=> 'node-'+d.node);
+    let children = selectedPaths.map(path=> {
+    let nodeIndex = path.map(p=> p.node);
+    let thresh = nodeIndex.indexOf(commonNodeStart[commonNodeStart.length -1].node);
+    let subset = path.filter((f, i)=> i > thresh);
+    return subset;
+    });
 
-childNodes.append('circle').attr('r', 7).attr('fill', 'red').attr('y', 5);
+    commonNodeStart[commonNodeStart.length -1].children = children.map((path, i)=> {
+        let max = d3.max(path.map(p=> p.edgeMove)) - commonNodeStart[commonNodeStart.length -1].edgeMove;
+            return path.map((chil, j, n)=> {
+                chil.parentBase = commonNodeStart[commonNodeStart.length -1].edgeMove;
+                chil.move = chil.edgeMove - commonNodeStart[commonNodeStart.length -1].edgeMove;
+                chil.base = (j === 0)? 0 : n[j-1].edgeMove - commonNodeStart[commonNodeStart.length -1].edgeMove;
+                let parentScale = d3.scaleLinear().domain([0, 1]).range([0, 1000])
+                let scaledParentMove = parentScale(commonNodeStart[commonNodeStart.length -1].edgeMove);
+                chil.xScale = d3.scaleLinear().domain([0, max]).range([0, (1000 - scaledParentMove)]);
+                chil.level = i;
+                return chil;
+            });
+    });
 
-childNodes.filter(f=> f.leaf === true).append('text').text(d=> d.label).attr('x', 9).attr('y', 4);
+    console.log('common node branches', commonNodeStart);
+
+    let selectWrap = svg.append('g').classed('select-wrap', true);
+    selectWrap.attr('transform', (d, i)=> 'translate(0,20)');
+
+    ///Scales for circles ///
+    let circleScale = d3.scaleLog().range([6, 14]).domain([1, d3.max(Object.values(branchFrequency))]);
+
+    let selectedGroups = selectWrap.selectAll('.paths').data([commonNodeStart]).join('g').classed('paths', true);
+
+    let pathBars = selectedGroups.append('rect').classed('path-rect', true);
+    pathBars.attr('y', -8);
+    pathBars.style('height', (children.length * 25));
+
+    //////////
+    ///Selecting species
+    /////////
+    let pathRemove = selectedGroups.append('g').classed('x-icon', true);
+    pathRemove.attr('transform', 'translate(15, 10)');
+    pathRemove.append('circle').attr('r', 7).attr('fill', '#fff');
+    pathRemove.append('text').text('x').attr('transform', 'translate(-5, 5)');
+
+    pathRemove.style('cursor', 'pointer');
+
+    pathRemove.on('click', (d, i, n)=>{
+        d3.selectAll('.high').classed('high', false);
+        d3.selectAll('.low').classed('low', false);
+        treeNodes.select('.selected').classed('selected', false);
+        pathSelected(null, dataMaster[0], scales, moveMetric);
+    });
+
+    /////////
+
+    let timelines = selectedGroups.append('g').classed('time-line', true);
+    timelines.attr('transform', (d, i)=> 'translate(150, 0)');
+
+    let lines = timelines.append('line')
+    .attr('x1', 0)
+    .attr('x2', (d, i)=> {
+        let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
+        return x(d[d.length - 1].edgeMove)
+    })
+    .attr('y1', 15)
+    .attr('y2', 15);
+
+    let nodeGroups = timelines.selectAll('.node').data((d)=> d).join('g').classed('node', true);
+
+    nodeGroups.attr('transform', (d)=> {
+        let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
+        let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove);
+        return 'translate('+ distance +', 10)';});
+
+    let childNodeWrap = nodeGroups.filter(c=> c.children != undefined).selectAll('g.child').data(d=> d.children).join('g').classed('child', true);
+
+    let childNodes = childNodeWrap.selectAll('g.node').data(d=> d).join('g').classed('node', true)
+    childNodes.attr('transform', (d, i, n)=> {
+        return 'translate('+ d.xScale(d.move) +', '+(d.level * 20)+')';});
+
+    childNodeWrap.append('path').attr('d', (d, i, n)=> {
+        let pathArray = [{'x': 0, 'y': 0 }, {'x': 0, 'y': i }];
+        d.map(m=> {
+            pathArray.push({'x': m.xScale(m.move), 'y': m.level})
+        });
+        let line = d3.line()
+        .curve(d3.curveMonotoneY)
+        .x(function(d){ 
+            return d.x; })
+        .y(d=> (d.y * 20))
+        return line(pathArray);
+    }).attr('stoke-width', 1).attr('fill', 'none').attr('stroke', 'gray');
+
+    let circle = nodeGroups.append('circle').attr('cx', 0).attr('cy', 0).attr('r', d=> {
+        return circleScale(branchFrequency[d.node]);
+    }).attr('class', (d, i)=> 'node-'+d.node);
+
+    childNodes.append('circle').attr('r', 7).attr('fill', 'red').attr('y', 5);
+
+    childNodes.filter(f=> f.leaf === true).append('text').text(d=> d.label).attr('x', 9).attr('y', 4);
+
+    let attWrap = svg.append('g').classed('attribute-wrapper', true);
+
+    let attributeData = commonNodeStart[commonNodeStart.length - 1].children.map(ch=> {
+        console.log(ch);
+        return [...commonNodeStart].concat(ch);
+    });
+    console.log(attributeData);
+
+    let attData = formatAttributeData(pathData, scales, attrFilter);
+
+    console.log(attData);
+    let attGroups = attWrap.selectAll('g').data(attData[0]).join('g').classed('attr', true);
+
+    attGroups.attr('transform', (d, i)=> 'translate(0,'+(i * attributeHeight)+')')
+
+
 
 
 }
