@@ -249,15 +249,17 @@ let children = selectedPaths.map(path=> {
 
 
 
-commonNodeStart[commonNodeStart.length -1].children = children.map((path)=> {
+commonNodeStart[commonNodeStart.length -1].children = children.map((path, i)=> {
     let max = d3.max(path.map(p=> p.edgeMove)) - commonNodeStart[commonNodeStart.length -1].edgeMove;
-        return path.map((chil, i, n)=> {
+        return path.map((chil, j, n)=> {
             chil.parentBase = commonNodeStart[commonNodeStart.length -1].edgeMove;
             chil.move = chil.edgeMove - commonNodeStart[commonNodeStart.length -1].edgeMove;
-            chil.base = (i === 0)? 0 : n[i-1].edgeMove - commonNodeStart[commonNodeStart.length -1].edgeMove;
+            chil.base = (j === 0)? 0 : n[j-1].edgeMove - commonNodeStart[commonNodeStart.length -1].edgeMove;
             let parentScale = d3.scaleLinear().domain([0, 1]).range([0, 1000])
             let scaledParentMove = parentScale(commonNodeStart[commonNodeStart.length -1].edgeMove);
             chil.xScale = d3.scaleLinear().domain([0, max]).range([0, (1000 - scaledParentMove)]);
+            chil.level = i;
+           // chil.xScale = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
             return chil;
         });
 });
@@ -300,7 +302,10 @@ timelines.attr('transform', (d, i)=> 'translate(150, 0)');
 
 let lines = timelines.append('line')
 .attr('x1', 0)
-.attr('x2', 1000)
+.attr('x2', (d, i)=> {
+    let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
+    return x(d[d.length - 1].edgeMove)
+})
 .attr('y1', 15)
 .attr('y2', 15);
 
@@ -311,33 +316,45 @@ nodeGroups.attr('transform', (d)=> {
     let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove);
     return 'translate('+ distance +', 10)';});
 
-let circle = nodeGroups.append('circle').attr('cx', 0).attr('cy', 0).attr('r', d=> {
-    return circleScale(branchFrequency[d.node]);
-}).attr('class', (d, i)=> 'node-'+d.node);
-
-console.log(nodeGroups.filter(c=> c.children != undefined))
-
 let childNodeWrap = nodeGroups.filter(c=> c.children != undefined).selectAll('g.child').data(d=> d.children).join('g').classed('child', true);
-childNodeWrap.attr( 'transform', (d, i) => 'translate(0, '+(i*30)+')');
+//childNodeWrap.attr( 'transform', (d, i) => 'translate(0, '+(i*30)+')');
+
+childNodeWrap.append('path').attr('d', (d, i, n)=> {
+    let pathArray = [{'x': 0, 'y': 0 }, {'x': 0, 'y': i }];
+    d.map(m=> {
+        pathArray.push({'x': m.xScale(m.move), 'y': m.level})
+    });
+    let line = d3.line()
+    .curve(d3.curveMonotoneY)
+    .x(function(d){ 
+        return d.x; })
+    .y(d=> (d.y * 30))
+    return line(pathArray);
+}).attr('stoke-width', 1).attr('fill', 'none').attr('stroke', 'gray');
+
 
 let childNodes = childNodeWrap.selectAll('g.node').data(d=> d).join('g').classed('node', true)
 childNodes.attr('transform', (d, i, n)=> {
-    return 'translate('+ d.xScale(d.move) +', 0)';});
+    return 'translate('+ d.xScale(d.move) +', '+(d.level * 30)+')';});
+   // return 'translate('+ d.xScale(d.edgeMove) - d.scaledParentMove +', 0)';});
+    
 
 childNodeWrap.append('path').attr('d', (d, i, n)=> {
-    console.log(d, i, n);
-    console.log(d3.select(n[i].parentNode).attr("transform"))
+    let pathArray = [{'x': 0, 'y': 0 }, {'x': 0, 'y': i }];
+    d.map(m=> {
+        pathArray.push({'x': m.xScale(m.move), 'y': m.level})
+    });
     let line = d3.line()
+    .curve(d3.curveMonotoneY)
     .x(function(d){ 
-        console.log(d)
-        return d.xScale(d.move); })
-    .y(function(d, i){ 
+        return d.x; })
+    .y(d=> (d.y * 30))
+    return line(pathArray);
+}).attr('stoke-width', 1).attr('fill', 'none').attr('stroke', 'gray');
 
-        return i; })
-    return line(d);
-});
-//let links = childNodes.append('line').attr('x1', d => d.xScale(d.base)).attr('x2', d => d.xScale(d.move)).attr('y1', 0).attr('y2', 5).attr('stroke', 'red').attr('fill', 'none')
-
+let circle = nodeGroups.append('circle').attr('cx', 0).attr('cy', 0).attr('r', d=> {
+    return circleScale(branchFrequency[d.node]);
+}).attr('class', (d, i)=> 'node-'+d.node);
 
 childNodes.append('circle').attr('r', 7).attr('fill', 'red').attr('y', 5)
 
