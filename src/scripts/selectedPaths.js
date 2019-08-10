@@ -236,18 +236,12 @@ selectedPaths.map(path=> {
     commonNodeStart = [...path.filter(f=> startBranch.map(m=> m.node).indexOf(f.node) > -1)];
 });
 
-console.log(commonNodeStart)
-
 let children = selectedPaths.map(path=> {
    let nodeIndex = path.map(p=> p.node);
-   let branchArray = [];
    let thresh = nodeIndex.indexOf(commonNodeStart[commonNodeStart.length -1].node);
    let subset = path.filter((f, i)=> i > thresh);
-    console.log('subs', subset, 'threshold', thresh);
    return subset;
 });
-
-
 
 commonNodeStart[commonNodeStart.length -1].children = children.map((path, i)=> {
     let max = d3.max(path.map(p=> p.edgeMove)) - commonNodeStart[commonNodeStart.length -1].edgeMove;
@@ -259,14 +253,12 @@ commonNodeStart[commonNodeStart.length -1].children = children.map((path, i)=> {
             let scaledParentMove = parentScale(commonNodeStart[commonNodeStart.length -1].edgeMove);
             chil.xScale = d3.scaleLinear().domain([0, max]).range([0, (1000 - scaledParentMove)]);
             chil.level = i;
-           // chil.xScale = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
             return chil;
         });
 });
 
 console.log('common node branches', commonNodeStart);
 
-//commonNodeStart[commonNodeStart.length - 1].children = 
 let selectWrap = svg.append('g').classed('select-wrap', true);
 selectWrap.attr('transform', (d, i)=> 'translate(0,20)');
 
@@ -277,6 +269,7 @@ let selectedGroups = selectWrap.selectAll('.paths').data([commonNodeStart]).join
 
 let pathBars = selectedGroups.append('rect').classed('path-rect', true);
 pathBars.attr('y', -8);
+pathBars.style('height', (children.length * 25));
 
 //////////
 ///Selecting species
@@ -317,27 +310,10 @@ nodeGroups.attr('transform', (d)=> {
     return 'translate('+ distance +', 10)';});
 
 let childNodeWrap = nodeGroups.filter(c=> c.children != undefined).selectAll('g.child').data(d=> d.children).join('g').classed('child', true);
-//childNodeWrap.attr( 'transform', (d, i) => 'translate(0, '+(i*30)+')');
-
-childNodeWrap.append('path').attr('d', (d, i, n)=> {
-    let pathArray = [{'x': 0, 'y': 0 }, {'x': 0, 'y': i }];
-    d.map(m=> {
-        pathArray.push({'x': m.xScale(m.move), 'y': m.level})
-    });
-    let line = d3.line()
-    .curve(d3.curveMonotoneY)
-    .x(function(d){ 
-        return d.x; })
-    .y(d=> (d.y * 30))
-    return line(pathArray);
-}).attr('stoke-width', 1).attr('fill', 'none').attr('stroke', 'gray');
-
 
 let childNodes = childNodeWrap.selectAll('g.node').data(d=> d).join('g').classed('node', true)
 childNodes.attr('transform', (d, i, n)=> {
-    return 'translate('+ d.xScale(d.move) +', '+(d.level * 30)+')';});
-   // return 'translate('+ d.xScale(d.edgeMove) - d.scaledParentMove +', 0)';});
-    
+    return 'translate('+ d.xScale(d.move) +', '+(d.level * 20)+')';});
 
 childNodeWrap.append('path').attr('d', (d, i, n)=> {
     let pathArray = [{'x': 0, 'y': 0 }, {'x': 0, 'y': i }];
@@ -348,7 +324,7 @@ childNodeWrap.append('path').attr('d', (d, i, n)=> {
     .curve(d3.curveMonotoneY)
     .x(function(d){ 
         return d.x; })
-    .y(d=> (d.y * 30))
+    .y(d=> (d.y * 20))
     return line(pathArray);
 }).attr('stoke-width', 1).attr('fill', 'none').attr('stroke', 'gray');
 
@@ -356,7 +332,9 @@ let circle = nodeGroups.append('circle').attr('cx', 0).attr('cy', 0).attr('r', d
     return circleScale(branchFrequency[d.node]);
 }).attr('class', (d, i)=> 'node-'+d.node);
 
-childNodes.append('circle').attr('r', 7).attr('fill', 'red').attr('y', 5)
+childNodes.append('circle').attr('r', 7).attr('fill', 'red').attr('y', 5);
+
+childNodes.filter(f=> f.leaf === true).append('text').text(d=> d.label).attr('x', 9).attr('y', 4);
 
 
 }
