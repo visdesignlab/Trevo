@@ -168,6 +168,12 @@ rect.graph-bars {
   stroke-width: 0.5;
   width: 20px; }
 
+.attribute-inner-bar {
+  fill: none;
+  stroke: gray;
+  stroke-width: 0.5;
+  width: 20px; }
+
 g.range rect {
   fill: #fff;
   stroke: gray;
