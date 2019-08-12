@@ -20,9 +20,7 @@ let sidebar = wrap.select('#sidebar');
 let toolbarDiv = wrap.select('#toolbar');
 
 
-let tooltip = wrap.append("div")
-.attr("id", "tooltip")
-.style("opacity", 0);
+
 
 
 loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges => {
@@ -96,6 +94,10 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
       /// LOWER ATTRIBUTE VISUALIZATION ///
    initialViewLoad(calculatedScales, 'edgeLength');
 });
+
+let tooltip = wrap.append("div")
+.attr("id", "tooltip")
+.style("opacity", 0);
 /*
 loadData(d3.json, './public/data/geospiza_with_attributes.json').then(data=> {
     let pathArray = pullPath([], [data], [], [], 0);

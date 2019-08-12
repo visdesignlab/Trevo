@@ -2,7 +2,7 @@ import * as d3 from "d3";
 import { branchPaths, renderPaths, renderAttributes, drawContAtt, drawDiscreteAtt, drawPathsAndAttributes } from './renderPathView';
 import { formatAttributeData } from './dataFormat';
 import { filterMaster } from './filterComponent';
-import { dataMaster } from './index';
+import { dataMaster, collapsed } from './index';
 
 export let selectedPaths = [];
 
@@ -357,10 +357,14 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
 
         let attData = formatAttributeData(pathData, scales, attrFilter);
         let attDataComb = attData[0].map((att, i)=> {
-            let attribute = {'label': att[att.length-1].label, 'data': [att]}
+            console.log('att', pathData[0].filter(f=> f.leaf === true)[0].label);
+            let species = pathData[0].filter(f=> f.leaf === true)[0].label;
+            let attribute = {'label': att[att.length-1].label, 'data': [{'species': species, 'paths': att}]}
           
             for(let index = 1; index < attData.length; index++ ){
-                attribute.data.push(attData[index][i]);
+                //attribute.data.push(attData[index][i]);
+                let species = pathData[index].filter(f=> f.leaf === true)[0].label;
+                attribute.data.push({'species': species, 'paths': attData[index][i]})
             }
             return attribute;
         })
@@ -369,25 +373,39 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
      
         let attGroups = attWrap.selectAll('g').data(attDataComb).join('g').classed('attr', true);
 
-        attGroups.attr('transform', (d, i) => 'translate(140,' + (62 + (i * attributeHeight)) + ')')
-
-        let innerGrp = attGroups.append('g').classed('attribute-time-line', true);
-        innerGrp.append('rect').classed('attribute-rect', true).attr('height', 40);
-
-        attGroups.append('text').text(d => d.label).style('text-anchor', 'end').attr('transform', 'translate(-25, 15)')
+        attGroups.attr('transform', (d, i) => 'translate(140,' + (62 + (i * (attributeHeight + 5))) + ')');
 
         svg.style('height', 450);
 
-        let dataGroups = attGroups.selectAll('g.path-grp').data(d=> d.data).join('g').classed('path-grp', true);
-        let branchGroups = dataGroups.selectAll('.branch').data(d=> d).join('g').classed('branch', true);
-        let branchGroupsC = branchGroups.filter(b=> {return b.type === 'continuous'}).attr('transform', (d, i)=> {
-            console.log(d.yScale)
-            let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
-            return 'translate('+x(d.edgeMove)+', 0)'});
-        branchGroupsC.append('rect').attr('width', 20).attr('height', 40);
+        let dataGroups = attGroups.selectAll('g.path-grp').data(d=> {
+            let speciesArray = d.data.map(m=> {
+                m.paths.map(path=>{
+                    path.species = m.species;
+                    return path;
+                })
+                return m.paths});
+            return speciesArray}).join('g').classed('path-grp', true);
 
-        console.log(branchGroups.data());
+        let contGroups = drawContAtt(dataGroups, moveMetric, collapsed);
+       
+        contGroups.selectAll('.val-bar').on('mouseover', (d, i)=> {
+            let tool = d3.select('#tooltip');
+            tool.transition()
+                .duration(200)
+                .style("opacity", .9);
+            let f = d3.format(".3f");
+            tool.html(d.species + ": " + f(d.realVal))
+                .style("left", (d3.event.pageX) + "px")
+                .style("top", (d3.event.pageY - 28) + "px");
 
+        }).on("mouseout", function(d) {
+            let tool = d3.select('#tooltip');
+            tool.transition()
+              .duration(500)
+              .style("opacity", 0);
+            });
+
+        drawDiscreteAtt(dataGroups, moveMetric, collapsed);
     }
 
     d3.selectAll('.selected-path').classed('selected-path', false);

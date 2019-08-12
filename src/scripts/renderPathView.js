@@ -89,7 +89,7 @@ export function renderPaths(pathData, main, scales, moveMetric){
             pathSelected(null, notIt.data(), scales, moveMetric);
         }else{
             d3.select(n[i]).classed('selected-path', true);
-            console.log(d);
+       
             pathSelected(d, notIt.data(), scales, moveMetric);
         }
     });
@@ -210,7 +210,7 @@ async function continuousPaths(innerTimeline, moveMetric, collapsed){
 export function drawContAtt(predictedAttrGrps, moveMetric, collapsed){
 
     let continuousAtt = predictedAttrGrps.filter(d=> {
-        return d[0].type === 'continuous';
+        return (d[d.length - 1] != undefined) ? d[d.length - 1].type === 'continuous' : d.type === 'continuous';
     });
 
     let attributeHeight = (collapsed === 'true') ? 20 : 45;
@@ -226,8 +226,6 @@ export function drawContAtt(predictedAttrGrps, moveMetric, collapsed){
     let attributeNodesCont = innerTimeline.selectAll('g').data(d=> d).join('g').classed('attribute-node', true);
 
     let innerBars = attributeNodesCont.append('g').classed('inner-bars', true);
-
- 
 
     let innerRect = innerBars.append('rect').classed('attribute-inner-bar', true);
     innerRect.attr('height', attributeHeight);
@@ -262,12 +260,11 @@ export function drawContAtt(predictedAttrGrps, moveMetric, collapsed){
             let y = d.yScale;
             y.range([attributeHeight, 0]);
             return 'translate(0, '+ y(d.realVal) +')';})
-        .attr('fill', d=> d.color);
+        .attr('fill', d=> d.color).classed('val-bar', true);
     }
 
     /////AXIS ON HOVER////
     innerBars.on('mouseover', (d, i, n)=> {
-        
         let y = d.yScale;
         y.range([0, attributeHeight]);
         d3.select(n[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(5));
@@ -275,9 +272,9 @@ export function drawContAtt(predictedAttrGrps, moveMetric, collapsed){
     }).on('mouseout', (d, i, n)=> {
         d3.select(n[i]).select('g.y-axis')
         d3.select(n[i]).select('g.y-axis').remove();
-    })
+    });
 
-
+    return attributeNodesCont;
    
 }
 
