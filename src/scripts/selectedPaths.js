@@ -388,7 +388,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
 
         let contGroups = drawContAtt(dataGroups, moveMetric, collapsed);
        
-        contGroups.selectAll('.val-bar').on('mouseover', (d, i)=> {
+        let valueBars = contGroups.selectAll('.val-bar').on('mouseover', (d, i)=> {
             let tool = d3.select('#tooltip');
             tool.transition()
                 .duration(200)
@@ -397,13 +397,14 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
             tool.html(d.species + ": " + f(d.realVal))
                 .style("left", (d3.event.pageX) + "px")
                 .style("top", (d3.event.pageY - 28) + "px");
-
         }).on("mouseout", function(d) {
             let tool = d3.select('#tooltip');
             tool.transition()
               .duration(500)
               .style("opacity", 0);
             });
+
+        valueBars.attr('opacity', 0.4);
 
         drawDiscreteAtt(dataGroups, moveMetric, collapsed);
     }
