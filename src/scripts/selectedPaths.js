@@ -259,8 +259,6 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
             });
         });
 
-        console.log('common node branches', commonNodeStart);
-
         let selectWrap = svg.append('g').classed('select-wrap', true);
         selectWrap.attr('transform', (d, i) => 'translate(0,20)');
 
@@ -331,7 +329,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
                 })
                 .y(d => (d.y * 20))
             return line(pathArray);
-        }).attr('stoke-width', 1).attr('fill', 'none').attr('stroke', 'gray');
+        }).attr('stoke-width', 2).attr('fill', 'none').attr('stroke', 'gray');
 
         let circle = nodeGroups.append('circle').attr('cx', 0).attr('cy', 0).attr('r', d => {
             return circleScale(branchFrequency[d.node]);
@@ -354,24 +352,41 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
         let attWrap = svg.append('g').classed('attribute-wrapper', true);
 
         let attributeData = commonNodeStart[commonNodeStart.length - 1].children.map(ch => {
-            console.log(ch);
             return [...commonNodeStart].concat(ch);
         });
-        console.log(attributeData);
 
         let attData = formatAttributeData(pathData, scales, attrFilter);
+        let attDataComb = attData[0].map((att, i)=> {
+            let attribute = {'label': att[att.length-1].label, 'data': [att]}
+          
+            for(let index = 1; index < attData.length; index++ ){
+                attribute.data.push(attData[index][i]);
+            }
+            return attribute;
+        })
 
-        console.log(attData);
-        let attGroups = attWrap.selectAll('g').data(attData[0]).join('g').classed('attr', true);
+        console.log(attDataComb)
+     
+        let attGroups = attWrap.selectAll('g').data(attDataComb).join('g').classed('attr', true);
 
         attGroups.attr('transform', (d, i) => 'translate(140,' + (62 + (i * attributeHeight)) + ')')
 
         let innerGrp = attGroups.append('g').classed('attribute-time-line', true);
         innerGrp.append('rect').classed('attribute-rect', true).attr('height', 40);
 
-        attGroups.append('text').text(d => d[0].label)
+        attGroups.append('text').text(d => d.label).style('text-anchor', 'end').attr('transform', 'translate(-25, 15)')
 
         svg.style('height', 450);
+
+        let dataGroups = attGroups.selectAll('g.path-grp').data(d=> d.data).join('g').classed('path-grp', true);
+        let branchGroups = dataGroups.selectAll('.branch').data(d=> d).join('g').classed('branch', true);
+        let branchGroupsC = branchGroups.filter(b=> {return b.type === 'continuous'}).attr('transform', (d, i)=> {
+            console.log(d.yScale)
+            let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
+            return 'translate('+x(d.edgeMove)+', 0)'});
+        branchGroupsC.append('rect').attr('width', 20).attr('height', 40);
+
+        console.log(branchGroups.data());
 
     }
 
