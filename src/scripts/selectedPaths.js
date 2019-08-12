@@ -270,7 +270,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
 
         let pathBars = selectedGroups.append('rect').classed('path-rect', true);
         pathBars.attr('y', -8);
-        pathBars.style('height', (children.length * 25));
+
 
         //////////
         ///Selecting species
@@ -417,6 +417,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
 
         d3.select('#selected').style('height', (50 + (pathData.length * 20) + (attDataComb.length * 53))+ 'px');
         svg.style('height', (50 + (pathData.length * 20) + (attDataComb.length * 53)) + 'px');
+        pathBars.style('height', (children.length * 25)+'px');
     }
 
     d3.selectAll('.selected-path').classed('selected-path', false);
