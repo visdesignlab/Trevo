@@ -1,9 +1,7 @@
 //$body-color: blue;
 
 body {
- // color: $body-color;
   width:100%;
-  //font-family: 'Quicksand', sans-serif;
   font-family: 'Abel', sans-serif;
 }
 
@@ -69,7 +67,6 @@ svg{
 
 #filter-tab{
   position: fixed;
-  //padding:2em;
   top:50px;
   left:0px;
   right:300px;
@@ -141,19 +138,13 @@ svg{
 
 .select-paths rect.select-path-rect,
 .paths rect.path-rect{
-  //fill: white;
   fill: gainsboro;
-  //stroke-width: .8px;
- // stroke: gray;
   width:1250px;
   height: 32px;
 }
 
 .paths.high rect.path-rect{
-  //fill: white;
   fill: #FE6666;
-  //stroke-width: .8px;
- // stroke: gray;
   width:1250px;
   height: 32px;
 }
@@ -163,10 +154,7 @@ g.selected circle{
 }
 
 .paths.low rect.path-rect{
-  //fill: white;
   fill: #66CCFE;
-  //stroke-width: .8px;
- // stroke: gray;
   width:1250px;
   height: 32px;
 }
@@ -178,7 +166,6 @@ g.selected circle{
 }
 
 rect.attribute-rect{
-//.paths rect.attribute-rect{
   fill: none;
   stroke: gray;
   stroke-width: 0.5;
@@ -187,11 +174,9 @@ rect.attribute-rect{
 
 rect.attribute-rect-sum,
 .observed-discrete rect{
-  //.paths rect.attribute-rect{
     fill: none;
     stroke: gray;
     stroke-width: 0.5;
-    //width:800px;
   }
 
   rect.graph-bars{

@@ -10,6 +10,7 @@ export function pathSelected(selectedPath, otherPaths, scales, moveMetric) {
 
 
     let selectedDiv = d3.select('div#selected');
+    let main = d3.select('div#main');
     if (selectedPath === null) {
 
         selectedPaths = [];
@@ -24,7 +25,7 @@ export function pathSelected(selectedPath, otherPaths, scales, moveMetric) {
 
         renderSelectedView(selectedPaths, otherPaths, selectedDiv, scales, moveMetric);
         let sortedPaths = sortOtherPaths([...selectedPath], otherPaths);
-        let main = d3.select('div#main');
+        
         /// LOWER ATTRIBUTE VISUALIZATION ///
         let pathGroups = drawPathsAndAttributes(sortedPaths.map(s => s.data), main, scales, moveMetric, false);
 
@@ -374,9 +375,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
         let attGroups = attWrap.selectAll('g').data(attDataComb).join('g').classed('attr', true);
 
         attGroups.attr('transform', (d, i) => 'translate(140,' + (62 + (i * (attributeHeight + 5))) + ')');
-
-        svg.style('height', 450);
-
+        
         let dataGroups = attGroups.selectAll('g.path-grp').data(d=> {
             let speciesArray = d.data.map(m=> {
                 m.paths.map(path=>{
@@ -406,7 +405,18 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
 
         valueBars.attr('opacity', 0.4);
 
-        drawDiscreteAtt(dataGroups, moveMetric, collapsed);
+        let disGroups = drawDiscreteAtt(dataGroups, moveMetric, collapsed);
+
+        disGroups.selectAll('.dots').style('opacity', 0.4);
+
+        console.log(disGroups)
+
+        let attrLabel = dataGroups.filter((f, i)=> i === 0).append('text').text(d=> d[d.length - 1].label);
+        attrLabel.classed('attribute-label', true);
+        attrLabel.attr('transform', 'translate(-15, 20)');
+
+        d3.select('#selected').style('height', (50 + (pathData.length * 20) + (attDataComb.length * 53))+ 'px');
+        svg.style('height', (50 + (pathData.length * 20) + (attDataComb.length * 53)) + 'px');
     }
 
     d3.selectAll('.selected-path').classed('selected-path', false);

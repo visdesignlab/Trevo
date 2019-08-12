@@ -111,7 +111,7 @@ export function renderPaths(pathData, main, scales, moveMetric){
     });
 
     let speciesTitle = pathGroups.append('text').text(d=> {
-       // let string = d[d.length - 1].label
+      
        let string = d.filter(f=> f.leaf === true)[0].label;
         return string.charAt(0).toUpperCase() + string.slice(1);
     });
@@ -150,7 +150,6 @@ export function renderPaths(pathData, main, scales, moveMetric){
     });
 
     let speciesNodeLabel = nodeGroups.filter(f=> f.label != undefined).append('text').text(d=> {
-      
         let string = d.label.charAt(0).toUpperCase() + d.label.slice(1);
         return string;
     }).attr('x', 10).attr('y', 5);
@@ -164,6 +163,11 @@ export function renderAttributes(attributeWrapper, data, scales, filterArray, co
     let attributeHeight = (collapsed === 'true')? 20 : 45;
     let predictedAttrGrps = attributeWrapper.selectAll('g').data((d, i)=> data[i]).join('g');
     predictedAttrGrps.attr('transform', (d, i) => 'translate(0, '+(i * (attributeHeight + 5))+')');
+
+    let attrLabel = predictedAttrGrps.append('text').text(d=> d[d.length - 1].label);
+    attrLabel.classed('attribute-label', true);
+    attrLabel.attr('transform', 'translate(-15, 20)');
+
     return predictedAttrGrps;
 }
 
@@ -214,9 +218,7 @@ export function drawContAtt(predictedAttrGrps, moveMetric, collapsed){
     });
 
     let attributeHeight = (collapsed === 'true') ? 20 : 45;
-    let attrLabel = continuousAtt.append('text').text(d=> d[0].label);
-    attrLabel.classed('attribute-label', true);
-    attrLabel.attr('transform', 'translate(-15, 20)');
+
     let innerTimeline = continuousAtt.append('g').classed('attribute-time-line', true);
     /////DO NOT DELETE THIS! YOU NEED TO SEP CONT AND DICRETE ATTR. THIS DRAWS LINE FOR THE CONT/////
     let innerPaths = continuousPaths(innerTimeline, moveMetric, collapsed);
@@ -285,9 +287,6 @@ export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric, collapsed
     });
 
     let attributeHeight = (collapsed === 'true')? 20 : 45;
-    let attrLabel = discreteAtt.append('text').text(d=> d[d.length - 1].label);
-    attrLabel.classed('attribute-label', true);
-    attrLabel.attr('transform', 'translate(-15, 20)');
 
     let innerTimelineDis = discreteAtt.append('g').classed('attribute-time-line', true);
 
@@ -295,7 +294,6 @@ export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric, collapsed
     
     let statePath = innerTimelineDis.selectAll('g').data(d=> {
         let disct = d.map(m=> {
-           
             let test = (m.leaf == true) ? m.states.map(s=> {
                 s.move = m.move;
                 s.edgeMove = m.edgeMove;
@@ -355,7 +353,6 @@ export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric, collapsed
             let y = d3.scaleLinear().domain([1, 0]);
             y.range([0, attributeHeight]);
             d3.select(n[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(3));
-           
         }).on('mouseout', (d, i, n)=> {
             d3.select(n[i]).select('g.y-axis')
             d3.select(n[i]).select('g.y-axis').remove();
@@ -398,5 +395,7 @@ export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric, collapsed
     ////NEED TO MAKE A FUNCTION TO ASSIGN COLOR OF STATES//////
 
     endStateDot.append('text').text(d=> d.winState).attr('transform', 'translate(15, 17)').style('font-size', 10);
+
+    return attributeNodesDisc;
 }
 
