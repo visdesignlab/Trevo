@@ -364,10 +364,12 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
         console.log(attData);
         let attGroups = attWrap.selectAll('g').data(attData[0]).join('g').classed('attr', true);
 
-        attGroups.attr('transform', (d, i) => 'translate(0,' + (i * attributeHeight) + ')')
+        attGroups.attr('transform', (d, i) => 'translate(120,' + (60 + (i * attributeHeight)) + ')')
 
         let innerGrp = attGroups.append('g').classed('attribute-time-line', true);
         innerGrp.append('rect').classed('attribute-rect', true).attr('height', 45);
+
+        svg.style('height', 450);
 
     }
 
