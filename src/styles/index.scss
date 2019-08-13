@@ -239,6 +239,18 @@ line.half{
  // opacity: 0.8;
 }
 
+#selected .paths .node circle{
+  fill: #CFCBD5;
+  stroke: #CFCBD5;
+  stroke-width: 2;
+ // opacity: 0.8;
+}
+#selected .paths path, #selected .paths line{
+  stroke: #CFCBD5;
+  stroke-width: 2;
+ // opacity: 0.8;
+}
+
 .paths.hover circle{
   fill: #b7ed7e;
   stroke: gray;

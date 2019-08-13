@@ -21,8 +21,9 @@ export function pathSelected(selectedPath, otherPaths, scales, moveMetric) {
         let main = d3.select('div#main');
         drawPathsAndAttributes([...otherPaths], main, scales, moveMetric, false);
     } else {
+       
         selectedPaths.push(selectedPath);
-
+        console.log('selected', selectedPaths)
         renderSelectedView(selectedPaths, otherPaths, selectedDiv, scales, moveMetric);
         let sortedPaths = sortOtherPaths([...selectedPath], otherPaths);
         
@@ -229,14 +230,20 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
         return svg;
     } else if(pathData.length > 1 && pathData.length < 5) {
 
-        console.log('selectedpaths', selectedPaths);
+        console.log('selectedpaths in render', selectedPaths);
 
         let maxBranch = d3.max(selectedPaths.map(p => p.length));
-        let startBranch = selectedPaths.filter(path => path.length === maxBranch)[0];
+        let longestBranch = selectedPaths.filter(path => path.length === maxBranch)[0];
+        let startBranch = longestBranch.filter(f=> f.leaf != true);
         let commonNodeStart = [];
         //FIND THE COMMON BRANCHES BETWEEN ALL OF THE SELECTED///
         selectedPaths.map(path => {
-            commonNodeStart = [...path.filter(f => startBranch.map(m => m.node).indexOf(f.node) > -1)];
+            console.log('path', path.map(p=> p.node))
+            console.log('start b', startBranch.map(m => m.node))
+            commonNodeStart = [...path].filter(f => {
+                console.log(startBranch.map(m => m.node).indexOf(f.node), f.node, startBranch.map(m => m.node))
+                return (startBranch.map(m => m.node).indexOf(f.node) > -1) & f.leaf != true });
+            console.log('cns', commonNodeStart.map(m=> m.node))
         });
 
         let children = selectedPaths.map(path => {
@@ -330,7 +337,18 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
                 })
                 .y(d => (d.y * 20))
             return line(pathArray);
-        }).attr('stoke-width', 2).attr('fill', 'none').attr('stroke', 'gray');
+        }).attr('stoke-width', '2px').attr('fill', 'none').attr('stroke', 'gray');
+
+        childNodeWrap.on('mouseover', (d, i)=> {
+            console.log('childnode', d);
+            let specArray = d.map(m=> m.species);
+            console.log(d, pathData.filter(f=> specArray.indexOf(f[f.length -1].label) > -1))
+            let nodeList = d.map(m=> m.node);
+            let treeNode = d3.select('#sidebar').selectAll('.node');
+            let selectedBranch = treeNode.filter(f => nodeList.indexOf(f.data.node) > -1).classed('selected-branch', true);
+        }).on('mouseout', (d, i)=> {
+            d3.selectAll('.selected-branch').classed('selected-branch', false);
+        })
 
         let circle = nodeGroups.append('circle').attr('cx', 0).attr('cy', 0).attr('r', d => {
             return circleScale(branchFrequency[d.node]);
