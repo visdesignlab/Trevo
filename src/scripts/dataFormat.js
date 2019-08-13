@@ -210,7 +210,9 @@ export function formatAttributeData(pathData, scales, filterArray){
     let newData = pathData.map(path=> {
         return keys.map((key)=> {
             return path.map((m)=> {
+                let speciesLabel = path[path.length - 1].label;
                 if(m.attributes[key].type === 'continuous'){
+                    m.attributes[key].species = speciesLabel;
                     m.attributes[key].color = scales.filter(f=> f.field === key)[0].catColor;
                     m.attributes[key].move = m.move;
                     m.attributes[key].edgeMove = m.edgeMove;
@@ -222,6 +224,7 @@ export function formatAttributeData(pathData, scales, filterArray){
                 }else if(m.attributes[key].type === 'discrete'){
                     if(m.leaf){
                         let state = m.attributes[key];
+                        state.species = speciesLabel;
                         state.winState = m.attributes[key].states.filter(f=> f.realVal === 1)[0].state;
                         state.color = scales.filter(f=> f.field === key)[0].stateColors.filter(f=> f.state === state.winState)[0].color;
                         state.move = m.move;
@@ -235,6 +238,7 @@ export function formatAttributeData(pathData, scales, filterArray){
                             st.move = m.move;
                             st.edgeMove = m.edgeMove;
                             st.attrLabel = key;
+                            st.species = speciesLabel;
                             return st;
                         });
                     }

@@ -127,7 +127,10 @@ export function renderPaths(pathData, main, scales, moveMetric){
     .attr('y1', 15)
     .attr('y2', 15);
 
-    let nodeGroups = timelines.selectAll('.node').data((d)=> d).join('g').classed('node', true);
+    let nodeGroups = timelines.selectAll('.node').data((d)=> {
+        return d}).join('g').attr('class', (d, i, n)=> {
+            return d3.select(n[n.length - 1]).data()[0].label + " node";
+        });
    
     nodeGroups.attr('transform', (d)=> {
         let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
@@ -286,6 +289,8 @@ export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric, collapsed
         return d[d.length - 1].type === 'discrete';
     });
 
+    console.log('in discrete',discreteAtt.data())
+
     let attributeHeight = (collapsed === 'true')? 20 : 45;
 
     let innerTimelineDis = discreteAtt.append('g').classed('attribute-time-line', true);
@@ -315,15 +320,13 @@ export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric, collapsed
         let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove);
         return distance + 7;})
     .y(d=> {
-       
         let y = d3.scaleLinear().domain([0, 1]).range([attributeHeight-2, 1]);
-        //d.scaleVal
         return y(d.realVal);
     });
 
     let innerStatePaths = statePath.append('path')
     .attr("d", lineGen)
-    .attr("class", "inner-line")
+    .attr("class", (d, i)=> d[0].species + " inner-line")
     .style('stroke-width', 0.7)
     .style('stroke', (d)=> {
         return d[0].color;});

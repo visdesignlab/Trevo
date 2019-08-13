@@ -227,7 +227,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
         selectedDiv.style('height', ((pathData.length + attributeGroups.data().map(m => m[0]).length) * 45) + 50 + 'px');
         attributeWrapper.attr('transform', (d) => 'translate(140, 25)');
         return svg;
-    } else {
+    } else if(pathData.length > 1 && pathData.length < 5) {
 
         console.log('selectedpaths', selectedPaths);
 
@@ -405,11 +405,9 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
 
         valueBars.attr('opacity', 0.4);
 
+      
         let disGroups = drawDiscreteAtt(dataGroups, moveMetric, collapsed);
-
         disGroups.selectAll('.dots').style('opacity', 0.4);
-
-        console.log(disGroups)
 
         let attrLabel = dataGroups.filter((f, i)=> i === 0).append('text').text(d=> d[d.length - 1].label);
         attrLabel.classed('attribute-label', true);
@@ -418,6 +416,8 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
         d3.select('#selected').style('height', (50 + (pathData.length * 20) + (attDataComb.length * 53))+ 'px');
         svg.style('height', (50 + (pathData.length * 20) + (attDataComb.length * 53)) + 'px');
         pathBars.style('height', (children.length * 25)+'px');
+    }else{
+        console.log("more than 5 need distribution view");
     }
 
     d3.selectAll('.selected-path').classed('selected-path', false);
