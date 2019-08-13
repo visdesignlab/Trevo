@@ -199,6 +199,15 @@ line.half {
   stroke: gainsboro;
   stroke-width: 2; }
 
+#selected .paths .node circle {
+  fill: #CFCBD5;
+  stroke: #CFCBD5;
+  stroke-width: 2; }
+
+#selected .paths path, #selected .paths line {
+  stroke: #CFCBD5;
+  stroke-width: 2; }
+
 .paths.hover circle {
   fill: #b7ed7e;
   stroke: gray;
