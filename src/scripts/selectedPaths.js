@@ -235,15 +235,11 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
         let maxBranch = d3.max(selectedPaths.map(p => p.length));
         let longestBranch = selectedPaths.filter(path => path.length === maxBranch)[0];
         let startBranch = longestBranch.filter(f=> f.leaf != true);
-        let commonNodeStart = [];
+        let commonNodeStart = startBranch;
         //FIND THE COMMON BRANCHES BETWEEN ALL OF THE SELECTED///
         selectedPaths.map(path => {
-            console.log('path', path.map(p=> p.node))
-            console.log('start b', startBranch.map(m => m.node))
             commonNodeStart = [...path].filter(f => {
-                console.log(startBranch.map(m => m.node).indexOf(f.node), f.node, startBranch.map(m => m.node))
-                return (startBranch.map(m => m.node).indexOf(f.node) > -1) & f.leaf != true });
-            console.log('cns', commonNodeStart.map(m=> m.node))
+                return (commonNodeStart.map(m => m.node).indexOf(f.node) > -1) & f.leaf != true });
         });
 
         let children = selectedPaths.map(path => {
