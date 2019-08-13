@@ -230,8 +230,6 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
         return svg;
     } else if(pathData.length > 1 && pathData.length < 5) {
 
-        console.log('selectedpaths in render', selectedPaths);
-
         let maxBranch = d3.max(selectedPaths.map(p => p.length));
         let longestBranch = selectedPaths.filter(path => path.length === maxBranch)[0];
         let startBranch = longestBranch.filter(f=> f.leaf != true);
@@ -314,6 +312,8 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
             return 'translate(' + distance + ', 10)';
         });
 
+        nodeGroups.classed('common-node', true);
+
         let childNodeWrap = nodeGroups.filter(c => c.children != undefined).selectAll('g.child').data(d => d.children).join('g').classed('child', true);
 
         let childNodes = childNodeWrap.selectAll('g.node').data(d => d).join('g').classed('node', true)
@@ -336,9 +336,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
         }).attr('stoke-width', '2px').attr('fill', 'none').attr('stroke', 'gray');
 
         childNodeWrap.on('mouseover', (d, i)=> {
-            console.log('childnode', d);
             let specArray = d.map(m=> m.species);
-            console.log(d, pathData.filter(f=> specArray.indexOf(f[f.length -1].label) > -1))
             let nodeList = d.map(m=> m.node);
             let treeNode = d3.select('#sidebar').selectAll('.node');
             let selectedBranch = treeNode.filter(f => nodeList.indexOf(f.data.node) > -1).classed('selected-branch', true);
