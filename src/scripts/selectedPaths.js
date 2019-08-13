@@ -358,28 +358,30 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
 
         let attData = formatAttributeData(pathData, scales, attrFilter);
         let attDataComb = attData[0].map((att, i)=> {
-            console.log('att', pathData[0].filter(f=> f.leaf === true)[0].label);
             let species = pathData[0].filter(f=> f.leaf === true)[0].label;
+            att[att.length - 1].offset = 0;
             let attribute = {'label': att[att.length-1].label, 'data': [{'species': species, 'paths': att}]}
           
             for(let index = 1; index < attData.length; index++ ){
-                //attribute.data.push(attData[index][i]);
                 let species = pathData[index].filter(f=> f.leaf === true)[0].label;
+                let last = attData[index][i].length - 1
+                attData[index][i][last].offset = (index * 8);
                 attribute.data.push({'species': species, 'paths': attData[index][i]})
             }
             return attribute;
         })
 
-        console.log(attDataComb)
+        console.log(attDataComb);
      
         let attGroups = attWrap.selectAll('g').data(attDataComb).join('g').classed('attr', true);
 
         attGroups.attr('transform', (d, i) => 'translate(140,' + (62 + (i * (attributeHeight + 5))) + ')');
         
-        let dataGroups = attGroups.selectAll('g.path-grp').data(d=> {
+        let dataGroups = attGroups.selectAll('g.path-grp').data((d, i)=> {
             let speciesArray = d.data.map(m=> {
                 m.paths.map(path=>{
                     path.species = m.species;
+                    path.index = i;
                     return path;
                 })
                 return m.paths});
@@ -405,10 +407,15 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
 
         valueBars.attr('opacity', 0.4);
 
-      
         let disGroups = drawDiscreteAtt(dataGroups, moveMetric, collapsed);
         disGroups.selectAll('.dots').style('opacity', 0.4);
 
+        let disLeaves = disGroups.filter(d=> d.leaf === true);
+
+        disLeaves.attr('transform', d=> 'translate(1000,'+(d.offset)+')');
+        disLeaves.selectAll('circle').attr('stroke', '#fff').attr('stroke-width', '1px')
+
+        /////ADDED LABELS///////
         let attrLabel = dataGroups.filter((f, i)=> i === 0).append('text').text(d=> d[d.length - 1].label);
         attrLabel.classed('attribute-label', true);
         attrLabel.attr('transform', 'translate(-15, 20)');

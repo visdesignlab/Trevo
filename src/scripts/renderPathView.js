@@ -289,8 +289,6 @@ export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric, collapsed
         return d[d.length - 1].type === 'discrete';
     });
 
-    console.log('in discrete',discreteAtt.data())
-
     let attributeHeight = (collapsed === 'true')? 20 : 45;
 
     let innerTimelineDis = discreteAtt.append('g').classed('attribute-time-line', true);
@@ -397,7 +395,7 @@ export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric, collapsed
     });
     ////NEED TO MAKE A FUNCTION TO ASSIGN COLOR OF STATES//////
 
-    endStateDot.append('text').text(d=> d.winState).attr('transform', 'translate(15, 17)').style('font-size', 10);
+    endStateDot.append('text').text(d=> d.winState).attr('transform', 'translate(20, 5)').style('font-size', 10);
 
     return attributeNodesDisc;
 }
