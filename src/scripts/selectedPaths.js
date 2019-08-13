@@ -375,7 +375,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
      
         let attGroups = attWrap.selectAll('g').data(attDataComb).join('g').classed('attr', true);
 
-        attGroups.attr('transform', (d, i) => 'translate(140,' + (62 + (i * (attributeHeight + 5))) + ')');
+        attGroups.attr('transform', (d, i) => 'translate(140,' + (32+ (pathData.length*20) + (i * (attributeHeight + 5))) + ')');
         
         let dataGroups = attGroups.selectAll('g.path-grp').data((d, i)=> {
             let speciesArray = d.data.map(m=> {
@@ -413,7 +413,22 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
         let disLeaves = disGroups.filter(d=> d.leaf === true);
 
         disLeaves.attr('transform', d=> 'translate(1000,'+(d.offset)+')');
-        disLeaves.selectAll('circle').attr('stroke', '#fff').attr('stroke-width', '1px')
+        disLeaves.selectAll('circle').attr('stroke', '#fff').attr('stroke-width', '1px');
+
+        disLeaves.selectAll('circle').on('mouseover', (d, i)=> {
+            let tool = d3.select('#tooltip');
+            tool.transition()
+                .duration(200)
+                .style("opacity", .9);
+            tool.html(d.species + ": " + d.winState)
+                .style("left", (d3.event.pageX) + "px")
+                .style("top", (d3.event.pageY - 28) + "px");
+        }).on("mouseout", function(d) {
+            let tool = d3.select('#tooltip');
+            tool.transition()
+              .duration(500)
+              .style("opacity", 0);
+            });
 
         /////ADDED LABELS///////
         let attrLabel = dataGroups.filter((f, i)=> i === 0).append('text').text(d=> d[d.length - 1].label);
