@@ -1,7 +1,7 @@
 import '../styles/index.scss';
 import * as d3 from "d3";
 import {drawPathsAndAttributes} from './renderPathView';
-import {toggleFilters} from './filterComponent';
+import {toggleFilters, getLatestData} from './filterComponent';
 import { updateMainView } from './viewControl';
 
 export function toolbarControl(toolbar, normedPaths, main, calculatedScales, moveMetric, pathView){
@@ -53,23 +53,26 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, mov
     let scrunchButton = toolbar.append('button').attr('id', 'scrunch');
     scrunchButton.attr('class', 'btn btn-outline-secondary').text('Collapse Attributes');
     scrunchButton.attr('value', false);
-    scrunchButton.on('click', ()=> toggleScrunch(scrunchButton, normedPaths, main, calculatedScales));
+    scrunchButton.on('click', ()=> toggleScrunch(scrunchButton, main, calculatedScales));
     viewButton.on('click', ()=> togglePathView(viewButton, calculatedScales, moveMetric));
 }
 
 ////COLLAPSES THE NODES DOWN
-function toggleScrunch(button, normedPaths, main, calculatedScales){
+function toggleScrunch(button, main, calculatedScales){
+
+    let data = getLatestData();
    
     if(button.text() === 'Collapse Attributes'){
         button.text('Expand Attributes');
         main.selectAll('*').remove();
         button.attr('value', true);
-        drawPathsAndAttributes(normedPaths, main, calculatedScales, 'edgeLength');
+        drawPathsAndAttributes(data, main, calculatedScales, 'edgeLength');
     }else{
         button.text('Collapse Attributes');
         main.selectAll('*').remove();
         button.attr('value', false);
-        drawPathsAndAttributes(normedPaths, main, calculatedScales, 'edgeLength');
+
+        drawPathsAndAttributes(data, main, calculatedScales, 'edgeLength');
     }
 }
 

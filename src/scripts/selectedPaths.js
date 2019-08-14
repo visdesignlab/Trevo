@@ -22,9 +22,8 @@ export function pathSelected(selectedPath, otherPaths, scales, moveMetric) {
         let main = d3.select('div#main');
         drawPathsAndAttributes([...otherPaths], main, scales, moveMetric, false);
     } else {
-       
-        selectedPaths.push(selectedPath);
-        console.log('selected', selectedPaths)
+      
+        selectedPaths = selectedPaths.concat(selectedPath);
         renderSelectedView(selectedPaths, otherPaths, selectedDiv, scales, moveMetric);
         let sortedPaths = sortOtherPaths([...selectedPath], otherPaths);
         
@@ -152,6 +151,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
         });
 
         let speciesTitle = selectedGroups.append('text').text(d => {
+            console.log('d', d);
             let string = d.filter(f => f.leaf === true)[0].label;
             return string.charAt(0).toUpperCase() + string.slice(1);
         });

@@ -2,7 +2,7 @@ import '../styles/index.scss';
 import * as d3 from "d3";
 import {pathSelected} from './selectedPaths';
 import {formatAttributeData} from './dataFormat';
-import {filterMaster, nodeFilter} from './filterComponent';
+import {filterMaster, nodeFilter, getLatestData} from './filterComponent';
 
 export function drawPathsAndAttributes(pathData, main, calculatedScales, moveMetric){
 
@@ -91,8 +91,7 @@ export function renderPaths(pathData, main, scales, moveMetric){
             pathSelected(null, notIt.data(), scales, moveMetric);
         }else{
             d3.select(n[i]).classed('selected-path', true);
-       
-            pathSelected(d, notIt.data(), scales, moveMetric);
+            pathSelected([d], notIt.data(), scales, moveMetric);
         }
     });
 
@@ -156,6 +155,22 @@ export function renderPaths(pathData, main, scales, moveMetric){
                 nodeFilter(d.node, scales);
                 nodeTooltipFlag = false;
                 d3.select("#branch-tooltip").classed("hidden", true);
+            });
+
+            d3.select("#select-by-node").on('click', ()=> {
+                let data = getLatestData();
+                let test = pathGroups.filter(path => {
+                    return path.map(node => node.node).indexOf(d.node) > -1;
+                });
+                let notIt = pathGroups.filter(path => {
+                    return path.map(node => node.node).indexOf(d.node) === -1;
+                });
+
+                nodeTooltipFlag = false;
+                d3.select("#branch-tooltip").classed("hidden", true);
+
+                pathSelected(test.data(), notIt.data(), scales, moveMetric);
+
             });
         }
           

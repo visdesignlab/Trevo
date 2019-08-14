@@ -65,17 +65,19 @@ export function getLatestData(){
 }
 
 ///NEED TO BREAK THESE OUT INTO SEPARATE FILTERS
-export function toggleFilters(filterButton, normedPaths, main, moveMetric, scales){
+export function toggleFilters(filterButton, main, moveMetric, scales){
+
     let filterDiv = d3.select('#filter-tab');
+    let data = getLatestData();
 
     if(filterDiv.classed('hidden')){
         filterButton.text('Hide Filters');
         filterDiv.classed('hidden', false);
         main.style('padding-top', '200px');
 
-        renderAttToggles(filterDiv, normedPaths, main, scales, 'edgeLength');
-        stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, scales);
-        queryFilter(filterDiv, filterButton, normedPaths, main, moveMetric, scales);
+        renderAttToggles(filterDiv, data, main, scales, 'edgeLength');
+        stateFilter(filterDiv, filterButton, data, main, moveMetric, scales);
+        queryFilter(filterDiv, filterButton, data, main, moveMetric, scales);
 
     }else{
         filterButton.text('Show Filters');
