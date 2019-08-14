@@ -337,26 +337,36 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
 
         childNodeWrap.on('mouseover', (d, i)=> {
             let specArray = d.map(m=> m.species);
-            let nodeList = d.map(m=> m.node);
+            let hovers = nodeGroups.filter(n => n.node === d.node);
+            let commonHover = [...commonNodeStart].map(c=> c.node).concat(d.map(n=> n.node));
+            console.log('common hover',commonHover, 'nodewrap', d)
             let treeNode = d3.select('#sidebar').selectAll('.node');
-            let selectedBranch = treeNode.filter(f => nodeList.indexOf(f.data.node) > -1).classed('selected-branch', true);
+            let treeLinks  = d3.select('#sidebar').selectAll('.link');
+            treeNode.filter(f => commonHover.indexOf(f.data.node) > -1).classed('hover', true);
+            treeLinks.filter(f => commonHover.indexOf(f.data.node) > -1).classed('hover', true);
+            return hovers.classed('hover-branch', true);
         }).on('mouseout', (d, i)=> {
-            d3.selectAll('.selected-branch').classed('selected-branch', false);
-        })
+            d3.selectAll('.hover').classed('hover', false);
+        });
+
+
 
         let circle = nodeGroups.append('circle').attr('cx', 0).attr('cy', 0).attr('r', d => {
             return circleScale(branchFrequency[d.node]);
         }).attr('class', (d, i) => 'node-' + d.node);
 
         let childCirc = childNodes.append('circle').attr('r', 7).attr('fill', 'red').attr('y', 5);
+
         childCirc.on('mouseover', function(d, i) {
             let hovers = nodeGroups.filter(n => n.node === d.node);
             let treeNode = d3.select('#sidebar').selectAll('.node');
             let selectedBranch = treeNode.filter(f => f.data.node === d.node).classed('selected-branch', true);
+            console.log(selectedBranch);
             return hovers.classed('hover-branch', true);
         }).on('mouseout', function(d, i) {
             let hovers = nodeGroups.filter(n => n.node === d.node);
             d3.selectAll('.selected-branch').classed('selected-branch', false);
+            console.log(d.species)
             return hovers.classed('hover-branch', false);
         });
 
