@@ -60,7 +60,6 @@ export function addFilter(filterType, attType, filterId, filFunction, oldData, n
 }
 
 export function getLatestData(){
-
     let data = filterMaster.length > 0 ? filterMaster[filterMaster.length - 1].data : dataMaster[0];
     return data;
 }
@@ -109,7 +108,7 @@ function addFilterTag(data, scales){
             button.remove();
         });
 
-    }else{
+    }else if(data.attributeType === 'discrete'){
      
         let button = filterToolbar.append('button').classed('btn btn-info filter-tag', true);
         let span = button.append('span').classed('badge badge-light', true);
@@ -117,6 +116,21 @@ function addFilterTag(data, scales){
         button.append('h6').text(data.state[0]);
         button.append('i').classed('fas fa-arrow-right', true);
         button.append('h6').text(data.state[1] + '  ');
+       
+        let xSpan = button.append('i').classed('close fas fa-times', true);
+        xSpan.on('click', ()=> {
+            removeFilter(data.filterId, scales);
+            updateMainView(scales, 'edgeLength')
+            d3.selectAll('.link-not-there').classed('link-not-there', false);
+            d3.selectAll('.node-not-there').classed('node-not-there', false);
+            button.remove();
+        });
+
+    }else if(data.attributeType === 'branch'){
+        let button = filterToolbar.append('button').classed('btn btn-info filter-tag', true);
+        let span = button.append('span').classed('badge badge-light', true);
+        span.text(data.data.length);
+        button.append('h6').text(' At Branch: ' + data.nodeId);
        
         let xSpan = button.append('i').classed('close fas fa-times', true);
         xSpan.on('click', ()=> {
@@ -162,7 +176,8 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                       
                     let lastFilter = filterMaster.filter(f=> f['filterType'] === 'data-filter');
               
-                    let data = lastFilter.length > 0 ? lastFilter[lastFilter.length - 1].data : dataMaster[0];
+                    //let data = lastFilter.length > 0 ? lastFilter[lastFilter.length - 1].data : dataMaster[0];
+                    let data = getLatestData();
               
                     let test = discreteFilter(data, selectedOption, fromState, toState);
 
@@ -188,9 +203,7 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
 
                     ///END NODE DIMMING///////
 
-                    /////ADD THE FILTER TO THE TOOLBAR/////
-                    let filterToolbar = d3.select("#toolbar");
-
+                    /////ADD THE FILTER TO THE TOOLBAR////
                     addFilterTag(filterOb, scales);
 
                     ////HIDE THE FILTER BAR/////
@@ -286,7 +299,39 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
             }
          });
 }
+export function nodeFilter(selectedNode, scales){
+   
+    let data = getLatestData();
+    let dataFilters = filterMaster.filter(f=> f.filterType === 'data-filter');
+ 
+    let test = data.filter(path => {
+        return path.map(node => node.node).indexOf(selectedNode) > -1;
+    });
 
+    let filId = 'b-'+filterMaster.filter(f=> f.attributeType === 'branch').length;
+    //let filterOb = addFilter('data-filter', 'discrete', filId, discreteFilter, [...data], [...test], [['state', [fromState, toState]], ['selectedOption', selectedOption]]);
+
+    let filterOb = addFilter('data-filter', 'branch', filId, nodeFilter, [...data], [...test], [['nodeId', selectedNode]])
+    addFilterTag(filterOb, scales);
+    updateMainView(scales, 'edgeLength');
+
+   ////Class Tree Links////
+   let treeLinks  = d3.select('#sidebar').selectAll('.link');
+   let treeNode  = d3.select('#sidebar').selectAll('.node');
+
+   let nodeList = test.flatMap(path=> path.map(node => node.node));
+
+   d3.selectAll('.link-not-there').classed('link-not-there', false);
+   d3.selectAll('.node-not-there').classed('node-not-there', false);
+
+   let missingLinks = treeLinks.filter(f=> nodeList.indexOf(f.data.node) === -1);
+   missingLinks.classed('link-not-there', true);
+
+   let missingNodes = treeNode.filter(f=> nodeList.indexOf(f.data.node) === -1);
+   missingNodes.classed('node-not-there', true);    
+
+    
+}
 function continuousFilter(data, selectedOption, predicted, observed){
 
     return data.filter(path=> {
@@ -300,36 +345,30 @@ function continuousFilter(data, selectedOption, predicted, observed){
         });
         return filterArray.indexOf(false) === -1;
     });
-    
 }
-
 function discreteFilter(data, selectedOption, fromState, toState){
-if(selectedOption != undefined){
-
-    return data.filter(path=> {
-        let filterPred = path.filter(f=> f.leaf != true).map(node=> {
-          
-            let states = node.attributes[selectedOption].states;
-            if(fromState === 'Any'){
+    if(selectedOption != undefined){
+        return data.filter(path=> {
+            let filterPred = path.filter(f=> f.leaf != true).map(node=> {
+                let states = node.attributes[selectedOption].states;
+                if(fromState === 'Any'){
+                    return true;
+                }else{
+                    return states.filter(st=> st.state === fromState).length > 0 && states.filter(st=> st.state === fromState)[0].realVal > 0.75;
+                }
+            });
+            let filterObs = path.filter(f=> f.leaf === true).map(node=> {
+            let win = node.attributes[selectedOption].winState;
+            if(toState === 'Any'){
                 return true;
             }else{
-                return states.filter(st=> st.state === fromState).length > 0 && states.filter(st=> st.state === fromState)[0].realVal > 0.75;
+                return win === toState;
             }
+            });
+            return filterPred.indexOf(true) > -1 && filterObs.indexOf(true) > -1;
         });
-        let filterObs = path.filter(f=> f.leaf === true).map(node=> {
-          let win = node.attributes[selectedOption].winState;
-          if(toState === 'Any'){
-              return true;
-          }else{
-              return win === toState;
-          }
-        });
-        return filterPred.indexOf(true) > -1 && filterObs.indexOf(true) > -1;
-    });
-
+    }
 }
-}
-
 function queryFilter(filterDiv, filterButton, normedPaths, main, moveMetric, scales){
 
     let searchDiv = filterDiv.append('div').classed('search-bar-div', true);

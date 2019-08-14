@@ -340,7 +340,6 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
             let specArray = d.map(m=> m.species);
             let hovers = nodeGroups.filter(n => n.node === d.node);
             let commonHover = [...commonNodeStart].map(c=> c.node).concat(d.map(n=> n.node));
-            
             let treeNode = d3.select('#sidebar').selectAll('.node');
             let treeLinks  = d3.select('#sidebar').selectAll('.link');
             treeNode.filter(f => commonHover.indexOf(f.data.node) > -1).classed('hover', true);

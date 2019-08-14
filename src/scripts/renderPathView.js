@@ -2,7 +2,7 @@ import '../styles/index.scss';
 import * as d3 from "d3";
 import {pathSelected} from './selectedPaths';
 import {formatAttributeData} from './dataFormat';
-import {filterMaster} from './filterComponent';
+import {filterMaster, nodeFilter} from './filterComponent';
 
 export function drawPathsAndAttributes(pathData, main, calculatedScales, moveMetric){
 
@@ -151,10 +151,10 @@ export function renderPaths(pathData, main, scales, moveMetric){
             .select("#value")
             .text(d.node);
             d3.select("#branch-tooltip").classed("hidden", false);
-            console.log(d3.select("#branch-tooltip").select('.btn'))
+
             d3.select("#filter-by-node").on('click', ()=> {
-                console.log(d.node);
-                console.log('button clicked');
+                nodeFilter(d.node, scales);
+                nodeTooltipFlag = false;
                 d3.select("#branch-tooltip").classed("hidden", true);
             });
         }
