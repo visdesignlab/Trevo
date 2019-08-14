@@ -158,11 +158,9 @@ export function renderPaths(pathData, main, scales, moveMetric){
     }).attr('x', 10).attr('y', 5);
 
     return pathGroups;
-  
 }
 
 export function renderAttributes(attributeWrapper, data, scales, filterArray, collapsed){
-
     let attributeHeight = (collapsed === 'true')? 20 : 45;
     let predictedAttrGrps = attributeWrapper.selectAll('g').data((d, i)=> data[i]).join('g');
     predictedAttrGrps.attr('transform', (d, i) => 'translate(0, '+(i * (attributeHeight + 5))+')');

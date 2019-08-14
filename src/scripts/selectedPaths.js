@@ -3,6 +3,7 @@ import { branchPaths, renderPaths, renderAttributes, drawContAtt, drawDiscreteAt
 import { formatAttributeData } from './dataFormat';
 import { filterMaster } from './filterComponent';
 import { dataMaster, collapsed } from './index';
+import { renderDistibutions } from "./distributionView";
 
 export let selectedPaths = [];
 
@@ -339,7 +340,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
             let specArray = d.map(m=> m.species);
             let hovers = nodeGroups.filter(n => n.node === d.node);
             let commonHover = [...commonNodeStart].map(c=> c.node).concat(d.map(n=> n.node));
-            console.log('common hover',commonHover, 'nodewrap', d)
+            
             let treeNode = d3.select('#sidebar').selectAll('.node');
             let treeLinks  = d3.select('#sidebar').selectAll('.link');
             treeNode.filter(f => commonHover.indexOf(f.data.node) > -1).classed('hover', true);
@@ -348,8 +349,6 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
         }).on('mouseout', (d, i)=> {
             d3.selectAll('.hover').classed('hover', false);
         });
-
-
 
         let circle = nodeGroups.append('circle').attr('cx', 0).attr('cy', 0).attr('r', d => {
             return circleScale(branchFrequency[d.node]);
@@ -361,19 +360,16 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
             let hovers = nodeGroups.filter(n => n.node === d.node);
             let treeNode = d3.select('#sidebar').selectAll('.node');
             let selectedBranch = treeNode.filter(f => f.data.node === d.node).classed('selected-branch', true);
-            console.log(selectedBranch);
             return hovers.classed('hover-branch', true);
         }).on('mouseout', function(d, i) {
             let hovers = nodeGroups.filter(n => n.node === d.node);
             d3.selectAll('.selected-branch').classed('selected-branch', false);
-            console.log(d.species)
             return hovers.classed('hover-branch', false);
         });
 
         childNodes.filter(f => f.leaf === true).append('text').text(d => d.label).attr('x', 9).attr('y', 4);
 
         let attWrap = svg.append('g').classed('attribute-wrapper', true);
-
         let attributeData = commonNodeStart[commonNodeStart.length - 1].children.map(ch => {
             return [...commonNodeStart].concat(ch);
         });
@@ -462,6 +458,24 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
         pathBars.style('height', (children.length * 25)+'px');
     }else{
         console.log("more than 5 need distribution view");
+        svg.remove();
+        let remove = selectedTool.append('g').classed('x-icon', true);
+        remove.attr('transform', 'translate(15, 10)');
+        remove.append('circle').attr('r', 7).attr('fill', '#fff');
+        remove.append('text').text('x').attr('transform', 'translate(-5, 5)');
+
+        remove.style('cursor', 'pointer');
+
+        remove.on('click', (d, i, n) => {
+            d3.selectAll('.high').classed('high', false);
+            d3.selectAll('.low').classed('low', false);
+            treeNodes.select('.selected').classed('selected', false);
+            pathSelected(null, dataMaster[0], scales, moveMetric);
+        });        
+
+        /////////
+        renderDistibutions(pathData, selectedDiv, scales, moveMetric);
+        selectedDiv.style('height', '550px')
     }
 
     d3.selectAll('.selected-path').classed('selected-path', false);

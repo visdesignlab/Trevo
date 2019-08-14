@@ -12,16 +12,11 @@ export const dataMaster = [];
 export const savedSelected = [];
 export const collapsed = false;
 
-
 let wrap = d3.select('#wrapper');
 let main = wrap.select('#main');
 let selectedPaths = wrap.select('#selected');
 let sidebar = wrap.select('#sidebar');
 let toolbarDiv = wrap.select('#toolbar');
-
-
-
-
 
 loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges => {
 
@@ -37,11 +32,8 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     //Mapping data together/////
     let edgeSource = edges.rows.map(d=> d.V1);
     let leaves = edges.rows.filter(f=> edgeSource.indexOf(f.V2) == -1 );
-
     let leafChar = await loadData(d3.json, './public/data/anolisLeafChar.json', '');
-
     let labels = await loadData(d3.json, './public/data/anolis-labels.json', '');
-
 
     ///MAKE A ESTIMATED SCALES THING
     let calculatedAtt = {
@@ -75,11 +67,10 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     ///CALCULATES PATHS FROM THE DATA////
     let paths = allPaths(matchedEdges, matchedLeaves, "V1", "V2");
  
-   let normedPaths = normPaths(paths, calculatedAtt, calculatedScales);
+    let normedPaths = normPaths(paths, calculatedAtt, calculatedScales);
 
-   dataMaster.push(normedPaths);
+    dataMaster.push(normedPaths);
    
- 
     toolbarControl(toolbarDiv, normedPaths, main, calculatedScales, 'edgeLength', 'paths');
     
     let filterDiv = wrap.select('#filter-tab').classed('hidden', true);
