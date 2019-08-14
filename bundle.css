@@ -200,8 +200,22 @@ line.half {
   stroke-width: 2; }
 
 #selected .paths .node circle {
+  fill: #7F7390;
+  stroke: #7F7390;
+  stroke-width: 2; }
+
+#selected .paths .node.common-node circle {
   fill: #CFCBD5;
-  stroke: #CFCBD5;
+  stroke: #7F7390;
+  stroke-width: 2; }
+
+#selected .paths .node.common-node .child circle {
+  fill: #7F7390;
+  stroke: #7F7390;
+  stroke-width: 2; }
+
+#selected .paths .node.common-node .child path {
+  stroke: #7F7390;
   stroke-width: 2; }
 
 #selected .paths path, #selected .paths line {
