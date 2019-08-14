@@ -47,6 +47,7 @@ export function renderPaths(pathData, main, scales, moveMetric){
     /////Rendering ///////
     let svgTest = main.select('#main-path-view');
     let svg = svgTest.empty() ? main.append('svg').attr('id', 'main-path-view') : svgTest;
+    let nodeTooltipFlag = false;
 
     let pathWrapTest = svg.select('.path-wrapper');
     let pathWrap = pathWrapTest.empty() ? svg.append('g').classed('path-wrapper', true) : pathWrapTest;
@@ -63,7 +64,8 @@ export function renderPaths(pathData, main, scales, moveMetric){
         }, {});
 
      ///Scales for circles ///
-     let circleScale = d3.scaleLog().range([6, 14]).domain([1, d3.max(Object.values(branchFrequency))]);
+    
+    let circleScale = d3.scaleLog().range([6, 14]).domain([1, d3.max(Object.values(branchFrequency))]);
 
     let pathGroups = pathWrap.selectAll('.paths').data(pathData).join('g').classed('paths', true);
  
@@ -136,6 +138,28 @@ export function renderPaths(pathData, main, scales, moveMetric){
         let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
         let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove);
         return 'translate('+ distance +', 10)';});
+
+    nodeGroups.on('click', (d, i, n)=> {
+        if(nodeTooltipFlag){
+            nodeTooltipFlag = false;
+            d3.select("#branch-tooltip").classed("hidden", true);
+        }else{
+            nodeTooltipFlag = true;
+            d3.select("#branch-tooltip")
+            .style("left", (d3.event.pageX) + "px")
+            .style("top", (d3.event.pageY - 28) + "px")
+            .select("#value")
+            .text(d.node);
+            d3.select("#branch-tooltip").classed("hidden", false);
+            console.log(d3.select("#branch-tooltip").select('.btn'))
+            d3.select("#filter-by-node").on('click', ()=> {
+                console.log(d.node);
+                console.log('button clicked');
+                d3.select("#branch-tooltip").classed("hidden", true);
+            });
+        }
+          
+    });
 
     let circle = nodeGroups.append('circle').attr('cx', 0).attr('cy', 0).attr('r', d=> {
         return circleScale(branchFrequency[d.node]);

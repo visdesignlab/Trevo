@@ -201,9 +201,6 @@ export function filterKeeper(){
 }
 
 export function formatAttributeData(pathData, scales, filterArray){
-   // console.log('normedpaths in format att', data, typeof(data))
-   // let normedPaths = await Promise.resolve(normedPaths);
-  // let normedPaths = data;
 
     let keys = (filterArray == null)? Object.keys(pathData[0][0].attributes): filterArray;
    

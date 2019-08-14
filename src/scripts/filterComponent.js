@@ -328,8 +328,6 @@ if(selectedOption != undefined){
     });
 
 }
-    
-
 }
 
 function queryFilter(filterDiv, filterButton, normedPaths, main, moveMetric, scales){
