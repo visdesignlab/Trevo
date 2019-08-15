@@ -21,11 +21,12 @@ export function pathSelected(selectedPath, otherPaths, scales, moveMetric) {
         d3.select('div#main').style('padding-top', '0px');
         let main = d3.select('div#main');
         drawPathsAndAttributes([...otherPaths], main, scales, moveMetric, false);
+
     } else {
       
         selectedPaths = selectedPaths.concat(selectedPath);
-        renderSelectedView(selectedPaths, otherPaths, selectedDiv, scales, moveMetric);
-        let sortedPaths = sortOtherPaths([...selectedPath], otherPaths);
+        let commonNodes = renderSelectedView([...selectedPaths], [...otherPaths], selectedDiv, scales, moveMetric);
+        let sortedPaths = sortOtherPaths([...selectedPaths], [...otherPaths], [...commonNodes]);
         
         /// LOWER ATTRIBUTE VISUALIZATION ///
         let pathGroups = drawPathsAndAttributes(sortedPaths.map(s => s.data), main, scales, moveMetric, false);
@@ -33,23 +34,83 @@ export function pathSelected(selectedPath, otherPaths, scales, moveMetric) {
         main.style('padding-top', '250px');
     }
 }
-export function sortOtherPaths(pathData, otherPaths) {
 
-    let thisSpecies = pathData.filter(f => f.leaf)[0];
-    let chosenPath = pathData.reverse().map(m => m.node);
-
-    let rankedPaths = otherPaths.map(path => {
-        let step = 0;
-        let test = path.reverse().map((node, i) => {
-            if (chosenPath.indexOf(node.node));
-            return { 'indexOf': chosenPath.indexOf(node.node), 'pathIndex': i, 'node': node, 'chosen': chosenPath[chosenPath.indexOf(node.node)] };
-        }).filter(f => f.indexOf > -1);
-        let distance = (test[0].indexOf + test[0].pathIndex);
-        return { 'data': path.reverse(), 'distance': distance };
-
+function getCommonNodes(paths){
+    let maxBranch = d3.max(paths.map(p => p.length));
+    let longestBranch = paths.filter(path => path.length === maxBranch)[0];
+    let startBranch = longestBranch.filter(f=> f.leaf != true);
+    let commonNodeStart = startBranch;
+    //FIND THE COMMON BRANCHES BETWEEN ALL OF THE SELECTED///
+    paths.map(path => {
+        commonNodeStart = [...path].filter(f => {
+            return (commonNodeStart.map(m => m.node).indexOf(f.node) > -1) & f.leaf != true });
     });
-    let sortedData = rankedPaths.sort(function(a, b) { return a.distance - b.distance; });
-    return sortedData;
+
+    let children = paths.map(path => {
+        path = (path[0].leaf === true) ? path.reverse() : path;
+     
+        let nodeIndex = path.map(p => p.node);
+        let thresh = nodeIndex.indexOf(commonNodeStart[commonNodeStart.length - 1].node);
+        let subset = path.filter((f, i) => i > thresh);
+        return subset;
+    });
+
+    commonNodeStart[commonNodeStart.length - 1].children = children.map((path, i) => {
+        let max = d3.max(path.map(p => p.edgeMove)) - commonNodeStart[commonNodeStart.length - 1].edgeMove;
+        return path.map((chil, j, n) => {
+            chil.parentBase = commonNodeStart[commonNodeStart.length - 1].edgeMove;
+            chil.move = chil.edgeMove - commonNodeStart[commonNodeStart.length - 1].edgeMove;
+            chil.base = (j === 0) ? 0 : n[j - 1].edgeMove - commonNodeStart[commonNodeStart.length - 1].edgeMove;
+            let parentScale = d3.scaleLinear().domain([0, 1]).range([0, 1000])
+            let scaledParentMove = parentScale(commonNodeStart[commonNodeStart.length - 1].edgeMove);
+            chil.xScale = d3.scaleLinear().domain([0, max]).range([0, (1000 - scaledParentMove)]);
+            chil.level = i;
+            return chil;
+        });
+    });
+
+    return commonNodeStart;
+}
+
+export function sortOtherPaths(pathData, otherPaths, commonNode) {
+
+    if(pathData.length > 1){
+
+        if(commonNode != null){
+
+            let chosenPath = commonNode.reverse().map(m => m.node);
+        
+            let rankedPaths = otherPaths.map(path => {
+                let step = 0;
+                let test = path.reverse().map((node, i) => {
+                    if (chosenPath.indexOf(node.node));
+                    return { 'indexOf': chosenPath.indexOf(node.node), 'pathIndex': i, 'node': node, 'chosen': chosenPath[chosenPath.indexOf(node.node)] };
+                }).filter(f => f.indexOf > -1);
+                let distance = (test[0].indexOf + test[0].pathIndex);
+                return { 'data': path.reverse(), 'distance': distance };
+            });
+            let sortedData = rankedPaths.sort(function(a, b) { return a.distance - b.distance; });
+        
+            return sortedData;
+        }
+        console.error('multiple paths without common node');
+    }else{
+
+        let chosenPath = pathData[0].reverse().map(m => m.node);
+    
+        let rankedPaths = otherPaths.map(path => {
+            let step = 0;
+            let test = path.reverse().map((node, i) => {
+                if (chosenPath.indexOf(node.node));
+                return { 'indexOf': chosenPath.indexOf(node.node), 'pathIndex': i, 'node': node, 'chosen': chosenPath[chosenPath.indexOf(node.node)] };
+            }).filter(f => f.indexOf > -1);
+            let distance = (test[0].indexOf + test[0].pathIndex);
+            return { 'data': path.reverse(), 'distance': distance };
+        });
+        let sortedData = rankedPaths.sort(function(a, b) { return a.distance - b.distance; });
+        return sortedData;
+    }
+
 }
 export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, moveMetric) {
 
@@ -105,7 +166,6 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
     if (pathData.length === 1) {
 
         /////////////////////////////////////////////////
-
         let selectWrap = svg.append('g').classed('select-wrap', true);
         selectWrap.attr('transform', (d, i) => 'translate(0,20)');
 
@@ -151,7 +211,6 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
         });
 
         let speciesTitle = selectedGroups.append('text').text(d => {
-            console.log('d', d);
             let string = d.filter(f => f.leaf === true)[0].label;
             return string.charAt(0).toUpperCase() + string.slice(1);
         });
@@ -217,7 +276,6 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
         let attData = formatAttributeData(pathData, scales, attrFilter);
         let attributeGroups = renderAttributes(attributeWrapper, attData, scales, null);
 
-
         selectedGroups.attr('transform', (d, i) => 'translate(10,' + (i * ((attributeHeight + 5) * (Object.keys(d[1].attributes).length + 1))) + ')');
 
         drawContAtt(attributeGroups);
@@ -228,39 +286,54 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
         svg.style('height', '250px');
         selectedDiv.style('height', ((pathData.length + attributeGroups.data().map(m => m[0]).length) * 45) + 50 + 'px');
         attributeWrapper.attr('transform', (d) => 'translate(140, 25)');
-        return svg;
-    } else if(pathData.length > 1 && pathData.length < 5) {
+        d3.selectAll('.selected-path').classed('selected-path', false);
 
-        let maxBranch = d3.max(selectedPaths.map(p => p.length));
-        let longestBranch = selectedPaths.filter(path => path.length === maxBranch)[0];
-        let startBranch = longestBranch.filter(f=> f.leaf != true);
-        let commonNodeStart = startBranch;
-        //FIND THE COMMON BRANCHES BETWEEN ALL OF THE SELECTED///
-        selectedPaths.map(path => {
-            commonNodeStart = [...path].filter(f => {
-                return (commonNodeStart.map(m => m.node).indexOf(f.node) > -1) & f.leaf != true });
-        });
-
-        let children = selectedPaths.map(path => {
-            let nodeIndex = path.map(p => p.node);
-            let thresh = nodeIndex.indexOf(commonNodeStart[commonNodeStart.length - 1].node);
-            let subset = path.filter((f, i) => i > thresh);
-            return subset;
-        });
-
-        commonNodeStart[commonNodeStart.length - 1].children = children.map((path, i) => {
-            let max = d3.max(path.map(p => p.edgeMove)) - commonNodeStart[commonNodeStart.length - 1].edgeMove;
-            return path.map((chil, j, n) => {
-                chil.parentBase = commonNodeStart[commonNodeStart.length - 1].edgeMove;
-                chil.move = chil.edgeMove - commonNodeStart[commonNodeStart.length - 1].edgeMove;
-                chil.base = (j === 0) ? 0 : n[j - 1].edgeMove - commonNodeStart[commonNodeStart.length - 1].edgeMove;
-                let parentScale = d3.scaleLinear().domain([0, 1]).range([0, 1000])
-                let scaledParentMove = parentScale(commonNodeStart[commonNodeStart.length - 1].edgeMove);
-                chil.xScale = d3.scaleLinear().domain([0, max]).range([0, (1000 - scaledParentMove)]);
-                chil.level = i;
-                return chil;
+        ////RADIO BUTTON THAT COLORS BASE DON ATTRIBUTE VALUE////
+        radio.on('click', (d, i) => {
+            let leaf = pathData.map(node => node.filter(d => d.leaf === true)[0])[0];
+            let sorted = [...otherPaths].sort(function(a, b) {
+                return a.filter(n => n.leaf === true)[0].attributes[d].realVal - b.filter(n => n.leaf === true)[0].attributes[d].realVal;
             });
+    
+            let main = d3.select('div#main');
+            /// LOWER ATTRIBUTE VISUALIZATION ///
+            drawPathsAndAttributes(sorted.reverse(), main, scales, moveMetric);
+            main.style('padding-top', '250px');
+    
+            let paths = main.select('svg#main-path-view').selectAll('.paths');
+    
+            let high = paths.filter(path => {
+                let leafOther = path.filter(node => node.leaf === true)[0];
+                return leafOther.attributes[d].realVal > leaf.attributes[d].realVal;
+            });
+            high.classed('high', true);
+    
+            let highLeaves = high.data().map(path => path.filter(f => f.leaf === true)[0].node);
+    
+            treeNodes.filter(f => highLeaves.indexOf(f.data.node) > -1).classed('high', true);
+    
+            let low = paths.filter(path => {
+                let leafOther = path.filter(node => node.leaf === true)[0];
+                return leafOther.attributes[d].realVal < leaf.attributes[d].realVal;
+            });
+            low.classed('low', true);
+    
+            let lowLeaves = low.data().map(path => path.filter(f => f.leaf === true)[0].node);
+    
+            treeNodes.filter(f => lowLeaves.indexOf(f.data.node) > -1).classed('low', true);
+    
+            let same = paths.filter(path => {
+                let leafOther = path.filter(node => node.leaf === true)[0];
+                return leafOther.attributes[d].realVal === leaf.attributes[d].realVal;
+            });
+            same.classed('same', true);
         });
+      
+        return pathData;
+
+    } else if(pathData.length > 1 && pathData.length < 5) {
+       
+        let commonNodeStart = getCommonNodes(pathData);
 
         let selectWrap = svg.append('g').classed('select-wrap', true);
         selectWrap.attr('transform', (d, i) => 'translate(0,20)');
@@ -388,7 +461,6 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
             return attribute;
         })
 
-        console.log(attDataComb);
      
         let attGroups = attWrap.selectAll('g').data(attDataComb).join('g').classed('attr', true);
 
@@ -454,9 +526,69 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
 
         d3.select('#selected').style('height', (50 + (pathData.length * 20) + (attDataComb.length * 53))+ 'px');
         svg.style('height', (50 + (pathData.length * 20) + (attDataComb.length * 53)) + 'px');
-        pathBars.style('height', (children.length * 25)+'px');
+        pathBars.style('height', (commonNodeStart[commonNodeStart.length -1].children.length * 25)+'px');
+        d3.selectAll('.selected-path').classed('selected-path', false);
+
+        ////RADIO BUTTON THAT COLORS BASE DON ATTRIBUTE VALUE////
+        radio.on('click', (d, i) => {
+            let leaf = pathData.map(node => node.filter(d => d.leaf === true)[0])[0];
+            let sorted = [...otherPaths].sort(function(a, b) {
+                return a.filter(n => n.leaf === true)[0].attributes[d].realVal - b.filter(n => n.leaf === true)[0].attributes[d].realVal;
+            });
+    
+            let main = d3.select('div#main');
+            /// LOWER ATTRIBUTE VISUALIZATION ///
+            drawPathsAndAttributes(sorted.reverse(), main, scales, moveMetric);
+            main.style('padding-top', '250px');
+    
+            let paths = main.select('svg#main-path-view').selectAll('.paths');
+    
+            let high = paths.filter(path => {
+                let leafOther = path.filter(node => node.leaf === true)[0];
+                return leafOther.attributes[d].realVal > leaf.attributes[d].realVal;
+            });
+            high.classed('high', true);
+    
+            let highLeaves = high.data().map(path => path.filter(f => f.leaf === true)[0].node);
+    
+            treeNodes.filter(f => highLeaves.indexOf(f.data.node) > -1).classed('high', true);
+    
+            let low = paths.filter(path => {
+                let leafOther = path.filter(node => node.leaf === true)[0];
+                return leafOther.attributes[d].realVal < leaf.attributes[d].realVal;
+            });
+            low.classed('low', true);
+    
+            let lowLeaves = low.data().map(path => path.filter(f => f.leaf === true)[0].node);
+    
+            treeNodes.filter(f => lowLeaves.indexOf(f.data.node) > -1).classed('low', true);
+    
+            let same = paths.filter(path => {
+                let leafOther = path.filter(node => node.leaf === true)[0];
+                return leafOther.attributes[d].realVal === leaf.attributes[d].realVal;
+            });
+            same.classed('same', true);
+        });
+
+        return commonNodeStart;
+
+
     }else{
-        console.log("more than 5 need distribution view");
+       
+        /////////
+        //getting common node
+        ///
+
+        let maxBranch = d3.max(pathData.map(p => p.length));
+        let longestBranch = pathData.filter(path => path.length === maxBranch)[0];
+        let startBranch = longestBranch.filter(f=> f.leaf != true);
+        let commonNodeStart = startBranch;
+        //FIND THE COMMON BRANCHES BETWEEN ALL OF THE SELECTED///
+        pathData.map(path => {
+            commonNodeStart = [...path].filter(f => {
+                return (commonNodeStart.map(m => m.node).indexOf(f.node) > -1) & f.leaf != true });
+        });
+
         svg.remove();
         let remove = selectedTool.append('g').classed('x-icon', true);
         remove.attr('transform', 'translate(15, 10)');
@@ -474,53 +606,53 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
 
         /////////
         renderDistibutions(pathData, selectedDiv, scales, moveMetric);
-        selectedDiv.style('height', '550px')
+        selectedDiv.style('height', '550px');
+
+        d3.selectAll('.selected-path').classed('selected-path', false);
+
+        ////RADIO BUTTON THAT COLORS BASE DON ATTRIBUTE VALUE////
+        radio.on('click', (d, i) => {
+            let leaf = pathData.map(node => node.filter(d => d.leaf === true)[0])[0];
+            let sorted = [...otherPaths].sort(function(a, b) {
+                return a.filter(n => n.leaf === true)[0].attributes[d].realVal - b.filter(n => n.leaf === true)[0].attributes[d].realVal;
+            });
+    
+            let main = d3.select('div#main');
+            /// LOWER ATTRIBUTE VISUALIZATION ///
+            drawPathsAndAttributes(sorted.reverse(), main, scales, moveMetric);
+            main.style('padding-top', '250px');
+    
+            let paths = main.select('svg#main-path-view').selectAll('.paths');
+    
+            let high = paths.filter(path => {
+                let leafOther = path.filter(node => node.leaf === true)[0];
+                return leafOther.attributes[d].realVal > leaf.attributes[d].realVal;
+            });
+            high.classed('high', true);
+    
+            let highLeaves = high.data().map(path => path.filter(f => f.leaf === true)[0].node);
+    
+            treeNodes.filter(f => highLeaves.indexOf(f.data.node) > -1).classed('high', true);
+    
+            let low = paths.filter(path => {
+                let leafOther = path.filter(node => node.leaf === true)[0];
+                return leafOther.attributes[d].realVal < leaf.attributes[d].realVal;
+            });
+            low.classed('low', true);
+    
+            let lowLeaves = low.data().map(path => path.filter(f => f.leaf === true)[0].node);
+    
+            treeNodes.filter(f => lowLeaves.indexOf(f.data.node) > -1).classed('low', true);
+    
+            let same = paths.filter(path => {
+                let leafOther = path.filter(node => node.leaf === true)[0];
+                return leafOther.attributes[d].realVal === leaf.attributes[d].realVal;
+            });
+            same.classed('same', true);
+        });
+
+        return commonNodeStart;
     }
-
-    d3.selectAll('.selected-path').classed('selected-path', false);
-
-    ////RADIO BUTTON THAT COLORS BASE DON ATTRIBUTE VALUE////
-    radio.on('click', (d, i) => {
-        let leaf = pathData.map(node => node.filter(d => d.leaf === true)[0])[0];
-        let sorted = [...otherPaths].sort(function(a, b) {
-            return a.filter(n => n.leaf === true)[0].attributes[d].realVal - b.filter(n => n.leaf === true)[0].attributes[d].realVal;
-        });
-
-        let main = d3.select('div#main');
-        /// LOWER ATTRIBUTE VISUALIZATION ///
-        drawPathsAndAttributes(sorted.reverse(), main, scales, moveMetric);
-        main.style('padding-top', '250px');
-
-        let paths = main.select('svg#main-path-view').selectAll('.paths');
-
-        let high = paths.filter(path => {
-            let leafOther = path.filter(node => node.leaf === true)[0];
-            return leafOther.attributes[d].realVal > leaf.attributes[d].realVal;
-        });
-        high.classed('high', true);
-
-        let highLeaves = high.data().map(path => path.filter(f => f.leaf === true)[0].node);
-
-        treeNodes.filter(f => highLeaves.indexOf(f.data.node) > -1).classed('high', true);
-
-        let low = paths.filter(path => {
-            let leafOther = path.filter(node => node.leaf === true)[0];
-            return leafOther.attributes[d].realVal < leaf.attributes[d].realVal;
-        });
-        low.classed('low', true);
-
-        let lowLeaves = low.data().map(path => path.filter(f => f.leaf === true)[0].node);
-
-        treeNodes.filter(f => lowLeaves.indexOf(f.data.node) > -1).classed('low', true);
-
-        let same = paths.filter(path => {
-            let leafOther = path.filter(node => node.leaf === true)[0];
-            return leafOther.attributes[d].realVal === leaf.attributes[d].realVal;
-        });
-        same.classed('same', true);
-    });
-
-
 }
 
 function sortPaths(sortButton) {
