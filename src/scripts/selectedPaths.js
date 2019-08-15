@@ -48,7 +48,6 @@ function getCommonNodes(paths){
 
     let children = paths.map(path => {
         path = (path[0].leaf === true) ? path.reverse() : path;
-     
         let nodeIndex = path.map(p => p.node);
         let thresh = nodeIndex.indexOf(commonNodeStart[commonNodeStart.length - 1].node);
         let subset = path.filter((f, i) => i > thresh);
@@ -79,7 +78,6 @@ export function sortOtherPaths(pathData, otherPaths, commonNode) {
         if(commonNode != null){
 
             let chosenPath = commonNode.reverse().map(m => m.node);
-        
             let rankedPaths = otherPaths.map(path => {
                 let step = 0;
                 let test = path.reverse().map((node, i) => {
