@@ -70,6 +70,8 @@ export function toggleFilters(filterButton, main, moveMetric, scales){
     let filterDiv = d3.select('#filter-tab');
     let data = getLatestData();
 
+    console.log('main',main)
+
     if(filterDiv.classed('hidden')){
         filterButton.text('Hide Filters');
         filterDiv.classed('hidden', false);

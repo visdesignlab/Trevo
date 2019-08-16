@@ -18,7 +18,7 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, mov
     
     let filterButton = toolbar.append('button').attr('id', 'view-filter');
     filterButton.attr('class', 'btn btn-outline-secondary').text('Show Filters');
-    filterButton.on('click', ()=> toggleFilters(filterButton, normedPaths, main, moveMetric, calculatedScales));
+    filterButton.on('click', ()=> toggleFilters(filterButton, main, moveMetric, calculatedScales));
     ///LENGTH BUTTON CODE
 /*
     let lengthButton = toolbar.append('button').attr('id', 'change-length').attr('class', 'btn btn-outline-secondary');
