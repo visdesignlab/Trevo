@@ -38,7 +38,7 @@ svg{
   border: 1px solid gray;
 }
 
-#branch-tooltip{
+#branch-tooltip, #state-tooltip{
   position: absolute;
   width: 200px;
   height: auto;
@@ -53,7 +53,7 @@ svg{
  // pointer-events: none;
 }
 
-#branch-tooltip.hidden {
+#branch-tooltip.hidden, #state-tooltip.hidden {
   display: none;
 }
 

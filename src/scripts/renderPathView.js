@@ -6,6 +6,8 @@ import {filterMaster, nodeFilter, getLatestData} from './filterComponent';
 
 export function drawPathsAndAttributes(pathData, main, calculatedScales, moveMetric){
 
+    let nodeTooltipFlag = true;
+
     let collapsed = d3.select('#scrunch').attr('value');
   
     main.select('#main-path-view').selectAll('*').remove();
@@ -26,9 +28,49 @@ export function drawPathsAndAttributes(pathData, main, calculatedScales, moveMet
     let attributeHeight = (collapsed === 'true')? 22 : 45;
     pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (attrMove + 1))) +')');
     
-    drawContAtt(predictedAttrGrps, moveMetric, collapsed);
-    drawDiscreteAtt(predictedAttrGrps, calculatedScales, moveMetric, collapsed);
+    let cGroups = drawContAtt(predictedAttrGrps, moveMetric, collapsed);
+    let dGroups = drawDiscreteAtt(predictedAttrGrps, calculatedScales, moveMetric, collapsed);
     sizeAndMove(main.select('#main-path-view'), attributeWrapper, pathData, (attrMove * attributeHeight));
+
+    console.log('state leaf', d3.selectAll('.discrete-leaf'));
+
+    let leafStates = d3.selectAll('.discrete-leaf');
+    leafStates.on('click', (d, i)=> {
+        if(nodeTooltipFlag){
+            nodeTooltipFlag = false;
+            d3.select("#state-tooltip").classed("hidden", true);
+        }else{
+            nodeTooltipFlag = true;
+            d3.select("#state-tooltip")
+            .style("left", (d3.event.pageX) + "px")
+            .style("top", (d3.event.pageY - 28) + "px")
+            .select("#value")
+            .text(d.winState);
+            d3.select("#state-tooltip").classed("hidden", false);
+
+            d3.select("#filter-by-state").on('click', ()=> {
+                nodeFilter(d.node, scales);
+                nodeTooltipFlag = false;
+                d3.select("#state-tooltip").classed("hidden", true);
+            });
+
+            d3.select("#select-by-state").on('click', ()=> {
+                let data = getLatestData();
+                let test = pathGroups.filter(path => {
+                    return path.map(node => node.node).indexOf(d.node) > -1;
+                });
+                let notIt = pathGroups.filter(path => {
+                    return path.map(node => node.node).indexOf(d.node) === -1;
+                });
+
+                nodeTooltipFlag = false;
+                d3.select("#state-tooltip").classed("hidden", true);
+
+               // pathSelected(test.data(), notIt.data(), scales, moveMetric);
+
+            });
+
+        }});
 
     return pathGroups;
 
@@ -425,7 +467,7 @@ export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric, collapsed
         });
 
     let endStateDot = attributeNodesDisc.filter((att, i)=> {
-        return att[0] === undefined;});
+        return att[0] === undefined;}).classed('discrete-leaf', true);
 
     endStateDot.append('circle').attr('cx', 10).attr('cy', 2).attr('r', 7).style('fill', d=> {
        return d.color;
