@@ -52,21 +52,23 @@ export function drawPathsAndAttributes(pathData, main, calculatedScales, moveMet
                 nodeFilter(d.node, scales);
                 nodeTooltipFlag = false;
                 d3.select("#state-tooltip").classed("hidden", true);
+
             });
 
             d3.select("#select-by-state").on('click', ()=> {
                 let data = getLatestData();
-                let test = pathGroups.filter(path => {
-                    return path.map(node => node.node).indexOf(d.node) > -1;
-                });
-                let notIt = pathGroups.filter(path => {
-                    return path.map(node => node.node).indexOf(d.node) === -1;
+                let test = data.filter(path => {
+                    return path[path.length - 1].attributes[d.label].winState === d.winState;
                 });
 
+                let notIt = data.filter(path => {
+                    return path[path.length - 1].attributes[d.label].winState != d.winState;
+                });
+            
                 nodeTooltipFlag = false;
                 d3.select("#state-tooltip").classed("hidden", true);
 
-               // pathSelected(test.data(), notIt.data(), scales, moveMetric);
+                pathSelected(test, notIt, calculatedScales, moveMetric);
 
             });
 
