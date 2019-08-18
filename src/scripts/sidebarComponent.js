@@ -88,6 +88,42 @@ export function renderTreeButtons(nestedData, normedPaths, calculatedScales, sid
             treeViewButton.text('Show Lengths');
        }
     });
+
+    let optionArray = [{'field':'None'}];
+
+    calculatedScales.map(m=> optionArray.push(m))
+
+  let dropdiv = sidebar.append('div').classed('dropdown', true);
+  let button = dropdiv.append('button').classed('btn dropbtn btn-secondary', true).text('See Values');
+  let dropContent = dropdiv.append('div').attr('id', 'show-drop-div').classed('dropdown-content', true);
+  dropContent.append('a').text('text');
+  let options = dropContent.selectAll('a').data(optionArray).join('a').text(d=> d.field)
+
+button.on('click', (d, i, n)=> {
+   if(dropContent.classed('show')){
+       dropContent.classed('show', false);
+   }else{
+       dropContent.classed('show', true);
+   }
+});
+
+options.on('click', (d, i, n)=> {
+   
+    if(d.type === 'discrete'){
+        console.log(d.stateColors);
+        let treeNode  = d3.select('#sidebar').selectAll('.node').filter(leaf=> leaf.data.leaf === true);
+        
+        console.log(treeNode);
+        d.stateColors.forEach(state=> {
+            let circ = treeNode.filter(tree=> tree.data.attributes[d.field].winState === state.state);
+            console.log(treeNode.filter(tree=> tree.data.attributes[d.field].winState === state.state));
+            circ.select('circle').attr('fill', state.color);
+            console.log(circ)
+        })
+
+    }
+    dropContent.classed('show', false);
+})
 }
 
 function treeFilter(data, selectedNodes){
@@ -99,7 +135,6 @@ function treeFilter(data, selectedNodes){
 }
 
 export function renderTree(nestedData, normedPaths, calculatedScales, sidebar, length){
-
     // set the dimensions and margins of the diagram
     var margin = {top: 10, right: 90, bottom: 50, left: 20},
     width = 400 - margin.left - margin.right,
