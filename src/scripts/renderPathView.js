@@ -2,7 +2,7 @@ import '../styles/index.scss';
 import * as d3 from "d3";
 import {pathSelected} from './selectedPaths';
 import {formatAttributeData} from './dataFormat';
-import {filterMaster, nodeFilter, getLatestData} from './filterComponent';
+import {filterMaster, nodeFilter, getLatestData, leafStateFilter} from './filterComponent';
 
 export function drawPathsAndAttributes(pathData, main, calculatedScales, moveMetric){
 
@@ -49,7 +49,8 @@ export function drawPathsAndAttributes(pathData, main, calculatedScales, moveMet
             d3.select("#state-tooltip").classed("hidden", false);
 
             d3.select("#filter-by-state").on('click', ()=> {
-                nodeFilter(d.node, scales);
+                
+                leafStateFilter(d, calculatedScales);
                 nodeTooltipFlag = false;
                 d3.select("#state-tooltip").classed("hidden", true);
 
