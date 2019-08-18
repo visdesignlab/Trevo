@@ -28,7 +28,7 @@ svg {
   position: fixed;
   border: 1px solid gray; }
 
-#branch-tooltip {
+#branch-tooltip, #state-tooltip {
   position: absolute;
   width: 200px;
   height: auto;
@@ -41,7 +41,7 @@ svg {
   -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
   box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4); }
 
-#branch-tooltip.hidden {
+#branch-tooltip.hidden, #state-tooltip.hidden {
   display: none; }
 
 #main {
