@@ -1,7 +1,7 @@
 import '../styles/index.scss';
 import * as d3 from "d3";
 
-import {dataMaster} from './index';
+import {dataMaster, nestedData} from './index';
 import {filterMaster, removeFilter, addFilter} from './filterComponent';
 import { updateMainView } from './viewControl';
 import {getNested} from './pathCalc';
@@ -28,7 +28,7 @@ function updateBrush(treeBrush, scales){
 
     updateMainView(scales, 'edgeLength');
    
-     ///DIMMING THE FILTERED OUT NODES//////
+    ///DIMMING THE FILTERED OUT NODES//////
 
     ////Class Tree Links////
     let treeLinks  = d3.select('#sidebar').selectAll('.link');
@@ -65,7 +65,7 @@ function updateBrush(treeBrush, scales){
     });
 }
 
-export function renderTreeButtons(nestedData, normedPaths, calculatedScales, sidebar){
+export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
     ///SIDBAR STUFF
     let treeButton = sidebar.append('button').text('Filter by Tree').classed('btn btn-outline-secondary', true);  
    // let treeBrush = d3.brush().extent([[0, 0], [400, 600]]);
@@ -81,10 +81,10 @@ export function renderTreeButtons(nestedData, normedPaths, calculatedScales, sid
   
        sidebar.select('svg').remove();
        if(treeViewButton.text() === 'Show Lengths'){
-            renderTree(nestedData, sidebar, true);
+            renderTree(sidebar, true, null);
             treeViewButton.text('Hide Lengths');
        }else{
-            renderTree(nestedData, sidebar, false);
+            renderTree(sidebar, false, null);
             treeViewButton.text('Show Lengths');
        }
     });
@@ -110,15 +110,12 @@ button.on('click', (d, i, n)=> {
 options.on('click', (d, i, n)=> {
    
     if(d.type === 'discrete'){
-        console.log(d.stateColors);
-        let treeNode  = d3.select('#sidebar').selectAll('.node').filter(leaf=> leaf.data.leaf === true);
-        
-        console.log(treeNode);
-        d.stateColors.forEach(state=> {
-            let circ = treeNode.filter(tree=> tree.data.attributes[d.field].winState === state.state);
-            circ.attr('fill', state.color);
-        });
-
+        renderTree(sidebar, false, d);
+    }else if(d.type === 'continuous'){
+        console.log('continuous');
+        renderTree(sidebar, false, null);
+    }else{
+        renderTree(sidebar, false, null);
     }
     dropContent.classed('show', false);
 })
@@ -132,7 +129,11 @@ function treeFilter(data, selectedNodes){
     });
 }
 
-export function renderTree(nestedData, sidebar, length){
+export function renderTree(sidebar, length, attrDraw){
+
+    if(attrDraw != null){
+        console.log('attDraw',attrDraw);
+    }
     // set the dimensions and margins of the diagram
     var margin = {top: 10, right: 90, bottom: 50, left: 20},
     width = 400 - margin.left - margin.right,
@@ -150,16 +151,16 @@ export function renderTree(nestedData, sidebar, length){
             });
         }
     }
-    addingEdgeLength(0, nestedData)
+    addingEdgeLength(0, nestedData[0])
 
 //  assigns the data to a hierarchy using parent-child relationships
-    var treenodes = d3.hierarchy(nestedData);
+    var treenodes = d3.hierarchy(nestedData[0]);
 
 // maps the node data to the tree layout
     treenodes = treemap(treenodes);
 
     let xScale = d3.scaleLinear().domain([0, 1]).range([0, width]).clamp(true);
-
+    sidebar.select('svg').remove();
     var treeSvg = sidebar.append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom),
@@ -208,9 +209,24 @@ export function renderTree(nestedData, sidebar, length){
     node.append("circle")
     .attr("r", 3);
 
+    if(attrDraw != null){
+        let leaves = node.filter(n=> n.data.leaf === true);
+        let notleaves = node.filter(n=> n.data.leaf != true);
+        
+        attrDraw.stateColors.forEach(att=> {
+            let circ = leaves.filter(f=> {
+                return f.data.attributes[attrDraw.field].winState === att.state;
+            }).select('circle');
+            circ.attr('fill', att.color);
+            circ.attr('r', 4)
+            notleaves.selectAll('circle').attr('fill', 'gray');
+        });
+    }else{
+        node.selectAll('circle').attr('fill', 'gray');
+    }
+
     node.on('mouseover', (d, i, n)=> {
         let paths = d3.select('#main-path-view').selectAll('.paths');
-
         let points = d3.select('#main-summary-view').selectAll('.branch-points');
         points.filter(f=> f.node === d.data.node).classed('selected', true);
 

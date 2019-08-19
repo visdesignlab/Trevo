@@ -31,11 +31,8 @@ export function removeFilter(filterId, scales){
                 addFilterTag(dataFilters[i], scales);
                 testData = newTestData;
             }else{//discrete
-                console.log('in discrete refilter', dataFilters[i]);
-                
                 let newTestData = fun(testData, dataFilters[i].selectedOption, dataFilters[i].fromState, dataFilters[i].toState);
                 dataFilters[i].data = [...newTestData];
-                console.log('in discrete refilter 2', dataFilters[i]);
                 dataFilters[i].filterId = 'd-'+ i;
                 //// Re adding in buttons ////
                 addFilterTag(dataFilters[i], scales);

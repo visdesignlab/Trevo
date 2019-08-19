@@ -11,6 +11,7 @@ import { updateMainView, initialViewLoad } from './viewControl';
 export const dataMaster = [];
 export const savedSelected = [];
 export const collapsed = false;
+export const nestedData = [];
 
 let wrap = d3.select('#wrapper');
 let main = wrap.select('#main');
@@ -75,14 +76,12 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     let filterDiv = wrap.select('#filter-tab').classed('hidden', true);
 
     ////////TREE RENDER IN SIDEBAR////////
-    let nestedData = buildTreeStructure(paths, edges);
-
-    renderTreeButtons(nestedData, normedPaths, calculatedScales, sidebar, false);
-
-    let tree = renderTree(nestedData, sidebar, false);
+    nestedData.push(buildTreeStructure(paths, edges));
+    renderTreeButtons(normedPaths, calculatedScales, sidebar, false);
+    let tree = renderTree(sidebar, false, null);
     
-      /// LOWER ATTRIBUTE VISUALIZATION ///
-   initialViewLoad(calculatedScales, 'edgeLength');
+    /// LOWER ATTRIBUTE VISUALIZATION ///
+    initialViewLoad(calculatedScales, 'edgeLength');
 });
 
 let tooltip = wrap.append("div")
