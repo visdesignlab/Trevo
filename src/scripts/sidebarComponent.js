@@ -81,10 +81,10 @@ export function renderTreeButtons(nestedData, normedPaths, calculatedScales, sid
   
        sidebar.select('svg').remove();
        if(treeViewButton.text() === 'Show Lengths'){
-            renderTree(nestedData, normedPaths, calculatedScales, sidebar, true);
+            renderTree(nestedData, sidebar, true);
             treeViewButton.text('Hide Lengths');
        }else{
-            renderTree(nestedData, normedPaths, calculatedScales, sidebar, false);
+            renderTree(nestedData, sidebar, false);
             treeViewButton.text('Show Lengths');
        }
     });
@@ -116,10 +116,8 @@ options.on('click', (d, i, n)=> {
         console.log(treeNode);
         d.stateColors.forEach(state=> {
             let circ = treeNode.filter(tree=> tree.data.attributes[d.field].winState === state.state);
-            console.log(treeNode.filter(tree=> tree.data.attributes[d.field].winState === state.state));
-            circ.select('circle').attr('fill', state.color);
-            console.log(circ)
-        })
+            circ.attr('fill', state.color);
+        });
 
     }
     dropContent.classed('show', false);
@@ -134,7 +132,7 @@ function treeFilter(data, selectedNodes){
     });
 }
 
-export function renderTree(nestedData, normedPaths, calculatedScales, sidebar, length){
+export function renderTree(nestedData, sidebar, length){
     // set the dimensions and margins of the diagram
     var margin = {top: 10, right: 90, bottom: 50, left: 20},
     width = 400 - margin.left - margin.right,

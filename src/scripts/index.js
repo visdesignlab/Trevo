@@ -68,7 +68,6 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     let paths = allPaths(matchedEdges, matchedLeaves, "V1", "V2");
  
     let normedPaths = normPaths(paths, calculatedAtt, calculatedScales);
-
     dataMaster.push(normedPaths);
    
     toolbarControl(toolbarDiv, normedPaths, main, calculatedScales, 'edgeLength', 'paths');
@@ -80,7 +79,7 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
 
     renderTreeButtons(nestedData, normedPaths, calculatedScales, sidebar, false);
 
-    let tree = renderTree(nestedData, normedPaths, calculatedScales, sidebar, false);
+    let tree = renderTree(nestedData, sidebar, false);
     
       /// LOWER ATTRIBUTE VISUALIZATION ///
    initialViewLoad(calculatedScales, 'edgeLength');
