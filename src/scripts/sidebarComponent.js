@@ -108,11 +108,9 @@ button.on('click', (d, i, n)=> {
 });
 
 options.on('click', (d, i, n)=> {
-   
     if(d.type === 'discrete'){
         renderTree(sidebar, false, d);
     }else if(d.type === 'continuous'){
-        console.log('continuous');
         renderTree(sidebar, false, null);
     }else{
         renderTree(sidebar, false, null);
