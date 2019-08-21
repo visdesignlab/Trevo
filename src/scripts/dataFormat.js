@@ -8,7 +8,7 @@ export function calculateScales(calculatedAtt, colorKeeper){
             let max = d3.max(calculatedAtt[d].rows.map(m=> m.upperCI95));
             let min = d3.min(calculatedAtt[d].rows.map(m=> m.lowerCI95));
             let mean = d3.mean(calculatedAtt[d].rows.map(m=> m.realVal));
-           // console.log(calculatedAtt[d].type, max, min, calculatedAtt)
+            
             return {
                 'field': d, 
                 'type':'continuous',
@@ -133,8 +133,9 @@ export function normPaths(paths, calculatedAtt, calculatedScales){
         p[0].attributes = {};
         Object.keys(calculatedAtt).map(att=> { 
             if(calculatedAtt[att].type == 'continuous'){
-                let root = calculatedAtt[att].rows.filter(f=> f.nodeLabels == p[0].node)[0];
+                let root = calculatedAtt[att].rows.filter(f=> (f.nodeLabels == p[0].node) || (f.nodeLabels == ('node ' + p[0].node)))[0];
                 p[0].attributes[att] = {};
+                console.log('root', root);
                 let scale = calculatedScales.filter(f=> f.field == att)[0].yScale;
                 p[0].attributes[att].scaleVal =  scale(root.estimate);
                 p[0].attributes[att].scaledLow =  scale(root.lowerCI95);

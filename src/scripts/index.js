@@ -42,7 +42,10 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
         'island' : await loadData(d3.json, './public/data/anolis-island-res.json', 'discrete'),
         'SVL' : await loadData(d3.json, './public/data/anolis-svl-res.json', 'continuous'),
         'ecomorph': await loadData(d3.json, './public/data/anolis-ecomorph-res.json', 'discrete'),
+        'PCIII_padwidth_vs_tail': await loadData(d3.json, './public/data/padwidth-vs-tail-res.json', 'continuous'),
     }
+
+    console.log('pad v tail', calculatedAtt['pad-vs-tail'])
 
     let colorKeeper = [
         ['#0dc1d1', '#c8f7fd'],
