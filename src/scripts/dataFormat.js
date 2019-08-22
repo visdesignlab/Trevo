@@ -56,17 +56,17 @@ export function matchLeaves(labels, leaves, leafChar, calculatedScales){
 
     return leaves.map((leaf, i)=> {
       
-         leaf.label = mappedLeafLabels[i];
+        leaf.label = mappedLeafLabels[i];
         
-         let leafCharIndex = leafChar.rows.map(m=> m[""]);
+        let leafCharIndex = leafChar.rows.map(m=> m[""]);
      
-         leaf.node = leaf.V2;
-         let keys = calculatedScales.map(m=> m.field);
-         let attr = {};
+        leaf.node = leaf.V2;
+        let keys = calculatedScales.map(m=> m.field);
+        let attr = {};
          
-         let chosenOne = leafChar.rows[leafCharIndex.indexOf(leaf.label)];
+        let chosenOne = leafChar.rows[leafCharIndex.indexOf(leaf.label)];
  
-         keys.forEach((k)=> {
+        keys.forEach((k)=> {
              let scaleOb = calculatedScales.filter(f=> f.field == k)[0];
             
              if(scaleOb.type === 'discrete'){
@@ -75,7 +75,6 @@ export function matchLeaves(labels, leaves, leafChar, calculatedScales){
                      let value = (state === chosenOne[k])? 1 : 0;
                      return {'state': state,  scaleVal: thisScale(value), realVal: value};
                  });
-             
                  //let states = {'state': leafChar.rows[i][k],  scaleVal: thisScale(1), realVal: 1}
                  attr[k] = {'states': states, 'label': k, 'type': scaleOb.type, leaf: true};
              }else if(scaleOb.type === 'continuous'){
@@ -135,11 +134,11 @@ export function normPaths(paths, calculatedAtt, calculatedScales){
             if(calculatedAtt[att].type == 'continuous'){
                 let root = calculatedAtt[att].rows.filter(f=> (f.nodeLabels == p[0].node) || (f.nodeLabels == ('node ' + p[0].node)))[0];
                 p[0].attributes[att] = {};
-                console.log('root', root);
+                
                 let scale = calculatedScales.filter(f=> f.field == att)[0].yScale;
-                p[0].attributes[att].scaleVal =  scale(root.estimate);
-                p[0].attributes[att].scaledLow =  scale(root.lowerCI95);
-                p[0].attributes[att].scaledHigh =  scale(root.upperCI95);
+             //   p[0].attributes[att].scaleVal =  scale(root.estimate);
+             //   p[0].attributes[att].scaledLow =  scale(root.lowerCI95);
+             //   p[0].attributes[att].scaledHigh =  scale(root.upperCI95);
                 p[0].attributes[att].realVal = root.estimate;
                 p[0].attributes[att].upperCI95 = root.upperCI95;
                 p[0].attributes[att].lowerCI95 = root.lowerCI95;

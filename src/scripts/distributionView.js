@@ -18,8 +18,6 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
     let newNormed = [...pathData];
     let keysToHide = attrHide.length > 0 ? scales.filter(f=> attrHide.indexOf(f.field) === -1).map(m=> m.field) : null;
 
-   
-
     formatAttributeData(newNormed, scales, keysToHide);
 
     let maxBranch = d3.max(newNormed.map(p=> p.length)) - 1;
@@ -56,7 +54,7 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
                     return d.attributes[key];
                 })
             }else{
-                bin.fData = bin.data = [];
+                bin.fData = [];
             }
             return {'data': bin.fData, 'range': [bin.base, bin.top], 'index': bin.binI, 'key': key };
         });
@@ -65,9 +63,12 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
         let leafData = {'data': leafAttr}
    
         if(scale.type === 'continuous'){
-            let max = d3.max(mapNorm.flatMap(m=> m.data).map(v=> v.realVal));
-            let min = d3.min(mapNorm.flatMap(m=> m.data).map(v=> v.realVal));
-            let x = d3.scaleLinear().domain([min, max]).range([0, height]);
+            console.log('mapped norm',mapNorm, scale.max, scale.min)
+            
+           // let max = d3.max(mapNorm.flatMap(m=> m.data).map(v=> v.realVal));
+           // let min = d3.min(mapNorm.flatMap(m=> m.data).map(v=> v.realVal));
+           
+            let x = d3.scaleLinear().domain([scale.min, scale.max]).range([0, height]);
     
             let histogram = d3.histogram()
             .value(function(d) { return d.realVal; })  
@@ -77,7 +78,9 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
             mapNorm.forEach(n=> {
                 n.type = scale.type;
                 n.bins = histogram(n.data);
-                n.domain = [max, min]
+                console.log('bins', n.bins)
+                //n.domain = [max, min];
+                n.domain = [scale.max, scale.min];
                 return n;
             });
 
@@ -195,13 +198,13 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
 
     var lineGen = d3.area()
     .curve(d3.curveCardinal)
-    .x((d, i)=> {
-        let y = d3.scaleLinear().domain([0, 16]).range([0, height]);
+    .x((d, i, n)=> {
+        console.log('d in sx gen', d, n, height)
+        let y = d3.scaleLinear().domain([0, n.length - 1]).range([0, height]).clamp(true);
         return y(i); 
     })
     .y0(d=> {
-        let x = d3.scaleLinear().domain([0, 50]).range([0, 80]).clamp(true);
-        return x(0);
+        return 0;
     })
     .y1(d=> {
         let dat = Object.keys(d).length - 1
