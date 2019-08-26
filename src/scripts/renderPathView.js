@@ -484,7 +484,8 @@ export function drawDiscreteAtt(predictedAttrGrps, moveMetric, collapsed, bars){
         endStateDot.append('text').text(d=> d.winState).attr('transform', 'translate(20, 5)').style('font-size', 10);
 
     }else{
-
+        attributeNodesDisc.filter((att, i)=> {
+            return att[0] != undefined;}).append('rect').attr('height', attributeHeight).attr('width', 20).attr('fill', '#fff')
         let stateBars = attributeNodesDisc.filter((att, i)=> att[0] != undefined).selectAll('.dis-rect').data(d=> {
             return d;
         }).join('rect').classed('dis-rect', true);
@@ -496,6 +497,7 @@ export function drawDiscreteAtt(predictedAttrGrps, moveMetric, collapsed, bars){
         });
 
         stateBars.attr('fill', (d, i)=> d.color);
+        stateBars.attr('opacity', '0.7');
         stateBars.attr('stroke', '#fff');
         stateBars.attr('transform', (d, i, n)=> {
             let y = d3.scaleLinear().domain([0, 1]).range([0, attributeHeight]);
@@ -537,6 +539,8 @@ export function drawDiscreteAtt(predictedAttrGrps, moveMetric, collapsed, bars){
         endStateDot.append('circle').attr('cx', 10).attr('cy', 2).attr('r', 7).style('fill', d=> {
            return d.color;
         });
+
+        endStateDot.append('text').text(d=> d.winState).attr('transform', 'translate(20, 5)').style('font-size', 10);
 
     }
 
