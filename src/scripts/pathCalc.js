@@ -20,6 +20,44 @@ export function getNested(node, edgeArray){
     return node;
 }
 
+export function calculateMovingAverage(data, i) {
+
+    if (movingAverage === 0) {
+        return data[i][yValue];
+    }
+
+    var count = Math.min(movingAverage, i + 1),
+        first = i + 1 - count;
+
+    var sum = 0;
+    for (var index = first; index <= i; ++index) {
+        var x = data[index][yValue];
+        sum += x;
+    }
+
+    return sum / count;
+};
+
+export function calculateMovingStandardDeviation(data, i, avg) {
+
+    if (movingAverage === 0) {
+        return 0;
+    }
+
+    var count = Math.min(movingAverage, i + 1),
+        first = i + 1 - count;
+
+    var sum = 0;
+    for (var index = first; index <= i; ++index) {
+        var x = data[index][yValue];
+        var dx = x - avg;
+        sum += (dx * dx);
+    }
+
+    var variance = sum / count;
+    return Math.sqrt(variance);
+};
+
 /**
  * 
  * @param {array of all graph edges} edgeArray 

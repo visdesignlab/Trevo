@@ -29,7 +29,7 @@ export function drawPathsAndAttributes(pathData, main, calculatedScales, moveMet
     pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (attrMove + 1))) +')');
     
     let cGroups = drawContAtt(predictedAttrGrps, moveMetric, collapsed);
-    let dGroups = drawDiscreteAtt(predictedAttrGrps, calculatedScales, moveMetric, collapsed);
+    let dGroups = drawDiscreteAtt(predictedAttrGrps, moveMetric, collapsed, false);
     sizeAndMove(main.select('#main-path-view'), attributeWrapper, pathData, (attrMove * attributeHeight));
 
     console.log('state leaf', d3.selectAll('.discrete-leaf'));
@@ -141,7 +141,6 @@ export function renderPaths(pathData, main, scales, moveMetric){
     });
 
     /////////
-
     pathGroups.on('mouseover', function(d, i){
         let treeNode  = d3.select('#sidebar').selectAll('.node');
         let treeLinks  = d3.select('#sidebar').selectAll('.link');
@@ -247,6 +246,7 @@ export function renderPaths(pathData, main, scales, moveMetric){
 export function renderAttributes(attributeWrapper, data, scales, filterArray, collapsed){
     let attributeHeight = (collapsed === 'true')? 20 : 45;
     let predictedAttrGrps = attributeWrapper.selectAll('g').data((d, i)=> data[i]).join('g');
+    predictedAttrGrps.classed('predicated-attr-groups', true);
     predictedAttrGrps.attr('transform', (d, i) => 'translate(0, '+(i * (attributeHeight + 5))+')');
 
     let attrLabel = predictedAttrGrps.append('text').text(d=> d[d.length - 1].label);
@@ -365,11 +365,13 @@ export function drawContAtt(predictedAttrGrps, moveMetric, collapsed){
    
 }
 
-export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric, collapsed){
+export function drawDiscreteAtt(predictedAttrGrps, moveMetric, collapsed, bars){
 
     let discreteAtt = predictedAttrGrps.filter(d=> {
         return d[d.length - 1].type === 'discrete';
     });
+
+    discreteAtt.selectAll('*').remove();
 
     let attributeHeight = (collapsed === 'true')? 20 : 45;
 
@@ -441,43 +443,102 @@ export function drawDiscreteAtt(predictedAttrGrps, scales, moveMetric, collapsed
             d3.select(n[i]).select('g.y-axis').remove();
         })
 
-    let stateDots = attributeNodesDisc.filter((att, i)=> att[0] != undefined).selectAll('.dots').data(d=> {
-        return d;
-    }).join('circle').classed('dots', true);
+    if(bars === false){
+
+        let stateDots = attributeNodesDisc.filter((att, i)=> att[0] != undefined).selectAll('.dots').data(d=> {
+            return d;
+        }).join('circle').classed('dots', true);
+        
+        stateDots.attr('cx', 10).attr('cy', (d)=> {
+            let y = d3.scaleLinear().domain([0, 1]).range([attributeHeight - 2, 2]);
+            return y(d.realVal);
+        }).attr('r', 2).style('fill', d=> d.color);
     
-    stateDots.attr('cx', 10).attr('cy', (d)=> {
-        let y = d3.scaleLinear().domain([0, 1]).range([attributeHeight - 2, 2]);
-        return y(d.realVal);
-    }).attr('r', 2).style('fill', d=> d.color);
+        stateDots.filter(f=> f.realVal > 0.5).attr('r', 4);
+    
+        stateDots.on("mouseover", function(d) {
+            let tool = d3.select('#tooltip');
+            tool.transition()
+              .duration(200)
+              .style("opacity", .9);
+            let f = d3.format(".3f");
+            tool.html(d.state + ": " + f(d.realVal))
+              .style("left", (d3.event.pageX) + "px")
+              .style("top", (d3.event.pageY - 28) + "px");
+            })
+          .on("mouseout", function(d) {
+            let tool = d3.select('#tooltip');
+            tool.transition()
+              .duration(500)
+              .style("opacity", 0);
+            });
+    
+        let endStateDot = attributeNodesDisc.filter((att, i)=> {
+            return att[0] === undefined;}).classed('discrete-leaf', true);
+    
+        endStateDot.append('circle').attr('cx', 10).attr('cy', 2).attr('r', 7).style('fill', d=> {
+           return d.color;
+        });
+        ////NEED TO MAKE A FUNCTION TO ASSIGN COLOR OF STATES//////
+    
+        endStateDot.append('text').text(d=> d.winState).attr('transform', 'translate(20, 5)').style('font-size', 10);
 
-    stateDots.filter(f=> f.realVal > 0.5).attr('r', 4);
+    }else{
 
-    stateDots.on("mouseover", function(d) {
-        let tool = d3.select('#tooltip');
-        tool.transition()
-          .duration(200)
-          .style("opacity", .9);
-        let f = d3.format(".3f");
-        tool.html(d.state + ": " + f(d.realVal))
-          .style("left", (d3.event.pageX) + "px")
-          .style("top", (d3.event.pageY - 28) + "px");
-        })
-      .on("mouseout", function(d) {
-        let tool = d3.select('#tooltip');
-        tool.transition()
-          .duration(500)
-          .style("opacity", 0);
+        let stateBars = attributeNodesDisc.filter((att, i)=> att[0] != undefined).selectAll('.dis-rect').data(d=> {
+            return d;
+        }).join('rect').classed('dis-rect', true);
+
+        stateBars.attr('width', 20).attr('height', (d, i)=> {
+           // console.log('inrect', d)
+            let y = d3.scaleLinear().domain([0, 1]).range([0, attributeHeight]);
+            return y(d.realVal);
         });
 
-    let endStateDot = attributeNodesDisc.filter((att, i)=> {
-        return att[0] === undefined;}).classed('discrete-leaf', true);
+        stateBars.attr('fill', (d, i)=> d.color);
+        stateBars.attr('stroke', '#fff');
+        stateBars.attr('transform', (d, i, n)=> {
+            let y = d3.scaleLinear().domain([0, 1]).range([0, attributeHeight]);
+            let probability = d3.selectAll(n).data().sort((a, b)=> b.realVal - a.realVal);
+            let chosenIn = probability.map(p=> p.state).indexOf(d.state);
+         
+            if(chosenIn === 0){
+                    return 'translate(0,0)';
+            }else{
+                ///need to make this a reduce function///
+                let valueAdd = 0;
+                    for(let step = 0; step < chosenIn; step++){
+                        valueAdd = valueAdd + probability[step].realVal;
+                    }
+                return 'translate(0,'+(y(valueAdd))+')';
+            }
+        });
 
-    endStateDot.append('circle').attr('cx', 10).attr('cy', 2).attr('r', 7).style('fill', d=> {
-       return d.color;
-    });
-    ////NEED TO MAKE A FUNCTION TO ASSIGN COLOR OF STATES//////
+        stateBars.on("mouseover", function(d) {
+            let tool = d3.select('#tooltip');
+            tool.transition()
+              .duration(200)
+              .style("opacity", .9);
+            let f = d3.format(".3f");
+            tool.html(d.state + ": " + f(d.realVal))
+              .style("left", (d3.event.pageX) + "px")
+              .style("top", (d3.event.pageY - 28) + "px");
+            })
+          .on("mouseout", function(d) {
+            let tool = d3.select('#tooltip');
+            tool.transition()
+              .duration(500)
+              .style("opacity", 0);
+            });
+    
+        let endStateDot = attributeNodesDisc.filter((att, i)=> {
+            return att[0] === undefined;}).classed('discrete-leaf', true);
+    
+        endStateDot.append('circle').attr('cx', 10).attr('cy', 2).attr('r', 7).style('fill', d=> {
+           return d.color;
+        });
 
-    endStateDot.append('text').text(d=> d.winState).attr('transform', 'translate(20, 5)').style('font-size', 10);
+    }
 
     return attributeNodesDisc;
 }

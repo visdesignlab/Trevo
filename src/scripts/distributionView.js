@@ -63,8 +63,7 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
         let leafData = {'data': leafAttr}
    
         if(scale.type === 'continuous'){
-            console.log('mapped norm',mapNorm, scale.max, scale.min)
-            
+         
            // let max = d3.max(mapNorm.flatMap(m=> m.data).map(v=> v.realVal));
            // let min = d3.min(mapNorm.flatMap(m=> m.data).map(v=> v.realVal));
            
@@ -78,8 +77,7 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
             mapNorm.forEach(n=> {
                 n.type = scale.type;
                 n.bins = histogram(n.data);
-                console.log('bins', n.bins)
-                //n.domain = [max, min];
+               
                 n.domain = [scale.max, scale.min];
                 return n;
             });
@@ -115,7 +113,7 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
                     let chosen = n.data.flatMap(m=> m.states.filter(f=> f.state === state.state)).map(v=> v.realVal);
                     let average = d3.mean(chosen);
                     let stDev = d3.deviation(chosen);
-                    return {'state': state.state, 'average': average, 'stUp': average + stDev, 'stDown': average - stDev, 'color': color[0].color, 'range': n.range }
+                    return {'state': state.state, 'average': average, 'stDev': stDev, 'stUp': average + stDev, 'stDown': average - stDev, 'color': color[0].color, 'range': n.range }
                 });
                 
                 return n;
@@ -199,7 +197,7 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
     var lineGen = d3.area()
     .curve(d3.curveCardinal)
     .x((d, i, n)=> {
-        console.log('d in sx gen', d, n, height)
+       
         let y = d3.scaleLinear().domain([0, n.length - 1]).range([0, height]).clamp(true);
         return y(i); 
     })
@@ -276,7 +274,7 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
         let treeNode  = d3.select('#sidebar').selectAll('.node');
       
         treeNode.filter(node=> node.data.combEdge >= d.range[0] && node.data.combEdge < d.range[1]).classed('selected-branch', true);
-      //  let selectedBranch = treeNode.filter(f=> list.indexOf(f.data.node) > 0).classed('selected-branch', true);
+
     }).on('mouseout', (d, i, n)=> {
         d3.select(n[i]).select('.y-axis').remove();
         d3.selectAll(".branch-points.selected").classed('selected', false);
@@ -295,7 +293,9 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
             return y(i); 
         })
         .y0(d=> {
+            
             let x = d3.scaleLinear().domain([0, 1]).range([80, 0]).clamp(true);
+            console.log(d.stDown, x(d.stDev), x(d.average), x(d.stDown))
             return x(d.stDown);
         })
         .y1(d=> {
@@ -361,10 +361,8 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
     
 ////Observed Discrete////
     let discOb =  observedWrap.filter(f=> f.type === 'discrete');
-
     let discBars = discOb.selectAll('g.ob-bars').data(d=> {
         return d.leafData.bins}).join('g').classed('ob-bars', true);
-
     let dRects = discBars.append('rect').attr('width', (d, i, n)=> {
         let width = observedWidth / n.length;
         return width;
@@ -372,7 +370,6 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
         let y = d3.scaleLinear().domain([0, 100]).range([(height -margin), 0])
         return y(d.length)
     }).attr('fill', (d, i) => {
-       
         return d[0] != undefined ? d[0].color : '#fff';
     }).attr('opacity', 0.3);
 
@@ -383,12 +380,10 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
         return 'translate('+(movex * i)+', '+movey+')'});
 
     dRects.on('mouseover', (d, i, n)=> {
-  
         let state = d3.select('g.'+d[0].label).selectAll('g.state');
         state.filter(f=> f[0].state === d[0].winState).attr('opacity', 0.8);
         state.filter(f=> f[0].state != d[0].winState).attr('opacity', 0.1);
         d3.select(n[i]).attr('opacity', 0.9);
-        
     }).on('mouseout', (d, i, n)=> {
         d3.select(n[i]).attr('opacity', 0.3);
         let state = d3.select('g.'+d[0].label).selectAll('g.state').attr('opacity', 0.6);

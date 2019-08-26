@@ -1,8 +1,9 @@
 import '../styles/index.scss';
 import * as d3 from "d3";
-import {drawPathsAndAttributes} from './renderPathView';
+import {drawPathsAndAttributes, drawDiscreteAtt} from './renderPathView';
 import {toggleFilters, getLatestData} from './filterComponent';
 import { updateMainView } from './viewControl';
+import { collapsed } from '.';
 
 export function toolbarControl(toolbar, normedPaths, main, calculatedScales, moveMetric, pathView){
 
@@ -55,6 +56,23 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, mov
     scrunchButton.attr('value', false);
     scrunchButton.on('click', ()=> toggleScrunch(scrunchButton, main, calculatedScales));
     viewButton.on('click', ()=> togglePathView(viewButton, calculatedScales, moveMetric));
+
+    let discreteViewButton = toolbar.append('button').attr('id', 'discrete-view');
+    discreteViewButton.attr('class', 'btn btn-outline-secondary').text('Switch to Discrete Bars');
+    discreteViewButton.attr('value', false);
+    discreteViewButton.on('click', ()=> {
+        let discretePredictedGroups = d3.selectAll('.predicated-attr-groups');
+        
+        if(discreteViewButton.text() === 'Switch to Discrete Bars'){
+            discreteViewButton.text('Switch to Discrete Dots');
+            drawDiscreteAtt(discretePredictedGroups, moveMetric, collapsed, true);
+        }else{
+            discreteViewButton.text('Switch to Discrete Bars');
+            drawDiscreteAtt(discretePredictedGroups, moveMetric, collapsed, false);
+        }
+        console.log('this is clicked!');
+        
+    });
 }
 
 ////COLLAPSES THE NODES DOWN
