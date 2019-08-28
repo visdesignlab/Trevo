@@ -5,6 +5,7 @@ import {dataMaster, nestedData} from './index';
 import {filterMaster, removeFilter, addFilter} from './filterComponent';
 import { updateMainView } from './viewControl';
 import {getNested} from './pathCalc';
+import { dropDown } from './buttonComponents';
 
 
 export function buildTreeStructure(paths, edges){
@@ -93,30 +94,19 @@ export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
 
     calculatedScales.map(m=> optionArray.push(m))
 
-  let dropdiv = sidebar.append('div').classed('dropdown', true);
-  let button = dropdiv.append('button').classed('btn dropbtn btn-secondary', true).text('See Values');
-  let dropContent = dropdiv.append('div').attr('id', 'show-drop-div').classed('dropdown-content', true);
-  dropContent.append('a').text('text');
-  let options = dropContent.selectAll('a').data(optionArray).join('a').text(d=> d.field)
-
-button.on('click', (d, i, n)=> {
-   if(dropContent.classed('show')){
-       dropContent.classed('show', false);
-   }else{
-       dropContent.classed('show', true);
-   }
-});
-
-options.on('click', (d, i, n)=> {
-    if(d.type === 'discrete'){
-        renderTree(sidebar, false, d);
-    }else if(d.type === 'continuous'){
-        renderTree(sidebar, false, null);
-    }else{
-        renderTree(sidebar, false, null);
-    }
-    dropContent.classed('show', false);
-})
+ 
+    let dropOptions = dropDown(sidebar, optionArray, 'See Values','show-drop-div-sidebar');
+    dropOptions.on('click', (d, i, n)=> {
+        if(d.type === 'discrete'){
+            renderTree(sidebar, false, d);
+        }else if(d.type === 'continuous'){
+            renderTree(sidebar, false, null);
+        }else{
+            renderTree(sidebar, false, null);
+        }
+       // dropContent.classed('show', false);
+       sidebar.select('#show-drop-div-sidebar').classed('show', false);
+    });
 }
 
 function treeFilter(data, selectedNodes){

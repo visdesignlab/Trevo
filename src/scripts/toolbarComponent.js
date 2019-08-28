@@ -4,10 +4,12 @@ import {drawPathsAndAttributes, drawDiscreteAtt} from './renderPathView';
 import {toggleFilters, getLatestData} from './filterComponent';
 import { updateMainView } from './viewControl';
 import { collapsed } from '.';
+import { dropDown } from './buttonComponents';
 
 export function toolbarControl(toolbar, normedPaths, main, calculatedScales, moveMetric, pathView){
 
     let viewButton = toolbar.append('button').attr('id', 'view-toggle').attr('attr' , 'button').attr('class', 'btn btn-outline-secondary');
+    viewButton.on('click', ()=> togglePathView(viewButton, calculatedScales, moveMetric));
 
     if(pathView === 'paths'){
         viewButton.text('View Summary');
@@ -55,14 +57,20 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, mov
     scrunchButton.attr('class', 'btn btn-outline-secondary').text('Collapse Attributes');
     scrunchButton.attr('value', false);
     scrunchButton.on('click', ()=> toggleScrunch(scrunchButton, main, calculatedScales));
-    viewButton.on('click', ()=> togglePathView(viewButton, calculatedScales, moveMetric));
+   
+    let optionArray = [{'field':'None'}];
+
+    calculatedScales.map(m=> {
+        if(m.type === 'discrete'){
+            optionArray.push(m);
+        }
+    });
 
     let discreteViewButton = toolbar.append('button').attr('id', 'discrete-view');
     discreteViewButton.attr('class', 'btn btn-outline-secondary').text('Switch to Discrete Bars');
     discreteViewButton.attr('value', false);
     discreteViewButton.on('click', ()=> {
         let discretePredictedGroups = d3.selectAll('.predicated-attr-groups');
-        
         if(discreteViewButton.text() === 'Switch to Discrete Bars'){
             discreteViewButton.text('Switch to Discrete Dots');
             drawDiscreteAtt(discretePredictedGroups, moveMetric, collapsed, true);
@@ -70,8 +78,19 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, mov
             discreteViewButton.text('Switch to Discrete Bars');
             drawDiscreteAtt(discretePredictedGroups, moveMetric, collapsed, false);
         }
-        console.log('this is clicked!');
-        
+    });
+
+   let dropOptions = dropDown(toolbar, optionArray, 'Group By','show-drop-div-group');
+
+    dropOptions.on('click', (d, i, n)=> {
+        if(d.type === 'discrete'){
+         
+        }else if(d.type === 'continuous'){
+          
+        }else{
+           
+        }
+        toolbar.select('#show-drop-div-group').classed('show', false);
     });
 }
 
