@@ -277,12 +277,12 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
         selectedGroups.attr('transform', (d, i) => 'translate(10,' + (i * ((attributeHeight + 5) * (Object.keys(d[1].attributes).length + 1))) + ')');
 
         drawContAtt(attributeGroups);
-        drawDiscreteAtt(attributeGroups, scales);
+        drawDiscreteAtt(attributeGroups, scales, false, false);
 
         //sizeAndMove(svg, attributeWrapper, pathData, (attrMove * attributeHeight));
         //tranforming elements
-        svg.style('height', '250px');
-        selectedDiv.style('height', ((pathData.length + attributeGroups.data().map(m => m[0]).length) * 45) + 50 + 'px');
+        svg.style('height', ((pathData.length + attributeGroups.data().map(m => m[0]).length) * 50) + 50 + 'px');
+        selectedDiv.style('height', ((pathData.length + attributeGroups.data().map(m => m[0]).length) * 50) + 50 + 'px');
         attributeWrapper.attr('transform', (d) => 'translate(140, 25)');
         d3.selectAll('.selected-path').classed('selected-path', false);
 
@@ -494,7 +494,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
 
         valueBars.attr('opacity', 0.4);
 
-        let disGroups = drawDiscreteAtt(dataGroups, moveMetric, collapsed);
+        let disGroups = drawDiscreteAtt(dataGroups, moveMetric, collapsed, false);
         disGroups.selectAll('.dots').style('opacity', 0.4);
 
         let disLeaves = disGroups.filter(d=> d.leaf === true);

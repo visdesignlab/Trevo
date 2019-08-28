@@ -355,10 +355,23 @@ export function drawContAtt(predictedAttrGrps, moveMetric, collapsed){
         let y = d.yScale;
         y.range([0, attributeHeight]);
         d3.select(n[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(5));
+        let tool = d3.select('#tooltip');
+        tool.transition()
+          .duration(200)
+          .style("opacity", .9);
+        let f = d3.format(".3f");
+        tool.html('mean: '+f(d.realVal) +"</br>"+"</br>"+ 'upperCI: '+ f(d.upperCI95) +"</br>"+"</br>"+ 'lowerCI: '+ f(d.lowerCI95))
+          .style("left", (d3.event.pageX) + "px")
+          .style("top", (d3.event.pageY - 28) + "px");
+        tool.style('height', 'auto');
        
     }).on('mouseout', (d, i, n)=> {
         d3.select(n[i]).select('g.y-axis')
         d3.select(n[i]).select('g.y-axis').remove();
+        let tool = d3.select('#tooltip');
+        tool.transition()
+          .duration(500)
+          .style("opacity", 0);
     });
 
     return attributeNodesCont;

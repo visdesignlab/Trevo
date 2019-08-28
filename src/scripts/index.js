@@ -34,7 +34,16 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     let edgeSource = edges.rows.map(d=> d.V1);
     let leaves = edges.rows.filter(f=> edgeSource.indexOf(f.V2) == -1 );
     let leafChar = await loadData(d3.json, './public/data/anolisLeafChar.json', '');
+    let leafChar2 = await loadData(d3.csv, './public/data/anolisDataNew.csv', '');
     let labels = await loadData(d3.json, './public/data/anolis-labels.json', '');
+
+// console.log('new attribute data',leafChar, leafChar2)
+  //  console.log(Object.entries(leafChar2).filter(en=> en[0] != 'columns' && en[0] != 'type'));
+    let rows = Object.entries(leafChar2).filter(en=> en[0] != 'columns' && en[0] != 'type');
+    
+ //   let leafChar = {'rows': rows.map(m=> m[1]), 'type': leafChar2.type, 'fields': leafChar2.columns};
+
+   // console.log(leafChar, leafCharNew);
 
     ///MAKE A ESTIMATED SCALES THING
     let calculatedAtt = {
@@ -45,7 +54,7 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
         'PCIII_padwidth_vs_tail': await loadData(d3.json, './public/data/padwidth-vs-tail-res.json', 'continuous'),
     }
 
-    console.log('pad v tail', calculatedAtt['pad-vs-tail'])
+    console.log('pad v tail', calculatedAtt['PCIII_padwidth_vs_tail'])
 
     let colorKeeper = [
         ['#0dc1d1', '#c8f7fd'],
