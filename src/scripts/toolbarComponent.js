@@ -1,10 +1,11 @@
 import '../styles/index.scss';
 import * as d3 from "d3";
-import {drawPathsAndAttributes, drawDiscreteAtt} from './renderPathView';
+import {drawPathsAndAttributes, drawDiscreteAtt, drawGroups} from './renderPathView';
 import {toggleFilters, getLatestData} from './filterComponent';
 import { updateMainView } from './viewControl';
 import { collapsed } from '.';
 import { dropDown } from './buttonComponents';
+
 
 export function toolbarControl(toolbar, normedPaths, main, calculatedScales, moveMetric, pathView){
 
@@ -94,7 +95,8 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, mov
                         return node[0].attributes[state.field].winState === state.state;
                 });
             });
-           console.log('states', stateBins);
+           d3.select('#main').selectAll('*').remove();
+           drawGroups(stateBins);
         }else{
             console.error('THIS HAS TO BE DISCRETE');
         }

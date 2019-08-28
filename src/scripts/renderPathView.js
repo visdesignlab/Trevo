@@ -92,6 +92,7 @@ export function renderPaths(pathData, main, scales, moveMetric){
     /////Rendering ///////
     let svgTest = main.select('#main-path-view');
     let svg = svgTest.empty() ? main.append('svg').attr('id', 'main-path-view') : svgTest;
+    
     let nodeTooltipFlag = false;
 
     let pathWrapTest = svg.select('.path-wrapper');
@@ -376,6 +377,21 @@ export function drawContAtt(predictedAttrGrps, moveMetric, collapsed){
 
     return attributeNodesCont;
    
+}
+export function drawGroups(stateBins){
+    console.log(stateBins);
+    let height = 50;
+    let main = d3.select('#main');
+    
+    let svgTest = main.select('#main-path-view');
+    let svg = svgTest.empty() ? main.append('svg').attr('id', 'main-path-view') : svgTest;
+    svg.selectAll('*').remove();
+
+    let wrappers = svg.selectAll('.grouped').data(stateBins).join('g').classed('grouped', true);
+    wrappers.attr('transform', (d, i)=> 'translate(0,'+((i * height)+ 20)+')');
+    let wrapRect = wrappers.append('rect').attr('width', 1000);
+    wrapRect.attr('height', height);
+
 }
 
 export function drawDiscreteAtt(predictedAttrGrps, moveMetric, collapsed, bars){

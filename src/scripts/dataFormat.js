@@ -59,7 +59,7 @@ export function matchLeaves(labels, leaves, leafChar, calculatedScales){
         leaf.label = mappedLeafLabels[i];
         
         //let leafCharIndex = leafChar.rows.map(m=> m[""]);
-       // console.log(leafChar)
+      
         let leafCharIndex = leafChar.rows[0][""] ? leafChar.rows.map(m=> m[""]) : leafChar.rows.map(m=> m["species"]);
      console.log('leaf char index',leafCharIndex)
         leaf.node = leaf.V2;
