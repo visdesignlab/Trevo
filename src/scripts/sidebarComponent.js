@@ -94,7 +94,6 @@ export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
 
     calculatedScales.map(m=> optionArray.push(m))
 
- 
     let dropOptions = dropDown(sidebar, optionArray, 'See Values','show-drop-div-sidebar');
     dropOptions.on('click', (d, i, n)=> {
         if(d.type === 'discrete'){
@@ -104,7 +103,6 @@ export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
         }else{
             renderTree(sidebar, false, null);
         }
-       // dropContent.classed('show', false);
        sidebar.select('#show-drop-div-sidebar').classed('show', false);
     });
 }

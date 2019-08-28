@@ -57,14 +57,6 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, mov
     scrunchButton.attr('class', 'btn btn-outline-secondary').text('Collapse Attributes');
     scrunchButton.attr('value', false);
     scrunchButton.on('click', ()=> toggleScrunch(scrunchButton, main, calculatedScales));
-   
-    let optionArray = [{'field':'None'}];
-
-    calculatedScales.map(m=> {
-        if(m.type === 'discrete'){
-            optionArray.push(m);
-        }
-    });
 
     let discreteViewButton = toolbar.append('button').attr('id', 'discrete-view');
     discreteViewButton.attr('class', 'btn btn-outline-secondary').text('Switch to Discrete Bars');
@@ -80,15 +72,31 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, mov
         }
     });
 
-   let dropOptions = dropDown(toolbar, optionArray, 'Group By','show-drop-div-group');
+    let optionArray = [{'field':'None'}];
+
+    calculatedScales.map(m=> {
+        if(m.type === 'discrete'){
+            optionArray.push(m);
+        }
+    });
+
+    let dropOptions = dropDown(toolbar, optionArray, 'Group By','show-drop-div-group');
 
     dropOptions.on('click', (d, i, n)=> {
         if(d.type === 'discrete'){
-         
-        }else if(d.type === 'continuous'){
-          
-        }else{
+            let data = getLatestData();
+            let stateBins = d.scales.map(m=> {
+                return {'field': m.field, 'state': m.scaleName, 'data': []}});
            
+            stateBins.map(state=> {
+               state.data = data.filter(paths=> {
+                    let node = paths.filter(no=> no.leaf === true);
+                        return node[0].attributes[state.field].winState === state.state;
+                });
+            });
+           console.log('states', stateBins);
+        }else{
+            console.error('THIS HAS TO BE DISCRETE');
         }
         toolbar.select('#show-drop-div-group').classed('show', false);
     });
