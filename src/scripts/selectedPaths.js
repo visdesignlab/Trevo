@@ -264,7 +264,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
 
             let nearestA = nearest[0];
             let nearestB = nearest[1];
-            console.log(nearestA, nearestB)
+            //console.log(nearestA, nearestB)
         });
 
         //////PLAYING WITH FUNCTION TO CALULATE DISTANCES
@@ -343,7 +343,6 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
 
         let pathBars = selectedGroups.append('rect').classed('path-rect', true);
         pathBars.attr('y', -8);
-
 
         //////////
         ///Selecting species
@@ -446,9 +445,10 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
 
         let attData = formatAttributeData(pathData, scales, attrFilter);
         let attDataComb = attData[0].map((att, i)=> {
+            
             let species = pathData[0].filter(f=> f.leaf === true)[0].label;
             att[att.length - 1].offset = 0;
-            let attribute = {'label': att[att.length-1].label, 'data': [{'species': species, 'paths': att}]}
+            let attribute = {'label': att[att.length-1].label, 'type':att[att.length-1].type, 'data': [{'species': species, 'paths': att}]}
           
             for(let index = 1; index < attData.length; index++ ){
                 let species = pathData[index].filter(f=> f.leaf === true)[0].label;
@@ -460,8 +460,40 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
         })
 
      
-        let attGroups = attWrap.selectAll('g').data(attDataComb).join('g').classed('attr', true);
 
+        let discreteTest = attDataComb.filter(f=> f.type == 'discrete');
+
+        function findMaxState(states){
+            let maxP = d3.max(states.map(v=> v.realVal));
+    
+            return states[states.map(m=> m.realVal).indexOf(maxP)]
+        }
+
+       let mappedDis = discreteTest.map(dis=> {
+           return dis.data.map(spec=> {
+               return spec.paths.map(m=> {
+                if(m.states){
+                    console.log('leaf', m);
+                }
+                let maxProb = m.states? {'realValue': 1.0, 'state': m.winState, 'color':m.color} : findMaxState(m); 
+           
+                return maxProb});
+           });
+       });
+
+       console.log('mapped dis', mappedDis)
+
+       let attGroups = attWrap.selectAll('g').data(mappedDis).join('g').classed('attr', true);
+       attGroups.attr('transform', (d, i) => 'translate(140,' + (32+ (mappedDis.length*20) + (i * (attributeHeight + 5))) + ')');
+
+       let wrapRect = attGroups.append('rect').attr('width', 1000);
+       wrapRect.attr('height', attributeHeight);
+       wrapRect.style('fill', '#fff');
+       wrapRect.style('stroke', 'red');
+    // ---------------- ADJUST DATA HERE--------------
+    
+       // let attGroups = attWrap.selectAll('g').data(attDataComb).join('g').classed('attr', true);
+/*
         attGroups.attr('transform', (d, i) => 'translate(140,' + (32+ (pathData.length*20) + (i * (attributeHeight + 5))) + ')');
         
         let dataGroups = attGroups.selectAll('g.path-grp').data((d, i)=> {
@@ -495,6 +527,13 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
         valueBars.attr('opacity', 0.4);
 
         let disGroups = drawDiscreteAtt(dataGroups, moveMetric, collapsed, false);
+
+        let discreteAtt = dataGroups.filter(d=> {
+            return d[d.length - 1].type === 'discrete';
+        });
+
+      
+
         disGroups.selectAll('.dots').style('opacity', 0.4);
 
         let disLeaves = disGroups.filter(d=> d.leaf === true);
@@ -567,6 +606,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
             });
             same.classed('same', true);
         });
+        */
 
         return commonNodeStart;
 

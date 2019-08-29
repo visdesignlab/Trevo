@@ -295,7 +295,7 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
         .y0(d=> {
             
             let x = d3.scaleLinear().domain([0, 1]).range([80, 0]).clamp(true);
-            console.log(d.stDown, x(d.stDev), x(d.average), x(d.stDown))
+        
             return x(d.stDown);
         })
         .y1(d=> {

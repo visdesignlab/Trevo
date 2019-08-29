@@ -32,7 +32,7 @@ export function drawPathsAndAttributes(pathData, main, calculatedScales, moveMet
     let dGroups = drawDiscreteAtt(predictedAttrGrps, moveMetric, collapsed, false);
     sizeAndMove(main.select('#main-path-view'), attributeWrapper, pathData, (attrMove * attributeHeight));
 
-    console.log('state leaf', d3.selectAll('.discrete-leaf'));
+
 
     let leafStates = d3.selectAll('.discrete-leaf');
     leafStates.on('click', (d, i)=> {
@@ -379,7 +379,7 @@ export function drawContAtt(predictedAttrGrps, moveMetric, collapsed){
    
 }
 export function drawGroups(stateBins){
-    console.log(stateBins);
+   
     let height = 100;
     let main = d3.select('#main');
     
@@ -537,7 +537,7 @@ export function drawDiscreteAtt(predictedAttrGrps, moveMetric, collapsed, bars){
         }).join('rect').classed('dis-rect', true);
 
         stateBars.attr('width', 20).attr('height', (d, i)=> {
-           // console.log('inrect', d)
+         
             let y = d3.scaleLinear().domain([0, 1]).range([0, attributeHeight]);
             return y(d.realVal);
         });
