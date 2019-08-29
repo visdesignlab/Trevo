@@ -380,17 +380,34 @@ export function drawContAtt(predictedAttrGrps, moveMetric, collapsed){
 }
 export function drawGroups(stateBins){
     console.log(stateBins);
-    let height = 50;
+    let height = 100;
     let main = d3.select('#main');
     
     let svgTest = main.select('#main-path-view');
     let svg = svgTest.empty() ? main.append('svg').attr('id', 'main-path-view') : svgTest;
     svg.selectAll('*').remove();
 
+    svg.attr('height', (stateBins.length * (height + 20)));
+    svg.append('g').attr('transform', 'translate(500, 20)').append('text').text(stateBins[0].field)
     let wrappers = svg.selectAll('.grouped').data(stateBins).join('g').classed('grouped', true);
-    wrappers.attr('transform', (d, i)=> 'translate(0,'+((i * height)+ 20)+')');
+    wrappers.attr('transform', (d, i)=> 'translate(10,'+((i * (height+10))+ 50)+')');
+
     let wrapRect = wrappers.append('rect').attr('width', 1000);
     wrapRect.attr('height', height);
+    wrapRect.style('fill', '#fff');
+    wrapRect.style('stroke', 'red');
+
+    let groupLabels = wrappers.append('text').text((d, i)=> d.state);
+    groupLabels.attr('transform', (d, i)=> 'translate(90, '+((height/2)+ 5)+')');
+    groupLabels.style('text-anchor', 'end');
+
+    let innerGroup = wrappers.append('g').classed('inner-wrap', true);
+    innerGroup.attr('transform', (d,i)=> 'translate(100, 0)');
+
+    let innerWrapRect = innerGroup.append('rect').attr('width', 900);
+    innerWrapRect.attr('height', height);
+    innerWrapRect.style('fill', '#fff');
+    innerWrapRect.style('stroke', 'red');
 
 }
 
