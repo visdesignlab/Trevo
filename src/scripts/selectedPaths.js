@@ -465,8 +465,11 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
 
         function findMaxState(states){
             let maxP = d3.max(states.map(v=> v.realVal));
+            let notMax = states.filter(f=> f.realVal != maxP);
+            let winState = states[states.map(m=> m.realVal).indexOf(maxP)]
+            winState.other = notMax;
     
-            return states[states.map(m=> m.realVal).indexOf(maxP)]
+            return winState;
         }
 
        let mappedDis = discreteTest.map(dis=> {
@@ -490,6 +493,12 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
        wrapRect.attr('height', attributeHeight);
        wrapRect.style('fill', '#fff');
        wrapRect.style('stroke', 'red');
+
+       let speciesGrp = attGroups.selectAll('g').data(d=> d).join('g').classed('species', true);
+
+       speciesGrp.selectAll('.branch').data(d=>d).join('g').classed('branch', true);
+
+
     // ---------------- ADJUST DATA HERE--------------
     
        // let attGroups = attWrap.selectAll('g').data(attDataComb).join('g').classed('attr', true);
