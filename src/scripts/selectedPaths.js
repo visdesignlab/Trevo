@@ -362,7 +362,6 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
         });
 
         /////////
-
         let timelines = selectedGroups.append('g').classed('time-line', true);
         timelines.attr('transform', (d, i) => 'translate(150, 0)');
 
@@ -553,10 +552,19 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
             let y = d3.scaleLinear().domain([1, 0]);
             y.range([0, attributeHeight]);
             d3.select(n[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(3));
+            if(d.other){
+                let circ = d3.select(n[i]).selectAll('.other').data(d=> d.other).join('circle').classed('other', true);
+                circ.attr('r', 4).attr('cx', 5).attr('cy', (c, i)=> {
+                    return y(c.realVal);
+                }).attr('fill', (c)=> c.color);
+            }
         }).on('mouseout', (d, i, n)=> {
             d3.select(n[i]).select('g.y-axis')
             d3.select(n[i]).select('g.y-axis').remove();
+            d3.selectAll('.other').remove();
         });
+
+
 
 
     // ---------------- ADJUST DATA HERE--------------
