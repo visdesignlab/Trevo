@@ -484,6 +484,11 @@ g.node.low circle{
   z-index: 3000;
 }
 
+path.selected{
+  stroke-width:2px !important;
+  stroke:red !important;
+}
+
 .x-icon{
   padding:3px;
   color:gray;

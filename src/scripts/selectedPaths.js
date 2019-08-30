@@ -459,44 +459,104 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
             return attribute;
         })
 
-     
-
         let discreteTest = attDataComb.filter(f=> f.type == 'discrete');
 
-        function findMaxState(states){
+        function findMaxState(states, offset){
             let maxP = d3.max(states.map(v=> v.realVal));
             let notMax = states.filter(f=> f.realVal != maxP);
             let winState = states[states.map(m=> m.realVal).indexOf(maxP)]
             winState.other = notMax;
+            winState.offset = offset;
     
             return winState;
         }
 
        let mappedDis = discreteTest.map(dis=> {
-           return dis.data.map(spec=> {
+           return dis.data.map((spec, i)=> {
                return spec.paths.map(m=> {
-                if(m.states){
-                    console.log('leaf', m);
-                }
-                let maxProb = m.states? {'realValue': 1.0, 'state': m.winState, 'color':m.color} : findMaxState(m); 
-           
+                let offset = 5 * i;
+                let maxProb = m.states? {'realVal': 1.0, 'state': m.winState, 'color':m.color, 'edgeMove': m.edgeMove, 'offset':m.offset} : findMaxState(m, offset); 
                 return maxProb});
            });
        });
 
-       console.log('mapped dis', mappedDis)
-
        let attGroups = attWrap.selectAll('g').data(mappedDis).join('g').classed('attr', true);
        attGroups.attr('transform', (d, i) => 'translate(140,' + (32+ (mappedDis.length*20) + (i * (attributeHeight + 5))) + ')');
 
-       let wrapRect = attGroups.append('rect').attr('width', 1000);
+       let wrapRect = attGroups.append('rect').attr('width', 1010);
        wrapRect.attr('height', attributeHeight);
        wrapRect.style('fill', '#fff');
-       wrapRect.style('stroke', 'red');
+       wrapRect.style('stroke', 'gray');
+       wrapRect.style('opacity', 0.5);
+
+       attGroups.append('line').classed('half', true).attr('x1', 0).attr('y1', 22).attr('x2', 1010).attr('y2', 22);
 
        let speciesGrp = attGroups.selectAll('g').data(d=> d).join('g').classed('species', true);
 
-       speciesGrp.selectAll('.branch').data(d=>d).join('g').classed('branch', true);
+       let lineGen = d3.line()
+       .x(d=> {
+           let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
+           let distance = d.edgeMove;
+          
+           return x(distance);})
+       .y(d=> {
+           let y = d3.scaleLinear().domain([0, 1]).range([attributeHeight-2, 1]);
+           return y(d.realVal) + d.offset;
+       });
+   
+       let innerStatePaths = speciesGrp.append('path')
+       .attr("d", lineGen)
+    //   .attr("class", (d, i)=> d[0].species + " inner-line")
+       .style('stroke-width', 0.7)
+       .style('fill', 'none')
+       .style('stroke', 'gray');
+
+       innerStatePaths.on('mouseover', (d, i, n)=> {
+           d3.select(n[i]).classed('selected', true);
+       }).on('mouseout', (d, i, n)=> {
+            d3.select(n[i]).classed('selected', false);
+       })
+
+       let branchGrp = speciesGrp.selectAll('.branch').data(d=>d).join('g').classed('branch', true);
+
+       branchGrp.attr('transform', (d)=> {
+        let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
+            let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove);
+            return 'translate('+distance+', 0)';
+        });
+
+        let bCirc = branchGrp.append('circle').attr('r', 5).attr('cy', (d, i)=> {
+            let y = d3.scaleLinear().domain([0, 1]).range([attributeHeight - 2, 2]);
+            return y(d.realVal) + d.offset;
+        }).attr('cx', 5);
+
+        bCirc.attr('fill', (d, i)=> d.color);
+        bCirc.on("mouseover", function(d) {
+            let tool = d3.select('#tooltip');
+            tool.transition()
+              .duration(200)
+              .style("opacity", .9);
+            let f = d3.format(".3f");
+            tool.html(d.state + ": " + f(d.realVal))
+              .style("left", (d3.event.pageX) + "px")
+              .style("top", (d3.event.pageY - 28) + "px");
+            })
+          .on("mouseout", function(d) {
+            let tool = d3.select('#tooltip');
+            tool.transition()
+              .duration(500)
+              .style("opacity", 0);
+            });
+
+        /////AXIS ON HOVER////
+        branchGrp.on('mouseover', (d, i, n)=> {
+            let y = d3.scaleLinear().domain([1, 0]);
+            y.range([0, attributeHeight]);
+            d3.select(n[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(3));
+        }).on('mouseout', (d, i, n)=> {
+            d3.select(n[i]).select('g.y-axis')
+            d3.select(n[i]).select('g.y-axis').remove();
+        });
 
 
     // ---------------- ADJUST DATA HERE--------------
