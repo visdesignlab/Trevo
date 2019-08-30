@@ -193,7 +193,6 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
         });
 
         /////////
-
         selectedGroups.on('mouseover', function(d, i) {
             let treeNode = d3.select('#sidebar').selectAll('.node');
             let treeLinks = d3.select('#sidebar').selectAll('.link');
@@ -444,7 +443,6 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
 
         let attData = formatAttributeData(pathData, scales, attrFilter);
         let attDataComb = attData[0].map((att, i)=> {
-            
             let species = pathData[0].filter(f=> f.leaf === true)[0].label;
             att[att.length - 1].offset = 0;
             let attribute = {'label': att[att.length-1].label, 'type':att[att.length-1].type, 'data': [{'species': species, 'paths': att}]}
@@ -458,8 +456,6 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
             return attribute;
         })
 
-        let discreteTest = attDataComb.filter(f=> f.type == 'discrete');
-
         function findMaxState(states, offset){
             let maxP = d3.max(states.map(v=> v.realVal));
             let notMax = states.filter(f=> f.realVal != maxP);
@@ -470,17 +466,32 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
             return winState;
         }
 
-       let mappedDis = discreteTest.map(dis=> {
-           return dis.data.map((spec, i)=> {
-               return spec.paths.map(m=> {
-                let offset = 5 * i;
-                let maxProb = m.states? {'realVal': 1.0, 'state': m.winState, 'color':m.color, 'edgeMove': m.edgeMove, 'offset':m.offset} : findMaxState(m, offset); 
-                return maxProb});
+       let mappedDis = attDataComb.map(dis=> {
+           dis.data = dis.data.map((spec, i)=> {
+               spec.paths = spec.paths.map(m=> {
+                if(dis.type === 'discrete'){
+                    let offset = 5 * i;
+                    let maxProb = m.states? {'realVal': 1.0, 'state': m.winState, 'color':m.color, 'edgeMove': m.edgeMove, 'offset':m.offset} : findMaxState(m, offset); 
+                    return maxProb;
+                }else{
+
+                    //need to finish the continuous 
+                    return {}
+                }
+            });
+            return spec;
            });
+           return dis;
        });
+
+       console.log(mappedDis)
 
        let attGroups = attWrap.selectAll('g').data(mappedDis).join('g').classed('attr', true);
        attGroups.attr('transform', (d, i) => 'translate(140,' + (32+ (mappedDis.length*20) + (i * (attributeHeight + 5))) + ')');
+
+      // console.log('attr groups', attGroups.data());
+       attGroups.append('text').text(d=> {
+        return d.label}).style('text-anchor', 'end');
 
        let wrapRect = attGroups.append('rect').attr('width', 1010);
        wrapRect.attr('height', attributeHeight);
@@ -489,21 +500,32 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
        wrapRect.style('opacity', 0.5);
 
        attGroups.append('line').classed('half', true).attr('x1', 0).attr('y1', 22).attr('x2', 1010).attr('y2', 22);
-
-       let speciesGrp = attGroups.selectAll('g').data(d=> d).join('g').classed('species', true);
+     
+       let speciesGrp = attGroups.selectAll('g').data(d=> {
+          
+            d.data = d.data.map(m=> {
+                m.type = d.type;
+                return m;
+            });
+            return d.data;
+        }).join('g').classed('species', true);
 
        let lineGen = d3.line()
        .x(d=> {
            let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
            let distance = d.edgeMove;
-          
            return x(distance);})
        .y(d=> {
            let y = d3.scaleLinear().domain([0, 1]).range([attributeHeight-2, 1]);
            return y(d.realVal) + d.offset;
        });
+
+       let disGroup = speciesGrp.filter(sp=> {
+           console.log('species',sp);
+           return sp.type === 'discrete';
+       });
    
-       let innerStatePaths = speciesGrp.append('path')
+       let innerStatePaths = disGroup.append('path')
        .attr("d", lineGen)
     //   .attr("class", (d, i)=> d[0].species + " inner-line")
        .style('stroke-width', 0.7)
@@ -514,7 +536,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
            d3.select(n[i]).classed('selected', true);
        }).on('mouseout', (d, i, n)=> {
             d3.select(n[i]).classed('selected', false);
-       })
+       });
 
        let branchGrp = speciesGrp.selectAll('.branch').data(d=>d).join('g').classed('branch', true);
 
@@ -537,7 +559,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
               .style("opacity", .9);
             let f = d3.format(".3f");
             tool.html(d.state + ": " + f(d.realVal))
-              .style("left", (d3.event.pageX) + "px")
+              .style("left", (d3.event.pageX + 10) + "px")
               .style("top", (d3.event.pageY - 28) + "px");
             })
           .on("mouseout", function(d) {
@@ -556,7 +578,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
                 let circ = d3.select(n[i]).selectAll('.other').data(d=> d.other).join('circle').classed('other', true);
                 circ.attr('r', 4).attr('cx', 5).attr('cy', (c, i)=> {
                     return y(c.realVal);
-                }).attr('fill', (c)=> c.color);
+                }).attr('fill', (c)=> c.color).style('opacity', 0.7);
             }
         }).on('mouseout', (d, i, n)=> {
             d3.select(n[i]).select('g.y-axis')
