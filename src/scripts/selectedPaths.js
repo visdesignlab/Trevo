@@ -512,6 +512,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
 
        let lineGen = d3.line()
        .x(d=> {
+           console.log(d)
            let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
            let distance = d.edgeMove;
            return x(distance);})
@@ -526,7 +527,9 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
        });
    
        let innerStatePaths = disGroup.append('path')
-       .attr("d", lineGen)
+       .attr("d", d=> {
+           console.log('d', d.paths)
+           return lineGen(d.paths)})
     //   .attr("class", (d, i)=> d[0].species + " inner-line")
        .style('stroke-width', 0.7)
        .style('fill', 'none')
@@ -538,7 +541,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
             d3.select(n[i]).classed('selected', false);
        });
 
-       let branchGrp = speciesGrp.selectAll('.branch').data(d=>d).join('g').classed('branch', true);
+       let branchGrp = disGroup.selectAll('.branch').data(d=>d.paths).join('g').classed('branch', true);
 
        branchGrp.attr('transform', (d)=> {
         let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
