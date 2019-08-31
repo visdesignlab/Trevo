@@ -9,7 +9,6 @@ export let selectedPaths = [];
 
 export function pathSelected(selectedPath, otherPaths, scales, moveMetric) {
 
-
     let selectedDiv = d3.select('div#selected');
     let main = d3.select('div#main');
     if (selectedPath === null) {
@@ -110,9 +109,118 @@ export function sortOtherPaths(pathData, otherPaths, commonNode) {
     }
 
 }
+function renderSelectedTopology(commonNodeStart, svg, branchFrequency){
+
+    let selectWrap = svg.append('g').classed('select-wrap', true);
+        selectWrap.attr('transform', (d, i) => 'translate(0,20)');
+
+        ///Scales for circles ///
+        let circleScale = d3.scaleLog().range([6, 14]).domain([1, d3.max(Object.values(branchFrequency))]);
+
+        let selectedGroups = selectWrap.selectAll('.paths').data([commonNodeStart]).join('g').classed('paths', true);
+
+        let pathBars = selectedGroups.append('rect').classed('path-rect', true);
+        pathBars.attr('y', -8);
+
+        //////////
+        ///Selecting species
+        /////////
+        let pathRemove = selectedGroups.append('g').classed('x-icon', true);
+        pathRemove.attr('transform', 'translate(15, 10)');
+        pathRemove.append('circle').attr('r', 7).attr('fill', '#fff');
+        pathRemove.append('text').text('x').attr('transform', 'translate(-5, 5)');
+
+        pathRemove.style('cursor', 'pointer');
+
+        pathRemove.on('click', (d, i, n) => {
+            d3.selectAll('.high').classed('high', false);
+            d3.selectAll('.low').classed('low', false);
+            treeNodes.select('.selected').classed('selected', false);
+            pathSelected(null, dataMaster[0], scales, moveMetric);
+        });
+
+        /////////
+        let timelines = selectedGroups.append('g').classed('time-line', true);
+        timelines.attr('transform', (d, i) => 'translate(50, 0)');
+
+        let lines = timelines.append('line')
+            .attr('x1', 0)
+            .attr('x2', (d, i) => {
+                let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
+                return x(d[d.length - 1].edgeMove)
+            })
+            .attr('y1', 15)
+            .attr('y2', 15);
+
+        let nodeGroups = timelines.selectAll('.node').data((d) => d).join('g').classed('node', true);
+
+        nodeGroups.attr('transform', (d) => {
+            let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
+            let distance = x(d.edgeMove);
+            return 'translate(' + distance + ', 10)';
+        });
+
+        nodeGroups.classed('common-node', true);
+
+        let childNodeWrap = nodeGroups.filter(c => c.children != undefined).selectAll('g.child').data(d => d.children).join('g').classed('child', true);
+
+        let childNodes = childNodeWrap.selectAll('g.node').data(d => d).join('g').classed('node', true)
+        childNodes.attr('transform', (d, i, n) => {
+            return 'translate(' + d.xScale(d.move) + ', ' + (d.level * 20) + ')';
+        });
+
+        childNodeWrap.append('path').attr('d', (d, i, n) => {
+            let pathArray = [{ 'x': 0, 'y': 0 }, { 'x': 0, 'y': i }];
+            d.map(m => {
+                pathArray.push({ 'x': m.xScale(m.move), 'y': m.level })
+            });
+            let line = d3.line()
+                .curve(d3.curveMonotoneY)
+                .x(function(d) {
+                    return d.x;
+                })
+                .y(d => (d.y * 20))
+            return line(pathArray);
+        }).attr('stoke-width', '2px').attr('fill', 'none').attr('stroke', 'gray');
+
+        childNodeWrap.on('mouseover', (d, i)=> {
+            let specArray = d.map(m=> m.species);
+            let hovers = nodeGroups.filter(n => n.node === d.node);
+            let commonHover = [...commonNodeStart].map(c=> c.node).concat(d.map(n=> n.node));
+            let treeNode = d3.select('#sidebar').selectAll('.node');
+            let treeLinks  = d3.select('#sidebar').selectAll('.link');
+            treeNode.filter(f => commonHover.indexOf(f.data.node) > -1).classed('hover', true);
+            treeLinks.filter(f => commonHover.indexOf(f.data.node) > -1).classed('hover', true);
+            return hovers.classed('hover-branch', true);
+        }).on('mouseout', (d, i)=> {
+            d3.selectAll('.hover').classed('hover', false);
+        });
+
+        let circle = nodeGroups.append('circle').attr('cx', 0).attr('cy', 0).attr('r', d => {
+            return circleScale(branchFrequency[d.node]);
+        }).attr('class', (d, i) => 'node-' + d.node);
+
+        let childCirc = childNodes.append('circle').attr('r', 7).attr('fill', 'red').attr('y', 5);
+
+        childCirc.on('mouseover', function(d, i) {
+            let hovers = nodeGroups.filter(n => n.node === d.node);
+            let treeNode = d3.select('#sidebar').selectAll('.node');
+            let selectedBranch = treeNode.filter(f => f.data.node === d.node).classed('selected-branch', true);
+            return hovers.classed('hover-branch', true);
+        }).on('mouseout', function(d, i) {
+            let hovers = nodeGroups.filter(n => n.node === d.node);
+            d3.selectAll('.selected-branch').classed('selected-branch', false);
+            return hovers.classed('hover-branch', false);
+        });
+
+        childNodes.filter(f => f.leaf === true).append('text').text(d => d.label).attr('x', 9).attr('y', 4);
+        selectWrap.attr('transform', 'translate('+(50+(20 *commonNodeStart[commonNodeStart.length - 1].children.length))+')')
+
+    }
+
 export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, moveMetric) {
 
-    let attributeHeight = 45;
+    let attributeHeight = 50;
 
     let selectedSpecies = pathData.flatMap(p => p.filter(f => f.leaf === true).map(n => n.node));
     let treeNodes = d3.select('#sidebar').select('svg').selectAll('.node');
@@ -130,7 +238,6 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
     selectedTool.selectAll('*').remove();
 
     ///////////////////////
-
     let sortByDistanceDiv = selectedTool.append('div').style('display', 'inline-block');
     sortByDistanceDiv.append('text').text('Topology: ');
     let sortByDistanceButton = sortByDistanceDiv.append('button').classed('btn btn-secondary btn-sm', true);
@@ -182,9 +289,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
         pathRemove.attr('transform', 'translate(15, 10)');
         pathRemove.append('circle').attr('r', 7).attr('fill', '#fff');
         pathRemove.append('text').text('x').attr('transform', 'translate(-5, 5)');
-
         pathRemove.style('cursor', 'pointer');
-
         pathRemove.on('click', (d, i, n) => {
             d3.selectAll('.high').classed('high', false);
             d3.selectAll('.low').classed('low', false);
@@ -227,7 +332,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
 
         nodeGroups.attr('transform', (d) => {
             let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
-            let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove);
+            let distance = x(d.edgeMove);
             return 'translate(' + distance + ', 10)';
         });
 
@@ -332,109 +437,9 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
        
         let commonNodeStart = getCommonNodes(pathData);
 
-        let selectWrap = svg.append('g').classed('select-wrap', true);
-        selectWrap.attr('transform', (d, i) => 'translate(0,20)');
+        renderSelectedTopology(commonNodeStart, svg, branchFrequency);
 
-        ///Scales for circles ///
-        let circleScale = d3.scaleLog().range([6, 14]).domain([1, d3.max(Object.values(branchFrequency))]);
-
-        let selectedGroups = selectWrap.selectAll('.paths').data([commonNodeStart]).join('g').classed('paths', true);
-
-        let pathBars = selectedGroups.append('rect').classed('path-rect', true);
-        pathBars.attr('y', -8);
-
-        //////////
-        ///Selecting species
-        /////////
-        let pathRemove = selectedGroups.append('g').classed('x-icon', true);
-        pathRemove.attr('transform', 'translate(15, 10)');
-        pathRemove.append('circle').attr('r', 7).attr('fill', '#fff');
-        pathRemove.append('text').text('x').attr('transform', 'translate(-5, 5)');
-
-        pathRemove.style('cursor', 'pointer');
-
-        pathRemove.on('click', (d, i, n) => {
-            d3.selectAll('.high').classed('high', false);
-            d3.selectAll('.low').classed('low', false);
-            treeNodes.select('.selected').classed('selected', false);
-            pathSelected(null, dataMaster[0], scales, moveMetric);
-        });
-
-        /////////
-        let timelines = selectedGroups.append('g').classed('time-line', true);
-        timelines.attr('transform', (d, i) => 'translate(150, 0)');
-
-        let lines = timelines.append('line')
-            .attr('x1', 0)
-            .attr('x2', (d, i) => {
-                let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
-                return x(d[d.length - 1].edgeMove)
-            })
-            .attr('y1', 15)
-            .attr('y2', 15);
-
-        let nodeGroups = timelines.selectAll('.node').data((d) => d).join('g').classed('node', true);
-
-        nodeGroups.attr('transform', (d) => {
-            let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
-            let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove);
-            return 'translate(' + distance + ', 10)';
-        });
-
-        nodeGroups.classed('common-node', true);
-
-        let childNodeWrap = nodeGroups.filter(c => c.children != undefined).selectAll('g.child').data(d => d.children).join('g').classed('child', true);
-
-        let childNodes = childNodeWrap.selectAll('g.node').data(d => d).join('g').classed('node', true)
-        childNodes.attr('transform', (d, i, n) => {
-            return 'translate(' + d.xScale(d.move) + ', ' + (d.level * 20) + ')';
-        });
-
-        childNodeWrap.append('path').attr('d', (d, i, n) => {
-            let pathArray = [{ 'x': 0, 'y': 0 }, { 'x': 0, 'y': i }];
-            d.map(m => {
-                pathArray.push({ 'x': m.xScale(m.move), 'y': m.level })
-            });
-            let line = d3.line()
-                .curve(d3.curveMonotoneY)
-                .x(function(d) {
-                    return d.x;
-                })
-                .y(d => (d.y * 20))
-            return line(pathArray);
-        }).attr('stoke-width', '2px').attr('fill', 'none').attr('stroke', 'gray');
-
-        childNodeWrap.on('mouseover', (d, i)=> {
-            let specArray = d.map(m=> m.species);
-            let hovers = nodeGroups.filter(n => n.node === d.node);
-            let commonHover = [...commonNodeStart].map(c=> c.node).concat(d.map(n=> n.node));
-            let treeNode = d3.select('#sidebar').selectAll('.node');
-            let treeLinks  = d3.select('#sidebar').selectAll('.link');
-            treeNode.filter(f => commonHover.indexOf(f.data.node) > -1).classed('hover', true);
-            treeLinks.filter(f => commonHover.indexOf(f.data.node) > -1).classed('hover', true);
-            return hovers.classed('hover-branch', true);
-        }).on('mouseout', (d, i)=> {
-            d3.selectAll('.hover').classed('hover', false);
-        });
-
-        let circle = nodeGroups.append('circle').attr('cx', 0).attr('cy', 0).attr('r', d => {
-            return circleScale(branchFrequency[d.node]);
-        }).attr('class', (d, i) => 'node-' + d.node);
-
-        let childCirc = childNodes.append('circle').attr('r', 7).attr('fill', 'red').attr('y', 5);
-
-        childCirc.on('mouseover', function(d, i) {
-            let hovers = nodeGroups.filter(n => n.node === d.node);
-            let treeNode = d3.select('#sidebar').selectAll('.node');
-            let selectedBranch = treeNode.filter(f => f.data.node === d.node).classed('selected-branch', true);
-            return hovers.classed('hover-branch', true);
-        }).on('mouseout', function(d, i) {
-            let hovers = nodeGroups.filter(n => n.node === d.node);
-            d3.selectAll('.selected-branch').classed('selected-branch', false);
-            return hovers.classed('hover-branch', false);
-        });
-
-        childNodes.filter(f => f.leaf === true).append('text').text(d => d.label).attr('x', 9).attr('y', 4);
+        /////END PATH RENDER///////
 
         let attWrap = svg.append('g').classed('attribute-wrapper', true);
         let attributeData = commonNodeStart[commonNodeStart.length - 1].children.map(ch => {
@@ -446,7 +451,6 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
             let species = pathData[0].filter(f=> f.leaf === true)[0].label;
             att[att.length - 1].offset = 0;
             let attribute = {'label': att[att.length-1].label, 'type':att[att.length-1].type, 'data': [{'species': species, 'paths': att}]}
-          
             for(let index = 1; index < attData.length; index++ ){
                 let species = pathData[index].filter(f=> f.leaf === true)[0].label;
                 let last = attData[index][i].length - 1
@@ -471,7 +475,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
                spec.paths = spec.paths.map(m=> {
                 if(dis.type === 'discrete'){
                     let offset = 5 * i;
-                    let maxProb = m.states? {'realVal': 1.0, 'state': m.winState, 'color':m.color, 'edgeMove': m.edgeMove, 'offset':m.offset} : findMaxState(m, offset); 
+                    let maxProb = m.states? {'realVal': 1.0, 'state': m.winState, 'color':m.color, 'edgeMove': m.edgeMove, 'offset':m.offset, 'leaf': true} : findMaxState(m, offset); 
                     return maxProb;
                 }else{
 
@@ -484,14 +488,12 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
            return dis;
        });
 
-       console.log(mappedDis)
-
        let attGroups = attWrap.selectAll('g').data(mappedDis).join('g').classed('attr', true);
-       attGroups.attr('transform', (d, i) => 'translate(140,' + (32+ (mappedDis.length*20) + (i * (attributeHeight + 5))) + ')');
+       attGroups.attr('transform', (d, i) => 'translate(140,' + (((25 * commonNodeStart[commonNodeStart.length - 1].children.length)) + (i * (attributeHeight + 5))) + ')');
 
       // console.log('attr groups', attGroups.data());
        attGroups.append('text').text(d=> {
-        return d.label}).style('text-anchor', 'end');
+        return d.label}).style('text-anchor', 'end').attr('transform', 'translate(0,'+(attributeHeight/2)+')');
 
        let wrapRect = attGroups.append('rect').attr('width', 1010);
        wrapRect.attr('height', attributeHeight);
@@ -512,7 +514,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
 
        let lineGen = d3.line()
        .x(d=> {
-           console.log(d)
+           console.log('in path', d);
            let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
            let distance = d.edgeMove;
            return x(distance);})
@@ -522,15 +524,14 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
        });
 
        let disGroup = speciesGrp.filter(sp=> {
-           console.log('species',sp);
            return sp.type === 'discrete';
        });
    
        let innerStatePaths = disGroup.append('path')
        .attr("d", d=> {
-           console.log('d', d.paths)
            return lineGen(d.paths)})
-    //   .attr("class", (d, i)=> d[0].species + " inner-line")
+       .attr("class", (d, i)=> {
+        return d.species + " inner-line"})
        .style('stroke-width', 0.7)
        .style('fill', 'none')
        .style('stroke', 'gray');
@@ -545,7 +546,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
 
        branchGrp.attr('transform', (d)=> {
         let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
-            let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove);
+            let distance = x(d.edgeMove);
             return 'translate('+distance+', 0)';
         });
 
@@ -555,6 +556,31 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
         }).attr('cx', 5);
 
         bCirc.attr('fill', (d, i)=> d.color);
+
+        let otherCirc = branchGrp.filter(f=> f.leaf != true).selectAll('.other').data(d=> d.other).join('circle').classed('other', true);
+            otherCirc.attr('r', 4).attr('cx', 5).attr('cy', (c, i)=> {
+                let y = d3.scaleLinear().domain([1, 0]);
+                y.range([0, attributeHeight]);
+                    return y(c.realVal);
+                }).attr('fill', (c)=> c.color).style('opacity', 0.15);
+
+        otherCirc.on("mouseover", function(d) {
+            let tool = d3.select('#tooltip');
+            tool.transition()
+              .duration(200)
+              .style("opacity", .9);
+            let f = d3.format(".3f");
+            tool.html(d.state + ": " + f(d.realVal))
+              .style("left", (d3.event.pageX + 10) + "px")
+              .style("top", (d3.event.pageY - 28) + "px");
+            })
+          .on("mouseout", function(d) {
+            let tool = d3.select('#tooltip');
+            tool.transition()
+              .duration(500)
+              .style("opacity", 0);
+            });
+
         bCirc.on("mouseover", function(d) {
             let tool = d3.select('#tooltip');
             tool.transition()
@@ -576,17 +602,16 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
         branchGrp.on('mouseover', (d, i, n)=> {
             let y = d3.scaleLinear().domain([1, 0]);
             y.range([0, attributeHeight]);
+            svg.selectAll('path.inner-line.'+ d.species).attr('stroke', 'red');
+            svg.selectAll('path.inner-line.'+ d.species).classed('selected', true);
             d3.select(n[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(3));
-            if(d.other){
-                let circ = d3.select(n[i]).selectAll('.other').data(d=> d.other).join('circle').classed('other', true);
-                circ.attr('r', 4).attr('cx', 5).attr('cy', (c, i)=> {
-                    return y(c.realVal);
-                }).attr('fill', (c)=> c.color).style('opacity', 0.7);
-            }
+            d3.select(n[i]).selectAll('.other').style('opacity', 0.7);
         }).on('mouseout', (d, i, n)=> {
             d3.select(n[i]).select('g.y-axis')
             d3.select(n[i]).select('g.y-axis').remove();
-            d3.selectAll('.other').remove();
+            d3.selectAll('path.inner-line.'+ d.species).attr('stroke', 'gray');
+            d3.selectAll('path.inner-line.'+ d.species).classed('selected', false);
+            d3.selectAll('.other').style('opacity', 0.15);
         });
 
 
@@ -709,6 +734,11 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
             same.classed('same', true);
         });
         */
+          //tranforming elements
+          svg.style('height', ((pathData.length + attributeGroups.data().map(m => m[0]).length) * 50) + 50 + 'px');
+          selectedDiv.style('height', ((pathData.length + attributeGroups.data().map(m => m[0]).length) * 50) + 50 + 'px');
+          attributeWrapper.attr('transform', (d) => 'translate(140, 25)');
+          d3.selectAll('.selected-path').classed('selected-path', false);
 
         return commonNodeStart;
 
@@ -790,9 +820,15 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
             });
             same.classed('same', true);
         });
+        //tranforming elements
+        svg.style('height', ((pathData.length + attributeGroups.data().map(m => m[0]).length) * 50) + 50 + 'px');
+        selectedDiv.style('height', ((pathData.length + attGroups.data().map(m => m[0]).length) * 50) + 50 + 'px');
+        attWrap.attr('transform', (d) => 'translate(140, 25)');
+        d3.selectAll('.selected-path').classed('selected-path', false);
 
         return commonNodeStart;
     }
+    
 }
 
 function sortPaths(sortButton) {

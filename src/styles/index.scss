@@ -484,7 +484,7 @@ g.node.low circle{
   z-index: 3000;
 }
 
-path.selected{
+path.inner-line.selected{
   stroke-width:2px !important;
   stroke:red !important;
 }
