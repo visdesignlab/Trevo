@@ -476,8 +476,6 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
                     let maxProb = m.states? {'realVal': 1.0, 'state': m.winState, 'color':m.color, 'edgeMove': m.edgeMove, 'offset':m.offset, 'leaf': true} : findMaxState(m, offset); 
                     return maxProb;
                 }else{
-                    console.log('m', m)
-                    //need to finish the continuous 
                     return m;
                 }
             });
@@ -490,8 +488,11 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
        attGroups.attr('transform', (d, i) => 'translate(145,' + (i * (attributeHeight + 10)) + ')');
 
       // console.log('attr groups', attGroups.data());
-       attGroups.append('text').text(d=> {
-        return d.label}).style('text-anchor', 'end').style('font-size', 11).attr('transform', 'translate(0,'+(attributeHeight/2)+')');
+       attGroups.append('text')
+        .text(d=> d.label)
+        .style('text-anchor', 'end')
+        .style('font-size', 11)
+        .attr('transform', 'translate(0,'+(attributeHeight/2)+')');
 
        let wrapRect = attGroups.append('rect').attr('width', 1010);
        wrapRect.attr('height', attributeHeight);
@@ -509,25 +510,37 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
             return d.data;
         }).join('g').classed('species', true);
 
-       let lineGen = d3.line()
+       let lineGenD = d3.line()
        .x(d=> {
+           console.log('scale', d.yScale)
            let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
            let distance = d.edgeMove;
-           return x(distance);})
+           return x(distance);
+        })
        .y(d=> {
            let y = d3.scaleLinear().domain([0, 1]).range([attributeHeight-2, 1]);
            return y(d.realVal) + d.offset;
        });
 
-       let disGroup = speciesGrp.filter(sp=> {
-           return sp.type === 'discrete';
+       let lineGenC = d3.line()
+       .x(d=> {
+           console.log('scale', d)
+           let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
+           let distance = d.edgeMove;
+           return x(distance);
+        })
+       .y(d=> {
+           let y = d.yScale;
+           y.range([attributeHeight-2, 1]);
+           return y(d.realVal) + 2;
        });
-   
-       let innerStatePaths = disGroup.append('path')
+
+       let innerStatePaths = speciesGrp.append('path')
        .attr("d", d=> {
-           return lineGen(d.paths)})
+            return (d.type === 'discrete') ? lineGenD(d.paths) : lineGenC(d.paths);
+        })
        .attr("class", (d, i)=> {
-        return d.species + " inner-line"})
+            return d.species + " inner-line"})
        .style('stroke-width', 0.7)
        .style('fill', 'none')
        .style('stroke', 'gray');
@@ -537,6 +550,10 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
        }).on('mouseout', (d, i, n)=> {
             d3.select(n[i]).classed('selected', false);
        });
+
+       let disGroup = speciesGrp.filter(sp=> {
+        return sp.type === 'discrete';
+        });
 
        let branchGrp = disGroup.selectAll('.branch').data(d=>d.paths).join('g').classed('branch', true);
 
@@ -554,11 +571,11 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
         bCirc.attr('fill', (d, i)=> d.color);
 
         let otherCirc = branchGrp.filter(f=> f.leaf != true).selectAll('.other').data(d=> d.other).join('circle').classed('other', true);
-            otherCirc.attr('r', 4).attr('cx', 5).attr('cy', (c, i)=> {
-                let y = d3.scaleLinear().domain([1, 0]);
-                y.range([0, (attributeHeight-5)]);
-                    return y(c.realVal);
-                }).attr('fill', (c)=> c.color).style('opacity', 0.1);
+        otherCirc.attr('r', 4).attr('cx', 5).attr('cy', (c, i)=> {
+            let y = d3.scaleLinear().domain([1, 0]);
+            y.range([0, (attributeHeight-5)]);
+                return y(c.realVal);
+            }).attr('fill', (c)=> c.color).style('opacity', 0.1);
 
         otherCirc.on("mouseover", function(d) {
             let tool = d3.select('#tooltip');
@@ -593,7 +610,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
               .duration(500)
               .style("opacity", 0);
             });
-
+        
         /////AXIS ON HOVER////
         branchGrp.on('mouseover', (d, i, n)=> {
             let y = d3.scaleLinear().domain([1, 0]);
@@ -610,126 +627,40 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
             d3.selectAll('.other').style('opacity', 0.1);
         });
 
-    // ---------------- ADJUST DATA HERE--------------
-    
-       // let attGroups = attWrap.selectAll('g').data(attDataComb).join('g').classed('attr', true);
-/*
-        attGroups.attr('transform', (d, i) => 'translate(140,' + (32+ (pathData.length*20) + (i * (attributeHeight + 5))) + ')');
-        
-        let dataGroups = attGroups.selectAll('g.path-grp').data((d, i)=> {
-            let speciesArray = d.data.map(m=> {
-                m.paths.map(path=>{
-                    path.species = m.species;
-                    path.index = i;
-                    return path;
-                })
-                return m.paths});
-            return speciesArray}).join('g').classed('path-grp', true);
-
-        let contGroups = drawContAtt(dataGroups, moveMetric, collapsed);
-       
-        let valueBars = contGroups.selectAll('.val-bar').on('mouseover', (d, i)=> {
-            let tool = d3.select('#tooltip');
-            tool.transition()
-                .duration(200)
-                .style("opacity", .9);
-            let f = d3.format(".3f");
-            tool.html(d.species + ": " + f(d.realVal))
-                .style("left", (d3.event.pageX) + "px")
-                .style("top", (d3.event.pageY - 28) + "px");
-        }).on("mouseout", function(d) {
-            let tool = d3.select('#tooltip');
-            tool.transition()
-              .duration(500)
-              .style("opacity", 0);
-            });
-
-        valueBars.attr('opacity', 0.4);
-
-        let disGroups = drawDiscreteAtt(dataGroups, moveMetric, collapsed, false);
-
-        let discreteAtt = dataGroups.filter(d=> {
-            return d[d.length - 1].type === 'discrete';
+        let conGroup = speciesGrp.filter(sp=> {
+            return sp.type === 'continuous';
         });
 
-        disGroups.selectAll('.dots').style('opacity', 0.4);
+        let branchGrpCon = conGroup.selectAll('.branch').data(d=>d.paths).join('g').classed('branch', true);
 
-        let disLeaves = disGroups.filter(d=> d.leaf === true);
+        branchGrpCon.attr('transform', (d)=> {
+         let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
+             let distance = x(d.edgeMove);
+             return 'translate('+distance+', 0)';
+         });
 
-        disLeaves.attr('transform', d=> 'translate(1000,'+(d.offset)+')');
-        disLeaves.selectAll('circle').attr('stroke', '#fff').attr('stroke-width', '1px');
+        let MeanRect = branchGrpCon.append('rect');
+   
+        MeanRect.attr('width', 10).attr('height', 3);
+        MeanRect.attr('y', (d, i) => {
+            let scale = scales.filter(s=> s.field === d.label)[0];
+            let y = d3.scaleLinear().domain([scale.min, scale.max]).range([attributeHeight, 0])
+            return y(d.realVal);
+        });
 
-        disLeaves.selectAll('circle').on('mouseover', (d, i)=> {
-            let tool = d3.select('#tooltip');
-            tool.transition()
-                .duration(200)
-                .style("opacity", .9);
-            tool.html(d.species + ": " + d.winState)
-                .style("left", (d3.event.pageX) + "px")
-                .style("top", (d3.event.pageY - 28) + "px");
-        }).on("mouseout", function(d) {
-            let tool = d3.select('#tooltip');
-            tool.transition()
-              .duration(500)
-              .style("opacity", 0);
-            });
+        let confiBars = branchGrpCon.filter(f=> f.leaf != true).append('rect');
+        confiBars.attr('width', 10).attr('height', (d, i)=> {
+            let scale = scales.filter(s=> s.field === d.label)[0];
+            let y = d3.scaleLinear().domain([scale.min, scale.max]).range([attributeHeight, 0]);
+            console.log('for conf interval', y(d.upperCI95));
+            return y(d.lowerCI95) - y(d.upperCI95);
+        });
 
-        /////ADDED LABELS///////
-        let attrLabel = dataGroups.filter((f, i)=> i === 0).append('text').text(d=> d[d.length - 1].label);
-        attrLabel.classed('attribute-label', true);
-        attrLabel.attr('transform', 'translate(-15, 20)');
-
-        d3.select('#selected').style('height', (50 + (pathData.length * 20) + (attDataComb.length * 53))+ 'px');
-        svg.style('height', (50 + (pathData.length * 20) + (attDataComb.length * 53)) + 'px');
-        pathBars.style('height', (commonNodeStart[commonNodeStart.length -1].children.length * 25)+'px');
+        //tranforming elements
+        svg.style('height', ((pathData.length + attGroups.data().map(m => m[0]).length) * 50) + 50 + 'px');
+        selectedDiv.style('height', ((pathData.length + attGroups.data().map(m => m[0]).length) * 50) + 50 + 'px');
+        attWrap.attr('transform', (d) => 'translate(0, 60)');
         d3.selectAll('.selected-path').classed('selected-path', false);
-
-        ////RADIO BUTTON THAT COLORS BASE DON ATTRIBUTE VALUE////
-        radio.on('click', (d, i) => {
-            let leaf = pathData.map(node => node.filter(d => d.leaf === true)[0])[0];
-            let sorted = [...otherPaths].sort(function(a, b) {
-                return a.filter(n => n.leaf === true)[0].attributes[d].realVal - b.filter(n => n.leaf === true)[0].attributes[d].realVal;
-            });
-    
-            let main = d3.select('div#main');
-            /// LOWER ATTRIBUTE VISUALIZATION ///
-            drawPathsAndAttributes(sorted.reverse(), main, scales, moveMetric);
-            main.style('padding-top', '250px');
-    
-            let paths = main.select('svg#main-path-view').selectAll('.paths');
-    
-            let high = paths.filter(path => {
-                let leafOther = path.filter(node => node.leaf === true)[0];
-                return leafOther.attributes[d].realVal > leaf.attributes[d].realVal;
-            });
-            high.classed('high', true);
-    
-            let highLeaves = high.data().map(path => path.filter(f => f.leaf === true)[0].node);
-    
-            treeNodes.filter(f => highLeaves.indexOf(f.data.node) > -1).classed('high', true);
-    
-            let low = paths.filter(path => {
-                let leafOther = path.filter(node => node.leaf === true)[0];
-                return leafOther.attributes[d].realVal < leaf.attributes[d].realVal;
-            });
-            low.classed('low', true);
-    
-            let lowLeaves = low.data().map(path => path.filter(f => f.leaf === true)[0].node);
-    
-            treeNodes.filter(f => lowLeaves.indexOf(f.data.node) > -1).classed('low', true);
-    
-            let same = paths.filter(path => {
-                let leafOther = path.filter(node => node.leaf === true)[0];
-                return leafOther.attributes[d].realVal === leaf.attributes[d].realVal;
-            });
-            same.classed('same', true);
-        });
-        */
-          //tranforming elements
-          svg.style('height', ((pathData.length + attGroups.data().map(m => m[0]).length) * 50) + 50 + 'px');
-          selectedDiv.style('height', ((pathData.length + attGroups.data().map(m => m[0]).length) * 50) + 50 + 'px');
-          attWrap.attr('transform', (d) => 'translate(0, 60)');
-          d3.selectAll('.selected-path').classed('selected-path', false);
 
         return commonNodeStart;
 
@@ -755,9 +686,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
         remove.attr('transform', 'translate(15, 10)');
         remove.append('circle').attr('r', 7).attr('fill', '#fff');
         remove.append('text').text('x').attr('transform', 'translate(-5, 5)');
-
         remove.style('cursor', 'pointer');
-
         remove.on('click', (d, i, n) => {
             d3.selectAll('.high').classed('high', false);
             d3.selectAll('.low').classed('low', false);
