@@ -652,9 +652,15 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
         confiBars.attr('width', 10).attr('height', (d, i)=> {
             let scale = scales.filter(s=> s.field === d.label)[0];
             let y = d3.scaleLinear().domain([scale.min, scale.max]).range([attributeHeight, 0]);
-            console.log('for conf interval', y(d.upperCI95));
             return y(d.lowerCI95) - y(d.upperCI95);
         });
+
+        confiBars.attr('y', (d, i)=> {
+            let scale = scales.filter(s=> s.field === d.label)[0];
+            let y = d3.scaleLinear().domain([scale.min, scale.max]).range([attributeHeight, 0]);
+            return y(d.upperCI95);
+        })
+        confiBars.style('opacity', 0.1);
 
         //tranforming elements
         svg.style('height', ((pathData.length + attGroups.data().map(m => m[0]).length) * 50) + 50 + 'px');
