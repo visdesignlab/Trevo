@@ -436,11 +436,9 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
     } else if(pathData.length > 1 && pathData.length < 5) {
        
         let commonNodeStart = getCommonNodes(pathData);
-
         renderSelectedTopology(commonNodeStart, svg, branchFrequency);
 
         /////END PATH RENDER///////
-
         let attWrap = svg.append('g').classed('attribute-wrapper', true);
         let attributeData = commonNodeStart[commonNodeStart.length - 1].children.map(ch => {
             return [...commonNodeStart].concat(ch);
@@ -458,7 +456,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
                 attribute.data.push({'species': species, 'paths': attData[index][i]})
             }
             return attribute;
-        })
+        });
 
         function findMaxState(states, offset){
             let maxP = d3.max(states.map(v=> v.realVal));
@@ -478,9 +476,9 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
                     let maxProb = m.states? {'realVal': 1.0, 'state': m.winState, 'color':m.color, 'edgeMove': m.edgeMove, 'offset':m.offset, 'leaf': true} : findMaxState(m, offset); 
                     return maxProb;
                 }else{
-
+                    console.log('m', m)
                     //need to finish the continuous 
-                    return {}
+                    return m;
                 }
             });
             return spec;
@@ -489,11 +487,11 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
        });
 
        let attGroups = attWrap.selectAll('g').data(mappedDis).join('g').classed('attr', true);
-       attGroups.attr('transform', (d, i) => 'translate(140,' + (((25 * commonNodeStart[commonNodeStart.length - 1].children.length)) + (i * (attributeHeight + 5))) + ')');
+       attGroups.attr('transform', (d, i) => 'translate(145,' + (i * (attributeHeight + 10)) + ')');
 
       // console.log('attr groups', attGroups.data());
        attGroups.append('text').text(d=> {
-        return d.label}).style('text-anchor', 'end').attr('transform', 'translate(0,'+(attributeHeight/2)+')');
+        return d.label}).style('text-anchor', 'end').style('font-size', 11).attr('transform', 'translate(0,'+(attributeHeight/2)+')');
 
        let wrapRect = attGroups.append('rect').attr('width', 1010);
        wrapRect.attr('height', attributeHeight);
@@ -504,7 +502,6 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
        attGroups.append('line').classed('half', true).attr('x1', 0).attr('y1', 22).attr('x2', 1010).attr('y2', 22);
      
        let speciesGrp = attGroups.selectAll('g').data(d=> {
-          
             d.data = d.data.map(m=> {
                 m.type = d.type;
                 return m;
@@ -514,7 +511,6 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
 
        let lineGen = d3.line()
        .x(d=> {
-           console.log('in path', d);
            let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
            let distance = d.edgeMove;
            return x(distance);})
@@ -551,7 +547,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
         });
 
         let bCirc = branchGrp.append('circle').attr('r', 5).attr('cy', (d, i)=> {
-            let y = d3.scaleLinear().domain([0, 1]).range([attributeHeight - 2, 2]);
+            let y = d3.scaleLinear().domain([0, 1]).range([attributeHeight - 5, 2]);
             return y(d.realVal) + d.offset;
         }).attr('cx', 5);
 
@@ -560,9 +556,9 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
         let otherCirc = branchGrp.filter(f=> f.leaf != true).selectAll('.other').data(d=> d.other).join('circle').classed('other', true);
             otherCirc.attr('r', 4).attr('cx', 5).attr('cy', (c, i)=> {
                 let y = d3.scaleLinear().domain([1, 0]);
-                y.range([0, attributeHeight]);
+                y.range([0, (attributeHeight-5)]);
                     return y(c.realVal);
-                }).attr('fill', (c)=> c.color).style('opacity', 0.15);
+                }).attr('fill', (c)=> c.color).style('opacity', 0.1);
 
         otherCirc.on("mouseover", function(d) {
             let tool = d3.select('#tooltip');
@@ -601,7 +597,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
         /////AXIS ON HOVER////
         branchGrp.on('mouseover', (d, i, n)=> {
             let y = d3.scaleLinear().domain([1, 0]);
-            y.range([0, attributeHeight]);
+            y.range([0, (attributeHeight-5)]);
             svg.selectAll('path.inner-line.'+ d.species).attr('stroke', 'red');
             svg.selectAll('path.inner-line.'+ d.species).classed('selected', true);
             d3.select(n[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(3));
@@ -611,11 +607,8 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
             d3.select(n[i]).select('g.y-axis').remove();
             d3.selectAll('path.inner-line.'+ d.species).attr('stroke', 'gray');
             d3.selectAll('path.inner-line.'+ d.species).classed('selected', false);
-            d3.selectAll('.other').style('opacity', 0.15);
+            d3.selectAll('.other').style('opacity', 0.1);
         });
-
-
-
 
     // ---------------- ADJUST DATA HERE--------------
     
@@ -658,8 +651,6 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
         let discreteAtt = dataGroups.filter(d=> {
             return d[d.length - 1].type === 'discrete';
         });
-
-      
 
         disGroups.selectAll('.dots').style('opacity', 0.4);
 
@@ -735,9 +726,9 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
         });
         */
           //tranforming elements
-          svg.style('height', ((pathData.length + attributeGroups.data().map(m => m[0]).length) * 50) + 50 + 'px');
-          selectedDiv.style('height', ((pathData.length + attributeGroups.data().map(m => m[0]).length) * 50) + 50 + 'px');
-          attributeWrapper.attr('transform', (d) => 'translate(140, 25)');
+          svg.style('height', ((pathData.length + attGroups.data().map(m => m[0]).length) * 50) + 50 + 'px');
+          selectedDiv.style('height', ((pathData.length + attGroups.data().map(m => m[0]).length) * 50) + 50 + 'px');
+          attWrap.attr('transform', (d) => 'translate(0, 60)');
           d3.selectAll('.selected-path').classed('selected-path', false);
 
         return commonNodeStart;
