@@ -396,21 +396,16 @@ export function drawGroups(stateBins, scales){
     wrappers.each((d, i, n)=> {
         let branchBar = drawBranchPointDistribution(d.data, d3.select(n[i]));
         branchBar.select('.leaf-label').append('text').text((d, i) =>': '+ d.data.length).attr('transform', 'translate(45, 0)');
-
+        branchBar.selectAll('text').style('font-size', '11.5px')
     });
 
     let groupLabels = wrappers.append('text').text((d, i)=> d.state);
-    groupLabels.attr('transform', (d, i)=> 'translate(90, '+((height/2)+ 5)+')');
+    groupLabels.attr('transform', (d, i)=> 'translate(15, 15)');
     groupLabels.style('text-anchor', 'end');
 
     let innerGroup = wrappers.append('g').classed('inner-wrap', true);
     innerGroup.attr('transform', (d,i)=> 'translate(100, 0)');
-/*
-    let innerWrapRect = innerGroup.append('rect').attr('width', 900);
-    innerWrapRect.attr('height', height);
-    innerWrapRect.style('fill', '#fff');
-    innerWrapRect.style('stroke', 'gray');
-*/
+
     let attWraps = innerGroup.selectAll('.att-wrapper').data((d, i)=> {
         let atts = formatAttributeData(d.data, scales, null);
         let attDataComb = atts[0].map((att, i)=> {
@@ -432,7 +427,6 @@ export function drawGroups(stateBins, scales){
             let winState = states[states.map(m=> m.realVal).indexOf(maxP)]
             winState.other = notMax;
             winState.offset = offset;
-    
             return winState;
         }
 
@@ -455,14 +449,20 @@ export function drawGroups(stateBins, scales){
        return mappedDis;
     }).join('g').classed('att-wrapper', true);
 
-    wrappers.attr('transform', (d, i)=> 'translate(10,'+(i * (5 * height)+ 50)+')');
-    svg.attr('height', 1000);
+    let innerWrapRect = attWraps.append('rect').attr('width', 800);
+    innerWrapRect.attr('height', height);
+    innerWrapRect.style('fill', '#fff');
+    innerWrapRect.style('stroke', 'gray');
+
+    attWraps.attr('transform', (d, i)=> 'translate(0,'+((i * (height+5))+ 30)+')');
+    wrappers.attr('transform', (d, i)=> 'translate(60,'+(i * (5 * (height+15))+ 50)+')');
+    svg.attr('height', (wrappers.data().length * (5 * (height+15))+ 50));
 
     let labels = attWraps.append('text')
     .text(d=> d.label)
     .style('text-anchor', 'end')
     .style('font-size', 11)
-    labels.attr('transform', 'translate(0,'+(50/2)+')');
+    labels.attr('transform', 'translate(-5,'+(50/2)+')');
 
     let speciesGrp = attWraps.selectAll('g').data(d=> {
         d.data = d.data.map(m=> {
@@ -474,7 +474,7 @@ export function drawGroups(stateBins, scales){
 
     let lineGenD = d3.line()
        .x(d=> {
-           let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
+           let x = d3.scaleLinear().domain([0, 1]).range([0, 800]);
            let distance = d.edgeMove;
            return x(distance);
         })
@@ -486,7 +486,7 @@ export function drawGroups(stateBins, scales){
 
        let lineGenC = d3.line()
        .x(d=> {
-           let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
+           let x = d3.scaleLinear().domain([0, 1]).range([0, 800]);
            let distance = d.edgeMove;
            return x(distance);
         })
@@ -505,6 +505,141 @@ export function drawGroups(stateBins, scales){
        .style('stroke-width', 0.7)
        .style('fill', 'none')
        .style('stroke', 'gray');
+
+       innerStatePaths.on('mouseover', (d, i, n)=> {
+        d3.select(n[i]).classed('selected', true);
+    }).on('mouseout', (d, i, n)=> {
+         d3.select(n[i]).classed('selected', false);
+    });
+
+    let disGroup = speciesGrp.filter(sp=> {
+     return sp.type === 'discrete';
+     });
+
+    let branchGrpDis = disGroup.selectAll('.branch').data(d=>d.paths).join('g').classed('branch', true);
+
+    branchGrpDis.attr('transform', (d)=> {
+     let x = d3.scaleLinear().domain([0, 1]).range([0, 800]);
+         let distance = x(d.edgeMove);
+         return 'translate('+distance+', 0)';
+     });
+
+     let bCirc = branchGrpDis.append('circle').attr('r', 5).attr('cy', (d, i)=> {
+         let y = d3.scaleLinear().domain([0, 1]).range([height - 5, 2]);
+         //return y(d.realVal) + d.offset;
+         return y(d.realVal);
+     }).attr('cx', 5);
+
+     bCirc.attr('fill', (d, i)=> d.color);
+
+     let otherCirc = branchGrpDis.filter(f=> f.leaf != true).selectAll('.other').data(d=> d.other).join('circle').classed('other', true);
+     otherCirc.attr('r', 4).attr('cx', 5).attr('cy', (c, i)=> {
+         let y = d3.scaleLinear().domain([1, 0]);
+         y.range([0, (height-5)]);
+             return y(c.realVal);
+         }).attr('fill', (c)=> c.color).style('opacity', 0.1);
+
+     otherCirc.on("mouseover", function(d) {
+         let tool = d3.select('#tooltip');
+         tool.transition()
+           .duration(200)
+           .style("opacity", .9);
+         let f = d3.format(".3f");
+         tool.html(d.state + ": " + f(d.realVal))
+           .style("left", (d3.event.pageX + 10) + "px")
+           .style("top", (d3.event.pageY - 28) + "px");
+         })
+       .on("mouseout", function(d) {
+         let tool = d3.select('#tooltip');
+         tool.transition()
+           .duration(500)
+           .style("opacity", 0);
+         });
+
+     bCirc.on("mouseover", function(d) {
+         let tool = d3.select('#tooltip');
+         tool.transition()
+           .duration(200)
+           .style("opacity", .9);
+         let f = d3.format(".3f");
+         tool.html(d.state + ": " + f(d.realVal))
+           .style("left", (d3.event.pageX + 10) + "px")
+           .style("top", (d3.event.pageY - 28) + "px");
+         })
+       .on("mouseout", function(d) {
+         let tool = d3.select('#tooltip');
+         tool.transition()
+           .duration(500)
+           .style("opacity", 0);
+         });
+     
+     /////AXIS ON HOVER////
+     branchGrpDis.on('mouseover', (d, i, n)=> {
+         let y = d3.scaleLinear().domain([1, 0]);
+         y.range([0, (height-5)]);
+         svg.selectAll('path.inner-line.'+ d.species).attr('stroke', 'red');
+         svg.selectAll('path.inner-line.'+ d.species).classed('selected', true);
+         d3.select(n[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(3));
+         d3.select(n[i]).selectAll('.other').style('opacity', 0.7);
+     }).on('mouseout', (d, i, n)=> {
+         d3.select(n[i]).select('g.y-axis')
+         d3.select(n[i]).select('g.y-axis').remove();
+         d3.selectAll('path.inner-line.'+ d.species).attr('stroke', 'gray');
+         d3.selectAll('path.inner-line.'+ d.species).classed('selected', false);
+         d3.selectAll('.other').style('opacity', 0.1);
+     });
+
+     let conGroup = speciesGrp.filter(sp=> {
+         return sp.type === 'continuous';
+     });
+
+     let branchGrpCon = conGroup.selectAll('.branch').data(d=>d.paths).join('g').classed('branch', true);
+
+     branchGrpCon.attr('transform', (d)=> {
+      let x = d3.scaleLinear().domain([0, 1]).range([0, 800]);
+          let distance = x(d.edgeMove);
+          return 'translate('+distance+', 0)';
+      });
+
+      /////AXIS ON HOVER////
+     branchGrpCon.on('mouseover', (d, i, n)=> {
+         let y = d.yScale;
+         y.range([0, (height-5)]);
+         svg.selectAll('path.inner-line.'+ d.species).attr('stroke', 'red');
+         svg.selectAll('path.inner-line.'+ d.species).classed('selected', true);
+         d3.select(n[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(3));
+         d3.select(n[i]).selectAll('.other').style('opacity', 0.7);
+     }).on('mouseout', (d, i, n)=> {
+         d3.select(n[i]).select('g.y-axis')
+         d3.select(n[i]).select('g.y-axis').remove();
+         d3.selectAll('path.inner-line.'+ d.species).attr('stroke', 'gray');
+         d3.selectAll('path.inner-line.'+ d.species).classed('selected', false);
+         d3.selectAll('.other').style('opacity', 0.1);
+     });
+
+     let MeanRect = branchGrpCon.append('rect');
+
+     MeanRect.attr('width', 10).attr('height', 3);
+     MeanRect.attr('y', (d, i) => {
+         let scale = scales.filter(s=> s.field === d.label)[0];
+         let y = d3.scaleLinear().domain([scale.min, scale.max]).range([height, 0])
+         return y(d.realVal);
+     });
+
+     let confiBars = branchGrpCon.filter(f=> f.leaf != true).append('rect');
+     confiBars.attr('width', 10).attr('height', (d, i)=> {
+         let scale = scales.filter(s=> s.field === d.label)[0];
+         let y = d3.scaleLinear().domain([scale.min, scale.max]).range([height, 0]);
+         return y(d.lowerCI95) - y(d.upperCI95);
+     });
+
+     confiBars.attr('y', (d, i)=> {
+         let scale = scales.filter(s=> s.field === d.label)[0];
+         let y = d3.scaleLinear().domain([scale.min, scale.max]).range([height, 0]);
+         return y(d.upperCI95);
+     })
+     confiBars.style('opacity', 0.1);
+
 
 }
 export function drawDiscreteAtt(predictedAttrGrps, moveMetric, collapsed, bars){

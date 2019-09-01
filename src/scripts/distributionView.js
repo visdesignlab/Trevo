@@ -6,12 +6,12 @@ import {dataMaster} from './index';
 
 export function drawBranchPointDistribution(data, svg){
 
-    let branchBar = svg.append('g').classed('branch-bar', true).attr('transform', 'translate(10, 20)');
+    let branchBar = svg.append('g').classed('branch-bar', true).attr('transform', 'translate(10, 10)');
     branchBar.append('line').attr('y1', 2).attr('y2', 2).attr('x1', '100').attr('x2', 890).attr('stroke', 'gray').attr('stroke-width', .25)
     branchBar.append('text').text('Root').attr('transform', 'translate(50, 7)');
     let leafLabel = branchBar.append('g').classed('leaf-label', true).attr('transform', 'translate(950, 7)');
     leafLabel.append('text').text('Leaves');
-    
+
     let nodeLengthArray = [];
     let nodeDuplicateCheck = []
 
