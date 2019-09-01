@@ -118,7 +118,6 @@ svg {
 
 #selected svg .path-rect {
   width: 100%;
-  height: 35px;
   fill: #FFE082; }
 
 .attr-toggle-svg {
@@ -402,6 +401,10 @@ g.node.low circle {
   width: 100%;
   margin-left: 10px;
   z-index: 3000; }
+
+path.inner-line.selected {
+  stroke-width: 2px !important;
+  stroke: red !important; }
 
 .x-icon {
   padding: 3px;
