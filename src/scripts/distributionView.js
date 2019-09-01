@@ -4,6 +4,33 @@ import * as d3 from "d3";
 import {filterMaster} from './filterComponent';
 import {dataMaster} from './index';
 
+export function drawBranchPointDistribution(data, svg){
+
+    let branchBar = svg.append('g').classed('branch-bar', true).attr('transform', 'translate(10, 20)');
+    branchBar.append('line').attr('y1', 2).attr('y2', 2).attr('x1', '100').attr('x2', 890).attr('stroke', 'gray').attr('stroke-width', .25)
+    branchBar.append('text').text('Root').attr('transform', 'translate(50, 7)');
+    branchBar.append('text').text('Leaves').attr('transform', 'translate(950, 7)');
+
+    let nodeLengthArray = [];
+    let nodeDuplicateCheck = []
+
+    data.map(path=> {
+        path.filter(n=> n.leaf != true).map(node=> {
+            if(nodeDuplicateCheck.indexOf(node.node) == -1){
+                nodeDuplicateCheck.push(node.node);
+                nodeLengthArray.push({'node': node.node, 'eMove': node.edgeMove });
+            }
+        })
+    });
+
+    let bPointScale = d3.scaleLinear().domain([0, 1]).range([0, 795]);
+    let pointGroups = branchBar.selectAll('g.branch-points').data(nodeLengthArray).join('g').attr('class', (d, i)=> d.node).classed('branch-points', true);
+    pointGroups.attr('transform', (d, i) => 'translate('+(105 + bPointScale(d.eMove))+', 0)');
+    pointGroups.append('circle').attr('r', 5).attr('fill', "rgba(123, 141, 153, 0.5)");
+
+    return pointGroups;
+}
+
 export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
     
    // mainDiv.selectAll('*').remove();
@@ -132,6 +159,8 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
     });
 
     ///////RENDERING//////////
+    
+    let branchScale = d3.scaleLinear().domain([0, medBranchLength]).range([0, 780]);
 
     let dataCount = mainDiv.append('div').classed('species-count', true);
     dataCount.append('text').text("Shown: "+ pathData.length + " /"+ dataMaster[0].length);
@@ -140,32 +169,11 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
     svg.attr('id', 'main-summary-view');
     svg.attr('height', (keys.length * (height + 25)));
 
-    let branchScale = d3.scaleLinear().domain([0, medBranchLength]).range([0, 780]);
-
-    let branchPoints = svg.append('g').classed('branch-bar', true).attr('transform', 'translate(10, 20)');
-    branchPoints.append('line').attr('y1', 2).attr('y2', 2).attr('x1', '100').attr('x2', 890).attr('stroke', 'gray').attr('stroke-width', .25)
-    branchPoints.append('text').text('Root').attr('transform', 'translate(50, 7)');
-    branchPoints.append('text').text('Leaves').attr('transform', 'translate(950, 7)');
-
+    let pointGroups = drawBranchPointDistribution(newNormed, svg);
+  
     let wrap = svg.append('g').classed('summary-wrapper', true);
     wrap.attr('transform', 'translate(10, 50)');
 
-    let nodeLengthArray = [];
-    let nodeDuplicateCheck = []
-
-    newNormed.map(path=> {
-        path.filter(n=> n.leaf != true).map(node=> {
-            if(nodeDuplicateCheck.indexOf(node.node) == -1){
-                nodeDuplicateCheck.push(node.node);
-                nodeLengthArray.push({'node': node.node, 'eMove': node.edgeMove });
-            }
-        })
-    });
-
-    let bPointScale = d3.scaleLinear().domain([0, 1]).range([0, 795]);
-    let pointGroups = branchPoints.selectAll('g.branch-points').data(nodeLengthArray).join('g').attr('class', (d, i)=> d.node).classed('branch-points', true);
-    pointGroups.attr('transform', (d, i) => 'translate('+(105 + bPointScale(d.eMove))+', 0)');
-    pointGroups.append('circle').attr('r', 5).attr('fill', "rgba(123, 141, 153, 0.5)");
 
     let binnedWrap = wrap.selectAll('.attr-wrap').data(sortedBins).join('g').attr('class', d=> d.key + ' attr-wrap');
     binnedWrap.attr('transform', (d, i)=>  'translate(0,'+(i * (height + 5))+')');

@@ -109,10 +109,10 @@ export function sortOtherPaths(pathData, otherPaths, commonNode) {
     }
 
 }
-function renderSelectedTopology(commonNodeStart, svg, branchFrequency){
+function renderSelectedTopology(commonNodeStart, svg, scales, branchFrequency, moveMetric){
 
     let selectWrap = svg.append('g').classed('select-wrap', true);
-        selectWrap.attr('transform', (d, i) => 'translate(0,20)');
+    selectWrap.attr('transform', 'translate(0, 20)')
 
         ///Scales for circles ///
         let circleScale = d3.scaleLog().range([6, 14]).domain([1, d3.max(Object.values(branchFrequency))]);
@@ -121,27 +121,16 @@ function renderSelectedTopology(commonNodeStart, svg, branchFrequency){
 
         let pathBars = selectedGroups.append('rect').classed('path-rect', true);
         pathBars.attr('y', -8);
+        pathBars.attr('height', (35 + (8 * commonNodeStart[commonNodeStart.length - 1].children.length)));
 
         //////////
         ///Selecting species
         /////////
-        let pathRemove = selectedGroups.append('g').classed('x-icon', true);
-        pathRemove.attr('transform', 'translate(15, 10)');
-        pathRemove.append('circle').attr('r', 7).attr('fill', '#fff');
-        pathRemove.append('text').text('x').attr('transform', 'translate(-5, 5)');
-
-        pathRemove.style('cursor', 'pointer');
-
-        pathRemove.on('click', (d, i, n) => {
-            d3.selectAll('.high').classed('high', false);
-            d3.selectAll('.low').classed('low', false);
-            treeNodes.select('.selected').classed('selected', false);
-            pathSelected(null, dataMaster[0], scales, moveMetric);
-        });
+        addRemoveBubble(selectedGroups, scales, moveMetric)
 
         /////////
         let timelines = selectedGroups.append('g').classed('time-line', true);
-        timelines.attr('transform', (d, i) => 'translate(50, 0)');
+        timelines.attr('transform', (d, i) => 'translate(145, 0)');
 
         let lines = timelines.append('line')
             .attr('x1', 0)
@@ -214,9 +203,26 @@ function renderSelectedTopology(commonNodeStart, svg, branchFrequency){
         });
 
         childNodes.filter(f => f.leaf === true).append('text').text(d => d.label).attr('x', 9).attr('y', 4);
-        selectWrap.attr('transform', 'translate('+(50+(20 *commonNodeStart[commonNodeStart.length - 1].children.length))+')')
+        //selectWrap.attr('transform', 'translate('+(50+(20 *commonNodeStart[commonNodeStart.length - 1].children.length))+')')
+       
 
     }
+
+export function addRemoveBubble(group, scales, moveMetric){
+
+    let pathRemove = group.append('g').classed('x-icon', true);
+    pathRemove.attr('transform', 'translate(15, 10)');
+    pathRemove.append('circle').attr('r', 7).attr('fill', '#fff');
+    pathRemove.append('text').text('x').attr('transform', 'translate(-5, 5)');
+    pathRemove.style('cursor', 'pointer');
+    pathRemove.on('click', (d, i, n) => {
+        d3.selectAll('.high').classed('high', false);
+        d3.selectAll('.low').classed('low', false);
+        treeNodes.select('.selected').classed('selected', false);
+        pathSelected(null, dataMaster[0], scales, moveMetric);
+    });
+
+}
 
 export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, moveMetric) {
 
@@ -285,17 +291,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
         //////////
         ///Selecting species
         /////////
-        let pathRemove = selectedGroups.append('g').classed('x-icon', true);
-        pathRemove.attr('transform', 'translate(15, 10)');
-        pathRemove.append('circle').attr('r', 7).attr('fill', '#fff');
-        pathRemove.append('text').text('x').attr('transform', 'translate(-5, 5)');
-        pathRemove.style('cursor', 'pointer');
-        pathRemove.on('click', (d, i, n) => {
-            d3.selectAll('.high').classed('high', false);
-            d3.selectAll('.low').classed('low', false);
-            treeNodes.select('.selected').classed('selected', false);
-            pathSelected(null, dataMaster[0], scales, moveMetric);
-        });
+        addRemoveBubble(selectedGroups, scales, moveMetric)
 
         /////////
         selectedGroups.on('mouseover', function(d, i) {
@@ -436,7 +432,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
     } else if(pathData.length > 1 && pathData.length < 5) {
        
         let commonNodeStart = getCommonNodes(pathData);
-        renderSelectedTopology(commonNodeStart, svg, branchFrequency);
+        renderSelectedTopology(commonNodeStart, svg, scales, branchFrequency, moveMetric);
 
         /////END PATH RENDER///////
         let attWrap = svg.append('g').classed('attribute-wrapper', true);
@@ -512,7 +508,6 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
 
        let lineGenD = d3.line()
        .x(d=> {
-           console.log('scale', d.yScale)
            let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
            let distance = d.edgeMove;
            return x(distance);
@@ -524,7 +519,6 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
 
        let lineGenC = d3.line()
        .x(d=> {
-           console.log('scale', d)
            let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
            let distance = d.edgeMove;
            return x(distance);
@@ -555,22 +549,22 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
         return sp.type === 'discrete';
         });
 
-       let branchGrp = disGroup.selectAll('.branch').data(d=>d.paths).join('g').classed('branch', true);
+       let branchGrpDis = disGroup.selectAll('.branch').data(d=>d.paths).join('g').classed('branch', true);
 
-       branchGrp.attr('transform', (d)=> {
+       branchGrpDis.attr('transform', (d)=> {
         let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
             let distance = x(d.edgeMove);
             return 'translate('+distance+', 0)';
         });
 
-        let bCirc = branchGrp.append('circle').attr('r', 5).attr('cy', (d, i)=> {
+        let bCirc = branchGrpDis.append('circle').attr('r', 5).attr('cy', (d, i)=> {
             let y = d3.scaleLinear().domain([0, 1]).range([attributeHeight - 5, 2]);
             return y(d.realVal) + d.offset;
         }).attr('cx', 5);
 
         bCirc.attr('fill', (d, i)=> d.color);
 
-        let otherCirc = branchGrp.filter(f=> f.leaf != true).selectAll('.other').data(d=> d.other).join('circle').classed('other', true);
+        let otherCirc = branchGrpDis.filter(f=> f.leaf != true).selectAll('.other').data(d=> d.other).join('circle').classed('other', true);
         otherCirc.attr('r', 4).attr('cx', 5).attr('cy', (c, i)=> {
             let y = d3.scaleLinear().domain([1, 0]);
             y.range([0, (attributeHeight-5)]);
@@ -612,7 +606,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
             });
         
         /////AXIS ON HOVER////
-        branchGrp.on('mouseover', (d, i, n)=> {
+        branchGrpDis.on('mouseover', (d, i, n)=> {
             let y = d3.scaleLinear().domain([1, 0]);
             y.range([0, (attributeHeight-5)]);
             svg.selectAll('path.inner-line.'+ d.species).attr('stroke', 'red');
@@ -638,6 +632,22 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
              let distance = x(d.edgeMove);
              return 'translate('+distance+', 0)';
          });
+
+         /////AXIS ON HOVER////
+        branchGrpCon.on('mouseover', (d, i, n)=> {
+            let y = d.yScale;
+            y.range([0, (attributeHeight-5)]);
+            svg.selectAll('path.inner-line.'+ d.species).attr('stroke', 'red');
+            svg.selectAll('path.inner-line.'+ d.species).classed('selected', true);
+            d3.select(n[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(3));
+            d3.select(n[i]).selectAll('.other').style('opacity', 0.7);
+        }).on('mouseout', (d, i, n)=> {
+            d3.select(n[i]).select('g.y-axis')
+            d3.select(n[i]).select('g.y-axis').remove();
+            d3.selectAll('path.inner-line.'+ d.species).attr('stroke', 'gray');
+            d3.selectAll('path.inner-line.'+ d.species).classed('selected', false);
+            d3.selectAll('.other').style('opacity', 0.1);
+        });
 
         let MeanRect = branchGrpCon.append('rect');
    

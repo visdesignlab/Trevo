@@ -3,6 +3,7 @@ import * as d3 from "d3";
 import {pathSelected} from './selectedPaths';
 import {formatAttributeData} from './dataFormat';
 import {filterMaster, nodeFilter, getLatestData, leafStateFilter} from './filterComponent';
+import { drawBranchPointDistribution } from './distributionView';
 
 export function drawPathsAndAttributes(pathData, main, calculatedScales, moveMetric){
 
@@ -78,14 +79,12 @@ export function drawPathsAndAttributes(pathData, main, calculatedScales, moveMet
     return pathGroups;
 
 }
-
 export function sizeAndMove(svg, attribWrap, data, attrMove){
         //tranforming elements
     svg.style('height', ((data.length * (attrMove + 52))) + 'px');
     attribWrap.attr('transform', (d)=> 'translate(140, 25)');
         ///////////////////////////////////
 }
-
 export function renderPaths(pathData, main, scales, moveMetric){
     
     ////YOU SHOULD MOVE THESE APPENDING THINGS OUT OF HERE///////
@@ -243,7 +242,6 @@ export function renderPaths(pathData, main, scales, moveMetric){
 
     return pathGroups;
 }
-
 export function renderAttributes(attributeWrapper, data, scales, filterArray, collapsed){
     let attributeHeight = (collapsed === 'true')? 20 : 45;
     let predictedAttrGrps = attributeWrapper.selectAll('g').data((d, i)=> data[i]).join('g');
@@ -256,7 +254,6 @@ export function renderAttributes(attributeWrapper, data, scales, filterArray, co
 
     return predictedAttrGrps;
 }
-
 function collapsedPathGen(data){
     data.map((p, i)=>{
         let step = i === 0 ? 0 : 1;
@@ -264,7 +261,6 @@ function collapsedPathGen(data){
         p.change = test;
     })
 }
-
 async function continuousPaths(innerTimeline, moveMetric, collapsed){
 
     innerTimeline.data().forEach(path => {
@@ -296,7 +292,6 @@ async function continuousPaths(innerTimeline, moveMetric, collapsed){
     return innerPaths;
     ///////////////////////////////////////////////////////////
 }
-
 export function drawContAtt(predictedAttrGrps, moveMetric, collapsed){
 
     let continuousAtt = predictedAttrGrps.filter(d=> {
@@ -389,13 +384,21 @@ export function drawGroups(stateBins){
 
     svg.attr('height', (stateBins.length * (height + 20)));
     svg.append('g').attr('transform', 'translate(500, 20)').append('text').text(stateBins[0].field)
+
     let wrappers = svg.selectAll('.grouped').data(stateBins).join('g').classed('grouped', true);
     wrappers.attr('transform', (d, i)=> 'translate(10,'+((i * (height+10))+ 50)+')');
-
     let wrapRect = wrappers.append('rect').attr('width', 1000);
+    /*
     wrapRect.attr('height', height);
     wrapRect.style('fill', '#fff');
     wrapRect.style('stroke', 'red');
+    */
+    wrappers.each((d, i, n)=> {
+        console.log(d);
+        drawBranchPointDistribution(d.data, d3.select(n[i]))
+    });
+
+
 
     let groupLabels = wrappers.append('text').text((d, i)=> d.state);
     groupLabels.attr('transform', (d, i)=> 'translate(90, '+((height/2)+ 5)+')');
@@ -403,14 +406,15 @@ export function drawGroups(stateBins){
 
     let innerGroup = wrappers.append('g').classed('inner-wrap', true);
     innerGroup.attr('transform', (d,i)=> 'translate(100, 0)');
-
+/*
     let innerWrapRect = innerGroup.append('rect').attr('width', 900);
     innerWrapRect.attr('height', height);
     innerWrapRect.style('fill', '#fff');
-    innerWrapRect.style('stroke', 'red');
+    innerWrapRect.style('stroke', 'gray');
+*/
+    
 
 }
-
 export function drawDiscreteAtt(predictedAttrGrps, moveMetric, collapsed, bars){
 
     let discreteAtt = predictedAttrGrps.filter(d=> {
