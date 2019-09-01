@@ -24,35 +24,6 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, mov
     filterButton.attr('class', 'btn btn-outline-secondary').text('Show Filters');
     filterButton.on('click', ()=> toggleFilters(filterButton, main, moveMetric, calculatedScales));
     ///LENGTH BUTTON CODE
-/*
-    let lengthButton = toolbar.append('button').attr('id', 'change-length').attr('class', 'btn btn-outline-secondary');
-    if(moveMetric === 'move'){
-        lengthButton.text('Show Edge Length');
-    }else if(moveMetric === 'edgeLength'){
-        lengthButton.text('Normalize Edge Length');
-    }
-
-    lengthButton.on('click', ()=> {
-        if(lengthButton.text() === 'Show Edge Length'){
-            lengthButton.text('Normalize Edge Length');
-            main.selectAll('*').remove();
-            if(viewButton.text() === 'View Summary'){
-                drawPathsAndAttributes(normedPaths, main, calculatedScales, 'edgeLength');
-            }else{
-                renderDistibutions(main, calculatedScales, 'edgeLength');
-            }
-        }else{
-            lengthButton.text('Show Edge Length');
-            main.selectAll('*').remove();
-            /*
-            if(viewButton.text() === 'View Summary'){
-                drawPathsAndAttributes(normedPaths, main, calculatedScales, moveMetric);
-            }else{
-                renderDistibutions(main, calculatedScales, moveMetric);
-            }
-            updateMainView(calculatedScales, moveMetric);
-        }
-    });*/
 
     let scrunchButton = toolbar.append('button').attr('id', 'scrunch');
     scrunchButton.attr('class', 'btn btn-outline-secondary').text('Collapse Attributes');

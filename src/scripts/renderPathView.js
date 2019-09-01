@@ -4,6 +4,7 @@ import {pathSelected} from './selectedPaths';
 import {formatAttributeData} from './dataFormat';
 import {filterMaster, nodeFilter, getLatestData, leafStateFilter} from './filterComponent';
 import { drawBranchPointDistribution } from './distributionView';
+import { dropDown } from './buttonComponents';
 
 export function drawPathsAndAttributes(pathData, main, calculatedScales, moveMetric){
 
@@ -376,23 +377,43 @@ export function drawContAtt(predictedAttrGrps, moveMetric, collapsed){
 export function drawGroups(stateBins, scales){
    
     let height = 40;
+    let selectedTool = d3.select('#selected');
+ 
     let main = d3.select('#main');
-    
+
+    selectedTool.style('height', '35px');
+    selectedTool.style('width', '1000px');
+
+    let splitOnArray = [{'field':'None'}].concat(scales.filter(f=> (f.field != stateBins[0].field) && f.type === 'discrete'));
+    let dropOptions = dropDown(selectedTool, splitOnArray, 'Split On','show-drop-div-group');
+
+    dropOptions.on('click', (d, i, n)=> {
+        if(d.type === 'discrete'){
+            let data = getLatestData();
+            let stateBins = d.scales.map(m=> {
+                return {'field': m.field, 'state': m.scaleName, 'data': []}});
+            stateBins.map(state=> {
+               state.data = data.filter(paths=> {
+                    let node = paths.filter(no=> no.leaf === true);
+                        return node[0].attributes[state.field].winState === state.state;
+                });
+            });
+           d3.select('#main').selectAll('*').remove();
+           drawGroups(stateBins, calculatedScales);
+        }else{
+            console.error('THIS HAS TO BE DISCRETE');
+        }
+        selectedTool.select('#show-drop-div-group').classed('show', false);
+    });
+
     let svgTest = main.select('#main-path-view');
     let svg = svgTest.empty() ? main.append('svg').attr('id', 'main-path-view') : svgTest;
     svg.selectAll('*').remove();
 
     svg.attr('height', (stateBins.length * (height + 20)));
-    svg.append('g').attr('transform', 'translate(500, 20)').append('text').text(stateBins[0].field)
+    svg.append('g').attr('transform', 'translate(500, 40)').append('text').text(stateBins[0].field)
 
     let wrappers = svg.selectAll('.grouped').data(stateBins).join('g').classed('grouped', true);
-    
-    /*
-    let wrapRect = wrappers.append('rect').attr('width', 1000);
-    wrapRect.attr('height', height);
-    wrapRect.style('fill', '#fff');
-    wrapRect.style('stroke', 'red');
-    */
     wrappers.each((d, i, n)=> {
         let branchBar = drawBranchPointDistribution(d.data, d3.select(n[i]));
         branchBar.select('.leaf-label').append('text').text((d, i) =>': '+ d.data.length).attr('transform', 'translate(45, 0)');
@@ -445,7 +466,6 @@ export function drawGroups(stateBins, scales){
            });
            return dis;
        });
-       console.log('mdiss',mappedDis)
        return mappedDis;
     }).join('g').classed('att-wrapper', true);
 
@@ -479,8 +499,7 @@ export function drawGroups(stateBins, scales){
            return x(distance);
         })
        .y(d=> {
-           let y = d3.scaleLinear().domain([0, 1]).range([20-2, 1]);
-           //return y(d.realVal) + d.offset;
+           let y = d3.scaleLinear().domain([0, 1]).range([height-2, 1]);
            return y(d.realVal);
        });
 
@@ -492,7 +511,7 @@ export function drawGroups(stateBins, scales){
         })
        .y(d=> {
            let y = d.yScale;
-           y.range([20-2, 1]);
+           y.range([height-2, 1]);
            return y(d.realVal) + 2;
        });
 
@@ -618,7 +637,6 @@ export function drawGroups(stateBins, scales){
      });
 
      let MeanRect = branchGrpCon.append('rect');
-
      MeanRect.attr('width', 10).attr('height', 3);
      MeanRect.attr('y', (d, i) => {
          let scale = scales.filter(s=> s.field === d.label)[0];
@@ -639,8 +657,6 @@ export function drawGroups(stateBins, scales){
          return y(d.upperCI95);
      })
      confiBars.style('opacity', 0.1);
-
-
 }
 export function drawDiscreteAtt(predictedAttrGrps, moveMetric, collapsed, bars){
 
@@ -688,12 +704,13 @@ export function drawDiscreteAtt(predictedAttrGrps, moveMetric, collapsed, bars){
     .attr("class", (d, i)=> d[0].species + " inner-line")
     .style('stroke-width', 0.7)
     .style('stroke', (d)=> {
-        return d[0].color;});
+        return d[0].color;
+    });
 
     let attribRectDisc = innerTimelineDis.append('rect').classed('attribute-rect', true);
     attribRectDisc.attr('height', attributeHeight);
     let attributeNodesDisc = innerTimelineDis.selectAll('.attribute-node-discrete').data(d=> {
-        return d;}).join('g').classed('attribute-node-discrete', true);
+        return d;}).join('g');
 
     attributeNodesDisc.attr('transform', (d)=> {
         let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
@@ -720,18 +737,48 @@ export function drawDiscreteAtt(predictedAttrGrps, moveMetric, collapsed, bars){
             d3.select(n[i]).select('g.y-axis').remove();
         })
 
+    attributeNodesDisc.attr('class', (d, i, n)=> {
+        let path = d3.selectAll(n).data();
+        return path[path.length - 1].species;
+    }).classed('attribute-node-discrete', true);
+
     if(bars === false){
 
         let stateDots = attributeNodesDisc.filter((att, i)=> att[0] != undefined).selectAll('.dots').data(d=> {
+            
             return d;
         }).join('circle').classed('dots', true);
         
         stateDots.attr('cx', 10).attr('cy', (d)=> {
             let y = d3.scaleLinear().domain([0, 1]).range([attributeHeight - 2, 2]);
             return y(d.realVal);
-        }).attr('r', 2).style('fill', d=> d.color);
+        }).attr('r', 2);
+        
+        stateDots.style('fill', (d, i, n)=> {
+            //console.log(d, d3.selectAll(n).data())
+            /*
+            let speciesPath = d3.selectAll('.attribute-node-discrete.'+ d.species)//.filter(f=> f.type === 'discrete');
+            console.log('color', d, speciesPath.data())
+            let nodeArray = speciesPath.data().map(m=> {
+                return m.node ? m.node : m[0].node;
+            });
+            let index = nodeArray.indexOf(d.node);
+            console.log(speciesPath.data()[index], speciesPath.data()[index], speciesPath.data()[index]);
+            */
+            //return d.color
+            return 'gray';
+        });
     
         stateDots.filter(f=> f.realVal > 0.5).attr('r', 4);
+/*
+        let maxDots = stateDots.filter((f, i, n)=> {
+            //console.log(f, d3.max(d3.selectAll(n).data().map(m=> m.realVal)));
+            return f.realVal === d3.max(d3.selectAll(n).data().map(m=> m.realVal));
+        });
+*/
+        
+
+        ////NEED TO ADD COLOR ON STATE CHANGE////
     
         stateDots.on("mouseover", function(d) {
             let tool = d3.select('#tooltip');

@@ -214,6 +214,7 @@ export function formatAttributeData(pathData, scales, filterArray){
                     m.attributes[key].species = speciesLabel;
                     m.attributes[key].color = scales.filter(f=> f.field === key)[0].catColor;
                     m.attributes[key].move = m.move;
+                    m.attributes[key].node = m.node;
                     m.attributes[key].edgeMove = m.edgeMove;
                     m.attributes[key].label = key;
                     m.attributes[key].yScale = scales.filter(s=> s.field === key)[0].yScale;
@@ -227,6 +228,7 @@ export function formatAttributeData(pathData, scales, filterArray){
                         state.winState = m.attributes[key].states.filter(f=> f.realVal === 1)[0].state;
                         state.color = scales.filter(f=> f.field === key)[0].stateColors.filter(f=> f.state === state.winState)[0].color;
                         state.move = m.move;
+                        state.node = m.node;
                         state.edgeMove = m.edgeMove;
                         state.attrLabel = key;
                         return state;
@@ -235,6 +237,7 @@ export function formatAttributeData(pathData, scales, filterArray){
                         return states.map((st, j)=> {
                             st.color = scales.filter(f=> f.field === key)[0].stateColors.filter(f=> f.state === st.state)[0].color;
                             st.move = m.move;
+                            st.node = m.node;
                             st.edgeMove = m.edgeMove;
                             st.attrLabel = key;
                             st.species = speciesLabel;
