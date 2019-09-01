@@ -375,7 +375,7 @@ export function drawContAtt(predictedAttrGrps, moveMetric, collapsed){
 }
 export function drawGroups(stateBins, scales){
    
-    let height = 300;
+    let height = 40;
     let main = d3.select('#main');
     
     let svgTest = main.select('#main-path-view');
@@ -386,7 +386,6 @@ export function drawGroups(stateBins, scales){
     svg.append('g').attr('transform', 'translate(500, 20)').append('text').text(stateBins[0].field)
 
     let wrappers = svg.selectAll('.grouped').data(stateBins).join('g').classed('grouped', true);
-    wrappers.attr('transform', (d, i)=> 'translate(10,'+((i * (height+10))+ 50)+')');
     
     /*
     let wrapRect = wrappers.append('rect').attr('width', 1000);
@@ -456,6 +455,9 @@ export function drawGroups(stateBins, scales){
        return mappedDis;
     }).join('g').classed('att-wrapper', true);
 
+    wrappers.attr('transform', (d, i)=> 'translate(10,'+(i * (5 * height)+ 50)+')');
+    svg.attr('height', 1000);
+
     let labels = attWraps.append('text')
     .text(d=> d.label)
     .style('text-anchor', 'end')
@@ -478,7 +480,8 @@ export function drawGroups(stateBins, scales){
         })
        .y(d=> {
            let y = d3.scaleLinear().domain([0, 1]).range([20-2, 1]);
-           return y(d.realVal) + d.offset;
+           //return y(d.realVal) + d.offset;
+           return y(d.realVal);
        });
 
        let lineGenC = d3.line()
