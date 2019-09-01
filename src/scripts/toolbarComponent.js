@@ -96,7 +96,7 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, mov
                 });
             });
            d3.select('#main').selectAll('*').remove();
-           drawGroups(stateBins);
+           drawGroups(stateBins, calculatedScales);
         }else{
             console.error('THIS HAS TO BE DISCRETE');
         }

@@ -9,8 +9,9 @@ export function drawBranchPointDistribution(data, svg){
     let branchBar = svg.append('g').classed('branch-bar', true).attr('transform', 'translate(10, 20)');
     branchBar.append('line').attr('y1', 2).attr('y2', 2).attr('x1', '100').attr('x2', 890).attr('stroke', 'gray').attr('stroke-width', .25)
     branchBar.append('text').text('Root').attr('transform', 'translate(50, 7)');
-    branchBar.append('text').text('Leaves').attr('transform', 'translate(950, 7)');
-
+    let leafLabel = branchBar.append('g').classed('leaf-label', true).attr('transform', 'translate(950, 7)');
+    leafLabel.append('text').text('Leaves');
+    
     let nodeLengthArray = [];
     let nodeDuplicateCheck = []
 
@@ -28,7 +29,7 @@ export function drawBranchPointDistribution(data, svg){
     pointGroups.attr('transform', (d, i) => 'translate('+(105 + bPointScale(d.eMove))+', 0)');
     pointGroups.append('circle').attr('r', 5).attr('fill', "rgba(123, 141, 153, 0.5)");
 
-    return pointGroups;
+    return branchBar;
 }
 
 export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
@@ -169,11 +170,11 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
     svg.attr('id', 'main-summary-view');
     svg.attr('height', (keys.length * (height + 25)));
 
-    let pointGroups = drawBranchPointDistribution(newNormed, svg);
+    let branchBar = drawBranchPointDistribution(newNormed, svg);
+    let pointGroups = branchBar.selectAll('g.branch-points');
   
     let wrap = svg.append('g').classed('summary-wrapper', true);
     wrap.attr('transform', 'translate(10, 50)');
-
 
     let binnedWrap = wrap.selectAll('.attr-wrap').data(sortedBins).join('g').attr('class', d=> d.key + ' attr-wrap');
     binnedWrap.attr('transform', (d, i)=>  'translate(0,'+(i * (height + 5))+')');

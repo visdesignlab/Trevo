@@ -373,9 +373,9 @@ export function drawContAtt(predictedAttrGrps, moveMetric, collapsed){
     return attributeNodesCont;
    
 }
-export function drawGroups(stateBins){
+export function drawGroups(stateBins, scales){
    
-    let height = 100;
+    let height = 300;
     let main = d3.select('#main');
     
     let svgTest = main.select('#main-path-view');
@@ -387,18 +387,18 @@ export function drawGroups(stateBins){
 
     let wrappers = svg.selectAll('.grouped').data(stateBins).join('g').classed('grouped', true);
     wrappers.attr('transform', (d, i)=> 'translate(10,'+((i * (height+10))+ 50)+')');
-    let wrapRect = wrappers.append('rect').attr('width', 1000);
+    
     /*
+    let wrapRect = wrappers.append('rect').attr('width', 1000);
     wrapRect.attr('height', height);
     wrapRect.style('fill', '#fff');
     wrapRect.style('stroke', 'red');
     */
     wrappers.each((d, i, n)=> {
-        console.log(d);
-        drawBranchPointDistribution(d.data, d3.select(n[i]))
+        let branchBar = drawBranchPointDistribution(d.data, d3.select(n[i]));
+        branchBar.select('.leaf-label').append('text').text((d, i) =>': '+ d.data.length).attr('transform', 'translate(45, 0)');
+
     });
-
-
 
     let groupLabels = wrappers.append('text').text((d, i)=> d.state);
     groupLabels.attr('transform', (d, i)=> 'translate(90, '+((height/2)+ 5)+')');
@@ -412,7 +412,96 @@ export function drawGroups(stateBins){
     innerWrapRect.style('fill', '#fff');
     innerWrapRect.style('stroke', 'gray');
 */
+    let attWraps = innerGroup.selectAll('.att-wrapper').data((d, i)=> {
+        let atts = formatAttributeData(d.data, scales, null);
+        let attDataComb = atts[0].map((att, i)=> {
+            let species = d.data[0].filter(f=> f.leaf === true)[0].label;
+            att[att.length - 1].offset = 0;
+            let attribute = {'label': att[att.length-1].label, 'type':att[att.length-1].type, 'data': [{'species': species, 'paths': att}]}
+            for(let index = 1; index < atts.length; index++ ){
+                let species = d.data[index].filter(f=> f.leaf === true)[0].label;
+                let last = atts[index][i].length - 1
+                atts[index][i][last].offset = (index * 8);
+                attribute.data.push({'species': species, 'paths': atts[index][i]})
+            }
+            return attribute;
+        });
+        
+        function findMaxState(states, offset){
+            let maxP = d3.max(states.map(v=> v.realVal));
+            let notMax = states.filter(f=> f.realVal != maxP);
+            let winState = states[states.map(m=> m.realVal).indexOf(maxP)]
+            winState.other = notMax;
+            winState.offset = offset;
     
+            return winState;
+        }
+
+       let mappedDis = attDataComb.map(dis=> {
+           dis.data = dis.data.map((spec, i)=> {
+               spec.paths = spec.paths.map(m=> {
+                if(dis.type === 'discrete'){
+                    let offset = 5 * i;
+                    let maxProb = m.states? {'realVal': 1.0, 'state': m.winState, 'color':m.color, 'edgeMove': m.edgeMove, 'offset':m.offset, 'leaf': true} : findMaxState(m, offset); 
+                    return maxProb;
+                }else{
+                    return m;
+                }
+            });
+            return spec;
+           });
+           return dis;
+       });
+       console.log('mdiss',mappedDis)
+       return mappedDis;
+    }).join('g').classed('att-wrapper', true);
+
+    let labels = attWraps.append('text')
+    .text(d=> d.label)
+    .style('text-anchor', 'end')
+    .style('font-size', 11)
+    labels.attr('transform', 'translate(0,'+(50/2)+')');
+
+    let speciesGrp = attWraps.selectAll('g').data(d=> {
+        d.data = d.data.map(m=> {
+            m.type = d.type;
+            return m;
+        });
+        return d.data;
+    }).join('g').classed('species', true);
+
+    let lineGenD = d3.line()
+       .x(d=> {
+           let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
+           let distance = d.edgeMove;
+           return x(distance);
+        })
+       .y(d=> {
+           let y = d3.scaleLinear().domain([0, 1]).range([20-2, 1]);
+           return y(d.realVal) + d.offset;
+       });
+
+       let lineGenC = d3.line()
+       .x(d=> {
+           let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
+           let distance = d.edgeMove;
+           return x(distance);
+        })
+       .y(d=> {
+           let y = d.yScale;
+           y.range([20-2, 1]);
+           return y(d.realVal) + 2;
+       });
+
+       let innerStatePaths = speciesGrp.append('path')
+       .attr("d", d=> {
+            return (d.type === 'discrete') ? lineGenD(d.paths) : lineGenC(d.paths);
+        })
+       .attr("class", (d, i)=> {
+            return d.species + " inner-line"})
+       .style('stroke-width', 0.7)
+       .style('fill', 'none')
+       .style('stroke', 'gray');
 
 }
 export function drawDiscreteAtt(predictedAttrGrps, moveMetric, collapsed, bars){
