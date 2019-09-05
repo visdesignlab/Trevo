@@ -111,8 +111,8 @@ export function sortOtherPaths(pathData, otherPaths, commonNode) {
 }
 function renderSelectedTopology(commonNodeStart, svg, scales, branchFrequency, moveMetric){
 
-    let selectWrap = svg.append('g').classed('select-wrap', true);
-    selectWrap.attr('transform', 'translate(0, 20)')
+        let selectWrap = svg.append('g').classed('select-wrap', true);
+        selectWrap.attr('transform', 'translate(0, 20)')
 
         ///Scales for circles ///
         let circleScale = d3.scaleLog().range([6, 14]).domain([1, d3.max(Object.values(branchFrequency))]);
@@ -121,7 +121,7 @@ function renderSelectedTopology(commonNodeStart, svg, scales, branchFrequency, m
 
         let pathBars = selectedGroups.append('rect').classed('path-rect', true);
         pathBars.attr('y', -8);
-        pathBars.attr('height', (35 + (8 * commonNodeStart[commonNodeStart.length - 1].children.length)));
+        pathBars.attr('height', (35 + (25 * commonNodeStart[commonNodeStart.length - 1].children.length)));
 
         //////////
         ///Selecting species

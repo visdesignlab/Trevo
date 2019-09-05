@@ -378,10 +378,12 @@ export function drawGroups(stateBins, scales){
    
     let height = 40;
     let selectedTool = d3.select('#selected');
+    selectedTool.selectAll('*').remove();
  
     let main = d3.select('#main');
+    main.style('padding-top', 0);
 
-    selectedTool.style('height', '35px');
+    selectedTool.style('height', '50px');
     selectedTool.style('width', '1000px');
 
     let splitOnArray = [{'field':'None'}].concat(scales.filter(f=> (f.field != stateBins[0].field) && f.type === 'discrete'));
@@ -416,16 +418,23 @@ export function drawGroups(stateBins, scales){
     let wrappers = svg.selectAll('.grouped').data(stateBins).join('g').classed('grouped', true);
     wrappers.each((d, i, n)=> {
         let branchBar = drawBranchPointDistribution(d.data, d3.select(n[i]));
+        
+        branchBar.select('rect').attr('x', -80).attr('fill','gray');
+        branchBar.selectAll('.branch-points').selectAll('circle').attr('fill', 'rgba(255, 255, 255, 0.3)');
+        
         branchBar.select('.leaf-label').append('text').text((d, i) =>': '+ d.data.length).attr('transform', 'translate(45, 0)');
-        branchBar.selectAll('text').style('font-size', '11.5px')
+        branchBar.selectAll('text').style('font-size', '11.5px').style('fill', '#fff');
+
+        branchBar.select('line').attr('stroke', '#fff');
     });
 
     let groupLabels = wrappers.append('text').text((d, i)=> d.state);
     groupLabels.attr('transform', (d, i)=> 'translate(15, 15)');
     groupLabels.style('text-anchor', 'end');
+    groupLabels.attr('fill', '#fff');
 
     let innerGroup = wrappers.append('g').classed('inner-wrap', true);
-    innerGroup.attr('transform', (d,i)=> 'translate(100, 0)');
+    innerGroup.attr('transform', (d,i)=> 'translate(110, 0)');
 
     let attWraps = innerGroup.selectAll('.att-wrapper').data((d, i)=> {
         let atts = formatAttributeData(d.data, scales, null);
@@ -441,7 +450,6 @@ export function drawGroups(stateBins, scales){
             }
             return attribute;
         });
-        
         function findMaxState(states, offset){
             let maxP = d3.max(states.map(v=> v.realVal));
             let notMax = states.filter(f=> f.realVal != maxP);
@@ -450,7 +458,6 @@ export function drawGroups(stateBins, scales){
             winState.offset = offset;
             return winState;
         }
-
        let mappedDis = attDataComb.map(dis=> {
            dis.data = dis.data.map((spec, i)=> {
                spec.paths = spec.paths.map(m=> {
@@ -538,27 +545,56 @@ export function drawGroups(stateBins, scales){
     let branchGrpDis = disGroup.selectAll('.branch').data(d=>d.paths).join('g').classed('branch', true);
 
     branchGrpDis.attr('transform', (d)=> {
-     let x = d3.scaleLinear().domain([0, 1]).range([0, 800]);
-         let distance = x(d.edgeMove);
-         return 'translate('+distance+', 0)';
+        let x = d3.scaleLinear().domain([0, 1]).range([0, 800]);
+            let distance = x(d.edgeMove);
+            return 'translate('+distance+', 0)';
      });
 
-     let bCirc = branchGrpDis.append('circle').attr('r', 5).attr('cy', (d, i)=> {
+    let bCirc = branchGrpDis.append('circle').attr('r', 5).attr('cy', (d, i)=> {
          let y = d3.scaleLinear().domain([0, 1]).range([height - 5, 2]);
          //return y(d.realVal) + d.offset;
          return y(d.realVal);
      }).attr('cx', 5);
 
-     bCirc.attr('fill', (d, i)=> d.color);
+     bCirc.classed('win-state', true);
 
-     let otherCirc = branchGrpDis.filter(f=> f.leaf != true).selectAll('.other').data(d=> d.other).join('circle').classed('other', true);
-     otherCirc.attr('r', 4).attr('cx', 5).attr('cy', (c, i)=> {
+     bCirc.attr('fill', (d, i, n)=> {
+        console.log(n, n[i], n[i-1], n[i+1]);
+        if(i === 0){
+            console.log(d3.select(n[i+1]).data()[0]);
+            if(d.state === d3.select(n[i+1]).data()[0].state){
+                return 'gray';
+            }else{
+                return d.color;
+            }
+        }else if(i === n.length - 1){
+            if(d.state === d3.select(n[i-1]).data()[0].state){
+                return 'gray';
+            }else{
+                return d.color;
+            }
+        }else{
+            if(d.state === d3.select(n[i+1]).data()[0].state || d.state === d3.select(n[i-1]).data()[0].state){
+                return 'gray';
+            }else{
+                return d.color;
+            }
+        }
+       // console.log(disGroup.filter(f=> f.species === d.species).selectAll('.win-state'));
+       // console.log(disGroup.data())
+        return d.color});
+
+  
+
+    let otherCirc = branchGrpDis.filter(f=> f.leaf != true).selectAll('.other').data(d=> d.other).join('circle').classed('other', true);
+    
+    otherCirc.attr('r', 4).attr('cx', 5).attr('cy', (c, i)=> {
          let y = d3.scaleLinear().domain([1, 0]);
          y.range([0, (height-5)]);
              return y(c.realVal);
          }).attr('fill', (c)=> c.color).style('opacity', 0.1);
 
-     otherCirc.on("mouseover", function(d) {
+    otherCirc.on("mouseover", function(d) {
          let tool = d3.select('#tooltip');
          tool.transition()
            .duration(200)
@@ -575,7 +611,7 @@ export function drawGroups(stateBins, scales){
            .style("opacity", 0);
          });
 
-     bCirc.on("mouseover", function(d) {
+    bCirc.on("mouseover", function(d) {
          let tool = d3.select('#tooltip');
          tool.transition()
            .duration(200)
@@ -593,7 +629,7 @@ export function drawGroups(stateBins, scales){
          });
      
      /////AXIS ON HOVER////
-     branchGrpDis.on('mouseover', (d, i, n)=> {
+    branchGrpDis.on('mouseover', (d, i, n)=> {
          let y = d3.scaleLinear().domain([1, 0]);
          y.range([0, (height-5)]);
          svg.selectAll('path.inner-line.'+ d.species).attr('stroke', 'red');
@@ -608,13 +644,13 @@ export function drawGroups(stateBins, scales){
          d3.selectAll('.other').style('opacity', 0.1);
      });
 
-     let conGroup = speciesGrp.filter(sp=> {
+    let conGroup = speciesGrp.filter(sp=> {
          return sp.type === 'continuous';
      });
 
-     let branchGrpCon = conGroup.selectAll('.branch').data(d=>d.paths).join('g').classed('branch', true);
+    let branchGrpCon = conGroup.selectAll('.branch').data(d=>d.paths).join('g').classed('branch', true);
 
-     branchGrpCon.attr('transform', (d)=> {
+    branchGrpCon.attr('transform', (d)=> {
       let x = d3.scaleLinear().domain([0, 1]).range([0, 800]);
           let distance = x(d.edgeMove);
           return 'translate('+distance+', 0)';

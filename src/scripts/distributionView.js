@@ -7,6 +7,8 @@ import {dataMaster} from './index';
 export function drawBranchPointDistribution(data, svg){
 
     let branchBar = svg.append('g').classed('branch-bar', true).attr('transform', 'translate(10, 10)');
+    branchBar.append('rect').classed('point-dis-rect', true).attr('height', 25).attr('x', -10).attr('y', -10).attr('fill', '#fff');
+
     branchBar.append('line').attr('y1', 2).attr('y2', 2).attr('x1', '100').attr('x2', 890).attr('stroke', 'gray').attr('stroke-width', .25)
     branchBar.append('text').text('Root').attr('transform', 'translate(50, 7)');
     let leafLabel = branchBar.append('g').classed('leaf-label', true).attr('transform', 'translate(950, 7)');
@@ -206,7 +208,6 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
     var lineGen = d3.area()
     .curve(d3.curveCardinal)
     .x((d, i, n)=> {
-       
         let y = d3.scaleLinear().domain([0, n.length - 1]).range([0, height]).clamp(true);
         return y(i); 
     })
@@ -220,7 +221,6 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
     });
 
     continDist.each((d, i, nodes)=> {
-       
         let distrib = d3.select(nodes[i]).selectAll('g').data([d.bins]).join('g').classed('distribution', true);
         distrib.attr('transform', 'translate(11, '+height+') rotate(-90)');
         let path = distrib.append('path').attr('d', lineGen);
