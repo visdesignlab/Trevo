@@ -374,6 +374,15 @@ export function drawContAtt(predictedAttrGrps, moveMetric, collapsed){
     return attributeNodesCont;
    
 }
+
+export function findMaxState(states, offset){
+    let maxP = d3.max(states.map(v=> v.realVal));
+    let notMax = states.filter(f=> f.realVal != maxP);
+    let winState = states[states.map(m=> m.realVal).indexOf(maxP)]
+    winState.other = notMax;
+    winState.offset = offset;
+    return winState;
+}
 export function drawGroups(stateBins, scales){
    
     let height = 40;
@@ -390,19 +399,306 @@ export function drawGroups(stateBins, scales){
     let dropOptions = dropDown(selectedTool, splitOnArray, 'Split On','show-drop-div-group');
 
     dropOptions.on('click', (d, i, n)=> {
+        selectedTool.append('text').text(d.field);
+        
         if(d.type === 'discrete'){
+
             let data = getLatestData();
-            let stateBins = d.scales.map(m=> {
-                return {'field': m.field, 'state': m.scaleName, 'data': []}});
-            stateBins.map(state=> {
-               state.data = data.filter(paths=> {
-                    let node = paths.filter(no=> no.leaf === true);
-                        return node[0].attributes[state.field].winState === state.state;
+            let newBins = stateBins.map(state=> {
+                let newBinData = d.scales.map(sc=> {
+                    let field = sc.field;
+                    let name = sc.scaleName;
+                    let newData = state.data.filter(pa=> {
+                        let leaf = pa.filter(le=> le.leaf === true)[0];
+                        return leaf.attributes[field].winState === name;
+                    });
+                    return {'field': field, 'state': name, 'data': newData }
                 });
+                state.data = newBinData;
+                return state;
             });
-           d3.select('#main').selectAll('*').remove();
-           drawGroups(stateBins, calculatedScales);
+
+            //////RENDERING NEED TO SEPARATE OUT/////
+           
+           let main = d3.select('#main');
+           main.selectAll('*').remove();
+           main.style('padding-top', '40px');
+           let firstGroupDiv = main.selectAll('div.first-group').data(newBins).join('div').classed('first-group', true);
+           
+           let firstGroupSvg = firstGroupDiv.append('svg');
+           firstGroupSvg.attr('height', s=> (s.data.length*270));
+           let firstGroup = firstGroupSvg.append('g');
+          
+           let firstLabel = firstGroup.append('text').text(f=> f.state).attr('transform', 'translate(10, 10)');
+           let secondGroup = firstGroup.selectAll('g.second-group').data(g=> g.data).join('g').classed('second-group', true);
+           secondGroup = secondGroup.filter(f=> f.data.length > 0);
+           secondGroup.attr('transform', (s, i)=> 'translate(30,'+(20 + (i * 270))+')');
+
+           secondGroup.each((s, i, n)=> {
+            let branchBar = drawBranchPointDistribution(s.data, d3.select(n[i]));
+            branchBar.select('rect').attr('x', -80).attr('fill','gray');
+            branchBar.selectAll('.branch-points').selectAll('circle').attr('fill', 'rgba(255, 255, 255, 0.3)');
+            
+            branchBar.select('.leaf-label').append('text').text((t, i) =>': '+ t.data.length).attr('transform', 'translate(45, 0)');
+            branchBar.selectAll('text').style('font-size', '11.5px').style('fill', '#fff');
+    
+            branchBar.select('line').attr('stroke', '#fff');
+            let groupLabels = d3.select(n[i]).append('text').text((s, i)=> s.state);
+            groupLabels.attr('transform', (d, i)=> 'translate(15, 15)');
+            groupLabels.style('text-anchor', 'end');
+            groupLabels.attr('fill', '#fff');
+           });
+
+           let innerGroup = secondGroup.filter(f=> f.data.length > 0).append('g').classed('inner-wrap', true);
+           innerGroup.attr('transform', (d,i)=> 'translate(110, 0)');
+       
+           let attWraps = innerGroup.selectAll('.att-wrapper').data((d, i)=> {
+               let atts = formatAttributeData(d.data, scales, null);
+               let attDataComb = atts[0].map((att, i)=> {
+                   let species = d.data[0].filter(f=> f.leaf === true)[0].label;
+                   att[att.length - 1].offset = 0;
+                   let attribute = {'label': att[att.length-1].label, 'type':att[att.length-1].type, 'data': [{'species': species, 'paths': att}]}
+                   for(let index = 1; index < atts.length; index++ ){
+                       let species = d.data[index].filter(f=> f.leaf === true)[0].label;
+                       let last = atts[index][i].length - 1
+                       atts[index][i][last].offset = (index * 8);
+                       attribute.data.push({'species': species, 'paths': atts[index][i]})
+                   }
+                   return attribute;
+               });
+
+              let mappedDis = attDataComb.map(dis=> {
+                  dis.data = dis.data.map((spec, i)=> {
+                      spec.paths = spec.paths.map(m=> {
+                       if(dis.type === 'discrete'){
+                           let offset = 5 * i;
+                           let maxProb = m.states? {'realVal': 1.0, 'state': m.winState, 'color':m.color, 'edgeMove': m.edgeMove, 'offset':m.offset, 'leaf': true} : findMaxState(m, offset); 
+                           return maxProb;
+                       }else{
+                           return m;
+                       }
+                   });
+                   return spec;
+                  });
+                  return dis;
+              });
+              return mappedDis;
+           }).join('g').classed('att-wrapper', true);
+
+           let innerWrapRect = attWraps.append('rect').attr('width', 800);
+    innerWrapRect.attr('height', height);
+    innerWrapRect.style('fill', '#fff');
+    innerWrapRect.style('stroke', 'gray');
+
+    attWraps.attr('transform', (d, i)=> 'translate(0,'+((i * (height+5))+ 30)+')');
+    wrappers.attr('transform', (d, i)=> 'translate(60,'+(i * (5 * (height+15))+ 50)+')');
+    svg.attr('height', (wrappers.data().length * (5 * (height+15))+ 50));
+
+    let labels = attWraps.append('text')
+    .text(d=> d.label)
+    .style('text-anchor', 'end')
+    .style('font-size', 11)
+    labels.attr('transform', 'translate(-5,'+(50/2)+')');
+
+    let speciesGrp = attWraps.selectAll('g').data(d=> {
+        d.data = d.data.map(m=> {
+            m.type = d.type;
+            return m;
+        });
+        return d.data;
+    }).join('g').classed('species', true);
+
+    let lineGenD = d3.line()
+       .x(d=> {
+           let x = d3.scaleLinear().domain([0, 1]).range([0, 800]);
+           let distance = d.edgeMove;
+           return x(distance);
+        })
+       .y(d=> {
+           let y = d3.scaleLinear().domain([0, 1]).range([height-2, 1]);
+           return y(d.realVal);
+       });
+
+       let lineGenC = d3.line()
+       .x(d=> {
+           let x = d3.scaleLinear().domain([0, 1]).range([0, 800]);
+           let distance = d.edgeMove;
+           return x(distance);
+        })
+       .y(d=> {
+           let y = d.yScale;
+           y.range([height-2, 1]);
+           return y(d.realVal) + 2;
+       });
+
+       let innerStatePaths = speciesGrp.append('path')
+       .attr("d", d=> {
+            return (d.type === 'discrete') ? lineGenD(d.paths) : lineGenC(d.paths);
+        })
+       .attr("class", (d, i)=> {
+            return d.species + " inner-line"})
+       .style('stroke-width', 0.7)
+       .style('fill', 'none')
+       .style('stroke', 'gray');
+
+       innerStatePaths.on('mouseover', (d, i, n)=> {
+        d3.select(n[i]).classed('selected', true);
+    }).on('mouseout', (d, i, n)=> {
+         d3.select(n[i]).classed('selected', false);
+    });
+
+    let disGroup = speciesGrp.filter(sp=> {
+     return sp.type === 'discrete';
+     });
+
+    let branchGrpDis = disGroup.selectAll('.branch').data(d=>d.paths).join('g').classed('branch', true);
+
+    branchGrpDis.attr('transform', (d)=> {
+        let x = d3.scaleLinear().domain([0, 1]).range([0, 800]);
+            let distance = x(d.edgeMove);
+            return 'translate('+distance+', 0)';
+     });
+
+    let bCirc = branchGrpDis.append('circle').attr('r', 5).attr('cy', (d, i)=> {
+         let y = d3.scaleLinear().domain([0, 1]).range([height - 5, 2]);
+         return y(d.realVal);
+     }).attr('cx', 5);
+
+     bCirc.classed('win-state', true);
+
+     bCirc.attr('fill', (d, i, n)=> {
+        if(i === 0){
+            return d.color;
+        }else if(i === n.length - 1){
+            if(d.state === d3.select(n[i-1]).data()[0].state){
+                return 'rgba(189, 195, 199, 0.3)';
+            }else{
+                d.shift = true;
+                return d.color;
+            }
         }else{
+            if(d.state === d3.select(n[i+1]).data()[0].state || d.state === d3.select(n[i-1]).data()[0].state){
+                return 'rgba(189, 195, 199, 0.3)';
+            }else{
+                d.shift = true;
+                return d.color;
+            }
+        }
+     });
+
+    let otherCirc = branchGrpDis.filter(f=> f.leaf != true).selectAll('.other').data(d=> d.other).join('circle').classed('other', true);
+    
+    otherCirc.attr('r', 4).attr('cx', 5).attr('cy', (c, i)=> {
+         let y = d3.scaleLinear().domain([1, 0]);
+         y.range([0, (height-5)]);
+             return y(c.realVal);
+         }).attr('fill', 'rgba(189, 195, 199, 0.1)');
+
+    otherCirc.on("mouseover", function(d) {
+         let tool = d3.select('#tooltip');
+         tool.transition()
+           .duration(200)
+           .style("opacity", .9);
+         let f = d3.format(".3f");
+         tool.html(d.state + ": " + f(d.realVal))
+           .style("left", (d3.event.pageX + 10) + "px")
+           .style("top", (d3.event.pageY - 28) + "px");
+         })
+       .on("mouseout", function(d) {
+         let tool = d3.select('#tooltip');
+         tool.transition()
+           .duration(500)
+           .style("opacity", 0);
+         });
+
+    bCirc.on("mouseover", function(d) {
+         let tool = d3.select('#tooltip');
+         tool.transition()
+           .duration(200)
+           .style("opacity", .9);
+         let f = d3.format(".3f");
+         tool.html(d.state + ": " + f(d.realVal))
+           .style("left", (d3.event.pageX + 10) + "px")
+           .style("top", (d3.event.pageY - 28) + "px");
+         })
+       .on("mouseout", function(d) {
+         let tool = d3.select('#tooltip');
+         tool.transition()
+           .duration(500)
+           .style("opacity", 0);
+         });
+     
+     /////AXIS ON HOVER////
+    branchGrpDis.on('mouseover', (d, i, n)=> {
+         let y = d3.scaleLinear().domain([1, 0]);
+         y.range([0, (height-5)]);
+         svg.selectAll('path.inner-line.'+ d.species).attr('stroke', 'red');
+         svg.selectAll('path.inner-line.'+ d.species).classed('selected', true);
+         d3.select(n[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(3));
+         d3.select(n[i]).selectAll('.other').style('opacity', 0.7).attr('fill', (d)=> d.color);
+         d3.select(n[i]).selectAll('.win-state').style('opacity', 0.7).attr('fill', (d)=> d.color);
+
+     }).on('mouseout', (d, i, n)=> {
+         d3.select(n[i]).select('g.y-axis')
+         d3.select(n[i]).select('g.y-axis').remove();
+         d3.selectAll('path.inner-line.'+ d.species).attr('stroke', 'gray');
+         d3.selectAll('path.inner-line.'+ d.species).classed('selected', false);
+         d3.selectAll('.other').attr('fill', 'rgba(189, 195, 199, 0.1)');
+         d3.select(n[i]).selectAll('.win-state').filter(w=> w.shift != true).attr('fill', 'rgba(189, 195, 199, 0.3)');
+     });
+
+    let conGroup = speciesGrp.filter(sp=> {
+         return sp.type === 'continuous';
+     });
+
+    let branchGrpCon = conGroup.selectAll('.branch').data(d=>d.paths).join('g').classed('branch', true);
+
+    branchGrpCon.attr('transform', (d)=> {
+      let x = d3.scaleLinear().domain([0, 1]).range([0, 800]);
+          let distance = x(d.edgeMove);
+          return 'translate('+distance+', 0)';
+      });
+
+      /////AXIS ON HOVER////
+    branchGrpCon.on('mouseover', (d, i, n)=> {
+         let y = d.yScale;
+         y.range([0, (height-5)]);
+         svg.selectAll('path.inner-line.'+ d.species).attr('stroke', 'red');
+         svg.selectAll('path.inner-line.'+ d.species).classed('selected', true);
+         d3.select(n[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(3));
+         d3.select(n[i]).selectAll('.other').style('opacity', 0.7);
+     }).on('mouseout', (d, i, n)=> {
+         d3.select(n[i]).select('g.y-axis')
+         d3.select(n[i]).select('g.y-axis').remove();
+         d3.selectAll('path.inner-line.'+ d.species).attr('stroke', 'gray');
+         d3.selectAll('path.inner-line.'+ d.species).classed('selected', false);
+         d3.selectAll('.other').style('opacity', 0.1);
+     });
+
+     let MeanRect = branchGrpCon.append('rect');
+     MeanRect.attr('width', 10).attr('height', 3);
+     MeanRect.attr('y', (d, i) => {
+         let scale = scales.filter(s=> s.field === d.label)[0];
+         let y = d3.scaleLinear().domain([scale.min, scale.max]).range([height, 0])
+         return y(d.realVal);
+     });
+
+     let confiBars = branchGrpCon.filter(f=> f.leaf != true).append('rect');
+     confiBars.attr('width', 10).attr('height', (d, i)=> {
+         let scale = scales.filter(s=> s.field === d.label)[0];
+         let y = d3.scaleLinear().domain([scale.min, scale.max]).range([height, 0]);
+         return y(d.lowerCI95) - y(d.upperCI95);
+     });
+
+     confiBars.attr('y', (d, i)=> {
+         let scale = scales.filter(s=> s.field === d.label)[0];
+         let y = d3.scaleLinear().domain([scale.min, scale.max]).range([height, 0]);
+         return y(d.upperCI95);
+     })
+     confiBars.style('opacity', 0.1);
+           
+           //drawGroups(stateBins, calculatedScales);
+    }else{
             console.error('THIS HAS TO BE DISCRETE');
         }
         selectedTool.select('#show-drop-div-group').classed('show', false);
@@ -418,7 +714,6 @@ export function drawGroups(stateBins, scales){
     let wrappers = svg.selectAll('.grouped').data(stateBins).join('g').classed('grouped', true);
     wrappers.each((d, i, n)=> {
         let branchBar = drawBranchPointDistribution(d.data, d3.select(n[i]));
-        
         branchBar.select('rect').attr('x', -80).attr('fill','gray');
         branchBar.selectAll('.branch-points').selectAll('circle').attr('fill', 'rgba(255, 255, 255, 0.3)');
         
@@ -450,14 +745,7 @@ export function drawGroups(stateBins, scales){
             }
             return attribute;
         });
-        function findMaxState(states, offset){
-            let maxP = d3.max(states.map(v=> v.realVal));
-            let notMax = states.filter(f=> f.realVal != maxP);
-            let winState = states[states.map(m=> m.realVal).indexOf(maxP)]
-            winState.other = notMax;
-            winState.offset = offset;
-            return winState;
-        }
+  
        let mappedDis = attDataComb.map(dis=> {
            dis.data = dis.data.map((spec, i)=> {
                spec.paths = spec.paths.map(m=> {

@@ -205,9 +205,12 @@ g.selected circle{
 
 }
 
-.grayed-out{
-  fill: 'gray'!important;
-  opacity: 0.3 !important;
+.first-group{
+  display:block;
+  padding-top:10px;
+  border: #FE6666;
+  height:auto;
+  width:100%;
 }
 
 rect.attribute-rect{
