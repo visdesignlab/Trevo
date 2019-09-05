@@ -205,6 +205,11 @@ g.selected circle{
 
 }
 
+.grayed-out{
+  fill: 'gray'!important;
+  opacity: 0.3 !important;
+}
+
 rect.attribute-rect{
   fill: none;
   stroke: gray;

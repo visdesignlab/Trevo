@@ -559,32 +559,24 @@ export function drawGroups(stateBins, scales){
      bCirc.classed('win-state', true);
 
      bCirc.attr('fill', (d, i, n)=> {
-        console.log(n, n[i], n[i-1], n[i+1]);
         if(i === 0){
-            console.log(d3.select(n[i+1]).data()[0]);
-            if(d.state === d3.select(n[i+1]).data()[0].state){
-                return 'gray';
-            }else{
-                return d.color;
-            }
+            return d.color;
         }else if(i === n.length - 1){
             if(d.state === d3.select(n[i-1]).data()[0].state){
-                return 'gray';
+                return 'rgba(189, 195, 199, 0.3)';
             }else{
+                d.shift = true;
                 return d.color;
             }
         }else{
             if(d.state === d3.select(n[i+1]).data()[0].state || d.state === d3.select(n[i-1]).data()[0].state){
-                return 'gray';
+                return 'rgba(189, 195, 199, 0.3)';
             }else{
+                d.shift = true;
                 return d.color;
             }
         }
-       // console.log(disGroup.filter(f=> f.species === d.species).selectAll('.win-state'));
-       // console.log(disGroup.data())
-        return d.color});
-
-  
+     });
 
     let otherCirc = branchGrpDis.filter(f=> f.leaf != true).selectAll('.other').data(d=> d.other).join('circle').classed('other', true);
     
@@ -592,7 +584,7 @@ export function drawGroups(stateBins, scales){
          let y = d3.scaleLinear().domain([1, 0]);
          y.range([0, (height-5)]);
              return y(c.realVal);
-         }).attr('fill', (c)=> c.color).style('opacity', 0.1);
+         }).attr('fill', 'rgba(189, 195, 199, 0.1)');
 
     otherCirc.on("mouseover", function(d) {
          let tool = d3.select('#tooltip');
@@ -635,13 +627,16 @@ export function drawGroups(stateBins, scales){
          svg.selectAll('path.inner-line.'+ d.species).attr('stroke', 'red');
          svg.selectAll('path.inner-line.'+ d.species).classed('selected', true);
          d3.select(n[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(3));
-         d3.select(n[i]).selectAll('.other').style('opacity', 0.7);
+         d3.select(n[i]).selectAll('.other').style('opacity', 0.7).attr('fill', (d)=> d.color);
+         d3.select(n[i]).selectAll('.win-state').style('opacity', 0.7).attr('fill', (d)=> d.color);
+
      }).on('mouseout', (d, i, n)=> {
          d3.select(n[i]).select('g.y-axis')
          d3.select(n[i]).select('g.y-axis').remove();
          d3.selectAll('path.inner-line.'+ d.species).attr('stroke', 'gray');
          d3.selectAll('path.inner-line.'+ d.species).classed('selected', false);
-         d3.selectAll('.other').style('opacity', 0.1);
+         d3.selectAll('.other').attr('fill', 'rgba(189, 195, 199, 0.1)');
+         d3.select(n[i]).selectAll('.win-state').filter(w=> w.shift != true).attr('fill', 'rgba(189, 195, 199, 0.3)');
      });
 
     let conGroup = speciesGrp.filter(sp=> {
