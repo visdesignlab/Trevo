@@ -224,13 +224,22 @@ export function addRemoveBubble(group, scales, moveMetric){
 
 }
 export function renderComparison(group, otherPaths, selectedDiv, scales){
-    console.log('render comparison', group);
+    console.log('render comparison', group, scales);
   
     let main = d3.select('div#main');
 
     comparisonKeeper.push(group);
 
-    console.log('comparison keeps', comparisonKeeper);
+    let comparisonCombined = scales.map((sc, i)=> {
+        let newAtt = {'field': sc.field, 'type': sc.type, 'data': []}
+        comparisonKeeper.map((com, i)=> {
+            let atts = formatAttributeData(com.data, scales, [sc.field]);
+            newAtt.data.push({'group': {'first': com.first, 'second': com.second}, 'data': atts.flatMap(a=> a)});
+        })
+        return newAtt;
+    });
+
+    console.log('comparison keeps', comparisonCombined);
 
     let selectedTest = selectedDiv.select('.comparison-svg');
     let selectedTool = selectedTest.empty() ? selectedDiv.append('svg').classed('comparison-svg', true) : selectedTest;
@@ -238,10 +247,42 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
 
     let labels = selectedTool.selectAll('g.names').data(comparisonKeeper).join('g').classed('names', true);
     labels.append('text').text(t=> t.first[1]+ "/" + t.second[1]);
-    labels.attr('transform', 'translate(300, 30)')
+    labels.attr('transform', (t, i)=>'translate('+(300+(i*60))+', 30)');
 
-    let groupWrap = selectedTool.selectAll('g.group').data(comparisonKeeper).join('g').classed('group', true);
+    let attWraps = selectedTool.selectAll('.att-wrapper').data(comparisonCombined.filter(f=> f.type === 'continuous').map((com)=>{
+        
+        com.data.map(c=> {
+            console.log('c.data',c, c.data);
+            let binLength = 6;
+            let normBins = new Array(binLength).fill().map((m, i)=> {
+                let step = 1 / binLength;
+                let base = (i * step);
+                let top = ((i+ 1)* step);
+                return {'base': base, 'top': top, 'binI': i }
+            });
 
+            console.log('norm bins',normBins)
+            
+            let internalNodes = c.data.map(path => path.filter(node=> node.leaf != true));
+            //let leafNodes = newNormed.flatMap(path => path.filter(node=> node.leaf === true));
+
+            c.bins = normBins.map((n, i)=> {
+                console.log(internalNodes)
+                let edges = internalNodes.flatMap(path => path.filter(node=> {
+                    console.log(node.edgeMove, n.base, n.top);
+               
+                    return node.edgeMove >= n.base && node.edgeMove <= n.top;
+                    
+                } ));
+                console.log(edges);
+                n.data = edges;
+                return n;
+            });
+            console.log('c.bins',c.bins)
+        })
+    })).join('g').classed('att-wrapper', true);
+    
+    console.log(attWraps.data());
 
 
 }

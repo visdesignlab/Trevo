@@ -51,12 +51,12 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
     formatAttributeData(newNormed, scales, keysToHide);
 
     let maxBranch = d3.max(newNormed.map(p=> p.length)) - 1;
-    let medBranchLength = d3.median(newNormed.map(p=> p.length)) - 1;
+    let medBranchLength = d3.median(newNormed.map(p=> p.length));
 
-    let normBins = new Array(medBranchLength + 1).fill().map((m, i)=> {
+    let normBins = new Array(medBranchLength).fill().map((m, i)=> {
         let step = 1 / medBranchLength;
-        let base = (i > 0) ? ((i - 1) * step) : 0;
-        let top = (i * step);
+        let base = (i * step);
+        let top = ((i+ 1)* step);
         return {'base': base, 'top': top, 'binI': i }
     });
    

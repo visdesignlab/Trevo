@@ -75,13 +75,15 @@ export function matchLeaves(labels, leaves, leafChar, calculatedScales){
                  let thisScale = scaleOb.scales.filter(f=> f.scaleName == chosenOne[k])[0].yScale;
                  let states = scaleOb.scales.map(m=> m.scaleName).map(state=> {
                      let value = (state === chosenOne[k])? 1 : 0;
-                     return {'state': state,  scaleVal: thisScale(value), realVal: value};
+                    // return {'state': state,  scaleVal: thisScale(value), realVal: value};
+                     return {'state': state, realVal: value};
                  });
                  //let states = {'state': leafChar.rows[i][k],  scaleVal: thisScale(1), realVal: 1}
                  attr[k] = {'states': states, 'label': k, 'type': scaleOb.type, leaf: true};
              }else if(scaleOb.type === 'continuous'){
                  let scale = scaleOb.yScale;
-                 attr[k] = {'scaleVal': scale(chosenOne[k]), 'scaledHigh': 0, 'scaledLow': 0, 'realVal': chosenOne[k], 'type': scaleOb.type, leaf: true};
+                 //attr[k] = {'scaleVal': scale(chosenOne[k]), 'scaledHigh': 0, 'scaledLow': 0, 'realVal': chosenOne[k], 'type': scaleOb.type, leaf: true};
+                 attr[k] = {'realVal': chosenOne[k], 'type': scaleOb.type, leaf: true};
  
              }else{
                  attr[k] = 'error in leaf matching';
@@ -106,9 +108,9 @@ export function matchEdges(edges, edgeLen, calculatedAtt, calculatedScales){
                 if(calculatedAtt[attr].type == 'continuous'){
                     let scale = calculatedScales.filter(f=> f.field == attr)[0].yScale;
                     let res = calculatedAtt[attr].rows[index];
-                    res.scaleVal = scale(res.estimate);
-                    res.scaledLow = scale(res.lowerCI95);
-                    res.scaledHigh = scale(res.upperCI95);
+                   // res.scaleVal = scale(res.estimate);
+                   // res.scaledLow = scale(res.lowerCI95);
+                    //res.scaledHigh = scale(res.upperCI95);
                     res.realVal = res.estimate;
                     res.type = 'continuous';
                     edge.attributes = (edge.attributes != undefined)? edge.attributes : {};
@@ -117,7 +119,8 @@ export function matchEdges(edges, edgeLen, calculatedAtt, calculatedScales){
                     let scales = calculatedScales.filter(f=> f.field == attr)[0].scales;
                     let row = calculatedAtt[attr].rows[index];
                     let states = scales.map(s=> {
-                        return {'state': s.scaleName,  scaleVal: s.yScale(row[s.scaleName]), realVal: row[s.scaleName]};
+                       // return {'state': s.scaleName,  scaleVal: s.yScale(row[s.scaleName]), realVal: row[s.scaleName]};
+                        return {'state': s.scaleName, realVal: row[s.scaleName]};
                     });
                     edge.attributes = (edge.attributes != undefined)? edge.attributes : {};
                     edge.attributes[attr] = {'states':states, 'type': 'discrete'};
@@ -138,9 +141,7 @@ export function normPaths(paths, calculatedAtt, calculatedScales){
                 p[0].attributes[att] = {};
                 
                 let scale = calculatedScales.filter(f=> f.field == att)[0].yScale;
-             //   p[0].attributes[att].scaleVal =  scale(root.estimate);
-             //   p[0].attributes[att].scaledLow =  scale(root.lowerCI95);
-             //   p[0].attributes[att].scaledHigh =  scale(root.upperCI95);
+            
                 p[0].attributes[att].realVal = root.estimate;
                 p[0].attributes[att].upperCI95 = root.upperCI95;
                 p[0].attributes[att].lowerCI95 = root.lowerCI95;
@@ -150,7 +151,8 @@ export function normPaths(paths, calculatedAtt, calculatedScales){
                 let root = calculatedAtt[att].rows.filter(f=> f.nodeLabels == p[0].node)[0];
                 let scales = calculatedScales.filter(f=> f.field == att)[0].scales;
                 let rootAttr = scales.map(s=> {
-                    return {'state': s.scaleName,  scaleVal: s.yScale(root[s.scaleName]), realVal: root[s.scaleName]};
+                    //return {'state': s.scaleName,  scaleVal: s.yScale(root[s.scaleName]), realVal: root[s.scaleName]};
+                    return {'state': s.scaleName, realVal: root[s.scaleName]};
                 });
                 p[0].attributes[att] = {'states':rootAttr, 'type': 'discrete'};
                
