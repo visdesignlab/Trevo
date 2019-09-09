@@ -244,15 +244,14 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
     let selectedTest = selectedDiv.select('.comparison-svg');
     let selectedTool = selectedTest.empty() ? selectedDiv.append('svg').classed('comparison-svg', true) : selectedTest;
     selectedDiv.style('height', '300px');
+    selectedTool.style('height', '300px');
 
     let labels = selectedTool.selectAll('g.names').data(comparisonKeeper).join('g').classed('names', true);
     labels.append('text').text(t=> t.first[1]+ "/" + t.second[1]);
     labels.attr('transform', (t, i)=>'translate('+(300+(i*60))+', 30)');
 
     let attWraps = selectedTool.selectAll('.att-wrapper').data(comparisonCombined.filter(f=> f.type === 'continuous').map((com)=>{
-        
         com.data.map(c=> {
-            
             let binLength = 6;
             let normBins = new Array(binLength).fill().map((m, i)=> {
                 let step = 1 / binLength;
@@ -261,13 +260,9 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
                 return {'base': base, 'top': top, 'binI': i }
             });
 
-            console.log('norm bins',normBins)
-            
             let internalNodes = c.data.map(path => path.filter(node=> node.leaf != true));
-            //let leafNodes = newNormed.flatMap(path => path.filter(node=> node.leaf === true));
-
-            c.bins = normBins.map((n, i)=> {
-                //console.log(internalNodes)
+            let leafNodes = c.data.flatMap(path => path.filter(node=> node.leaf === true));
+            c.bins = normBins.map((n)=> {
                 let edges = internalNodes.flatMap(path => path.filter(node=> {
                     return node.edgeMove >= n.base && node.edgeMove <= n.top;
                 } ));
@@ -275,10 +270,18 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
                 n.mean = d3.mean(edges.map(e=> e.realVal))
                 return n;
             });
+            c.leaves = leafNodes;
             return c;
         })
         return com;
     })).join('g').classed('att-wrapper', true);
+
+    attWraps.attr('transform', (d, i)=> 'translate(0,'+(60+(i * 70))+')');
+    //attWraps.append('rect').classed('outline-rect', true).attr('width', 1000).attr('height', 60);
+    let attLabels = attWraps.append('text').text(d=> d.field).style('text-anchor', 'end')
+                    .style('font-size', '11px').attr('transform', 'translate(120, 35)')
+    let innerWrap = attWraps.append('g').classed('inner-group', true);
+
     
     console.log(attWraps.data());
 
