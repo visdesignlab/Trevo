@@ -110,9 +110,7 @@ export function renderPaths(pathData, main, scales, moveMetric){
      ///Scales for circles ///
     
     let circleScale = d3.scaleLog().range([6, 14]).domain([1, d3.max(Object.values(branchFrequency))]);
-
     let pathGroups = pathWrap.selectAll('.paths').data(pathData).join('g').classed('paths', true);
- 
     let pathBars = pathGroups.append('rect').classed('path-rect', true);
     pathBars.attr('y', -8);
 
@@ -123,7 +121,6 @@ export function renderPaths(pathData, main, scales, moveMetric){
     pathAdd.attr('transform', 'translate(15, 10)');
     pathAdd.append('circle').attr('r', 7).attr('fill', '#fff');
     pathAdd.append('text').text('+').attr('transform', 'translate(-5, 5)');
-
     pathAdd.style('cursor', 'pointer');
 
     pathAdd.on('click', (d, i, n)=>{
@@ -155,7 +152,6 @@ export function renderPaths(pathData, main, scales, moveMetric){
     });
 
     let speciesTitle = pathGroups.append('text').text(d=> {
-      
        let string = d.filter(f=> f.leaf === true)[0].label;
         return string.charAt(0).toUpperCase() + string.slice(1);
     });
@@ -439,6 +435,7 @@ export function drawGroups(stateBins, scales){
                    return newM
                });
                return newGroups}).join('g').classed('second-group', true);
+
            secondGroup = secondGroup.filter(f=> f.data.length > 0);
            secondGroup.attr('transform', (s, i)=> 'translate(30,'+(20 + (i * 270))+')');
 
@@ -468,14 +465,13 @@ export function drawGroups(stateBins, scales){
 
             let stateLabel = groupLabels.append('text').text((s, i)=> s.second[1]);
             stateLabel.attr('transform', (d, i)=> 'translate(3, 20)');
-           // stateLabel.style('text-anchor', 'end');
             stateLabel.attr('fill', '#fff');
            });
 
            let innerGroup = secondGroup.filter(f=> f.data.length > 0).append('g').classed('inner-wrap', true);
            innerGroup.attr('transform', (d,i)=> 'translate(110, 0)');
        
-           let attWraps = innerGroup.selectAll('.att-wrapper').data((d, i)=> {
+           let attWraps = innerGroup.selectAll('.att-wrapper').data((d)=> {
                let atts = formatAttributeData(d.data, scales, null);
                let attDataComb = atts[0].map((att, i)=> {
                    let species = d.data[0].filter(f=> f.leaf === true)[0].label;
@@ -485,7 +481,7 @@ export function drawGroups(stateBins, scales){
                        let species = d.data[index].filter(f=> f.leaf === true)[0].label;
                        let last = atts[index][i].length - 1
                        atts[index][i][last].offset = (index * 8);
-                       attribute.data.push({'species': species, 'paths': atts[index][i]})
+                       attribute.data.push({'species': species, 'paths': atts[index][i]});
                    }
                    return attribute;
                });
@@ -509,105 +505,105 @@ export function drawGroups(stateBins, scales){
            }).join('g').classed('att-wrapper', true);
 
            let innerWrapRect = attWraps.append('rect').attr('width', 800);
-    innerWrapRect.attr('height', height);
-    innerWrapRect.style('fill', '#fff');
-    innerWrapRect.style('stroke', 'gray');
+            innerWrapRect.attr('height', height);
+            innerWrapRect.style('fill', '#fff');
+            innerWrapRect.style('stroke', 'gray');
 
-    attWraps.attr('transform', (d, i)=> 'translate(0,'+((i * (height+5))+ 30)+')');
-    wrappers.attr('transform', (d, i)=> 'translate(60,'+(i * (5 * (height+15))+ 50)+')');
-    svg.attr('height', (wrappers.data().length * (5 * (height+15))+ 50));
+            attWraps.attr('transform', (d, i)=> 'translate(0,'+((i * (height+5))+ 30)+')');
+            wrappers.attr('transform', (d, i)=> 'translate(60,'+(i * (5 * (height+15))+ 50)+')');
+            svg.attr('height', (wrappers.data().length * (5 * (height+15))+ 50));
 
-    let labels = attWraps.append('text')
-    .text(d=> d.label)
-    .style('text-anchor', 'end')
-    .style('font-size', 11)
-    labels.attr('transform', 'translate(-5,'+(50/2)+')');
+            let labels = attWraps.append('text')
+            .text(d=> d.label)
+            .style('text-anchor', 'end')
+            .style('font-size', 11)
+            labels.attr('transform', 'translate(-5,'+(50/2)+')');
 
-    let speciesGrp = attWraps.selectAll('g').data(d=> {
-        d.data = d.data.map(m=> {
-            m.type = d.type;
-            return m;
-        });
-        return d.data;
-    }).join('g').classed('species', true);
+            let speciesGrp = attWraps.selectAll('g').data(d=> {
+                d.data = d.data.map(m=> {
+                    m.type = d.type;
+                    return m;
+                });
+                return d.data;
+            }).join('g').classed('species', true);
 
-    let lineGenD = d3.line()
-       .x(d=> {
-           let x = d3.scaleLinear().domain([0, 1]).range([0, 800]);
-           let distance = d.edgeMove;
-           return x(distance);
-        })
-       .y(d=> {
-           let y = d3.scaleLinear().domain([0, 1]).range([height-2, 1]);
-           return y(d.realVal);
-       });
+            let lineGenD = d3.line()
+            .x(d=> {
+                let x = d3.scaleLinear().domain([0, 1]).range([0, 800]);
+                let distance = d.edgeMove;
+                return x(distance);
+                })
+            .y(d=> {
+                let y = d3.scaleLinear().domain([0, 1]).range([height-2, 1]);
+                return y(d.realVal);
+            });
 
-       let lineGenC = d3.line()
-       .x(d=> {
-           let x = d3.scaleLinear().domain([0, 1]).range([0, 800]);
-           let distance = d.edgeMove;
-           return x(distance);
-        })
-       .y(d=> {
-           let y = d.yScale;
-           y.range([height-2, 1]);
-           return y(d.realVal) + 2;
-       });
+            let lineGenC = d3.line()
+            .x(d=> {
+                let x = d3.scaleLinear().domain([0, 1]).range([0, 800]);
+                let distance = d.edgeMove;
+                return x(distance);
+            })
+            .y(d=> {
+                let y = d.yScale;
+                y.range([height-2, 1]);
+                return y(d.realVal) + 2;
+            });
 
-       let innerStatePaths = speciesGrp.append('path')
-       .attr("d", d=> {
-            return (d.type === 'discrete') ? lineGenD(d.paths) : lineGenC(d.paths);
-        })
-       .attr("class", (d, i)=> {
-            return d.species + " inner-line"})
-       .style('stroke-width', 0.7)
-       .style('fill', 'none')
-       .style('stroke', 'gray');
+            let innerStatePaths = speciesGrp.append('path')
+            .attr("d", d=> {
+                    return (d.type === 'discrete') ? lineGenD(d.paths) : lineGenC(d.paths);
+                })
+            .attr("class", (d, i)=> {
+                    return d.species + " inner-line"})
+            .style('stroke-width', 0.7)
+            .style('fill', 'none')
+            .style('stroke', 'gray');
 
-       innerStatePaths.on('mouseover', (d, i, n)=> {
-        d3.select(n[i]).classed('selected', true);
-    }).on('mouseout', (d, i, n)=> {
-         d3.select(n[i]).classed('selected', false);
-    });
+            innerStatePaths.on('mouseover', (d, i, n)=> {
+                d3.select(n[i]).classed('selected', true);
+            }).on('mouseout', (d, i, n)=> {
+                d3.select(n[i]).classed('selected', false);
+            });
 
-    let disGroup = speciesGrp.filter(sp=> {
-     return sp.type === 'discrete';
-     });
+            let disGroup = speciesGrp.filter(sp=> {
+            return sp.type === 'discrete';
+            });
 
-    let branchGrpDis = disGroup.selectAll('.branch').data(d=>d.paths).join('g').classed('branch', true);
+            let branchGrpDis = disGroup.selectAll('.branch').data(d=>d.paths).join('g').classed('branch', true);
 
-    branchGrpDis.attr('transform', (d)=> {
-        let x = d3.scaleLinear().domain([0, 1]).range([0, 800]);
-            let distance = x(d.edgeMove);
-            return 'translate('+distance+', 0)';
-     });
+            branchGrpDis.attr('transform', (d)=> {
+                let x = d3.scaleLinear().domain([0, 1]).range([0, 800]);
+                    let distance = x(d.edgeMove);
+                    return 'translate('+distance+', 0)';
+            });
 
-    let bCirc = branchGrpDis.append('circle').attr('r', 5).attr('cy', (d, i)=> {
-         let y = d3.scaleLinear().domain([0, 1]).range([height - 5, 2]);
-         return y(d.realVal);
-     }).attr('cx', 5);
+            let bCirc = branchGrpDis.append('circle').attr('r', 5).attr('cy', (d, i)=> {
+                let y = d3.scaleLinear().domain([0, 1]).range([height - 5, 2]);
+                return y(d.realVal);
+            }).attr('cx', 5);
 
-     bCirc.classed('win-state', true);
+            bCirc.classed('win-state', true);
 
-     bCirc.attr('fill', (d, i, n)=> {
-        if(i === 0){
-            return d.color;
-        }else if(i === n.length - 1){
-            if(d.state === d3.select(n[i-1]).data()[0].state){
-                return 'rgba(189, 195, 199, 0.3)';
-            }else{
-                d.shift = true;
-                return d.color;
-            }
-        }else{
-            if(d.state === d3.select(n[i+1]).data()[0].state || d.state === d3.select(n[i-1]).data()[0].state){
-                return 'rgba(189, 195, 199, 0.3)';
-            }else{
-                d.shift = true;
-                return d.color;
-            }
-        }
-     });
+            bCirc.attr('fill', (d, i, n)=> {
+                if(i === 0){
+                    return d.color;
+                }else if(i === n.length - 1){
+                    if(d.state === d3.select(n[i-1]).data()[0].state){
+                        return 'rgba(189, 195, 199, 0.3)';
+                    }else{
+                        d.shift = true;
+                        return d.color;
+                    }
+                }else{
+                    if(d.state === d3.select(n[i+1]).data()[0].state || d.state === d3.select(n[i-1]).data()[0].state){
+                        return 'rgba(189, 195, 199, 0.3)';
+                    }else{
+                        d.shift = true;
+                        return d.color;
+                    }
+                }
+            });
 
     let otherCirc = branchGrpDis.filter(f=> f.leaf != true).selectAll('.other').data(d=> d.other).join('circle').classed('other', true);
     
@@ -762,7 +758,7 @@ export function drawGroups(stateBins, scales){
             let attribute = {'label': att[att.length-1].label, 'type':att[att.length-1].type, 'data': [{'species': species, 'paths': att}]}
             for(let index = 1; index < atts.length; index++ ){
                 let species = d.data[index].filter(f=> f.leaf === true)[0].label;
-                let last = atts[index][i].length - 1
+                let last = atts[index][i].length - 1;
                 atts[index][i][last].offset = (index * 8);
                 attribute.data.push({'species': species, 'paths': atts[index][i]})
             }

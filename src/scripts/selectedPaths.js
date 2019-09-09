@@ -274,18 +274,62 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
             return c;
         })
         return com;
-    })).join('g').classed('att-wrapper', true);
+    }));
+    attWraps.exit().remove();
+    let attWrapsEnter = attWraps.enter().append('g').classed('att-wrapper', true);
 
+
+    let attLabels = attWrapsEnter.append('text').text(d=> d.field).style('text-anchor', 'end')
+                    .style('font-size', '11px').attr('transform', 'translate(120, 35)');
+
+    attWraps = attWrapsEnter.merge(attWraps);
     attWraps.attr('transform', (d, i)=> 'translate(0,'+(60+(i * 70))+')');
-    //attWraps.append('rect').classed('outline-rect', true).attr('width', 1000).attr('height', 60);
-    let attLabels = attWraps.append('text').text(d=> d.field).style('text-anchor', 'end')
-                    .style('font-size', '11px').attr('transform', 'translate(120, 35)')
-    let innerWrap = attWraps.append('g').classed('inner-group', true);
 
-    
-    console.log(attWraps.data());
+    let innerWrap = attWraps.selectAll('g.inner-group').data(d=> [d]).join('g').classed('inner-group', true);
+    innerWrap.attr('transform', 'translate(150, 0)');
+    let wrapRect = innerWrap.selectAll('rect.outline-rect').data(d=> [d]).join('rect').classed('outline-rect', true)
+                    .attr('width', 800).attr('height', 60).attr('fill', 'none').attr('stroke', 'red');
+    let pathGroups = innerWrap.selectAll('g.path-groups').data(d=> d.data).join('g').classed('path-groups', true);
+    let lineGen = d3.line()
+            .x((d, i)=> {
+                let x = d3.scaleLinear().domain([0, 5]).range([0, 800]);
+                return x(i);
+            })
+            .y(d=> {
+                let y = d.yScale;
+                y.range([70, 1]);
+                return y(d.mean);
+            });
+
+    pathGroups.selectAll('*').remove();
+    if(comparisonKeeper.length > 1){
+
+        console.log(pathGroups.data())      
+
+    }else{
+
+        let paths = pathGroups.append('path').attr('d', d=> { 
+            let scale = d.bins[0].data[0].yScale
+            d.bins = d.bins.map((b, i, n)=> {
+                if(b.mean === undefined){
+                    b.mean = d.bins[i-1].mean;
+                    d.missing = true;
+                }
+                b.yScale = scale;
+                return b;
+            });
+            return lineGen(d.bins);
+        });
+
+        paths.style('fill', 'none');
+        paths.style('stroke', 'black');
+        paths.style('stroke-width', '1px');
+
+    }
+  
 
 
+   
 }
 export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, moveMetric) {
 
