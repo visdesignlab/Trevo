@@ -230,14 +230,15 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
 
     comparisonKeeper.push(group);
 
-    console.log('comparison keeps', comparisonKeeper)
+    console.log('comparison keeps', comparisonKeeper);
 
     let selectedTest = selectedDiv.select('.comparison-svg');
     let selectedTool = selectedTest.empty() ? selectedDiv.append('svg').classed('comparison-svg', true) : selectedTest;
-    //selectedTool.selectAll('*').remove();
     selectedDiv.style('height', '300px');
 
-    let labels = selectedTool.selectAll('.comparison-label');
+    let labels = selectedTool.selectAll('g.names').data(comparisonKeeper).join('g').classed('names', true);
+    labels.append('text').text(t=> t.first[1]+ "/" + t.second[1]);
+    labels.attr('transform', 'translate(300, 30)')
 
     let groupWrap = selectedTool.selectAll('g.group').data(comparisonKeeper).join('g').classed('group', true);
 

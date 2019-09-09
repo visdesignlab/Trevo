@@ -392,11 +392,13 @@ export function drawGroups(stateBins, scales){
     selectedTool.style('height', '50px');
     selectedTool.style('width', '1000px');
 
+    d3.select('#toolbar').append('text').text(stateBins[0].field)
+
     let splitOnArray = [{'field':'None'}].concat(scales.filter(f=> (f.field != stateBins[0].field) && f.type === 'discrete'));
-    let dropOptions = dropDown(selectedTool, splitOnArray, 'Split On','show-drop-div-group');
+    let dropOptions = dropDown(d3.select('#toolbar'), splitOnArray, 'Split On','show-drop-div-group');
 
     dropOptions.on('click', (d, i, n)=> {
-        selectedTool.append('text').text(d.field);
+        d3.select('#toolbar').append('text').text(d.field);
         
         if(d.type === 'discrete'){
 
@@ -429,8 +431,14 @@ export function drawGroups(stateBins, scales){
            let firstLabel = firstGroup.append('text').text(f=> f.state).attr('transform', 'translate(10, 10)');
 
            let secondGroup = firstGroup.selectAll('g.second-group').data(g=> {
-               console.log('g',g)
-               return g.data}).join('g').classed('second-group', true);
+               let newGroups = g.data.map((m)=>{
+                   let newM = {};
+                   newM.first = [g.field, g.state];
+                   newM.second = [m.field, m.state];
+                   newM.data = m.data
+                   return newM
+               });
+               return newGroups}).join('g').classed('second-group', true);
            secondGroup = secondGroup.filter(f=> f.data.length > 0);
            secondGroup.attr('transform', (s, i)=> 'translate(30,'+(20 + (i * 270))+')');
 
@@ -458,7 +466,7 @@ export function drawGroups(stateBins, scales){
                 renderComparison(s, other.data(), d3.select('#selected'), scales);
             });
 
-            let stateLabel = groupLabels.append('text').text((s, i)=> s.state);
+            let stateLabel = groupLabels.append('text').text((s, i)=> s.second[1]);
             stateLabel.attr('transform', (d, i)=> 'translate(3, 20)');
            // stateLabel.style('text-anchor', 'end');
             stateLabel.attr('fill', '#fff');
