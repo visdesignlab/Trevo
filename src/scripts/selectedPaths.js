@@ -252,7 +252,7 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
     let attWraps = selectedTool.selectAll('.att-wrapper').data(comparisonCombined.filter(f=> f.type === 'continuous').map((com)=>{
         
         com.data.map(c=> {
-            console.log('c.data',c, c.data);
+            
             let binLength = 6;
             let normBins = new Array(binLength).fill().map((m, i)=> {
                 let step = 1 / binLength;
@@ -267,19 +267,17 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
             //let leafNodes = newNormed.flatMap(path => path.filter(node=> node.leaf === true));
 
             c.bins = normBins.map((n, i)=> {
-                console.log(internalNodes)
+                //console.log(internalNodes)
                 let edges = internalNodes.flatMap(path => path.filter(node=> {
-                    console.log(node.edgeMove, n.base, n.top);
-               
                     return node.edgeMove >= n.base && node.edgeMove <= n.top;
-                    
                 } ));
-                console.log(edges);
                 n.data = edges;
+                n.mean = d3.mean(edges.map(e=> e.realVal))
                 return n;
             });
-            console.log('c.bins',c.bins)
+            return c;
         })
+        return com;
     })).join('g').classed('att-wrapper', true);
     
     console.log(attWraps.data());

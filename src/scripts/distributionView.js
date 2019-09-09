@@ -56,7 +56,7 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
     let normBins = new Array(medBranchLength).fill().map((m, i)=> {
         let step = 1 / medBranchLength;
         let base = (i * step);
-        let top = ((i+ 1)* step);
+        let top = ((i + 1)* step);
         return {'base': base, 'top': top, 'binI': i }
     });
    
