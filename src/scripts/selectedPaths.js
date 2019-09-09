@@ -6,6 +6,7 @@ import { dataMaster, collapsed } from './index';
 import { renderDistibutions } from "./distributionView";
 
 export let selectedPaths = [];
+export let comparisonKeeper = [];
 
 export function pathSelected(selectedPath, otherPaths, scales, moveMetric) {
 
@@ -206,8 +207,7 @@ function renderSelectedTopology(commonNodeStart, svg, scales, branchFrequency, m
         //selectWrap.attr('transform', 'translate('+(50+(20 *commonNodeStart[commonNodeStart.length - 1].children.length))+')')
        
 
-    }
-
+}
 export function addRemoveBubble(group, scales, moveMetric){
 
     let pathRemove = group.append('g').classed('x-icon', true);
@@ -223,7 +223,27 @@ export function addRemoveBubble(group, scales, moveMetric){
     });
 
 }
+export function renderComparison(group, otherPaths, selectedDiv, scales){
+    console.log('render comparison', group);
+  
+    let main = d3.select('div#main');
 
+    comparisonKeeper.push(group);
+
+    console.log('comparison keeps', comparisonKeeper)
+
+    let selectedTest = selectedDiv.select('.comparison-svg');
+    let selectedTool = selectedTest.empty() ? selectedDiv.append('svg').classed('comparison-svg', true) : selectedTest;
+    //selectedTool.selectAll('*').remove();
+    selectedDiv.style('height', '300px');
+
+    let labels = selectedTool.selectAll('.comparison-label');
+
+    let groupWrap = selectedTool.selectAll('g.group').data(comparisonKeeper).join('g').classed('group', true);
+
+
+
+}
 export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, moveMetric) {
 
     let attributeHeight = 50;

@@ -1,6 +1,6 @@
 import '../styles/index.scss';
 import * as d3 from "d3";
-import {pathSelected} from './selectedPaths';
+import {pathSelected, renderComparison} from './selectedPaths';
 import {formatAttributeData} from './dataFormat';
 import {filterMaster, nodeFilter, getLatestData, leafStateFilter} from './filterComponent';
 import { drawBranchPointDistribution } from './distributionView';
@@ -428,7 +428,9 @@ export function drawGroups(stateBins, scales){
           
            let firstLabel = firstGroup.append('text').text(f=> f.state).attr('transform', 'translate(10, 10)');
 
-           let secondGroup = firstGroup.selectAll('g.second-group').data(g=> g.data).join('g').classed('second-group', true);
+           let secondGroup = firstGroup.selectAll('g.second-group').data(g=> {
+               console.log('g',g)
+               return g.data}).join('g').classed('second-group', true);
            secondGroup = secondGroup.filter(f=> f.data.length > 0);
            secondGroup.attr('transform', (s, i)=> 'translate(30,'+(20 + (i * 270))+')');
 
@@ -450,6 +452,11 @@ export function drawGroups(stateBins, scales){
             pathAdd.append('text').text('+').attr('transform', 'translate(-5, 3)').attr('fill', 'gray');
         
             pathAdd.style('cursor', 'pointer');
+
+            pathAdd.on('click', ()=> {
+                let other = d3.selectAll(n).filter((f,j)=> j != i);
+                renderComparison(s, other.data(), d3.select('#selected'), scales);
+            });
 
             let stateLabel = groupLabels.append('text').text((s, i)=> s.state);
             stateLabel.attr('transform', (d, i)=> 'translate(3, 20)');
