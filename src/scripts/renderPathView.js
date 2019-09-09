@@ -34,8 +34,6 @@ export function drawPathsAndAttributes(pathData, main, calculatedScales, moveMet
     let dGroups = drawDiscreteAtt(predictedAttrGrps, moveMetric, collapsed, false);
     sizeAndMove(main.select('#main-path-view'), attributeWrapper, pathData, (attrMove * attributeHeight));
 
-
-
     let leafStates = d3.selectAll('.discrete-leaf');
     leafStates.on('click', (d, i)=> {
         if(nodeTooltipFlag){
@@ -374,7 +372,6 @@ export function drawContAtt(predictedAttrGrps, moveMetric, collapsed){
     return attributeNodesCont;
    
 }
-
 export function findMaxState(states, offset){
     let maxP = d3.max(states.map(v=> v.realVal));
     let notMax = states.filter(f=> f.realVal != maxP);
@@ -430,6 +427,7 @@ export function drawGroups(stateBins, scales){
            let firstGroup = firstGroupSvg.append('g');
           
            let firstLabel = firstGroup.append('text').text(f=> f.state).attr('transform', 'translate(10, 10)');
+
            let secondGroup = firstGroup.selectAll('g.second-group').data(g=> g.data).join('g').classed('second-group', true);
            secondGroup = secondGroup.filter(f=> f.data.length > 0);
            secondGroup.attr('transform', (s, i)=> 'translate(30,'+(20 + (i * 270))+')');
@@ -443,10 +441,20 @@ export function drawGroups(stateBins, scales){
             branchBar.selectAll('text').style('font-size', '11.5px').style('fill', '#fff');
     
             branchBar.select('line').attr('stroke', '#fff');
-            let groupLabels = d3.select(n[i]).append('text').text((s, i)=> s.state);
-            groupLabels.attr('transform', (d, i)=> 'translate(15, 15)');
-            groupLabels.style('text-anchor', 'end');
-            groupLabels.attr('fill', '#fff');
+            let groupLabels = d3.select(n[i]).append('g');
+
+            //groupLabels.
+            let pathAdd = groupLabels.append('g').classed("fas fa-search-plus", true);
+            pathAdd.attr('transform', 'translate(-10, 15)');
+            pathAdd.append('circle').attr('r', 7).attr('fill', '#fff');
+            pathAdd.append('text').text('+').attr('transform', 'translate(-5, 3)').attr('fill', 'gray');
+        
+            pathAdd.style('cursor', 'pointer');
+
+            let stateLabel = groupLabels.append('text').text((s, i)=> s.state);
+            stateLabel.attr('transform', (d, i)=> 'translate(3, 20)');
+           // stateLabel.style('text-anchor', 'end');
+            stateLabel.attr('fill', '#fff');
            });
 
            let innerGroup = secondGroup.filter(f=> f.data.length > 0).append('g').classed('inner-wrap', true);

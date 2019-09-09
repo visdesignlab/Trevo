@@ -10,7 +10,7 @@ export function drawBranchPointDistribution(data, svg){
     branchBar.append('rect').classed('point-dis-rect', true).attr('height', 25).attr('x', -10).attr('y', -10).attr('fill', '#fff');
 
     branchBar.append('line').attr('y1', 2).attr('y2', 2).attr('x1', '100').attr('x2', 890).attr('stroke', 'gray').attr('stroke-width', .25)
-    branchBar.append('text').text('Root').attr('transform', 'translate(50, 7)');
+    branchBar.append('text').text('Root').attr('transform', 'translate(70, 7)');
     let leafLabel = branchBar.append('g').classed('leaf-label', true).attr('transform', 'translate(950, 7)');
     leafLabel.append('text').text('Leaves');
 
