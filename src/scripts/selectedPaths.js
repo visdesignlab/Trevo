@@ -344,7 +344,7 @@ if(d3.select('#compare-button').empty() || d3.select('#compare-button').text() =
             return b;
         });
         return lineGen(d.bins);
-    });
+    }).classed('path', true);
 
     paths.style('fill', 'none');
     paths.style('stroke', d=> d.group.color);
@@ -355,20 +355,28 @@ if(d3.select('#compare-button').empty() || d3.select('#compare-button').text() =
     innerWrap.on('mousemove', function(d, i) {
         
         let scale = scales.filter(f=> f.field === d.field)[0];
-       // let axisY = d3.axisLeft();
-       // console.log(axisY)
-        //axisY.ticks(5);
         let axisGroupTest = d3.select(this).select('.y-axis');
         let axisGroup = axisGroupTest.empty() ? d3.select(this).append('g').classed('y-axis', true) : axisGroupTest;
-       // axisGroup.call(axisY(scale.yScale));
-        axisGroup.attr('transform', (d, i)=> 'translate('+(d3.mouse(this)[0] - 10)+',0)')
-        axisGroup.call(d3.axisLeft(scale.yScale).ticks(5));
+        
+        if(d3.select('#compare-button').empty() || d3.select('#compare-button').text()==='Normal Mode'){
+            axisGroup.attr('transform', (d, i)=> 'translate('+(d3.mouse(this)[0] - 10)+',0)')
+            axisGroup.call(d3.axisLeft(scale.yScale).ticks(5));
+        }else{
+            console.log('testing d', d, this);
+            let pathD = d3.select(this).select('.path-groups').selectAll('path');
+            let maxDiff = pathD.data().map(d=> d[0].maxDiff)[0];
+            
+            axisGroup.attr('transform', (d, i)=> 'translate('+(d3.mouse(this)[0] - 10)+',0)');
+            let newScale = d3.scaleLinear().domain([maxDiff, 0]).range([0, 60]);
+            axisGroup.call(d3.axisLeft(newScale).ticks(5));
+        }
+   
+        
     
     }).on('mouseleave', function(){
-        console.log('mouseout')
+        console.log('mouseout');
         let axisGroup = d3.select(this).select('.y-axis');
         axisGroup.remove();
-        //axisGroup.style('display', 'none');
     });
     
 }else{
