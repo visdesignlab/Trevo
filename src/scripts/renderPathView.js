@@ -1,5 +1,6 @@
 import '../styles/index.scss';
 import * as d3 from "d3";
+import { colorKeeper } from './index';
 import {pathSelected, renderComparison} from './selectedPaths';
 import {formatAttributeData} from './dataFormat';
 import {filterMaster, nodeFilter, getLatestData, leafStateFilter} from './filterComponent';
@@ -384,9 +385,6 @@ export function drawGroups(stateBins, scales){
  
     let main = d3.select('#main');
     main.style('padding-top', 0);
-
-    selectedTool.style('height', '50px');
-    selectedTool.style('width', '1000px');
 
     d3.select('#toolbar').append('text').text(stateBins[0].field)
 
@@ -1093,15 +1091,15 @@ export function drawDiscreteAtt(predictedAttrGrps, moveMetric, collapsed, bars){
         }).attr('r', 2);
         
         stateDots.style('fill', (d, i, n)=> {
-            //console.log(d, d3.selectAll(n).data())
+           
             /*
             let speciesPath = d3.selectAll('.attribute-node-discrete.'+ d.species)//.filter(f=> f.type === 'discrete');
-            console.log('color', d, speciesPath.data())
+           
             let nodeArray = speciesPath.data().map(m=> {
                 return m.node ? m.node : m[0].node;
             });
             let index = nodeArray.indexOf(d.node);
-            console.log(speciesPath.data()[index], speciesPath.data()[index], speciesPath.data()[index]);
+           
             */
             //return d.color
             return 'gray';
@@ -1110,7 +1108,7 @@ export function drawDiscreteAtt(predictedAttrGrps, moveMetric, collapsed, bars){
         stateDots.filter(f=> f.realVal > 0.5).attr('r', 4);
 /*
         let maxDots = stateDots.filter((f, i, n)=> {
-            //console.log(f, d3.max(d3.selectAll(n).data().map(m=> m.realVal)));
+           
             return f.realVal === d3.max(d3.selectAll(n).data().map(m=> m.realVal));
         });
 */

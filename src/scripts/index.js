@@ -13,6 +13,18 @@ export const savedSelected = [];
 export const collapsed = false;
 export const nestedData = [];
 
+export const colorKeeper = [
+    ['#0dc1d1', '#c8f7fd'],
+    ['#3AD701', '#2a9b01'],
+    ['#fec303', '#d3a001'],
+    ['#fe4ecb', '#d30197'],
+    ['#f36b2c'],
+    ['#1abc9c'],
+    ['#493267'],
+    ['#a40b0b'],
+    ['#0095b6'],
+]
+
 let wrap = d3.select('#wrapper');
 let main = wrap.select('#main');
 let selectedPaths = wrap.select('#selected');
@@ -55,18 +67,6 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     }
 
     console.log('pad v tail', calculatedAtt['PCIII_padwidth_vs_tail'])
-
-    let colorKeeper = [
-        ['#0dc1d1', '#c8f7fd'],
-        ['#3AD701', '#2a9b01'],
-        ['#fec303', '#d3a001'],
-        ['#fe4ecb', '#d30197'],
-        ['#f36b2c'],
-        ['#1abc9c'],
-        ['#493267'],
-        ['#a40b0b'],
-        ['#0095b6'],
-    ]
 
     ////CALCULATE THE SCALES FOR EACH ATTRIBUTE////////
     let calculatedScales = calculateScales(calculatedAtt, colorKeeper);

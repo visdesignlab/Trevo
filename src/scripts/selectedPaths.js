@@ -2,7 +2,7 @@ import * as d3 from "d3";
 import { branchPaths, renderPaths, renderAttributes, drawContAtt, drawDiscreteAtt, drawPathsAndAttributes } from './renderPathView';
 import { formatAttributeData } from './dataFormat';
 import { filterMaster } from './filterComponent';
-import { dataMaster, collapsed } from './index';
+import { dataMaster, collapsed, colorKeeper } from './index';
 import { renderDistibutions } from "./distributionView";
 
 export let selectedPaths = [];
@@ -34,7 +34,6 @@ export function pathSelected(selectedPath, otherPaths, scales, moveMetric) {
         main.style('padding-top', '250px');
     }
 }
-
 function getCommonNodes(paths){
     let maxBranch = d3.max(paths.map(p => p.length));
     let longestBranch = paths.filter(path => path.length === maxBranch)[0];
@@ -70,7 +69,6 @@ function getCommonNodes(paths){
 
     return commonNodeStart;
 }
-
 export function sortOtherPaths(pathData, otherPaths, commonNode) {
 
     if(pathData.length > 1){
@@ -224,35 +222,48 @@ export function addRemoveBubble(group, scales, moveMetric){
 
 }
 export function renderComparison(group, otherPaths, selectedDiv, scales){
-    console.log('render comparison', group, scales);
+ 
     let buttonGroupTest = selectedDiv.select('.button-wrap');
     let buttonGroup = buttonGroupTest.empty() ? selectedDiv.append('div').classed('button-wrap', true) : buttonGroupTest;
     
     buttonGroup.style('display','inline-block').style('width', '900px').style('height', '50px');
     let main = d3.select('div#main');
 
-    comparisonKeeper.push(group);
+    if(group != null){
+        let usedColors = comparisonKeeper.map(m=> m.groupColor);
+        let newColor = colorKeeper.find(c => usedColors.indexOf(c[0]) === -1);
+        group.groupColor = newColor[0];
+        comparisonKeeper.push(group);
+    }
 
     let comparisonCombined = scales.map((sc, i)=> {
         let newAtt = {'field': sc.field, 'type': sc.type, 'data': []}
         comparisonKeeper.map((com, i)=> {
             let atts = formatAttributeData(com.data, scales, [sc.field]);
-            newAtt.data.push({'group': {'first': com.first, 'second': com.second}, 'data': atts.flatMap(a=> a)});
+            newAtt.data.push({'group': {'first': com.first, 'second': com.second, 'color': com.groupColor}, 'data': atts.flatMap(a=> a)});
         })
         return newAtt;
     });
 
-    let button = buttonGroup.selectAll('button').data(comparisonKeeper).join('button').classed('btn btn-info', true);
+    let button = buttonGroup.selectAll('button').data(comparisonKeeper).join('button').classed('btn btn-info', true).style('background', d=> d.groupColor);
     button.selectAll('span').data(t=> [t]).join('span').text(t=> t.first[1]+ "/" + t.second[1] + ' ').append('i').classed('close fas fa-times', true);
+    let xOut = button.select('i');
+    xOut.on('click', (d, i)=> {
+        let filteredComp = comparisonKeeper.filter(f=> f.groupColor != d.groupColor);
+        comparisonKeeper = filteredComp;
+        if(comparisonKeeper.length > 0){
+            renderComparison(null, otherPaths, selectedDiv, scales);
+        }else{
+            selectedDiv.selectAll('*').remove();
+            selectedDiv.style('height', '0px');
+        }
+        
+    })
 
     let selectedTest = selectedDiv.select('.comparison-svg');
     let selectedTool = selectedTest.empty() ? selectedDiv.append('svg').classed('comparison-svg', true) : selectedTest;
-    selectedDiv.style('height', '300px');
+    selectedDiv.style('height', '300px').style('width', '100%');
     selectedTool.style('height', '300px');
-
-   // let labels = selectedTool.selectAll('g.names').data(comparisonKeeper).join('g').classed('names', true);
-   // labels.append('text').text(t=> t.first[1]+ "/" + t.second[1]);
-   // labels.attr('transform', (t, i)=>'translate('+(300+(i*60))+', 30)');
 
     let attWraps = selectedTool.selectAll('.att-wrapper').data(comparisonCombined.filter(f=> f.type === 'continuous').map((com)=>{
         com.data.map(c=> {
@@ -286,7 +297,7 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
                     .style('font-size', '11px').attr('transform', 'translate(120, 35)');
 
     attWraps = attWrapsEnter.merge(attWraps);
-    attWraps.attr('transform', (d, i)=> 'translate(0,'+(60+(i * 70))+')');
+    attWraps.attr('transform', (d, i)=> 'translate(0,'+(10+(i * 70))+')');
 
     let innerWrap = attWraps.selectAll('g.inner-group').data(d=> [d]).join('g').classed('inner-group', true);
     innerWrap.attr('transform', 'translate(150, 0)');
@@ -298,7 +309,6 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
         innerWrap.selectAll('.path-groups').remove();
         let pathGroups = innerWrap.selectAll('g.path-groups').data(d=> {
             let startBins = d.data[0].bins;
-          //  console.log(startBins);
             let difArray = [];
             for(let i = 1; i < d.data.length; i ++){
                 let diffs = []
@@ -313,7 +323,6 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
                 });
                 difArray.push(diffs);
             }
-            console.log(difArray);
             return difArray;
         }).join('g').classed('path-groups', true);
 
@@ -325,7 +334,6 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
             .y(d=> {
                 let y = d3.scaleLinear().domain([0, 5]).clamp(true);
                 y.range([60, 0]);
-                console.log('d in path', d)
                 return y(d);
             });
 
@@ -365,14 +373,12 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
         });
 
         paths.style('fill', 'none');
-        paths.style('stroke', 'black');
+        paths.style('stroke', d=> {
+            return d.group.color;
+        });
         paths.style('stroke-width', '1px');
 
     }
-  
-
-
-   
 }
 export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, moveMetric) {
 
@@ -514,7 +520,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
 
             let nearestA = nearest[0];
             let nearestB = nearest[1];
-            //console.log(nearestA, nearestB)
+           
         });
 
         //////PLAYING WITH FUNCTION TO CALULATE DISTANCES
@@ -633,7 +639,6 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
        let attGroups = attWrap.selectAll('g').data(mappedDis).join('g').classed('attr', true);
        attGroups.attr('transform', (d, i) => 'translate(145,' + (i * (attributeHeight + 10)) + ')');
 
-      // console.log('attr groups', attGroups.data());
        attGroups.append('text')
         .text(d=> d.label)
         .style('text-anchor', 'end')
