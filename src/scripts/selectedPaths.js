@@ -239,8 +239,6 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
         return newAtt;
     });
 
-    console.log('comparison keeps', comparisonCombined);
-
     let selectedTest = selectedDiv.select('.comparison-svg');
     let selectedTool = selectedTest.empty() ? selectedDiv.append('svg').classed('comparison-svg', true) : selectedTest;
     selectedDiv.style('height', '300px');
@@ -278,7 +276,6 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
     attWraps.exit().remove();
     let attWrapsEnter = attWraps.enter().append('g').classed('att-wrapper', true);
 
-
     let attLabels = attWrapsEnter.append('text').text(d=> d.field).style('text-anchor', 'end')
                     .style('font-size', '11px').attr('transform', 'translate(120, 35)');
 
@@ -289,8 +286,54 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
     innerWrap.attr('transform', 'translate(150, 0)');
     let wrapRect = innerWrap.selectAll('rect.outline-rect').data(d=> [d]).join('rect').classed('outline-rect', true)
                     .attr('width', 800).attr('height', 60).attr('fill', 'none').attr('stroke', 'red');
-    let pathGroups = innerWrap.selectAll('g.path-groups').data(d=> d.data).join('g').classed('path-groups', true);
-    let lineGen = d3.line()
+    
+    
+    if(comparisonKeeper.length > 1){
+
+       // innerWrap.selectAll('.').remove();
+        let pathGroups = innerWrap.selectAll('g.path-groups').data(d=> {
+            let startBins = d.data[0].bins;
+          //  console.log(startBins);
+            let difArray = [];
+            for(let i = 1; i < d.data.length; i ++){
+                let diffs = []
+                d.data[i].bins.map((b, j)=>{
+                    if(b.mean === undefined){
+                        b.mean = d.data[i].bins[j-1].mean;
+                    }
+                    if(startBins[j].mean === undefined){
+                        startBins[j].mean = startBins[j-1].mean;
+                    }
+                    diffs.push(Math.abs(startBins[j].mean - b.mean));
+                });
+                difArray.push(diffs);
+            }
+            console.log(difArray);
+            return difArray;
+        }).join('g').classed('path-groups', true);
+
+        pathGroups.selectAll('*').remove();
+        let lineGen = d3.line()
+            .x((d, i)=> {
+                let x = d3.scaleLinear().domain([0, 5]).range([0, 800]);
+                return x(i);
+            })
+            .y(d=> {
+                let y = d3.scaleLinear().domain([0, 5]);
+                y.range([70, 1]);
+                return y(d);
+            });
+
+        let paths = pathGroups.append('path').attr('d', d=> { 
+            return lineGen(d);
+        });
+
+        paths.style('fill', 'none');
+        paths.style('stroke', 'black');
+        paths.style('stroke-width', '1px');
+
+    }else{
+        let lineGen = d3.line()
             .x((d, i)=> {
                 let x = d3.scaleLinear().domain([0, 5]).range([0, 800]);
                 return x(i);
@@ -301,13 +344,8 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
                 return y(d.mean);
             });
 
-    pathGroups.selectAll('*').remove();
-    if(comparisonKeeper.length > 1){
-
-        console.log(pathGroups.data())      
-
-    }else{
-
+        let pathGroups = innerWrap.selectAll('g.path-groups').data(d=> d.data).join('g').classed('path-groups', true);
+        pathGroups.selectAll('*').remove();
         let paths = pathGroups.append('path').attr('d', d=> { 
             let scale = d.bins[0].data[0].yScale
             d.bins = d.bins.map((b, i, n)=> {
