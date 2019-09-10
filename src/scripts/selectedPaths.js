@@ -235,7 +235,6 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
         let newColor = colorKeeper.find(c => usedColors.indexOf(c[0]) === -1);
         group.groupColor = newColor[0];
         comparisonKeeper.push(group);
-
     }
 
     if(comparisonKeeper.length > 1){
@@ -279,11 +278,14 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
     let attWraps = selectedTool.selectAll('.att-wrapper').data(comparisonCombined.filter(f=> f.type === 'continuous').map((com)=>{
         com.data.map(c=> {
             let binLength = 6;
+            console.log('com', com, scales.filter(f=> f.field === com.field)[0])
+            let max = scales.filter(f=> f.field === com.field)[0].max;
+            let min = scales.filter(f=> f.field === com.field)[0].min;
             let normBins = new Array(binLength).fill().map((m, i)=> {
                 let step = 1 / binLength;
                 let base = (i * step);
                 let top = ((i+ 1)* step);
-                return {'base': base, 'top': top, 'binI': i }
+                return {'base': base, 'top': top, 'binI': i, 'max': max, 'min':min }
             });
 
             let internalNodes = c.data.map(path => path.filter(node=> node.leaf != true));
@@ -299,6 +301,7 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
             c.leaves = leafNodes;
             return c;
         })
+        
         return com;
     }));
     attWraps.exit().remove();
@@ -313,7 +316,7 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
     let innerWrap = attWraps.selectAll('g.inner-group').data(d=> [d]).join('g').classed('inner-group', true);
     innerWrap.attr('transform', 'translate(150, 0)');
     let wrapRect = innerWrap.selectAll('rect.outline-rect').data(d=> [d]).join('rect').classed('outline-rect', true)
-                    .attr('width', 800).attr('height', 60).attr('fill', 'none').attr('stroke', 'red');
+                    .attr('width', 800).attr('height', 60).attr('fill', '#fff').attr('stroke', 'gray');
     
 if(d3.select('#compare-button').empty() || d3.select('#compare-button').text() === "Normal Mode"){
         let lineGen = d3.line()
@@ -323,6 +326,7 @@ if(d3.select('#compare-button').empty() || d3.select('#compare-button').text() =
         })
         .y(d=> {
             let y = d.yScale;
+            console.log(d.max, d.min, d.yScale.domain())
             y.range([60, 1]);
             return y(d.mean);
         });
@@ -343,10 +347,41 @@ if(d3.select('#compare-button').empty() || d3.select('#compare-button').text() =
     });
 
     paths.style('fill', 'none');
-    paths.style('stroke', d=> {
-        return d.group.color;
-    });
+    paths.style('stroke', d=> d.group.color);
     paths.style('stroke-width', '1px');
+
+    let bisect = function(){
+        const bisect = d3.bisector(d => d.date).left;
+        return mx => {
+          const date = x.invert(mx);
+          const index = bisect(data, date, 1);
+          const a = data[index - 1];
+          const b = data[index];
+          return date - a.date > b.date - date ? b : a;
+        };
+      }
+
+    let yAxisG = innerWrap.append('g').classed('y-axis', true);
+
+    innerWrap.on('mousemove', function(d, i) {
+        
+        let scale = scales.filter(f=> f.field === d.field)[0];
+        console.log(d, d3.mouse(this)[1]);
+        console.log(scale.yScale.invert(d3.mouse(this)[1]));
+        let axis = d3.axisLeft();
+        axis.ticks(5);
+        let axisGroupTest = d3.select(this).select('.y-axis');
+        let axisGroup = axisGroupTest.empty() ? d3.select(this).append('g').classed('y-axis', true) : axisGroupTest;
+        axisGroup.call(axis(scale.yScale));
+        axisGroup.attr('transform', (d, i)=> 'translate('+d3.mouse(this)[0]+',0)')
+       // yAxisG.call(d3.axisLeft(scale.yScale));
+    
+    }).on('mouseleave', function(){
+        console.log('mouseout')
+        let axisGroup = d3.select(this).select('.y-axis');
+        axisGroup.remove();
+        //axisGroup.style('display', 'none');
+    });
     
 }else{
 
@@ -363,7 +398,8 @@ if(d3.select('#compare-button').empty() || d3.select('#compare-button').text() =
                 if(startBins[j].mean === undefined){
                     startBins[j].mean = startBins[j-1].mean;
                 }
-                diffs.push(Math.abs(startBins[j].mean - b.mean));
+                let maxDiff = d.data[0].bins[0].max - d.data[0].bins[0].min;
+                diffs.push({'diff':Math.abs(startBins[j].mean - b.mean), 'maxDiff': maxDiff});
             });
             difArray.push(diffs);
         }
@@ -376,9 +412,9 @@ if(d3.select('#compare-button').empty() || d3.select('#compare-button').text() =
             return x(i);
         })
         .y(d=> {
-            let y = d3.scaleLinear().domain([0, 5]).clamp(true);
+            let y = d3.scaleLinear().domain([0, d.maxDiff]).clamp(true);
             y.range([60, 0]);
-            return y(d);
+            return y(d.diff);
         });
 
     let paths = pathGroups.append('path').attr('d', d=> { 
@@ -391,12 +427,6 @@ if(d3.select('#compare-button').empty() || d3.select('#compare-button').text() =
 
 
 }
-
-
-
-
-
-
 
 /////////////////////////
 /*
