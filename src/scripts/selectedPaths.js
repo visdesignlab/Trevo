@@ -228,6 +228,7 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
     
     buttonGroup.style('display','inline-block').style('width', '900px').style('height', '50px');
     let main = d3.select('div#main');
+    main.style('padding-top', '300px');
 
     if(group != null){
         let usedColors = comparisonKeeper.map(m=> m.groupColor);
@@ -256,9 +257,9 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
         }else{
             selectedDiv.selectAll('*').remove();
             selectedDiv.style('height', '0px');
+            main.style('padding-top', '0px');
         }
-        
-    })
+    });
 
     let selectedTest = selectedDiv.select('.comparison-svg');
     let selectedTool = selectedTest.empty() ? selectedDiv.append('svg').classed('comparison-svg', true) : selectedTest;
@@ -305,45 +306,89 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
                     .attr('width', 800).attr('height', 60).attr('fill', 'none').attr('stroke', 'red');
     
     if(comparisonKeeper.length > 1){
-
-        innerWrap.selectAll('.path-groups').remove();
-        let pathGroups = innerWrap.selectAll('g.path-groups').data(d=> {
-            let startBins = d.data[0].bins;
-            let difArray = [];
-            for(let i = 1; i < d.data.length; i ++){
-                let diffs = []
-                d.data[i].bins.map((b, j)=>{
-                    if(b.mean === undefined){
-                        b.mean = d.data[i].bins[j-1].mean;
-                    }
-                    if(startBins[j].mean === undefined){
-                        startBins[j].mean = startBins[j-1].mean;
-                    }
-                    diffs.push(Math.abs(startBins[j].mean - b.mean));
+        let compareButtonTest = d3.select('#toolbar').select('#compare-button');
+        let compareButton = compareButtonTest.empty() ? d3.select('#toolbar').append('button').text('Normal Mode').attr('id', 'compare-button').classed('btn btn-info', true) : compareButtonTest;
+        compareButton.on('click', ()=> {
+            compareButton.text() === "Normal Mode" ? compareButton.text('Compare Mode') : compareButton.text('Normal Mode');
+            renderComparison(null, otherPaths, selectedDiv, scales);
+        })
+        if(compareButton.text() === "Normal Mode"){
+            innerWrap.selectAll('.path-groups').remove();
+            let pathGroups = innerWrap.selectAll('g.path-groups').data(d=> {
+                let startBins = d.data[0].bins;
+                let difArray = [];
+                for(let i = 1; i < d.data.length; i ++){
+                    let diffs = []
+                    d.data[i].bins.map((b, j)=>{
+                        if(b.mean === undefined){
+                            b.mean = d.data[i].bins[j-1].mean;
+                        }
+                        if(startBins[j].mean === undefined){
+                            startBins[j].mean = startBins[j-1].mean;
+                        }
+                        diffs.push(Math.abs(startBins[j].mean - b.mean));
+                    });
+                    difArray.push(diffs);
+                }
+                return difArray;
+            }).join('g').classed('path-groups', true);
+    
+            let lineGen = d3.line()
+                .x((d, i)=> {
+                    let x = d3.scaleLinear().domain([0, 5]).range([0, 800]);
+                    return x(i);
+                })
+                .y(d=> {
+                    let y = d3.scaleLinear().domain([0, 5]).clamp(true);
+                    y.range([60, 0]);
+                    return y(d);
                 });
-                difArray.push(diffs);
-            }
-            return difArray;
-        }).join('g').classed('path-groups', true);
+    
+            let paths = pathGroups.append('path').attr('d', d=> { 
+                return lineGen(d);
+            });
+    
+            paths.style('fill', 'none');
+            paths.style('stroke', 'black');
+            paths.style('stroke-width', '1px');
 
-        let lineGen = d3.line()
+        }else{
+
+            let lineGen = d3.line()
             .x((d, i)=> {
                 let x = d3.scaleLinear().domain([0, 5]).range([0, 800]);
                 return x(i);
             })
             .y(d=> {
-                let y = d3.scaleLinear().domain([0, 5]).clamp(true);
-                y.range([60, 0]);
-                return y(d);
+                let y = d.yScale;
+                y.range([60, 1]);
+                return y(d.mean);
             });
 
+        let pathGroups = innerWrap.selectAll('g.path-groups').data(d=> d.data).join('g').classed('path-groups', true);
+        pathGroups.selectAll('*').remove();
         let paths = pathGroups.append('path').attr('d', d=> { 
-            return lineGen(d);
+            let scale = d.bins[0].data[0].yScale
+            d.bins = d.bins.map((b, i, n)=> {
+                if(b.mean === undefined){
+                    b.mean = d.bins[i-1].mean;
+                    d.missing = true;
+                }
+                b.yScale = scale;
+                return b;
+            });
+            return lineGen(d.bins);
         });
 
         paths.style('fill', 'none');
-        paths.style('stroke', 'black');
+        paths.style('stroke', d=> {
+            return d.group.color;
+        });
         paths.style('stroke-width', '1px');
+
+
+        }
+       
 
     }else{
         let lineGen = d3.line()
