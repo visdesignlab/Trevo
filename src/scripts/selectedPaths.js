@@ -290,7 +290,7 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
     
     if(comparisonKeeper.length > 1){
 
-       // innerWrap.selectAll('.').remove();
+        innerWrap.selectAll('.path-groups').remove();
         let pathGroups = innerWrap.selectAll('g.path-groups').data(d=> {
             let startBins = d.data[0].bins;
           //  console.log(startBins);
@@ -312,15 +312,15 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
             return difArray;
         }).join('g').classed('path-groups', true);
 
-        pathGroups.selectAll('*').remove();
         let lineGen = d3.line()
             .x((d, i)=> {
                 let x = d3.scaleLinear().domain([0, 5]).range([0, 800]);
                 return x(i);
             })
             .y(d=> {
-                let y = d3.scaleLinear().domain([0, 5]);
-                y.range([70, 1]);
+                let y = d3.scaleLinear().domain([0, 5]).clamp(true);
+                y.range([60, 0]);
+                console.log('d in path', d)
                 return y(d);
             });
 
@@ -340,7 +340,7 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
             })
             .y(d=> {
                 let y = d.yScale;
-                y.range([70, 1]);
+                y.range([60, 1]);
                 return y(d.mean);
             });
 
