@@ -131,6 +131,9 @@ svg {
   fill: orange;
   opacity: 0.5; }
 
+.comparison-svg {
+  width: 100%; }
+
 .filter-wrap {
   display: inline-block;
   float: left;
