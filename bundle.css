@@ -172,6 +172,17 @@ g.selected circle {
   opacity: 0.6;
   width: 100%; }
 
+.point-dis-rect {
+  width: 100%;
+  padding: 0; }
+
+.first-group {
+  display: block;
+  padding-top: 10px;
+  border: #FE6666;
+  height: auto;
+  width: 100%; }
+
 rect.attribute-rect {
   fill: none;
   stroke: gray;
