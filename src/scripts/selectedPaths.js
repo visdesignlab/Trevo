@@ -326,7 +326,7 @@ if(d3.select('#compare-button').empty() || d3.select('#compare-button').text() =
         })
         .y(d=> {
             let y = d.yScale;
-            console.log(d.max, d.min, d.yScale.domain())
+           // console.log(d.max, d.min, d.yScale.domain())
             y.range([60, 1]);
             return y(d.mean);
         });
@@ -350,31 +350,19 @@ if(d3.select('#compare-button').empty() || d3.select('#compare-button').text() =
     paths.style('stroke', d=> d.group.color);
     paths.style('stroke-width', '1px');
 
-    let bisect = function(){
-        const bisect = d3.bisector(d => d.date).left;
-        return mx => {
-          const date = x.invert(mx);
-          const index = bisect(data, date, 1);
-          const a = data[index - 1];
-          const b = data[index];
-          return date - a.date > b.date - date ? b : a;
-        };
-      }
-
     let yAxisG = innerWrap.append('g').classed('y-axis', true);
 
     innerWrap.on('mousemove', function(d, i) {
         
         let scale = scales.filter(f=> f.field === d.field)[0];
-        console.log(d, d3.mouse(this)[1]);
-        console.log(scale.yScale.invert(d3.mouse(this)[1]));
-        let axis = d3.axisLeft();
-        axis.ticks(5);
+       // let axisY = d3.axisLeft();
+       // console.log(axisY)
+        //axisY.ticks(5);
         let axisGroupTest = d3.select(this).select('.y-axis');
         let axisGroup = axisGroupTest.empty() ? d3.select(this).append('g').classed('y-axis', true) : axisGroupTest;
-        axisGroup.call(axis(scale.yScale));
-        axisGroup.attr('transform', (d, i)=> 'translate('+d3.mouse(this)[0]+',0)')
-       // yAxisG.call(d3.axisLeft(scale.yScale));
+       // axisGroup.call(axisY(scale.yScale));
+        axisGroup.attr('transform', (d, i)=> 'translate('+(d3.mouse(this)[0] - 10)+',0)')
+        axisGroup.call(d3.axisLeft(scale.yScale).ticks(5));
     
     }).on('mouseleave', function(){
         console.log('mouseout')
