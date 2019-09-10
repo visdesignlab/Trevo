@@ -225,7 +225,10 @@ export function addRemoveBubble(group, scales, moveMetric){
 }
 export function renderComparison(group, otherPaths, selectedDiv, scales){
     console.log('render comparison', group, scales);
-  
+    let buttonGroupTest = selectedDiv.select('.button-wrap');
+    let buttonGroup = buttonGroupTest.empty() ? selectedDiv.append('div').classed('button-wrap', true) : buttonGroupTest;
+    
+    buttonGroup.style('display','inline-block').style('width', '900px').style('height', '50px');
     let main = d3.select('div#main');
 
     comparisonKeeper.push(group);
@@ -239,14 +242,17 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
         return newAtt;
     });
 
+    let button = buttonGroup.selectAll('button').data(comparisonKeeper).join('button').classed('btn btn-info', true);
+    button.selectAll('span').data(t=> [t]).join('span').text(t=> t.first[1]+ "/" + t.second[1] + ' ').append('i').classed('close fas fa-times', true);
+
     let selectedTest = selectedDiv.select('.comparison-svg');
     let selectedTool = selectedTest.empty() ? selectedDiv.append('svg').classed('comparison-svg', true) : selectedTest;
     selectedDiv.style('height', '300px');
     selectedTool.style('height', '300px');
 
-    let labels = selectedTool.selectAll('g.names').data(comparisonKeeper).join('g').classed('names', true);
-    labels.append('text').text(t=> t.first[1]+ "/" + t.second[1]);
-    labels.attr('transform', (t, i)=>'translate('+(300+(i*60))+', 30)');
+   // let labels = selectedTool.selectAll('g.names').data(comparisonKeeper).join('g').classed('names', true);
+   // labels.append('text').text(t=> t.first[1]+ "/" + t.second[1]);
+   // labels.attr('transform', (t, i)=>'translate('+(300+(i*60))+', 30)');
 
     let attWraps = selectedTool.selectAll('.att-wrapper').data(comparisonCombined.filter(f=> f.type === 'continuous').map((com)=>{
         com.data.map(c=> {
@@ -286,7 +292,6 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
     innerWrap.attr('transform', 'translate(150, 0)');
     let wrapRect = innerWrap.selectAll('rect.outline-rect').data(d=> [d]).join('rect').classed('outline-rect', true)
                     .attr('width', 800).attr('height', 60).attr('fill', 'none').attr('stroke', 'red');
-    
     
     if(comparisonKeeper.length > 1){
 
