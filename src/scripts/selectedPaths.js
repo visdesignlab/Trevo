@@ -369,8 +369,7 @@ if(d3.select('#compare-button').empty() || d3.select('#compare-button').text() =
             let newScale = d3.scaleLinear().domain([maxDiff, 0]).range([0, 60]);
             axisGroup.call(d3.axisLeft(newScale).ticks(5));
         }
-   
-        
+
     
     }).on('mouseleave', function(){
         let axisGroup = d3.select(this).select('.y-axis');
@@ -419,7 +418,6 @@ if(d3.select('#compare-button').empty() || d3.select('#compare-button').text() =
     paths.style('stroke', 'black');
     paths.style('stroke-width', '1px');
 
-
 }
 
     /////////////////////////
@@ -455,15 +453,28 @@ if(d3.select('#compare-button').empty() || d3.select('#compare-button').text() =
     });
 
     let distGroups = obsDistWrap.selectAll('.observed-group').data(d=> d.data).join('g').classed('observed-group', true);
-    distGroups.attr('transform', (d, i, n)=> {
+
+    distGroups.selectAll('.line').data(d => {
+            console.log('forline', d);
+            let mean = d3.mean(d.data.map(r=> r.realVal))
+            let vals = {'mean': mean, 'group':d.group, 'x':d.xScale}
+            console.log(vals)
+            return [vals];
+    }).join('rect').classed('line', true).attr('transform', (d, i)=> 'translate('+(d.x(d.mean)-1.5)+',0)')
+    .attr('height', 50).attr('width', 3).attr('fill', d=> d.group.color).style('opacity', '0.4')
+
+    let circWrap = distGroups.selectAll('.circ-wrap').data(d=> [d]).join('g').classed('circ-wrap', true).attr('transform', (d, i, n)=> {
         let move = d3.scaleLinear().domain([0, n.length]).range([0, 60]);
         return 'translate(0,'+(move(i+0.5))+')'})
-    let distCirc = distGroups.selectAll('circle.disDots').data(d=> d.data).join('circle').attr('r', 3)
+
+    let distCirc = circWrap.selectAll('circle.disDots').data(d=> d.data).join('circle').attr('r', 3)
     .attr('cx', (d, i) => {
         return d.x(d.realVal);
     }).attr('cy', (d, i, n)=> {
         return 0;
     }).attr('fill', d=> d.group.color);
+
+   
 }
 export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, moveMetric) {
 
