@@ -444,8 +444,7 @@ if(d3.select('#compare-button').empty() || d3.select('#compare-button').text() =
         return [{'data':leafData, 'xScale': x}];
     }).join('g').classed('observed-dist-wrap', true);
     obsDistWrap.attr('transform', 'translate(970, 0)');
-   // obsDistWrap.selectAll('rect').data(d=> [d]).join('rect').attr('width', 200).attr('height', 60).style('fill', '#fff').style('stroke', 'red');
-    
+  
     let xAxis = obsDistWrap.selectAll('g.axis-x').data(d=> [d]).join('g').classed('axis-x', true);
     xAxis.attr('transform', 'translate(0, 50)')
     xAxis.each((d, i, nodes)=> {
@@ -455,10 +454,8 @@ if(d3.select('#compare-button').empty() || d3.select('#compare-button').text() =
     let distGroups = obsDistWrap.selectAll('.observed-group').data(d=> d.data).join('g').classed('observed-group', true);
 
     distGroups.selectAll('.line').data(d => {
-            console.log('forline', d);
             let mean = d3.mean(d.data.map(r=> r.realVal))
             let vals = {'mean': mean, 'group':d.group, 'x':d.xScale}
-            console.log(vals)
             return [vals];
     }).join('rect').classed('line', true).attr('transform', (d, i)=> 'translate('+(d.x(d.mean)-1.5)+',0)')
     .attr('height', 50).attr('width', 3).attr('fill', d=> d.group.color).style('opacity', '0.4')
