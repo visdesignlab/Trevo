@@ -280,7 +280,6 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
     let attWraps = selectedTool.selectAll('.att-wrapper').data(comparisonCombined.filter(f=> f.type === 'continuous').map((com)=>{
         com.data.map(c=> {
             let binLength = 6;
-            console.log('com', com, scales.filter(f=> f.field === com.field)[0])
             let max = scales.filter(f=> f.field === com.field)[0].max;
             let min = scales.filter(f=> f.field === com.field)[0].min;
             let normBins = new Array(binLength).fill().map((m, i)=> {
@@ -315,8 +314,6 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
     attWraps = attWrapsEnter.merge(attWraps);
     attWraps.attr('transform', (d, i)=> 'translate(0,'+(10+(i * 70))+')');
 
-    console.log('attwrap dataaaaa', attWraps.data());
-
     let innerWrap = attWraps.selectAll('g.inner-group').data(d=> [d]).join('g').classed('inner-group', true);
     innerWrap.attr('transform', 'translate(150, 0)');
     let wrapRect = innerWrap.selectAll('rect.outline-rect').data(d=> [d]).join('rect').classed('outline-rect', true)
@@ -330,7 +327,6 @@ if(d3.select('#compare-button').empty() || d3.select('#compare-button').text() =
         })
         .y(d=> {
             let y = d.yScale;
-           // console.log(d.max, d.min, d.yScale.domain())
             y.range([60, 1]);
             return y(d.mean);
         });
@@ -366,7 +362,6 @@ if(d3.select('#compare-button').empty() || d3.select('#compare-button').text() =
             axisGroup.attr('transform', (d, i)=> 'translate('+(d3.mouse(this)[0] - 10)+',0)')
             axisGroup.call(d3.axisLeft(scale.yScale).ticks(5));
         }else{
-            console.log('testing d', d, this);
             let pathD = d3.select(this).select('.path-groups').selectAll('path');
             let maxDiff = pathD.data().map(d=> d[0].maxDiff)[0];
             
@@ -378,7 +373,6 @@ if(d3.select('#compare-button').empty() || d3.select('#compare-button').text() =
         
     
     }).on('mouseleave', function(){
-        console.log('mouseout');
         let axisGroup = d3.select(this).select('.y-axis');
         axisGroup.remove();
     });
@@ -429,12 +423,47 @@ if(d3.select('#compare-button').empty() || d3.select('#compare-button').text() =
 }
 
     /////////////////////////
-    let obsDistWrap = attWraps.selectAll('.observed-dist').data(d=> {
-        console.log('observed', d);
-        return d.data;
-    }).join('g').classed('observed-dist', true);
-    obsDistWrap.attr('transform', 'translate(970, 0)')
-    obsDistWrap.append('rect').attr('width', 200).attr('height', 60).style('fill', '#fff').style('stroke', 'red');
+    let obsDistWrap = attWraps.selectAll('.observed-dist-wrap').data(d=> {
+  
+        let max = d3.max(d.data.flatMap(f=> f.leaves.map(m=> m.realVal)));
+        let min = d3.min(d.data.flatMap(f=> f.leaves.map(m=> m.realVal)));
+
+        let x = d3.scaleLinear().domain([min, max]).range([0, 200]);
+    
+        let histogram = d3.histogram()
+        .value(function(d) { return d.realVal; })  
+        .domain(x.domain())  
+        .thresholds(x.ticks(10)); 
+        
+        let leafData = d.data.map(m=> {
+            let newLeaves = [...m.leaves].map(leaf => {
+                leaf.x = x;
+                leaf.group = m.group;
+                return leaf;
+            })
+            return {'binData':histogram(m.leaves), 'data': newLeaves, 'group': m.group, 'xScale': x};
+        });
+        return [{'data':leafData, 'xScale': x}];
+    }).join('g').classed('observed-dist-wrap', true);
+    obsDistWrap.attr('transform', 'translate(970, 0)');
+   // obsDistWrap.selectAll('rect').data(d=> [d]).join('rect').attr('width', 200).attr('height', 60).style('fill', '#fff').style('stroke', 'red');
+    
+    let xAxis = obsDistWrap.selectAll('g.axis-x').data(d=> [d]).join('g').classed('axis-x', true);
+    xAxis.attr('transform', 'translate(0, 50)')
+    xAxis.each((d, i, nodes)=> {
+        d3.select(nodes[i]).call(d3.axisBottom(d.xScale).ticks(5))
+    });
+
+    let distGroups = obsDistWrap.selectAll('.observed-group').data(d=> d.data).join('g').classed('observed-group', true);
+    distGroups.attr('transform', (d, i, n)=> {
+        let move = d3.scaleLinear().domain([0, n.length]).range([0, 60]);
+        return 'translate(0,'+(move(i+0.5))+')'})
+    let distCirc = distGroups.selectAll('circle.disDots').data(d=> d.data).join('circle').attr('r', 3)
+    .attr('cx', (d, i) => {
+        return d.x(d.realVal);
+    }).attr('cy', (d, i, n)=> {
+        return 0;
+    }).attr('fill', d=> d.group.color);
 }
 export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, moveMetric) {
 
