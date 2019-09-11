@@ -396,7 +396,6 @@ export function drawGroups(stateBins, scales){
         
         if(d.type === 'discrete'){
 
-            let data = getLatestData();
             let newBins = stateBins.map(state=> {
                 let newBinData = d.scales.map(sc=> {
                     let field = sc.field;
@@ -430,8 +429,10 @@ export function drawGroups(stateBins, scales){
                    newM.first = [g.field, g.state];
                    newM.second = [m.field, m.state];
                    newM.data = m.data
+                   newM.leaves = m.data.flatMap(path=> path.filter(f=> f.leaf === true));
                    return newM
                });
+               console.log('newGroups', newGroups);
                return newGroups}).join('g').classed('second-group', true);
 
            secondGroup = secondGroup.filter(f=> f.data.length > 0);
@@ -470,9 +471,13 @@ export function drawGroups(stateBins, scales){
            innerGroup.attr('transform', (d,i)=> 'translate(110, 0)');
        
            let attWraps = innerGroup.selectAll('.att-wrapper').data((d)=> {
+               console.log('top',d)
                let atts = formatAttributeData(d.data, scales, null);
+             
                let attDataComb = atts[0].map((att, i)=> {
+                  
                    let species = d.data[0].filter(f=> f.leaf === true)[0].label;
+
                    att[att.length - 1].offset = 0;
                    let attribute = {'label': att[att.length-1].label, 'type':att[att.length-1].type, 'data': [{'species': species, 'paths': att}]}
                    for(let index = 1; index < atts.length; index++ ){
@@ -481,6 +486,7 @@ export function drawGroups(stateBins, scales){
                        atts[index][i][last].offset = (index * 8);
                        attribute.data.push({'species': species, 'paths': atts[index][i]});
                    }
+                   
                    return attribute;
                });
 
@@ -497,12 +503,22 @@ export function drawGroups(stateBins, scales){
                    });
                    return spec;
                   });
+                  
+                  dis.leaves = dis.data.flatMap(f=> f.paths.filter(p=> p.leaf === true));
                   return dis;
               });
               return mappedDis;
            }).join('g').classed('att-wrapper', true);
-
+/*
+           let leafWraps = attWraps.filter(f=> f.type === 'continuous').selectAll('.observe-wrap').data(d=> {
+               console.log(d)
+               return [d];
+           }).join('g').classed('observed-wraps', true);
+           leafWraps.attr('transform', 'translate(800, 0)');
+           leafWraps.append('rect').attr('width', 200).attr('height', 40);
+*/
            let innerWrapRect = attWraps.append('rect').attr('width', 800);
+
             innerWrapRect.attr('height', height);
             innerWrapRect.style('fill', '#fff');
             innerWrapRect.style('stroke', 'gray');
@@ -789,6 +805,8 @@ export function drawGroups(stateBins, scales){
     attWraps.attr('transform', (d, i)=> 'translate(0,'+((i * (height+5))+ 30)+')');
     wrappers.attr('transform', (d, i)=> 'translate(60,'+(i * (5 * (height+15))+ 50)+')');
     svg.attr('height', (wrappers.data().length * (5 * (height+15))+ 50));
+
+    console.log('this is in outside group', attWraps.data())
 
     let labels = attWraps.append('text')
     .text(d=> d.label)
