@@ -493,17 +493,17 @@ export function drawGroups(stateBins, scales){
               let mappedDis = attDataComb.map(dis=> {
                   dis.data = dis.data.map((spec, i)=> {
                       spec.paths = spec.paths.map(m=> {
-                       if(dis.type === 'discrete'){
-                           let offset = 5 * i;
-                           let maxProb = m.states? {'realVal': 1.0, 'state': m.winState, 'color':m.color, 'edgeMove': m.edgeMove, 'offset':m.offset, 'leaf': true} : findMaxState(m, offset); 
-                           return maxProb;
-                       }else{
-                           return m;
-                       }
-                   });
+                            if(dis.type === 'discrete'){
+                                let offset = 5 * i;
+                                let maxProb = m.states? {'realVal': 1.0, 'state': m.winState, 'color':m.color, 'edgeMove': m.edgeMove, 'offset':m.offset, 'leaf': true} : findMaxState(m, offset); 
+                                return maxProb;
+                            }else{
+                                return m;
+                            }
+                        });
                    return spec;
                   });
-                  
+        
                   dis.leaves = dis.data.flatMap(f=> f.paths.filter(p=> p.leaf === true));
                   return dis;
               });
@@ -533,7 +533,7 @@ export function drawGroups(stateBins, scales){
                 let totalMean = d3.mean(totalVal);
 
                 let x = d3.scaleLinear().domain([min, max]).range([0, 200])
-                let newVal = d.leaves.map((m, i, n)=> {
+                let newVal = d.leaves.map((m, i)=> {
                     m.index = i;
                     return {'value': m.realVal, 'x': x, 'min': min, 'max': max };
                 });
