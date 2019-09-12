@@ -417,11 +417,10 @@ if(d3.select('#compare-button').empty() || d3.select('#compare-button').text() =
     paths.style('fill', 'none');
     paths.style('stroke', 'black');
     paths.style('stroke-width', '1px');
-
 }
 
-    /////////////////////////
-    let obsDistWrap = attWraps.selectAll('.observed-dist-wrap').data(d=> {
+/////////////////////////
+let obsDistWrap = attWraps.selectAll('.observed-dist-wrap').data(d=> {
   
         let max = d3.max(d.data.flatMap(f=> f.leaves.map(m=> m.realVal)));
         let min = d3.min(d.data.flatMap(f=> f.leaves.map(m=> m.realVal)));
@@ -438,11 +437,12 @@ if(d3.select('#compare-button').empty() || d3.select('#compare-button').text() =
                 leaf.x = x;
                 leaf.group = m.group;
                 return leaf;
-            })
+            });
             return {'binData':histogram(m.leaves), 'data': newLeaves, 'group': m.group, 'xScale': x};
         });
         return [{'data':leafData, 'xScale': x}];
     }).join('g').classed('observed-dist-wrap', true);
+
     obsDistWrap.attr('transform', 'translate(970, 0)');
   
     let xAxis = obsDistWrap.selectAll('g.axis-x').data(d=> [d]).join('g').classed('axis-x', true);
@@ -456,7 +456,7 @@ if(d3.select('#compare-button').empty() || d3.select('#compare-button').text() =
             m.index = i;
             m.groupLength = n.length;
             return m;
-        })
+        });
     }).join('g').classed('observed-group', true);
 
     let lines = distGroups.selectAll('.line').data(d => {
@@ -467,9 +467,8 @@ if(d3.select('#compare-button').empty() || d3.select('#compare-button').text() =
     .attr('height', 50).attr('width', 3).attr('fill', d=> d.group.color).style('opacity', '0.4')
 
     let circWrap = distGroups.selectAll('.circ-wrap').data((d, i)=> [d]).join('g').classed('circ-wrap', true).attr('transform', (d, i, n)=> {
-           console.log('is the lenght ther',d)
         let move = d3.scaleLinear().domain([0, d.groupLength]).range([0, 60]);
-        return 'translate(0,'+(move(d.index+0.5))+')'})
+        return 'translate(0,'+(move(d.index+0.5))+')'});
 
     let distCirc = circWrap.selectAll('circle.disDots').data(d=> d.data).join('circle').attr('r', 3)
     .attr('cx', (d, i) => {
@@ -477,8 +476,6 @@ if(d3.select('#compare-button').empty() || d3.select('#compare-button').text() =
     }).attr('cy', (d, i, n)=> {
         return 0;
     }).attr('fill', d=> d.group.color);
-
-   
 }
 export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, moveMetric) {
 

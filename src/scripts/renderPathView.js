@@ -510,13 +510,6 @@ export function drawGroups(stateBins, scales){
               return mappedDis;
            }).join('g').classed('att-wrapper', true);
 
-           let leafWraps = attWraps.filter(f=> f.type === 'continuous').selectAll('.observe-wrap').data(d=> {
-               console.log('leaf wraps',d)
-               return [d];
-           }).join('g').classed('observed-wraps', true);
-           leafWraps.attr('transform', 'translate(800, 0)');
-           leafWraps.append('rect').attr('width', 200).attr('height', 40);
-
            let innerWrapRect = attWraps.append('rect').attr('width', 800);
 
             innerWrapRect.attr('height', height);
@@ -533,7 +526,41 @@ export function drawGroups(stateBins, scales){
             .style('font-size', 11)
             labels.attr('transform', 'translate(-5,'+(50/2)+')');
 
-            let speciesGrp = attWraps.selectAll('g').data(d=> {
+            let leafWraps = attWraps.filter(f=> f.type === 'continuous').selectAll('g.observe-wrap').data(d=> {
+                let totalVal = attWraps.data().filter(f=> f.label === d.label).flatMap(m=> m.leaves.map(l=> l.realVal));
+                let max = d3.max(totalVal);
+                let min = d3.min(totalVal);
+                let totalMean = d3.mean(totalVal);
+
+                let x = d3.scaleLinear().domain([min, max]).range([0, 200])
+                let newVal = d.leaves.map((m, i, n)=> {
+                    m.index = i;
+                    return {'value': m.realVal, 'x': x, 'min': min, 'max': max };
+                });
+                let groupMean = d3.mean(newVal.map(v=> v.value));
+                return [{'dotVals':newVal, 'x': x, 'totalMean': totalMean, 'groupMean':groupMean}];
+            }).join('g').classed('observe-wrap', true);
+
+            leafWraps.attr('transform', 'translate(850, 0)');
+            let leafRect = leafWraps.append('rect').attr('width', 200).attr('height', 40).attr('fill', 'none').attr('stroke', 'gray');
+
+            let xAxis = leafWraps.append('g').classed('axis-x', true);
+            xAxis.attr('transform', 'translate(0, '+height+')');
+            xAxis.each((d, i, nodes)=> {
+                d3.select(nodes[i]).call(d3.axisBottom(d.x).ticks(5));
+            });
+
+            let totalMeanLine = leafWraps.append('rect').classed('line', true).attr('transform', (d, i)=> 'translate('+(d.x(d.totalMean)-1.5)+',0)')
+            .attr('height', height).attr('width', 3).attr('fill', 'red').style('opacity', '0.4');
+
+            let groupMeanLine = leafWraps.append('rect').classed('line', true).attr('transform', (d, i)=> 'translate('+(d.x(d.groupMean)-1.5)+',0)')
+            .attr('height', height).attr('width', 3).attr('fill', 'gray').style('opacity', '0.4');
+
+            let distCircGroup = leafWraps.append('g').attr('transform', 'translate(0, 20)');
+            let circles = distCircGroup.selectAll('circle').data(d=> d.dotVals).join('circle');
+            circles.attr('r', 4).attr('cx', (d, i)=> d.x(d.value)).style('opacity', '0.5');
+
+            let speciesGrp = attWraps.selectAll('g.species').data(d=> {
                 d.data = d.data.map(m=> {
                     m.type = d.type;
                     return m;

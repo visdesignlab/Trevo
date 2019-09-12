@@ -107,7 +107,6 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
             mapNorm.forEach(n=> {
                 n.type = scale.type;
                 n.bins = histogram(n.data);
-               
                 n.domain = [scale.max, scale.min];
                 return n;
             });
