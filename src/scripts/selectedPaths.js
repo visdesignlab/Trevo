@@ -451,18 +451,25 @@ if(d3.select('#compare-button').empty() || d3.select('#compare-button').text() =
         d3.select(nodes[i]).call(d3.axisBottom(d.xScale).ticks(5))
     });
 
-    let distGroups = obsDistWrap.selectAll('.observed-group').data(d=> d.data).join('g').classed('observed-group', true);
+    let distGroups = obsDistWrap.selectAll('.observed-group').data(d=> {
+        return d.data.map((m, i, n)=> {
+            m.index = i;
+            m.groupLength = n.length;
+            return m;
+        })
+    }).join('g').classed('observed-group', true);
 
-    distGroups.selectAll('.line').data(d => {
+    let lines = distGroups.selectAll('.line').data(d => {
             let mean = d3.mean(d.data.map(r=> r.realVal))
             let vals = {'mean': mean, 'group':d.group, 'x':d.xScale}
             return [vals];
     }).join('rect').classed('line', true).attr('transform', (d, i)=> 'translate('+(d.x(d.mean)-1.5)+',0)')
     .attr('height', 50).attr('width', 3).attr('fill', d=> d.group.color).style('opacity', '0.4')
 
-    let circWrap = distGroups.selectAll('.circ-wrap').data(d=> [d]).join('g').classed('circ-wrap', true).attr('transform', (d, i, n)=> {
-        let move = d3.scaleLinear().domain([0, n.length]).range([0, 60]);
-        return 'translate(0,'+(move(i+0.5))+')'})
+    let circWrap = distGroups.selectAll('.circ-wrap').data((d, i)=> [d]).join('g').classed('circ-wrap', true).attr('transform', (d, i, n)=> {
+           console.log('is the lenght ther',d)
+        let move = d3.scaleLinear().domain([0, d.groupLength]).range([0, 60]);
+        return 'translate(0,'+(move(d.index+0.5))+')'})
 
     let distCirc = circWrap.selectAll('circle.disDots').data(d=> d.data).join('circle').attr('r', 3)
     .attr('cx', (d, i) => {
