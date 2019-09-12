@@ -432,7 +432,6 @@ export function drawGroups(stateBins, scales){
                    newM.leaves = m.data.flatMap(path=> path.filter(f=> f.leaf === true));
                    return newM
                });
-               console.log('newGroups', newGroups);
                return newGroups}).join('g').classed('second-group', true);
 
            secondGroup = secondGroup.filter(f=> f.data.length > 0);
@@ -471,7 +470,6 @@ export function drawGroups(stateBins, scales){
            innerGroup.attr('transform', (d,i)=> 'translate(110, 0)');
        
            let attWraps = innerGroup.selectAll('.att-wrapper').data((d)=> {
-               console.log('top',d)
                let atts = formatAttributeData(d.data, scales, null);
              
                let attDataComb = atts[0].map((att, i)=> {
@@ -526,6 +524,7 @@ export function drawGroups(stateBins, scales){
             .style('font-size', 11)
             labels.attr('transform', 'translate(-5,'+(50/2)+')');
 
+//////DRAW OBSERVED DISTRIBUTIONS/////
             let leafWraps = attWraps.filter(f=> f.type === 'continuous').selectAll('g.observe-wrap').data(d=> {
                 let totalVal = attWraps.data().filter(f=> f.label === d.label).flatMap(m=> m.leaves.map(l=> l.realVal));
                 let max = d3.max(totalVal);
@@ -535,30 +534,32 @@ export function drawGroups(stateBins, scales){
                 let x = d3.scaleLinear().domain([min, max]).range([0, 200])
                 let newVal = d.leaves.map((m, i)=> {
                     m.index = i;
-                    return {'value': m.realVal, 'x': x, 'min': min, 'max': max };
+                    return {'value': m.realVal, 'x': x, 'min': min, 'max': max, 'species':m.species };
                 });
                 let groupMean = d3.mean(newVal.map(v=> v.value));
                 return [{'dotVals':newVal, 'x': x, 'totalMean': totalMean, 'groupMean':groupMean}];
             }).join('g').classed('observe-wrap', true);
 
             leafWraps.attr('transform', 'translate(850, 0)');
-            let leafRect = leafWraps.append('rect').attr('width', 200).attr('height', 40).attr('fill', 'none').attr('stroke', 'gray');
 
             let xAxis = leafWraps.append('g').classed('axis-x', true);
-            xAxis.attr('transform', 'translate(0, '+height+')');
+            xAxis.attr('transform', 'translate(0, '+(height - 15)+')');
             xAxis.each((d, i, nodes)=> {
                 d3.select(nodes[i]).call(d3.axisBottom(d.x).ticks(5));
             });
 
             let totalMeanLine = leafWraps.append('rect').classed('line', true).attr('transform', (d, i)=> 'translate('+(d.x(d.totalMean)-1.5)+',0)')
-            .attr('height', height).attr('width', 3).attr('fill', 'red').style('opacity', '0.4');
+            .attr('height', (height - 15)).attr('width', 3).attr('fill', 'red').style('opacity', '0.4');
 
             let groupMeanLine = leafWraps.append('rect').classed('line', true).attr('transform', (d, i)=> 'translate('+(d.x(d.groupMean)-1.5)+',0)')
-            .attr('height', height).attr('width', 3).attr('fill', 'gray').style('opacity', '0.4');
+            .attr('height', (height - 15)).attr('width', 3).attr('fill', 'gray').style('opacity', '0.4');
 
             let distCircGroup = leafWraps.append('g').attr('transform', 'translate(0, 20)');
-            let circles = distCircGroup.selectAll('circle').data(d=> d.dotVals).join('circle');
-            circles.attr('r', 4).attr('cx', (d, i)=> d.x(d.value)).style('opacity', '0.5');
+            let distcircles = distCircGroup.selectAll('circle').data(d=> d.dotVals).join('circle');
+            distcircles.attr('r', 4).attr('cx', (d, i)=> d.x(d.value)).style('opacity', '0.3');
+
+
+            ////DRAW SPECIES GROUPS IN THE ATTRIBUTES
 
             let speciesGrp = attWraps.selectAll('g.species').data(d=> {
                 d.data = d.data.map(m=> {
@@ -569,27 +570,27 @@ export function drawGroups(stateBins, scales){
             }).join('g').classed('species', true);
 
             let lineGenD = d3.line()
-            .x(d=> {
-                let x = d3.scaleLinear().domain([0, 1]).range([0, 800]);
-                let distance = d.edgeMove;
-                return x(distance);
-                })
-            .y(d=> {
-                let y = d3.scaleLinear().domain([0, 1]).range([height-2, 1]);
-                return y(d.realVal);
-            });
+                .x(d=> {
+                    let x = d3.scaleLinear().domain([0, 1]).range([0, 800]);
+                    let distance = d.edgeMove;
+                    return x(distance);
+                    })
+                .y(d=> {
+                    let y = d3.scaleLinear().domain([0, 1]).range([height-2, 1]);
+                    return y(d.realVal);
+                });
 
             let lineGenC = d3.line()
-            .x(d=> {
-                let x = d3.scaleLinear().domain([0, 1]).range([0, 800]);
-                let distance = d.edgeMove;
-                return x(distance);
-            })
-            .y(d=> {
-                let y = d.yScale;
-                y.range([height-2, 1]);
-                return y(d.realVal) + 2;
-            });
+                .x(d=> {
+                    let x = d3.scaleLinear().domain([0, 1]).range([0, 800]);
+                    let distance = d.edgeMove;
+                    return x(distance);
+                })
+                .y(d=> {
+                    let y = d.yScale;
+                    y.range([height-2, 1]);
+                    return y(d.realVal) + 2;
+                });
 
             let innerStatePaths = speciesGrp.append('path')
             .attr("d", d=> {
@@ -602,9 +603,33 @@ export function drawGroups(stateBins, scales){
             .style('stroke', 'gray');
 
             innerStatePaths.on('mouseover', (d, i, n)=> {
+                console.log('d for path', d)
                 d3.select(n[i]).classed('selected', true);
+                distcircles.filter(f=> f.species === d.species).classed('selected', true).style('opacity', 1);
+
+                let tool = d3.select('#tooltip');
+                tool.transition()
+                  .duration(200)
+                  .style("opacity", .9);
+                let f = d3.format(".3f");
+                tool.html(d.species)
+                  .style("left", (d3.event.pageX + 10) + "px")
+                  .style("top", (d3.event.pageY - 28) + "px");
+
+                let leafNodes = d3.select('#sidebar').selectAll('.node--leaf').filter(f=> f.data.label === d.species);
+                leafNodes.classed('selected', true);
+                console.log(d3.select('#sidebar').selectAll('.node--leaf').filter(f=> f.data.label === d.species));
             }).on('mouseout', (d, i, n)=> {
                 d3.select(n[i]).classed('selected', false);
+
+                distcircles.classed('selected', false).style('opacity', 0.3);
+                let tool = d3.select('#tooltip');
+                tool.transition()
+                  .duration(500)
+                  .style("opacity", 0);
+
+                let leafNodes = d3.select('#sidebar').selectAll('.node--leaf').filter(f=> f.data.label === d.species);
+                leafNodes.classed('selected', false);
             });
 
             let disGroup = speciesGrp.filter(sp=> {
