@@ -524,6 +524,36 @@ export function drawGroups(stateBins, scales){
             .style('font-size', 11)
             labels.attr('transform', 'translate(-5,'+(50/2)+')');
 
+////WORKING ON STATE SHIFT VIEW///////
+            let shiftWraps = attWraps.filter(f=> f.type === 'discrete').selectAll('g.shift-wrap').data(d=> {
+                console.log('paths', d.data.map(m=> m.paths));
+                let test = d.data.flatMap(m=> m.paths.filter((f, i)=> {
+                    if(i===0) return (i === 0);
+                    if(i > 0) return (m.paths[i-1].state != f.state)
+                    if(i < m.paths.length - 1) return (m.paths[i+1].state != f.state);
+                }));
+                console.log('test',test);
+                return [test];
+            }).join('g').classed('shift-wrap', true);
+
+            shiftWraps.attr('transform', 'translate(850, 0)');
+
+            let xAxisShift = shiftWraps.append('g').classed('axis-x', true);
+            xAxisShift.attr('transform', 'translate(0, '+(height - 15)+')');
+            xAxisShift.each((d, i, nodes)=> {
+                let x = d3.scaleLinear().domain([0, 1]).range([0, 200]);
+                d3.select(nodes[i]).call(d3.axisBottom(x).ticks(5));
+            });
+
+            let circGroupShift = shiftWraps.append('g').attr('transform', 'translate(0, 20)');
+
+            let shiftCircles = circGroupShift.selectAll('circle.shift').data(d=> d).join('circle').classed('shift', true);
+            shiftCircles.attr('r', 4).attr('cx', (d, i)=> {
+                let x = d3.scaleLinear().domain([0,1]).range([0, 200]);
+                return x(d.edgeMove)
+            });
+            shiftCircles.attr('fill', d=> d.color).style('opacity', 0.4);
+
 //////DRAW OBSERVED DISTRIBUTIONS/////
             let leafWraps = attWraps.filter(f=> f.type === 'continuous').selectAll('g.observe-wrap').data(d=> {
                 let totalVal = attWraps.data().filter(f=> f.label === d.label).flatMap(m=> m.leaves.map(l=> l.realVal));
@@ -603,7 +633,7 @@ export function drawGroups(stateBins, scales){
             .style('stroke', 'gray');
 
             innerStatePaths.on('mouseover', (d, i, n)=> {
-                console.log('d for path', d)
+               
                 d3.select(n[i]).classed('selected', true);
                 distcircles.filter(f=> f.species === d.species).classed('selected', true).style('opacity', 1);
 
@@ -618,7 +648,7 @@ export function drawGroups(stateBins, scales){
 
                 let leafNodes = d3.select('#sidebar').selectAll('.node--leaf').filter(f=> f.data.label === d.species);
                 leafNodes.classed('selected', true);
-                console.log(d3.select('#sidebar').selectAll('.node--leaf').filter(f=> f.data.label === d.species));
+                
             }).on('mouseout', (d, i, n)=> {
                 d3.select(n[i]).classed('selected', false);
 
