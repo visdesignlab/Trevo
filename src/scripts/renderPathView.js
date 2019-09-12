@@ -509,14 +509,14 @@ export function drawGroups(stateBins, scales){
               });
               return mappedDis;
            }).join('g').classed('att-wrapper', true);
-/*
+
            let leafWraps = attWraps.filter(f=> f.type === 'continuous').selectAll('.observe-wrap').data(d=> {
-               console.log(d)
+               console.log('leaf wraps',d)
                return [d];
            }).join('g').classed('observed-wraps', true);
            leafWraps.attr('transform', 'translate(800, 0)');
            leafWraps.append('rect').attr('width', 200).attr('height', 40);
-*/
+
            let innerWrapRect = attWraps.append('rect').attr('width', 800);
 
             innerWrapRect.attr('height', height);
