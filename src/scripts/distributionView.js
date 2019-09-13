@@ -290,7 +290,7 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
     })
 
     let discreteBinWrap = predictedWrap.filter(f=> f.type === 'discrete');
-   
+
     let stateGroups = discreteBinWrap.selectAll('.path-wrapper').selectAll('g.state').data(d=> d.states).join('g').classed('state', true);
 
     stateGroups.append('path').attr('d', (p, i)=> {
@@ -301,9 +301,7 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
             return y(i); 
         })
         .y0(d=> {
-            
             let x = d3.scaleLinear().domain([0, 1]).range([80, 0]).clamp(true);
-        
             return x(d.stDown);
         })
         .y1(d=> {
@@ -332,8 +330,6 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
     }).attr('transform', 'translate(100, 10)').attr('fill', 'none').attr('stroke', (d, i)=> {
         return d[0] ? d[0].color : '#fff';
     });
-
-
 
     ////OBSERVED CONTIUOUS/////
 
@@ -407,4 +403,6 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
             d3.select(nodes[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(5)).attr('transform', 'translate(0, '+margin+')');
             d3.select(nodes[i]).append('g').classed('x-axis', true).call(d3.axisBottom(xPoint)).attr('transform', 'translate(0, '+height+')');
     });
+
+
 }

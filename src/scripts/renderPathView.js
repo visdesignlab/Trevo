@@ -701,6 +701,7 @@ export function drawGroups(stateBins, scales){
                 }
             });
 
+
     let otherCirc = branchGrpDis.filter(f=> f.leaf != true).selectAll('.other').data(d=> d.other).join('circle').classed('other', true);
     
     otherCirc.attr('r', 4).attr('cx', 5).attr('cy', (c, i)=> {
