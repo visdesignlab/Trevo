@@ -1007,12 +1007,6 @@ export function drawGroups(stateBins, scales){
 
      bCirc.classed('win-state', true);
 
-     console.log('finding branches',attWraps.selectAll('.branch'))
-
-     attWraps.selectAll('.branch').on('mouseover', (d, i, n)=> {
-         console.log(d)
-     })
-
      bCirc.attr('fill', (d, i, n)=> {
         if(i === 0){
             return d.color;
@@ -1146,8 +1140,6 @@ export function drawGroups(stateBins, scales){
 
      /////HIGHLIGHTING NODES IN A TREE ON HOVER//////
      d3.selectAll('.att-wrapper').selectAll('.branch').on('mouseover', (d, i, n)=> {
-         console.log(d.node);
-         console.log(d);
          let treeNode  = d3.select('#sidebar').selectAll('.node');
       
         treeNode.filter(f=> {
@@ -1155,7 +1147,7 @@ export function drawGroups(stateBins, scales){
         }).classed('selected', true);
       
     }).on('mouseout', (d, i, n)=> {
-        console.log('leaving')
+       
         let treeNode  = d3.select('#sidebar').selectAll('.node');
       
         treeNode.filter(f=> {

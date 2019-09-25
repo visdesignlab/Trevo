@@ -117,7 +117,38 @@ function treeFilter(data, selectedNodes){
 }
 
 function collapseTree(treeData){
-    console.log('collapse',treeData);
+
+    let leaves = getLeaves(treeData, []);
+//GOING TO CHANGE ALL BLANK TO ANOLIS FOR THIS SITUATION///
+    leaves.forEach(l=> l.data.clade === "Norops" ? l.data.clade = "Norops" : l.data.clade = "Anolis");
+
+    let test = stepDown(treeData);
+
+    function stepDown(node){
+        
+        let leaves = getLeaves(node, []);
+        let ids = new Set(leaves.map(m=> m.data.clade));
+        if(ids.size > 1){
+            node.children.map(n=> stepDown(n))
+        }else{
+            node.branchPoint = true;
+            node.clade = Array.from(ids)[0]
+            
+            return node;
+        }
+    
+        return node;
+    }
+    
+
+    function getLeaves(node, array){
+        if(node.children != undefined ){
+            node.children.map(n=> getLeaves(n, array))
+        }else{
+            array.push(node);
+        };
+        return array;
+    }
 
     
 
@@ -244,7 +275,10 @@ export function renderTree(sidebar, length, attrDraw){
 
     leaves.on('click', (d, i, n)=> console.log(d));
     console.log('node in tree', new Set(leaves.data().map(m=> m.data.clade)))
-    leaves.filter(f=> f.data.clade === '' || f.data.clade === 'Anolis').select('circle').attr('fill', 'red');
+    //leaves.filter(f=> f.data.clade === '' || f.data.clade === 'Anolis').select('circle').attr('fill', 'red');
+
+    node.filter(n=> n.branchPoint === true).select('circle').attr('fill', 'red');
+    console.log(node.filter(n=> n.branchPoint === true))
 
     return node;
 /////END TREE STUFF
