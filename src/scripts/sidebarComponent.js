@@ -295,21 +295,40 @@ function updateTree(treenodes, width, height, margin, sidebar, attrDraw){
     //leaves.filter(f=> f.data.clade === '' || f.data.clade === 'Anolis').select('circle').attr('fill', 'red');
 
     let branchNodes = node.filter(n=> n.branchPoint === true);
+    branchNodes.each((b, i, n)=> {
+        console.log(b);
+        if(b.children === null){
+            d3.select(n[i]).append('text').text(b.clade)
+        }
+    })
     branchNodes.select('circle').attr('fill', 'red');
     branchNodes.on('click', (d, i, n)=> {
-        console.log('BRANCH BITCH',d);
-
-        if (d.children) {
-            d._children = d.children;
-            d.children = null;
-          } else {
-            d.children = d._children;
-            d._children = null;
-          }
+       
+        if(d.children == null){
+            uncollapse(d);
+        }else{
+            collapse(d);
+        }
         updateTree(treenodes, width, height, margin, sidebar, attrDraw);
       
     })
-    console.log(node.filter(n=> n.branchPoint === true))
+   // console.log(node.filter(n=> n.branchPoint === true))
+
+    function uncollapse(d){
+        d.children = d._children;
+        d._children = null;
+        if(d.children){
+            d.children.map(c=> uncollapse(c));
+        }    
+    }
+
+    function collapse(d){
+        if(d.children) {
+            d._children = d.children
+            d._children.forEach(collapse)
+            d.children = null
+        }  
+    }
 
     return node;
 }
