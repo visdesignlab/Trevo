@@ -164,7 +164,7 @@ svg {
 
 g.selected circle, circle.selected {
   fill: orange !important;
-  opacity: 0.7; }
+  opacity: 1.0; }
 
 .paths.low rect.path-rect {
   fill: #66CCFE;
@@ -333,9 +333,8 @@ g.node.low circle {
 
 #sidebar g.node.selected circle {
   fill: #FE9D0B !important;
-  stroke: gray;
-  stroke-width: 1px;
-  r: 5px; }
+  r: 10px;
+  opacity: 1.0; }
 
 .toggle.shown {
   r: 7; }
