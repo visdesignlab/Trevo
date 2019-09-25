@@ -119,10 +119,10 @@ function treeFilter(data, selectedNodes){
 function collapseTree(treeData){
 
     let leaves = getLeaves(treeData, []);
-//GOING TO CHANGE ALL BLANK TO ANOLIS FOR THIS SITUATION///
+    //GOING TO CHANGE ALL BLANK TO ANOLIS FOR THIS SITUATION///
     leaves.forEach(l=> l.data.clade === "Norops" ? l.data.clade = "Norops" : l.data.clade = "Anolis");
 
-    let test = stepDown(treeData);
+    stepDown(treeData);
 
     function stepDown(node){
         
@@ -133,14 +133,13 @@ function collapseTree(treeData){
         }else{
             node.branchPoint = true;
             node.clade = Array.from(ids)[0]
-            
+            collapse(node);
             return node;
         }
     
         return node;
     }
     
-
     function getLeaves(node, array){
         if(node.children != undefined ){
             node.children.map(n=> getLeaves(n, array))
@@ -148,6 +147,15 @@ function collapseTree(treeData){
             array.push(node);
         };
         return array;
+    }
+
+        // Collapse the node and all it's children
+    function collapse(d) {
+        if(d.children) {
+            d._children = d.children
+            d._children.forEach(collapse)
+            d.children = null
+        }
     }
 
     
@@ -176,18 +184,27 @@ export function renderTree(sidebar, length, attrDraw){
             });
         }
     }
-    addingEdgeLength(0, nestedData[0])
 
-    collapseTree(nestedData[0]);
+
+    addingEdgeLength(0, nestedData[0])
 
 //  assigns the data to a hierarchy using parent-child relationships
     var treenodes = d3.hierarchy(nestedData[0]);
 
-    collapseTree(treenodes)
+   
 
 // maps the node data to the tree layout
     treenodes = treemap(treenodes);
 
+    collapseTree(treenodes)
+    ////Break this out into other nodes////
+updateTree(treenodes, width, height, margin, sidebar, attrDraw)
+   
+/////END TREE STUFF
+///////////
+}
+
+function updateTree(treenodes, width, height, margin, sidebar, attrDraw){
     let xScale = d3.scaleLinear().domain([0, 1]).range([0, width]).clamp(true);
     sidebar.select('svg').remove();
     var treeSvg = sidebar.append("svg")
@@ -281,6 +298,4 @@ export function renderTree(sidebar, length, attrDraw){
     console.log(node.filter(n=> n.branchPoint === true))
 
     return node;
-/////END TREE STUFF
-///////////
 }
