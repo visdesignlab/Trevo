@@ -294,7 +294,21 @@ function updateTree(treenodes, width, height, margin, sidebar, attrDraw){
     console.log('node in tree', new Set(leaves.data().map(m=> m.data.clade)))
     //leaves.filter(f=> f.data.clade === '' || f.data.clade === 'Anolis').select('circle').attr('fill', 'red');
 
-    node.filter(n=> n.branchPoint === true).select('circle').attr('fill', 'red');
+    let branchNodes = node.filter(n=> n.branchPoint === true);
+    branchNodes.select('circle').attr('fill', 'red');
+    branchNodes.on('click', (d, i, n)=> {
+        console.log('BRANCH BITCH',d);
+
+        if (d.children) {
+            d._children = d.children;
+            d.children = null;
+          } else {
+            d.children = d._children;
+            d._children = null;
+          }
+        updateTree(treenodes, width, height, margin, sidebar, attrDraw);
+      
+    })
     console.log(node.filter(n=> n.branchPoint === true))
 
     return node;
