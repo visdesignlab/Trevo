@@ -382,21 +382,16 @@ function drawLeaves(attWraps){
     let height = 40;
         let leafWraps = attWraps.filter(f=> f.type === 'continuous').selectAll('g.observe-wrap-first').data(d=> {
             let totalVal = attWraps.data().filter(f=> f.label === d.label).map(m=> m.data);
-            console.log('total val', totalVal.map(p=> p.flatMap(f=> f.paths[f.paths.length - 1].realVal)))
             let totalArray = totalVal.flatMap(p=> p.flatMap(f=> f.paths[f.paths.length - 1].realVal));
-            console.log(totalArray, d3.max(totalArray))
             let max = d3.max(totalArray);
             let min = d3.min(totalArray);
             let totalMean = d3.mean(totalArray);
         
             let x = d3.scaleLinear().domain([min, max]).range([0, 200])
-            console.log('d?', min, max);
             let newVal = d.data.map((m, i)=> {
                 m.index = i;
-                console.log('mmm', m.paths[m.paths.length - 1].realVal, m.paths[m.paths.length - 1])
                 return {'value': m.paths[m.paths.length - 1].realVal, 'x': x, 'min': min, 'max': max, 'species':m.species };
             });
-            console.log('newval',newVal)
             let groupMean = d3.mean(newVal.map(v=> v.value));
             return [{'dotVals':newVal, 'x': x, 'totalMean': totalMean, 'groupMean':groupMean}];
         }).join('g').classed('observe-wrap-first', true);

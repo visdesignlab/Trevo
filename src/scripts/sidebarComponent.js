@@ -229,6 +229,11 @@ export function renderTree(sidebar, length, attrDraw){
         d3.selectAll('g.selected').classed('selected', false);
         d3.select(n[i]).classed('selected-branch', false);
     });
+    let leaves = node.filter(f=> f.data.children.length == 0);
+
+    leaves.on('click', (d, i, n)=> console.log(d));
+    console.log('node in tree', new Set(leaves.data().map(m=> m.data.clade)))
+    leaves.filter(f=> f.data.clade === '' || f.data.clade === 'Anolis').select('circle').attr('fill', 'red');
 
     return node;
 /////END TREE STUFF

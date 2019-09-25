@@ -57,7 +57,7 @@ export function matchLeaves(labels, leaves, leafChar, calculatedScales){
     return leaves.map((leaf, i)=> {
       
         leaf.label = mappedLeafLabels[i];
-        
+
         //let leafCharIndex = leafChar.rows.map(m=> m[""]);
       
         let leafCharIndex = leafChar.rows[0][""] ? leafChar.rows.map(m=> m[""]) : leafChar.rows.map(m=> m["species"]);
@@ -89,7 +89,8 @@ export function matchLeaves(labels, leaves, leafChar, calculatedScales){
                  attr[k] = 'error in leaf matching';
              }
          });
- 
+
+         leaf.clade = chosenOne.clade;
          leaf.attributes = attr;
          leaf.leaf = true;
      
