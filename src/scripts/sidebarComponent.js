@@ -1,7 +1,7 @@
 import '../styles/index.scss';
 import * as d3 from "d3";
 
-import {dataMaster, nestedData} from './index';
+import {dataMaster, nestedData, collapsed} from './index';
 import {filterMaster, removeFilter, addFilter} from './filterComponent';
 import { updateMainView } from './viewControl';
 import {getNested} from './pathCalc';
@@ -11,7 +11,7 @@ import { dropDown } from './buttonComponents';
 export function buildTreeStructure(paths, edges){
     let root = paths[0][0];
     let nestedData = getNested(root, edges.rows);
-    console.log('nested data', nestedData);
+   // console.log('nested data', nestedData);
     return nestedData;
 }
 
@@ -116,6 +116,13 @@ function treeFilter(data, selectedNodes){
     });
 }
 
+function collapseTree(treeData){
+    console.log('collapse',treeData);
+
+    
+
+}
+
 export function renderTree(sidebar, length, attrDraw){
 
     if(attrDraw != null){
@@ -140,8 +147,12 @@ export function renderTree(sidebar, length, attrDraw){
     }
     addingEdgeLength(0, nestedData[0])
 
+    collapseTree(nestedData[0]);
+
 //  assigns the data to a hierarchy using parent-child relationships
     var treenodes = d3.hierarchy(nestedData[0]);
+
+    collapseTree(treenodes)
 
 // maps the node data to the tree layout
     treenodes = treemap(treenodes);

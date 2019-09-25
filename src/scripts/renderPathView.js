@@ -568,13 +568,13 @@ export function drawGroups(stateBins, scales){
 
 ////WORKING ON STATE SHIFT VIEW///////
             let shiftWraps = attWraps.filter(f=> f.type === 'discrete').selectAll('g.shift-wrap').data(d=> {
-                console.log('paths', d.data.map(m=> m.paths));
+       
                 let test = d.data.flatMap(m=> m.paths.filter((f, i)=> {
                     if(i===0) return (i === 0);
                     if(i > 0) return (m.paths[i-1].state != f.state)
                     if(i < m.paths.length - 1) return (m.paths[i+1].state != f.state);
                 }));
-                console.log('test',test);
+             
                 return [test];
             }).join('g').classed('shift-wrap', true);
 
@@ -922,8 +922,6 @@ export function drawGroups(stateBins, scales){
        return mappedDis;
     }).join('g').classed('att-wrapper', true);
 
-    console.log("wrapper data", attWraps.data())
-
     let innerWrapRect = attWraps.append('rect').attr('width', 800);
     innerWrapRect.attr('height', height);
     innerWrapRect.style('fill', '#fff');
@@ -932,8 +930,6 @@ export function drawGroups(stateBins, scales){
     attWraps.attr('transform', (d, i)=> 'translate(0,'+((i * (height+5))+ 30)+')');
     wrappers.attr('transform', (d, i)=> 'translate(60,'+(i * (5 * (height+15))+ 50)+')');
     svg.attr('height', (wrappers.data().length * (5 * (height+15))+ 50));
-
-    console.log('this is in outside group', attWraps.data())
 
        //END EXPERIMENT
     drawLeaves(attWraps);
@@ -1010,6 +1006,12 @@ export function drawGroups(stateBins, scales){
      }).attr('cx', 5);
 
      bCirc.classed('win-state', true);
+
+     console.log('finding branches',attWraps.selectAll('.branch'))
+
+     attWraps.selectAll('.branch').on('mouseover', (d, i, n)=> {
+         console.log(d)
+     })
 
      bCirc.attr('fill', (d, i, n)=> {
         if(i === 0){
@@ -1141,6 +1143,27 @@ export function drawGroups(stateBins, scales){
          return y(d.upperCI95);
      })
      confiBars.style('opacity', 0.1);
+
+     /////HIGHLIGHTING NODES IN A TREE ON HOVER//////
+     d3.selectAll('.att-wrapper').selectAll('.branch').on('mouseover', (d, i, n)=> {
+         console.log(d.node);
+         console.log(d);
+         let treeNode  = d3.select('#sidebar').selectAll('.node');
+      
+        treeNode.filter(f=> {
+            return d.node === f.data.node;
+        }).classed('selected', true);
+      
+    }).on('mouseout', (d, i, n)=> {
+        console.log('leaving')
+        let treeNode  = d3.select('#sidebar').selectAll('.node');
+      
+        treeNode.filter(f=> {
+            return d.node === f.data.node;
+        }).classed('selected', false);
+    })
+     
+     console.log(d3.selectAll('.att-wrapper').selectAll('.branch'))
 }
 export function drawDiscreteAtt(predictedAttrGrps, moveMetric, collapsed, bars){
 
