@@ -291,8 +291,6 @@ function updateTree(treenodes, width, height, margin, sidebar, attrDraw){
     let leaves = node.filter(f=> f.data.children.length == 0);
 
     leaves.on('click', (d, i, n)=> console.log(d));
-    console.log('node in tree', new Set(leaves.data().map(m=> m.data.clade)))
-    //leaves.filter(f=> f.data.clade === '' || f.data.clade === 'Anolis').select('circle').attr('fill', 'red');
 
     let branchNodes = node.filter(n=> n.branchPoint === true);
     branchNodes.each((b, i, n)=> {

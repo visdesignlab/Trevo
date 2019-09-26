@@ -38,13 +38,20 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
     
    // mainDiv.selectAll('*').remove();
 
-   console.log('distribution view', pathData);
-   let leaves = pathData.map(m=> {
+   console.log('distribution view', Array.from(new Set(pathData.map(path=> path.filter(f=> f.leaf === true)[0].clade === "" ? "Anolis" : "Norops"))));
 
-    return m.filter(p=> p.leaf === true);
-    
-   })
-   console.log('leaves',leaves)
+   let clades = Array.from(new Set(pathData.map(path=> path.filter(f=> f.leaf === true)[0].clade === "" ? "Anolis" : "Norops")));
+
+   let pathGroups = clades.map(clade => {
+       let group = pathData.filter(path => {
+        path[path.length - 1].clade === "Norops" ? path[path.length - 1].clade = "Norops" : path[path.length - 1].clade = "Anolis" ; 
+        return path[path.length - 1].clade === clade});
+       return {'label': clade, 'paths': group }
+   });
+
+   console.log('pathgroups', pathGroups)
+   
+   
 
     let observedWidth = 200;
     let predictedWidth = 800;
