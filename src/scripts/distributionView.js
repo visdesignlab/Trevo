@@ -38,6 +38,14 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
     
    // mainDiv.selectAll('*').remove();
 
+   console.log('distribution view', pathData);
+   let leaves = pathData.map(m=> {
+
+    return m.filter(p=> p.leaf === true);
+    
+   })
+   console.log('leaves',leaves)
+
     let observedWidth = 200;
     let predictedWidth = 800;
     let height = 90;
