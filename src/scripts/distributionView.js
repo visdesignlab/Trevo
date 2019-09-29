@@ -53,6 +53,10 @@ export function groupDistributions(pathData, mainDiv, scales, moveMetric){
 
     groupDivs.each((d, i, n)=> {
         console.log('tyest',d, n[i]);
+        let group = d3.select(n[i]);
+        group.style('text-align', 'center');
+        group.append('text').text(d.label);
+        group.append('text').text(" Shown:" + d.paths.length);
         renderDistibutions(d.paths, d3.select(n[i]), scales, moveMetric);
     })
 
@@ -189,8 +193,8 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
     
     let branchScale = d3.scaleLinear().domain([0, medBranchLength]).range([0, 780]);
 
-    let dataCount = mainDiv.append('div').classed('species-count', true);
-    dataCount.append('text').text("Shown: "+ pathData.length + " /"+ dataMaster[0].length);
+    //let dataCount = mainDiv.append('div').classed('species-count', true);
+    //dataCount.append('text').text("Shown: "+ pathData.length + " /"+ dataMaster[0].length);
 
     let svg = mainDiv.append('svg');
     svg.attr('id', 'main-summary-view');
