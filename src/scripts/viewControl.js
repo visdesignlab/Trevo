@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import { renderDistibutions } from './distributionView';
+import { renderDistibutions, groupDistributions } from './distributionView';
 import {drawPathsAndAttributes} from './renderPathView';
 import { getLatestData } from "./filterComponent";
 
@@ -29,7 +29,8 @@ export function initialViewLoad(scales, moveMetric){
     main.selectAll('*').remove();
 
     if(data.length > 50){
-        renderDistibutions(data, main, scales, moveMetric);
+        //renderDistibutions(data, main, scales, moveMetric);
+        groupDistributions(data, main, scales, moveMetric);
         d3.select('#view-toggle').text('View Paths');
         document.getElementById("scrunch").disabled = true;
     }else{

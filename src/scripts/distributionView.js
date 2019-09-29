@@ -34,23 +34,29 @@ export function drawBranchPointDistribution(data, svg){
     return branchBar;
 }
 
+export function groupDistributions(pathData, mainDiv, scales, moveMetric){
+
+    console.log('distribution view', Array.from(new Set(pathData.map(path=> path.filter(f=> f.leaf === true)[0].clade === "" ? "Anolis" : "Norops"))));
+
+    let clades = Array.from(new Set(pathData.map(path=> path.filter(f=> f.leaf === true)[0].clade === "" ? "Anolis" : "Norops")));
+ 
+    let pathGroups = clades.map(clade => {
+        let group = pathData.filter(path => {
+         path[path.length - 1].clade === "Norops" ? path[path.length - 1].clade = "Norops" : path[path.length - 1].clade = "Anolis" ; 
+         return path[path.length - 1].clade === clade});
+        return {'label': clade, 'paths': group }
+    });
+ 
+    console.log('pathgroups', pathGroups);
+
+    renderDistibutions(pathData, mainDiv, scales, moveMetric);
+}
+
 export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
     
    // mainDiv.selectAll('*').remove();
 
-   console.log('distribution view', Array.from(new Set(pathData.map(path=> path.filter(f=> f.leaf === true)[0].clade === "" ? "Anolis" : "Norops"))));
-
-   let clades = Array.from(new Set(pathData.map(path=> path.filter(f=> f.leaf === true)[0].clade === "" ? "Anolis" : "Norops")));
-
-   let pathGroups = clades.map(clade => {
-       let group = pathData.filter(path => {
-        path[path.length - 1].clade === "Norops" ? path[path.length - 1].clade = "Norops" : path[path.length - 1].clade = "Anolis" ; 
-        return path[path.length - 1].clade === clade});
-       return {'label': clade, 'paths': group }
-   });
-
-   console.log('pathgroups', pathGroups)
-   
+  
    
 
     let observedWidth = 200;
