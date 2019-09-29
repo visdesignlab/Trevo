@@ -3,7 +3,7 @@ import * as d3 from "d3";
 
 import {dataMaster, nestedData, collapsed} from './index';
 import {filterMaster, removeFilter, addFilter} from './filterComponent';
-import { updateMainView } from './viewControl';
+import { updateMainView, groupedView } from './viewControl';
 import {getNested} from './pathCalc';
 import { dropDown } from './buttonComponents';
 
@@ -196,9 +196,14 @@ export function renderTree(sidebar, length, attrDraw){
 // maps the node data to the tree layout
     treenodes = treemap(treenodes);
 
-    collapseTree(treenodes)
+    let groupedBool = d3.select('#show-drop-div-group').attr('value');
+    if(groupedBool === "ungrouped"){
+        console.log('ungrouped');
+        collapseTree(treenodes);
+    }
+    
     ////Break this out into other nodes////
-updateTree(treenodes, width, height, margin, sidebar, attrDraw)
+    updateTree(treenodes, width, height, margin, sidebar, attrDraw);
    
 /////END TREE STUFF
 ///////////

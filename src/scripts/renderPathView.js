@@ -6,6 +6,7 @@ import {formatAttributeData} from './dataFormat';
 import {filterMaster, nodeFilter, getLatestData, leafStateFilter} from './filterComponent';
 import { drawBranchPointDistribution } from './distributionView';
 import { dropDown } from './buttonComponents';
+import { groupedView } from './viewControl';
 
 export function drawPathsAndAttributes(pathData, main, calculatedScales, moveMetric){
 
@@ -416,7 +417,10 @@ function drawLeaves(attWraps){
         
     }
 export function drawGroups(stateBins, scales){
-   
+    
+    let groupedBool = d3.select('#show-drop-div-group').attr('value', 'grouped');
+    
+
     let height = 40;
     let selectedTool = d3.select('#selected');
     selectedTool.selectAll('*').remove();
@@ -852,7 +856,7 @@ export function drawGroups(stateBins, scales){
          let scale = scales.filter(s=> s.field === d.label)[0];
          let y = d3.scaleLinear().domain([scale.min, scale.max]).range([height, 0]);
          return y(d.upperCI95);
-     })
+     });
      confiBars.style('opacity', 0.1);
            
            //drawGroups(stateBins, calculatedScales);

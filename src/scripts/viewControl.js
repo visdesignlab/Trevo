@@ -3,6 +3,7 @@ import { renderDistibutions, groupDistributions } from './distributionView';
 import {drawPathsAndAttributes} from './renderPathView';
 import { getLatestData } from "./filterComponent";
 
+export let groupedView = false;
 
 export function updateMainView(scales, moveMetric){
 

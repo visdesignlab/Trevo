@@ -53,6 +53,8 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, mov
     });
 
     let dropOptions = dropDown(toolbar, optionArray, 'Group By','show-drop-div-group');
+    toolbar.select('#show-drop-div-group').attr('value', 'ungrouped');
+    console.log('dropOptions', toolbar.select('#show-drop-div-group').attr('value'));
 
     dropOptions.on('click', (d, i, n)=> {
         if(d.type === 'discrete'){
