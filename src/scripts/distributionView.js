@@ -49,15 +49,19 @@ export function groupDistributions(pathData, mainDiv, scales, moveMetric){
  
     console.log('pathgroups', pathGroups);
 
-    renderDistibutions(pathData, mainDiv, scales, moveMetric);
+    let groupDivs = mainDiv.selectAll('.group-div').data(pathGroups).join('div').classed('group-div', true);
+
+    groupDivs.each((d, i, n)=> {
+        console.log('tyest',d, n[i]);
+        renderDistibutions(d.paths, d3.select(n[i]), scales, moveMetric);
+    })
+
+    
 }
 
 export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
     
    // mainDiv.selectAll('*').remove();
-
-  
-   
 
     let observedWidth = 200;
     let predictedWidth = 800;
