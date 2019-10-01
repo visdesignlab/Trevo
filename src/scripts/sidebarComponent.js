@@ -185,18 +185,16 @@ export function renderTree(sidebar, length, attrDraw){
         }
     }
 
-
     addingEdgeLength(0, nestedData[0])
 
 //  assigns the data to a hierarchy using parent-child relationships
     var treenodes = d3.hierarchy(nestedData[0]);
 
-   
-
 // maps the node data to the tree layout
     treenodes = treemap(treenodes);
 
     let groupedBool = d3.select('#show-drop-div-group').attr('value');
+
     if(groupedBool === "ungrouped"){
         console.log('ungrouped');
         collapseTree(treenodes);
