@@ -420,7 +420,6 @@ export function drawGroups(stateBins, scales){
     
     let groupedBool = d3.select('#show-drop-div-group').attr('value', 'grouped');
     
-
     let height = 40;
     let selectedTool = d3.select('#selected');
     selectedTool.selectAll('*').remove();
@@ -489,7 +488,6 @@ export function drawGroups(stateBins, scales){
             branchBar.selectAll('text').style('font-size', '11.5px').style('fill', '#fff');
     
             branchBar.select('line').attr('stroke', '#fff');
-
 
             let groupLabels = d3.select(n[i]).append('g');
 
@@ -633,6 +631,33 @@ export function drawGroups(stateBins, scales){
             let distCircGroup = leafWraps.append('g').attr('transform', 'translate(0, 20)');
             let distcircles = distCircGroup.selectAll('circle').data(d=> d.dotVals).join('circle');
             distcircles.attr('r', 4).attr('cx', (d, i)=> d.x(d.value)).style('opacity', '0.3');
+
+            distcircles.on('mouseover', (d, i, n)=> {
+
+                let tool = d3.select('#tooltip');
+                tool.transition()
+                  .duration(200)
+                  .style("opacity", .9);
+                let f = d3.format(".3f");
+                tool.html(d.species)
+                  .style("left", (d3.event.pageX + 10) + "px")
+                  .style("top", (d3.event.pageY - 28) + "px");
+           
+                let leafNodes = d3.select('#sidebar').selectAll('.node--leaf').filter(f=> f.data.label === d.species);
+                leafNodes.classed('selected', true);
+
+            }).on('mouseout', (d, i, n)=> {
+                d3.select(n[i]).classed('selected', false);
+
+                distcircles.classed('selected', false).style('opacity', 0.3);
+                let tool = d3.select('#tooltip');
+                tool.transition()
+                  .duration(500)
+                  .style("opacity", 0);
+
+                let leafNodes = d3.select('#sidebar').selectAll('.node--leaf').filter(f=> f.data.label === d.species);
+                leafNodes.classed('selected', false);
+            });
 
 
             ////DRAW SPECIES GROUPS IN THE ATTRIBUTES
