@@ -52,13 +52,12 @@ export function groupDistributions(pathData, mainDiv, scales, moveMetric){
     let groupDivs = mainDiv.selectAll('.group-div').data(pathGroups).join('div').classed('group-div', true);
 
     groupDivs.each((d, i, n)=> {
-        console.log('tyest',d, n[i]);
         let group = d3.select(n[i]);
         group.style('text-align', 'center');
         group.append('text').text(d.label);
         group.append('text').text(" Shown:" + d.paths.length);
         renderDistibutions(d.paths, d3.select(n[i]), scales, moveMetric);
-    })
+    });
 
     
 }
@@ -389,7 +388,7 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
         let x = d3.scaleLinear().domain([d3.min(xvalues), d3.max(xvalues)]).range([0, observedWidth])
         let y = d3.scaleLinear().domain([0, d3.max(d.leafData.bins.map(b=> Object.keys(b).length)) - 2]).range([(height - margin), 0]);
         d3.select(nodes[i]).append('g').classed('x-axis', true).call(d3.axisBottom(x)).attr('transform', 'translate(0, '+height+')');
-        d3.select(nodes[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y)).attr('transform', 'translate(0, '+margin+')');
+        d3.select(nodes[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(4)).attr('transform', 'translate(0, '+margin+')');
     });
     
 ////Observed Discrete////
