@@ -96,7 +96,7 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     ////////TREE RENDER IN SIDEBAR////////
     nestedData.push(buildTreeStructure(paths, edges));
     renderTreeButtons(normedPaths, calculatedScales, sidebar, false);
-    let tree = renderTree(sidebar, false, null);
+    let tree = renderTree(sidebar, false, null, false);
     
     /// LOWER ATTRIBUTE VISUALIZATION ///
     initialViewLoad(calculatedScales, 'edgeLength');
