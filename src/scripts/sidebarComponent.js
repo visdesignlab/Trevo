@@ -168,17 +168,21 @@ function collapseTree(treeData){
 
 export function renderTree(sidebar, length, attrDraw, uncollapse){
 
+    console.log('length',length)
+
     if(attrDraw != null){
         console.log('attDraw',attrDraw);
     }
     // set the dimensions and margins of the diagram
-    var margin = {top: 10, right: 90, bottom: 50, left: 20},
-    width = 400 - margin.left - margin.right,
-    height = 700 - margin.top - margin.bottom;
+    let dimensions = {
+        margin : {top: 10, right: 90, bottom: 50, left: 20},
+        width : 400 - 20 - 90,
+        height : 700 - 10 - 50
+    }
 
 // declares a tree layout and assigns the size
     var treemap = d3.tree()
-    .size([height, width]);
+    .size([dimensions.height, dimensions.width]);
   
     function addingEdgeLength(edge, data){
         data.combEdge = data.edgeLength + edge;
@@ -201,31 +205,25 @@ export function renderTree(sidebar, length, attrDraw, uncollapse){
     let lengthBool = d3.select('button#length').text();
 
     if(groupedBool === "ungrouped" && uncollapse === false){
-       // console.log('ungrouped');
-       console.log('collapse', false)
         let newNodes = collapseTree(treenodes);
-        
-        updateTree(newNodes, width, height, margin, sidebar, attrDraw);
+        updateTree(newNodes, dimensions, sidebar, attrDraw, length);
     }else{
         ////Break this out into other nodes////
-        updateTree(treenodes, width, height, margin, sidebar, attrDraw);
+        updateTree(treenodes, dimensions, sidebar, attrDraw, length);
     }
-    
-   
-   
     /////END TREE STUFF
     ///////////
 }
 
-function updateTree(treenodes, width, height, margin, sidebar, attrDraw){
-    let xScale = d3.scaleLinear().domain([0, 1]).range([0, width]).clamp(true);
+function updateTree(treenodes, dimensions, sidebar, attrDraw, length){
+    let xScale = d3.scaleLinear().domain([0, 1]).range([0, dimensions.width]).clamp(true);
     sidebar.select('svg').remove();
     var treeSvg = sidebar.append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom),
+    .attr("width", dimensions.width + dimensions.margin.left + dimensions.margin.right)
+    .attr("height", dimensions.height + dimensions.margin.top + dimensions.margin.bottom),
     g = treeSvg.append("g")
     .attr("transform",
-      "translate(" + margin.left + "," + margin.top + ")");
+      "translate(" + dimensions.margin.left + "," + dimensions.margin.top + ")");
 
 // adds the links between the nodes
     var link = g.selectAll(".link")
