@@ -64,7 +64,7 @@ export function groupDistributions(pathData, mainDiv, scales, moveMetric){
 
 export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
     
-   // mainDiv.selectAll('*').remove();
+    console.log(pathData)
 
     let observedWidth = 200;
     let predictedWidth = 800;

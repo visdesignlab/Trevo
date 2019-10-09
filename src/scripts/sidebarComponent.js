@@ -176,8 +176,8 @@ export function renderTree(sidebar, length, attrDraw, uncollapse){
     // set the dimensions and margins of the diagram
     let dimensions = {
         margin : {top: 10, right: 90, bottom: 50, left: 20},
-        width : 400 - 20 - 90,
-        height : 700 - 10 - 50
+        width : 290,
+        height : 640
     }
 
 // declares a tree layout and assigns the size
@@ -317,7 +317,7 @@ function updateTree(treenodes, dimensions, sidebar, attrDraw, length){
         }else{
             collapseSub(d);
         }
-        updateTree(treenodes, width, height, margin, sidebar, attrDraw);
+        updateTree(treenodes, dimensions, sidebar, attrDraw);
       
     })
 
