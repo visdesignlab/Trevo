@@ -70,24 +70,23 @@ function updateBrush(treeBrush, scales){
 export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
     ///SIDBAR STUFF
     let treeButton = sidebar.append('button').text('Filter by Tree').classed('btn btn-outline-secondary', true);  
-   // let treeBrush = d3.brush().extent([[0, 0], [400, 600]]);
-   let treeBrush = d3.brush().extent([[0, 0], [400, 600]]).on('end', (d, i, n) => updateBrush(treeBrush, calculatedScales));
+    let treeBrush = d3.brush().extent([[0, 0], [400, 600]]).on('end', (d, i, n) => updateBrush(treeBrush, calculatedScales));
     treeButton.on('click', ()=> {
         renderTree(sidebar, true, null, true);
         let treeBrushG = sidebar.select('svg').append('g').classed('tree-brush', true).call(treeBrush);
     });
 
         ///SIDBAR STUFF
-    let treeViewButton = sidebar.append('button').text('Show Lengths').attr('id', 'length').classed('btn btn-outline-secondary', true);  
+    let treeViewButton = sidebar.append('button').text('Hide Lengths').attr('id', 'length').classed('btn btn-outline-secondary', true);  
 
     treeViewButton.on('click', ()=> {
   
        sidebar.select('svg').remove();
        if(treeViewButton.text() === 'Show Lengths'){
-            renderTree(sidebar, true, null, true);
+            renderTree(sidebar, null, true);
             treeViewButton.text('Hide Lengths');
        }else{
-            renderTree(sidebar, false, null, false);
+            renderTree(sidebar, null, false);
             treeViewButton.text('Show Lengths');
        }
     });
@@ -97,14 +96,14 @@ export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
     calculatedScales.map(m=> optionArray.push(m))
 
     let dropOptions = dropDown(sidebar, optionArray, 'See Values','show-drop-div-sidebar');
+
     dropOptions.on('click', (d, i, n)=> {
         if(d.type === 'discrete'){
-          
-            renderTree(sidebar, treeViewButton.text() === 'Hide Lengths', d, true);
+            renderTree(sidebar, d, true);
         }else if(d.type === 'continuous'){
-            renderTree(sidebar, treeViewButton.text() === 'Hide Lengths', null, false);
+            renderTree(sidebar, null, false);
         }else{
-            renderTree(sidebar, treeViewButton.text() === 'Hide Lengths', null, false);
+            renderTree(sidebar, null, false);
         }
        sidebar.select('#show-drop-div-sidebar').classed('show', false);
     });
@@ -167,7 +166,7 @@ function collapseTree(treeData){
     }
 }
 
-export function renderTree(sidebar, length, attrDraw, uncollapse){
+export function renderTree(sidebar, attrDraw, uncollapse){
 
     if(attrDraw != null){
         console.log('attDraw',attrDraw);
@@ -220,15 +219,17 @@ export function renderTree(sidebar, length, attrDraw, uncollapse){
     assignPosition(treenodes, 0);
 
     let groupedBool = d3.select('#show-drop-div-group').attr('value');
-    let lengthBool = d3.select('button#length').text();
+    let lengthBool = d3.select('button#length').text() === 'Hide Lengths';
 
-  //  if(groupedBool === "ungrouped" && uncollapse === false){
-  //      let newNodes = collapseTree(treenodes);
-  //      updateTree(newNodes, dimensions, sidebar, attrDraw, length);
-  //  }else{
+    console.log(lengthBool)
+
+    if(groupedBool === "ungrouped" && uncollapse === false){
+        let newNodes = collapseTree(treenodes);
+        updateTree(newNodes, dimensions, sidebar, attrDraw, lengthBool);
+    }else{
         ////Break this out into other nodes////
-        updateTree(treenodes, dimensions, sidebar, attrDraw, length);
-  //  }
+        updateTree(treenodes, dimensions, sidebar, attrDraw, lengthBool);
+    }
     /////END TREE STUFF
     ///////////
 }
@@ -271,8 +272,6 @@ function updateTree(treenodes, dimensions, sidebar, attrDraw, length){
             + " " + d.parent.y + "," + d.parent.x;
         }       
     });
-
-   
 
     // adds each node as a group
     var node = g.selectAll(".node")
@@ -321,10 +320,27 @@ function updateTree(treenodes, dimensions, sidebar, attrDraw, length){
         selectedPaths.selectAll('g').filter(g=> g.node === d.data.node).classed('selected', true);
         d3.select(n[i]).classed('selected-branch', true);
 
+        if(d.data.label){
+            let tool = d3.select('#tooltip');
+            tool.transition()
+            .duration(200)
+            .style("opacity", .9);
+          
+            tool.html(`${d.data.label.charAt(0).toUpperCase() + d.data.label.slice(1)}`)
+            .style("left", (d3.event.pageX - 40) + "px")
+            .style("top", (d3.event.pageY - 28) + "px");
+            tool.style('height', 'auto');
+        }
+
     }).on('mouseout', (d, i, n)=> {
         d3.selectAll('.paths.hover').classed('hover', false);
         d3.selectAll('g.selected').classed('selected', false);
         d3.select(n[i]).classed('selected-branch', false);
+
+        let tool = d3.select('#tooltip');
+        tool.transition()
+          .duration(500)
+          .style("opacity", 0);
     });
     let leaves = node.filter(f=> f.data.children.length == 0);
 
@@ -338,15 +354,14 @@ function updateTree(treenodes, dimensions, sidebar, attrDraw, length){
     })
     branchNodes.select('circle').attr('fill', 'red');
     branchNodes.on('click', (d, i, n)=> {
-       
         if(d.children == null){
             uncollapseSub(d);
         }else{
             collapseSub(d);
         }
-        updateTree(treenodes, dimensions, sidebar, attrDraw);
+        let lengthBool = d3.select('button#length').text() === 'Hide Lengths';
+        updateTree(treenodes, dimensions, sidebar, attrDraw, lengthBool);
       
     })
-
     return node;
 }
