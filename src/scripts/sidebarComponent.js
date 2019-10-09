@@ -99,11 +99,12 @@ export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
     let dropOptions = dropDown(sidebar, optionArray, 'See Values','show-drop-div-sidebar');
     dropOptions.on('click', (d, i, n)=> {
         if(d.type === 'discrete'){
-            renderTree(sidebar, false, d, true);
+          
+            renderTree(sidebar, treeViewButton.text() === 'Hide Lengths', d, true);
         }else if(d.type === 'continuous'){
-            renderTree(sidebar, false, null, false);
+            renderTree(sidebar, treeViewButton.text() === 'Hide Lengths', null, false);
         }else{
-            renderTree(sidebar, false, null, false);
+            renderTree(sidebar, treeViewButton.text() === 'Hide Lengths', null, false);
         }
        sidebar.select('#show-drop-div-sidebar').classed('show', false);
     });
