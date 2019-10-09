@@ -168,8 +168,6 @@ function collapseTree(treeData){
 
 export function renderTree(sidebar, length, attrDraw, uncollapse){
 
-    console.log('length',length)
-
     if(attrDraw != null){
         console.log('attDraw',attrDraw);
     }
@@ -177,10 +175,10 @@ export function renderTree(sidebar, length, attrDraw, uncollapse){
     let dimensions = {
         margin : {top: 10, right: 90, bottom: 50, left: 20},
         width : 290,
-        height : 640
+        height : 650
     }
 
-// declares a tree layout and assigns the size
+    // declares a tree layout and assigns the size
     var treemap = d3.tree()
     .size([dimensions.height, dimensions.width]);
   
@@ -195,21 +193,17 @@ export function renderTree(sidebar, length, attrDraw, uncollapse){
 
     addingEdgeLength(0, nestedData[0])
 
-//  assigns the data to a hierarchy using parent-child relationships
+    //  assigns the data to a hierarchy using parent-child relationships
     var treenodes = d3.hierarchy(nestedData[0]);
 
-// maps the node data to the tree layout
+    // maps the node data to the tree layout
     treenodes = treemap(treenodes);
 
-    console.log(treenodes);
-
-       // Better Solution
     function assignPosition(node, position) {
-        
-        console.log('node', node)
         if (node.children == undefined || node.children.length === 0){
+            position = position + 1.5;
             node.position = position;
-            return ++position;
+            return position;
         }else{
             let positionArray = []
             node.children.forEach((child) => {
@@ -217,17 +211,12 @@ export function renderTree(sidebar, length, attrDraw, uncollapse){
                 positionArray.push(position);
             });
             node.options = positionArray;
-            console.log(positionArray);
-            node.position = positionArray[positionArray.length - 1]
-    
+            node.position = d3.max(positionArray);
             return position;
         }
-       
     }
 
-    assignPosition(treenodes, 0)
-
-    console.log(treenodes);
+    assignPosition(treenodes, 0);
 
     let groupedBool = d3.select('#show-drop-div-group').attr('value');
     let lengthBool = d3.select('button#length').text();
@@ -244,11 +233,10 @@ export function renderTree(sidebar, length, attrDraw, uncollapse){
 }
 
 function updateTree(treenodes, dimensions, sidebar, attrDraw, length){
-    let xScale = d3.scaleLinear().domain([0, 1]).range([0, dimensions.width]).clamp(true);
 
+    let xScale = d3.scaleLinear().domain([0, 1]).range([0, dimensions.width]).clamp(true);
     let yScale = d3.scaleLinear().range([0, dimensions.height]).domain([100, 0])
 
-    
     sidebar.select('svg').remove();
     var treeSvg = sidebar.append("svg")
     .attr("width", dimensions.width + dimensions.margin.left + dimensions.margin.right)
@@ -257,6 +245,12 @@ function updateTree(treenodes, dimensions, sidebar, attrDraw, length){
     .attr("transform",
       "translate(" + dimensions.margin.left + "," + dimensions.margin.top + ")");
 
+    if(length){   
+        g.attr('transform', 'translate(20, 320)');
+        treeSvg.attr('height', 1000);
+        yScale.range([0, 590])
+    } 
+
 // adds the links between the nodes
     var link = g.selectAll(".link")
     .data( treenodes.descendants().slice(1))
@@ -264,15 +258,9 @@ function updateTree(treenodes, dimensions, sidebar, attrDraw, length){
     .attr("class", "link")
     .attr("d", function(d) {
         if(length){
-            /*
-            return "M" + xScale(d.data.combEdge) + "," + d.x
-            + "C" + (xScale(d.data.combEdge) + xScale(d.parent.data.combEdge)) / 2 + "," + d.x
-            + " " + (xScale(d.data.combEdge) + xScale(d.parent.data.combEdge)) / 2 + "," + d.parent.x
-            + " " + xScale(d.parent.data.combEdge) + "," + d.parent.x;
-            */
            return "M" + xScale(d.data.combEdge) + "," + yScale(d.position)
            + "C" + (xScale(d.data.combEdge) + xScale(d.parent.data.combEdge)) / 2 + "," + yScale(d.position)
-           + " " + (xScale(d.data.combEdge) + xScale(d.parent.data.combEdge)) / 2 + "," + yScale(d.parent.position)
+           + " " + (xScale(d.data.combEdge) + xScale(d.parent.data.combEdge)) / 2 + "," + yScale(d.position)
            + " " + xScale(d.parent.data.combEdge) + "," + yScale(d.parent.position);
         }else{
             return "M" + d.y + "," + d.x
@@ -292,16 +280,12 @@ function updateTree(treenodes, dimensions, sidebar, attrDraw, length){
     return "node" + 
     (d.children ? " node--internal" : " node--leaf"); })
     .attr("transform", function(d) { 
-   
         if(length){
-            //return "translate(" + xScale(d.data.combEdge) + "," + d.x + ")"; 
             return "translate(" + xScale(d.data.combEdge) + "," + yScale(d.position) + ")"; 
         }else{
             return "translate(" + d.y + "," + d.x + ")"; 
         }
-    
-    //return "translate(" + d.y + "," + d.x + ")"; 
-});
+    });
 
     // adds the circle to the node
     node.append("circle")
