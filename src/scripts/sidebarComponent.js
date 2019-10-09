@@ -249,6 +249,7 @@ function updateTree(treenodes, dimensions, sidebar, attrDraw, length){
         g.attr('transform', 'translate(20, 320)');
         treeSvg.attr('height', 1000);
         yScale.range([0, 590])
+        xScale.range([0, dimensions.width + 10])
     } 
 
 // adds the links between the nodes
@@ -260,7 +261,7 @@ function updateTree(treenodes, dimensions, sidebar, attrDraw, length){
         if(length){
            return "M" + xScale(d.data.combEdge) + "," + yScale(d.position)
            + "C" + (xScale(d.data.combEdge) + xScale(d.parent.data.combEdge)) / 2 + "," + yScale(d.position)
-           + " " + (xScale(d.data.combEdge) + xScale(d.parent.data.combEdge)) / 2 + "," + yScale(d.position)
+           + " " + (xScale(d.parent.data.combEdge)) + "," + yScale(d.position)
            + " " + xScale(d.parent.data.combEdge) + "," + yScale(d.parent.position);
         }else{
             return "M" + d.y + "," + d.x
