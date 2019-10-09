@@ -220,12 +220,20 @@ export function renderTree(sidebar, attrDraw, uncollapse){
     let groupedBool = d3.select('#show-drop-div-group').attr('value');
     let lengthBool = d3.select('button#length').text() === 'Hide Lengths';
 
+    let sidebarTest = sidebar.select('svg');
+    let treeSvg = sidebarTest.empty() ? sidebar.append("svg") : sidebarTest;
+    treeSvg.attr("width", dimensions.width + dimensions.margin.left + dimensions.margin.right)
+    .attr("height", dimensions.height + dimensions.margin.top + dimensions.margin.bottom);
+    let g = treeSvg.append("g").classed('tree-g', true)
+    .attr("transform",
+      "translate(" + dimensions.margin.left + "," + dimensions.margin.top + ")");
+
     if(groupedBool === "ungrouped" && uncollapse === false){
         let newNodes = collapseTree(treenodes);
-        updateTree(newNodes, dimensions, sidebar, attrDraw, lengthBool);
+        updateTree(newNodes, dimensions, treeSvg, g, attrDraw, lengthBool);
     }else{
         ////Break this out into other nodes////
-        updateTree(treenodes, dimensions, sidebar, attrDraw, lengthBool);
+        updateTree(treenodes, dimensions, treeSvg, g, attrDraw, lengthBool);
     }
     /////END TREE STUFF
     ///////////
@@ -248,21 +256,13 @@ function findDepth(node, array){
     
 }
 
-function updateTree(treenodes, dimensions, sidebar, attrDraw, length){
+function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length){
     
     assignPosition(treenodes, 0);
 
     let branchCount = findDepth(treenodes, []);
     let xScale = d3.scaleLinear().domain([0, 1]).range([0, dimensions.width]).clamp(true);
     let yScale = d3.scaleLinear().range([dimensions.height, 0]).domain([0, branchCount.length])
-
-    sidebar.select('svg').remove();
-    let treeSvg = sidebar.append("svg")
-    .attr("width", dimensions.width + dimensions.margin.left + dimensions.margin.right)
-    .attr("height", dimensions.height + dimensions.margin.top + dimensions.margin.bottom),
-    g = treeSvg.append("g")
-    .attr("transform",
-      "translate(" + dimensions.margin.left + "," + dimensions.margin.top + ")");
 
     if(length){   
         g.attr('transform', 'translate(20, 320)');
@@ -272,10 +272,13 @@ function updateTree(treenodes, dimensions, sidebar, attrDraw, length){
     } 
 
 // adds the links between the nodes
-    var link = g.selectAll(".link")
+    let link = g.selectAll(".link")
     .data( treenodes.descendants().slice(1))
     .join("path")
-    .attr("class", "link")
+    .attr("class", "link");
+
+    link.transition()
+    .duration(500)
     .attr("d", function(d) {
         if(length){
            return "M" + xScale(d.data.combEdge) + "," + yScale(d.position)
@@ -292,11 +295,18 @@ function updateTree(treenodes, dimensions, sidebar, attrDraw, length){
 
     // adds each node as a group
     var node = g.selectAll(".node")
-    .data(treenodes.descendants())
+    .data(treenodes.descendants(), d => d.data.node)
     .join("g")
     .attr("class", function(d) { 
     return "node" + 
     (d.children ? " node--internal" : " node--leaf"); })
+    
+    // adds the circle to the node
+    node.selectAll('circle').data(d=> [d]).join("circle")
+    .attr("r", 3);
+
+    node.transition()
+    .duration(500)
     .attr("transform", function(d) { 
         if(length){
             return "translate(" + xScale(d.data.combEdge) + "," + yScale(d.position) + ")"; 
@@ -304,10 +314,6 @@ function updateTree(treenodes, dimensions, sidebar, attrDraw, length){
             return "translate(" + d.y + "," + d.x + ")"; 
         }
     });
-
-    // adds the circle to the node
-    node.append("circle")
-    .attr("r", 3);
 
     if(attrDraw != null){
         let leaves = node.filter(n=> n.data.leaf === true);
@@ -363,10 +369,12 @@ function updateTree(treenodes, dimensions, sidebar, attrDraw, length){
 
     leaves.on('click', (d, i, n)=> console.log(d));
 
+    node.selectAll('text').remove();
+
     let branchNodes = node.filter(n=> n.branchPoint === true);
     branchNodes.each((b, i, n)=> {
         if(b.children === null){
-            d3.select(n[i]).append('text').text(b.clade)
+            d3.select(n[i]).selectAll('text').data(d=> [d]).join('text').text(b.clade)
         }
     })
     branchNodes.select('circle').attr('fill', 'red');
@@ -377,9 +385,11 @@ function updateTree(treenodes, dimensions, sidebar, attrDraw, length){
             collapseSub(d);
         }
         let lengthBool = d3.select('button#length').text() === 'Hide Lengths';
-        updateTree(treenodes, dimensions, sidebar, attrDraw, lengthBool);
+        updateTree(treenodes, dimensions, treeSvg, g, attrDraw, lengthBool);
       
     })
+
+    node.raise();
 
     return node;
 }
