@@ -36,7 +36,7 @@ export function drawBranchPointDistribution(data, svg){
 
 export function groupDistributions(pathData, mainDiv, scales, moveMetric){
 
-    console.log('distribution view', Array.from(new Set(pathData.map(path=> path.filter(f=> f.leaf === true)[0].clade === "" ? "Anolis" : "Norops"))));
+   
 
     let clades = Array.from(new Set(pathData.map(path=> path.filter(f=> f.leaf === true)[0].clade === "" ? "Anolis" : "Norops")));
  
@@ -47,7 +47,7 @@ export function groupDistributions(pathData, mainDiv, scales, moveMetric){
         return {'label': clade, 'paths': group }
     });
  
-    console.log('pathgroups', pathGroups);
+  
 
     let groupDivs = mainDiv.selectAll('.group-div').data(pathGroups).join('div').classed('group-div', true);
 
@@ -64,7 +64,7 @@ export function groupDistributions(pathData, mainDiv, scales, moveMetric){
 
 export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
     
-    console.log(pathData)
+  
 
     let observedWidth = 200;
     let predictedWidth = 800;

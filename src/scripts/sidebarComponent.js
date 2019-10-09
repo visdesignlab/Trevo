@@ -201,22 +201,54 @@ export function renderTree(sidebar, length, attrDraw, uncollapse){
 // maps the node data to the tree layout
     treenodes = treemap(treenodes);
 
+    console.log(treenodes);
+
+       // Better Solution
+    function assignPosition(node, position) {
+        
+        console.log('node', node)
+        if (node.children == undefined || node.children.length === 0){
+            node.position = position;
+            return ++position;
+        }else{
+            let positionArray = []
+            node.children.forEach((child) => {
+                position = assignPosition(child, position);
+                positionArray.push(position);
+            });
+            node.options = positionArray;
+            console.log(positionArray);
+            node.position = positionArray[positionArray.length - 1]
+    
+            return position;
+        }
+       
+    }
+
+    assignPosition(treenodes, 0)
+
+    console.log(treenodes);
+
     let groupedBool = d3.select('#show-drop-div-group').attr('value');
     let lengthBool = d3.select('button#length').text();
 
-    if(groupedBool === "ungrouped" && uncollapse === false){
-        let newNodes = collapseTree(treenodes);
-        updateTree(newNodes, dimensions, sidebar, attrDraw, length);
-    }else{
+  //  if(groupedBool === "ungrouped" && uncollapse === false){
+  //      let newNodes = collapseTree(treenodes);
+  //      updateTree(newNodes, dimensions, sidebar, attrDraw, length);
+  //  }else{
         ////Break this out into other nodes////
         updateTree(treenodes, dimensions, sidebar, attrDraw, length);
-    }
+  //  }
     /////END TREE STUFF
     ///////////
 }
 
 function updateTree(treenodes, dimensions, sidebar, attrDraw, length){
     let xScale = d3.scaleLinear().domain([0, 1]).range([0, dimensions.width]).clamp(true);
+
+    let yScale = d3.scaleLinear().range([0, dimensions.height]).domain([100, 0])
+
+    
     sidebar.select('svg').remove();
     var treeSvg = sidebar.append("svg")
     .attr("width", dimensions.width + dimensions.margin.left + dimensions.margin.right)
@@ -232,10 +264,16 @@ function updateTree(treenodes, dimensions, sidebar, attrDraw, length){
     .attr("class", "link")
     .attr("d", function(d) {
         if(length){
+            /*
             return "M" + xScale(d.data.combEdge) + "," + d.x
             + "C" + (xScale(d.data.combEdge) + xScale(d.parent.data.combEdge)) / 2 + "," + d.x
             + " " + (xScale(d.data.combEdge) + xScale(d.parent.data.combEdge)) / 2 + "," + d.parent.x
             + " " + xScale(d.parent.data.combEdge) + "," + d.parent.x;
+            */
+           return "M" + xScale(d.data.combEdge) + "," + yScale(d.position)
+           + "C" + (xScale(d.data.combEdge) + xScale(d.parent.data.combEdge)) / 2 + "," + yScale(d.position)
+           + " " + (xScale(d.data.combEdge) + xScale(d.parent.data.combEdge)) / 2 + "," + yScale(d.parent.position)
+           + " " + xScale(d.parent.data.combEdge) + "," + yScale(d.parent.position);
         }else{
             return "M" + d.y + "," + d.x
             + "C" + (d.y + d.parent.y) / 2 + "," + d.x
@@ -243,6 +281,8 @@ function updateTree(treenodes, dimensions, sidebar, attrDraw, length){
             + " " + d.parent.y + "," + d.parent.x;
         }       
     });
+
+   
 
     // adds each node as a group
     var node = g.selectAll(".node")
@@ -254,7 +294,8 @@ function updateTree(treenodes, dimensions, sidebar, attrDraw, length){
     .attr("transform", function(d) { 
    
         if(length){
-            return "translate(" + xScale(d.data.combEdge) + "," + d.x + ")"; 
+            //return "translate(" + xScale(d.data.combEdge) + "," + d.x + ")"; 
+            return "translate(" + xScale(d.data.combEdge) + "," + yScale(d.position) + ")"; 
         }else{
             return "translate(" + d.y + "," + d.x + ")"; 
         }
