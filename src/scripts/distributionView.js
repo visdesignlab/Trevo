@@ -34,9 +34,37 @@ export function drawBranchPointDistribution(data, svg){
     return branchBar;
 }
 
+export function groupDistributions(pathData, mainDiv, scales, moveMetric){
+
+    console.log('distribution view', Array.from(new Set(pathData.map(path=> path.filter(f=> f.leaf === true)[0].clade === "" ? "Anolis" : "Norops"))));
+
+    let clades = Array.from(new Set(pathData.map(path=> path.filter(f=> f.leaf === true)[0].clade === "" ? "Anolis" : "Norops")));
+ 
+    let pathGroups = clades.map(clade => {
+        let group = pathData.filter(path => {
+         path[path.length - 1].clade === "Norops" ? path[path.length - 1].clade = "Norops" : path[path.length - 1].clade = "Anolis" ; 
+         return path[path.length - 1].clade === clade});
+        return {'label': clade, 'paths': group }
+    });
+ 
+    console.log('pathgroups', pathGroups);
+
+    let groupDivs = mainDiv.selectAll('.group-div').data(pathGroups).join('div').classed('group-div', true);
+
+    groupDivs.each((d, i, n)=> {
+        let group = d3.select(n[i]);
+        group.style('text-align', 'center');
+        group.append('text').text(d.label);
+        group.append('text').text(" Shown:" + d.paths.length);
+        renderDistibutions(d.paths, d3.select(n[i]), scales, moveMetric);
+    });
+
+    
+}
+
 export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
     
-   // mainDiv.selectAll('*').remove();
+    console.log(pathData)
 
     let observedWidth = 200;
     let predictedWidth = 800;
@@ -164,8 +192,8 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
     
     let branchScale = d3.scaleLinear().domain([0, medBranchLength]).range([0, 780]);
 
-    let dataCount = mainDiv.append('div').classed('species-count', true);
-    dataCount.append('text').text("Shown: "+ pathData.length + " /"+ dataMaster[0].length);
+    //let dataCount = mainDiv.append('div').classed('species-count', true);
+    //dataCount.append('text').text("Shown: "+ pathData.length + " /"+ dataMaster[0].length);
 
     let svg = mainDiv.append('svg');
     svg.attr('id', 'main-summary-view');
@@ -360,7 +388,7 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
         let x = d3.scaleLinear().domain([d3.min(xvalues), d3.max(xvalues)]).range([0, observedWidth])
         let y = d3.scaleLinear().domain([0, d3.max(d.leafData.bins.map(b=> Object.keys(b).length)) - 2]).range([(height - margin), 0]);
         d3.select(nodes[i]).append('g').classed('x-axis', true).call(d3.axisBottom(x)).attr('transform', 'translate(0, '+height+')');
-        d3.select(nodes[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y)).attr('transform', 'translate(0, '+margin+')');
+        d3.select(nodes[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(4)).attr('transform', 'translate(0, '+margin+')');
     });
     
 ////Observed Discrete////

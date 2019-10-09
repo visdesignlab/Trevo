@@ -3,7 +3,7 @@ import * as d3 from "d3";
 
 import {dataMaster, nestedData, collapsed} from './index';
 import {filterMaster, removeFilter, addFilter} from './filterComponent';
-import { updateMainView } from './viewControl';
+import { updateMainView, groupedView } from './viewControl';
 import {getNested} from './pathCalc';
 import { dropDown } from './buttonComponents';
 
@@ -73,20 +73,21 @@ export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
    // let treeBrush = d3.brush().extent([[0, 0], [400, 600]]);
    let treeBrush = d3.brush().extent([[0, 0], [400, 600]]).on('end', (d, i, n) => updateBrush(treeBrush, calculatedScales));
     treeButton.on('click', ()=> {
+        renderTree(sidebar, true, null, true);
         let treeBrushG = sidebar.select('svg').append('g').classed('tree-brush', true).call(treeBrush);
     });
 
         ///SIDBAR STUFF
-    let treeViewButton = sidebar.append('button').text('Show Lengths').classed('btn btn-outline-secondary', true);  
+    let treeViewButton = sidebar.append('button').text('Show Lengths').attr('id', 'length').classed('btn btn-outline-secondary', true);  
 
     treeViewButton.on('click', ()=> {
   
        sidebar.select('svg').remove();
        if(treeViewButton.text() === 'Show Lengths'){
-            renderTree(sidebar, true, null);
+            renderTree(sidebar, true, null, true);
             treeViewButton.text('Hide Lengths');
        }else{
-            renderTree(sidebar, false, null);
+            renderTree(sidebar, false, null, false);
             treeViewButton.text('Show Lengths');
        }
     });
@@ -98,11 +99,11 @@ export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
     let dropOptions = dropDown(sidebar, optionArray, 'See Values','show-drop-div-sidebar');
     dropOptions.on('click', (d, i, n)=> {
         if(d.type === 'discrete'){
-            renderTree(sidebar, false, d);
+            renderTree(sidebar, false, d, true);
         }else if(d.type === 'continuous'){
-            renderTree(sidebar, false, null);
+            renderTree(sidebar, false, null, false);
         }else{
-            renderTree(sidebar, false, null);
+            renderTree(sidebar, false, null, false);
         }
        sidebar.select('#show-drop-div-sidebar').classed('show', false);
     });
@@ -116,16 +117,32 @@ function treeFilter(data, selectedNodes){
     });
 }
 
+function uncollapseSub(d){
+    d.children = d._children;
+    d._children = null;
+    if(d.children){
+        d.children.map(c=> uncollapseSub(c));
+    }    
+}
+
+function collapseSub(d){
+    if(d.children) {
+        d._children = d.children
+        d._children.forEach(collapseSub)
+        d.children = null
+    }  
+}
+
+
 function collapseTree(treeData){
 
     let leaves = getLeaves(treeData, []);
     //GOING TO CHANGE ALL BLANK TO ANOLIS FOR THIS SITUATION///
     leaves.forEach(l=> l.data.clade === "Norops" ? l.data.clade = "Norops" : l.data.clade = "Anolis");
 
-    stepDown(treeData);
+    return stepDown(treeData);
 
     function stepDown(node){
-        
         let leaves = getLeaves(node, []);
         let ids = new Set(leaves.map(m=> m.data.clade));
         if(ids.size > 1){
@@ -133,10 +150,9 @@ function collapseTree(treeData){
         }else{
             node.branchPoint = true;
             node.clade = Array.from(ids)[0]
-            collapse(node);
+            collapseSub(node);
             return node;
         }
-    
         return node;
     }
     
@@ -148,33 +164,25 @@ function collapseTree(treeData){
         };
         return array;
     }
-
-        // Collapse the node and all it's children
-    function collapse(d) {
-        if(d.children) {
-            d._children = d.children
-            d._children.forEach(collapse)
-            d.children = null
-        }
-    }
-
-    
-
 }
 
-export function renderTree(sidebar, length, attrDraw){
+export function renderTree(sidebar, length, attrDraw, uncollapse){
+
+    console.log('length',length)
 
     if(attrDraw != null){
         console.log('attDraw',attrDraw);
     }
     // set the dimensions and margins of the diagram
-    var margin = {top: 10, right: 90, bottom: 50, left: 20},
-    width = 400 - margin.left - margin.right,
-    height = 700 - margin.top - margin.bottom;
+    let dimensions = {
+        margin : {top: 10, right: 90, bottom: 50, left: 20},
+        width : 290,
+        height : 640
+    }
 
 // declares a tree layout and assigns the size
     var treemap = d3.tree()
-    .size([height, width]);
+    .size([dimensions.height, dimensions.width]);
   
     function addingEdgeLength(edge, data){
         data.combEdge = data.edgeLength + edge;
@@ -185,34 +193,37 @@ export function renderTree(sidebar, length, attrDraw){
         }
     }
 
-
     addingEdgeLength(0, nestedData[0])
 
 //  assigns the data to a hierarchy using parent-child relationships
     var treenodes = d3.hierarchy(nestedData[0]);
 
-   
-
 // maps the node data to the tree layout
     treenodes = treemap(treenodes);
 
-    collapseTree(treenodes)
-    ////Break this out into other nodes////
-updateTree(treenodes, width, height, margin, sidebar, attrDraw)
-   
-/////END TREE STUFF
-///////////
+    let groupedBool = d3.select('#show-drop-div-group').attr('value');
+    let lengthBool = d3.select('button#length').text();
+
+    if(groupedBool === "ungrouped" && uncollapse === false){
+        let newNodes = collapseTree(treenodes);
+        updateTree(newNodes, dimensions, sidebar, attrDraw, length);
+    }else{
+        ////Break this out into other nodes////
+        updateTree(treenodes, dimensions, sidebar, attrDraw, length);
+    }
+    /////END TREE STUFF
+    ///////////
 }
 
-function updateTree(treenodes, width, height, margin, sidebar, attrDraw){
-    let xScale = d3.scaleLinear().domain([0, 1]).range([0, width]).clamp(true);
+function updateTree(treenodes, dimensions, sidebar, attrDraw, length){
+    let xScale = d3.scaleLinear().domain([0, 1]).range([0, dimensions.width]).clamp(true);
     sidebar.select('svg').remove();
     var treeSvg = sidebar.append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom),
+    .attr("width", dimensions.width + dimensions.margin.left + dimensions.margin.right)
+    .attr("height", dimensions.height + dimensions.margin.top + dimensions.margin.bottom),
     g = treeSvg.append("g")
     .attr("transform",
-      "translate(" + margin.left + "," + margin.top + ")");
+      "translate(" + dimensions.margin.left + "," + dimensions.margin.top + ")");
 
 // adds the links between the nodes
     var link = g.selectAll(".link")
@@ -291,12 +302,9 @@ function updateTree(treenodes, width, height, margin, sidebar, attrDraw){
     let leaves = node.filter(f=> f.data.children.length == 0);
 
     leaves.on('click', (d, i, n)=> console.log(d));
-    console.log('node in tree', new Set(leaves.data().map(m=> m.data.clade)))
-    //leaves.filter(f=> f.data.clade === '' || f.data.clade === 'Anolis').select('circle').attr('fill', 'red');
 
     let branchNodes = node.filter(n=> n.branchPoint === true);
     branchNodes.each((b, i, n)=> {
-        console.log(b);
         if(b.children === null){
             d3.select(n[i]).append('text').text(b.clade)
         }
@@ -305,30 +313,13 @@ function updateTree(treenodes, width, height, margin, sidebar, attrDraw){
     branchNodes.on('click', (d, i, n)=> {
        
         if(d.children == null){
-            uncollapse(d);
+            uncollapseSub(d);
         }else{
-            collapse(d);
+            collapseSub(d);
         }
-        updateTree(treenodes, width, height, margin, sidebar, attrDraw);
+        updateTree(treenodes, dimensions, sidebar, attrDraw);
       
     })
-   // console.log(node.filter(n=> n.branchPoint === true))
-
-    function uncollapse(d){
-        d.children = d._children;
-        d._children = null;
-        if(d.children){
-            d.children.map(c=> uncollapse(c));
-        }    
-    }
-
-    function collapse(d){
-        if(d.children) {
-            d._children = d.children
-            d._children.forEach(collapse)
-            d.children = null
-        }  
-    }
 
     return node;
 }

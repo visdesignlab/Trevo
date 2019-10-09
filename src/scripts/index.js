@@ -31,6 +31,8 @@ let selectedPaths = wrap.select('#selected');
 let sidebar = wrap.select('#sidebar');
 let toolbarDiv = wrap.select('#toolbar');
 
+loadData(d3.json, './public/data/body-length-res.json', '').then(d=> console.log('new data!', d))
+
 loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges => {
 
     //helper function to create array of unique elements
@@ -94,7 +96,7 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     ////////TREE RENDER IN SIDEBAR////////
     nestedData.push(buildTreeStructure(paths, edges));
     renderTreeButtons(normedPaths, calculatedScales, sidebar, false);
-    let tree = renderTree(sidebar, false, null);
+    let tree = renderTree(sidebar, false, null, false);
     
     /// LOWER ATTRIBUTE VISUALIZATION ///
     initialViewLoad(calculatedScales, 'edgeLength');
