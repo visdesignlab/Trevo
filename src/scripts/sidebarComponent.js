@@ -166,6 +166,33 @@ function collapseTree(treeData){
     }
 }
 
+function assignPosition(node, position) {
+    if (node.children === undefined || node.children === null){
+        console.log('leaf',node)
+        position = position + 1.5;
+        node.position = position;
+        return position;
+    }else{
+        let positionArray = []
+        node.children.forEach((child) => {
+            position = assignPosition(child, position);
+            positionArray.push(position);
+        });
+        node.options = positionArray;
+        node.position = d3.max(positionArray);
+        return position;
+    }
+}
+
+function addingEdgeLength(edge, data){
+    data.combEdge = data.edgeLength + edge;
+    if(data.children){
+        data.children.forEach(chil=> {
+            addingEdgeLength(data.combEdge, chil);
+        });
+    }
+}
+
 export function renderTree(sidebar, attrDraw, uncollapse){
 
     if(attrDraw != null){
@@ -181,15 +208,6 @@ export function renderTree(sidebar, attrDraw, uncollapse){
     // declares a tree layout and assigns the size
     var treemap = d3.tree()
     .size([dimensions.height, dimensions.width]);
-  
-    function addingEdgeLength(edge, data){
-        data.combEdge = data.edgeLength + edge;
-        if(data.children){
-            data.children.forEach(chil=> {
-                addingEdgeLength(data.combEdge, chil);
-            });
-        }
-    }
 
     addingEdgeLength(0, nestedData[0])
 
@@ -199,29 +217,8 @@ export function renderTree(sidebar, attrDraw, uncollapse){
     // maps the node data to the tree layout
     treenodes = treemap(treenodes);
 
-    function assignPosition(node, position) {
-        if (node.children == undefined || node.children.length === 0){
-            position = position + 1.5;
-            node.position = position;
-            return position;
-        }else{
-            let positionArray = []
-            node.children.forEach((child) => {
-                position = assignPosition(child, position);
-                positionArray.push(position);
-            });
-            node.options = positionArray;
-            node.position = d3.max(positionArray);
-            return position;
-        }
-    }
-
-    assignPosition(treenodes, 0);
-
     let groupedBool = d3.select('#show-drop-div-group').attr('value');
     let lengthBool = d3.select('button#length').text() === 'Hide Lengths';
-
-    console.log(lengthBool)
 
     if(groupedBool === "ungrouped" && uncollapse === false){
         let newNodes = collapseTree(treenodes);
@@ -234,13 +231,33 @@ export function renderTree(sidebar, attrDraw, uncollapse){
     ///////////
 }
 
-function updateTree(treenodes, dimensions, sidebar, attrDraw, length){
+function findDepth(node, array){
 
+    function stepDown(n){
+        if(n.children != null){
+            n.children.forEach(child=> {
+                stepDown(child);
+            })
+        }else{
+            array.push(n);
+        }
+    }
+    stepDown(node);
+
+    return array;
+    
+}
+
+function updateTree(treenodes, dimensions, sidebar, attrDraw, length){
+    
+    assignPosition(treenodes, 0);
+
+    let branchCount = findDepth(treenodes, []);
     let xScale = d3.scaleLinear().domain([0, 1]).range([0, dimensions.width]).clamp(true);
-    let yScale = d3.scaleLinear().range([0, dimensions.height]).domain([100, 0])
+    let yScale = d3.scaleLinear().range([dimensions.height, 0]).domain([0, branchCount.length])
 
     sidebar.select('svg').remove();
-    var treeSvg = sidebar.append("svg")
+    let treeSvg = sidebar.append("svg")
     .attr("width", dimensions.width + dimensions.margin.left + dimensions.margin.right)
     .attr("height", dimensions.height + dimensions.margin.top + dimensions.margin.bottom),
     g = treeSvg.append("g")
@@ -250,8 +267,8 @@ function updateTree(treenodes, dimensions, sidebar, attrDraw, length){
     if(length){   
         g.attr('transform', 'translate(20, 320)');
         treeSvg.attr('height', 1000);
-        yScale.range([0, 590])
-        xScale.range([0, dimensions.width + 10])
+        yScale.range([590, 0])
+        xScale.range([0, dimensions.width + 10]);
     } 
 
 // adds the links between the nodes
@@ -363,5 +380,6 @@ function updateTree(treenodes, dimensions, sidebar, attrDraw, length){
         updateTree(treenodes, dimensions, sidebar, attrDraw, lengthBool);
       
     })
+
     return node;
 }
