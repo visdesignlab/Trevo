@@ -91,6 +91,8 @@ export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
        }
     });
 
+    treeViewButton.style('opacity', 0).style('width', 0).style('padding', 0).style('margin', 0)
+
     let optionArray = [{'field':'None'}];
 
     calculatedScales.map(m=> optionArray.push(m))
@@ -269,7 +271,7 @@ function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length){
     if(length){   
         g.attr('transform', 'translate(20, 320)');
         treeSvg.attr('height', 1000);
-        yScale.range([590, 0])
+        yScale.range([560, 0])
         xScale.range([0, dimensions.width + 10]);
     } 
 

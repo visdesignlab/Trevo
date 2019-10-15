@@ -209,7 +209,6 @@ export function renderPaths(pathData, main, scales, moveMetric){
 
                 nodeTooltipFlag = false;
                 d3.select("#branch-tooltip").classed("hidden", true);
-
                 pathSelected(test.data(), notIt.data(), scales, moveMetric);
 
             });
