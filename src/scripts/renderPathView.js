@@ -210,10 +210,8 @@ export function renderPaths(pathData, main, scales, moveMetric){
                 nodeTooltipFlag = false;
                 d3.select("#branch-tooltip").classed("hidden", true);
                 pathSelected(test.data(), notIt.data(), scales, moveMetric);
-
             });
         }
-          
     });
 
     let circle = nodeGroups.append('circle').attr('cx', 0).attr('cy', 0).attr('r', d=> {
@@ -382,10 +380,9 @@ function drawLeaves(attWraps, groupBy){
     //THIS IS HARD CODED AND SHOULD NOT BE
 
     let numSpecies = 100;
-   
     let height = 40;
     //CONTINUOUS 
-        let leafWraps = attWraps.filter(f=> f.type === 'continuous').selectAll('g.observe-wrap-first.continuous').data(d=> {
+    let leafWraps = attWraps.filter(f=> f.type === 'continuous').selectAll('g.observe-wrap-first.continuous').data(d=> {
             let totalVal = attWraps.data().filter(f=> f.label === d.label).map(m=> m.data);
             let totalArray = totalVal.flatMap(p=> p.flatMap(f=> f.paths[f.paths.length - 1].realVal));
             let max = d3.max(totalArray);
@@ -421,36 +418,63 @@ function drawLeaves(attWraps, groupBy){
 
         //DISCRETE//
         let leafWrapsD = attWraps.filter(f=> f.type === 'discrete').selectAll('g.observe-wrap-first.discrete').data(d=> {
-          //console.log('discrete',d.data.map(m=> m.paths[m.paths.length - 1]))
-          //return d.data.map(m=> m.paths[m.paths.length - 1]);
           return [d];
         }).join('g').classed('observe-wrap-first discrete', true);
 
-
         let rects = leafWrapsD.filter(f=> {
-            console.log(f)
             return f.label != groupBy;
         }).selectAll('rect').data(d=> {
-            console.log(d.data.map(m=> m.paths[m.paths.length - 1]), d3.groups(d.data.map(m=> m.paths[m.paths.length - 1]), d=> d.label))
             let groupedData = d3.groups(d.data.map(m=> m.paths[m.paths.length - 1]), d=> d.state);
-            console.log(groupedData)
+            groupedData.sort((a, b)=> b[1].length - a[1].length)
             return groupedData;
         }).join('rect').attr('height', 20).attr('width', (d, i, n)=>{
-            console.log(d, d3.sum(d3.selectAll(n).data().map(m=> m[1].length)))
-            let scale = d3.scaleLinear().domain([1, d3.sum(d3.selectAll(n).data().map(m=> m[1].length))]).range([5, 400]);
+            let scale = d3.scaleLinear().domain([0, d3.sum(d3.selectAll(n).data().map(m=> m[1].length))])
+            .range([5, 170]);
             d.width = scale(d[1].length);
             return scale(d[1].length);
         });
 
         rects.attr('x', (d, i, n)=> {
-            console.log(d3.select(n[i - 1]).data()[0])
             if(i === 0){ return 0}
-            else {return d3.select(n[i - 1]).data()[0].width;}
+            else {
+                d3.selectAll(n).filter((f, j)=> j< i);
+                let move = d3.sum(d3.selectAll(n).filter((f, j)=> j< i).data().map(m=> m.width));
+                return move;}
+        }).attr('y', 8)
+
+        rects.attr('fill', d=> d[1][0].color);
+
+        rects.on('mouseover', (d, i, n)=> {
+            let tool = d3.select('#tooltip');
+            tool.transition()
+              .duration(200)
+              .style("opacity", .9);
+            
+            tool.html(d[0] + "</br>" + d[1].length)
+              .style("left", (d3.event.pageX + 10) + "px")
+              .style("top", (d3.event.pageY + 20) + "px");
+
+              d3.selectAll(n).filter((f, j)=> j != i).attr('opacity', 0.3);
+          
+        }).on('mouseout', (s, i, n)=> {
+            let tool = d3.select('#tooltip');
+            tool.transition()
+              .duration(500)
+              .style("opacity", 0);
+
+              d3.selectAll(n).filter((f, j)=> j != i).attr('opacity', 1)
         })
 
-        rects.attr('fill', d=> d[1][0].color)
-
         leafWrapsD.attr('transform', 'translate(850, 0)');
+
+        let ratio = leafWrapsD.filter(f=> f.label === groupBy)
+            .selectAll('text').data(d=> [d]).join('text').text(d=> {
+                let paths = d.data[d.data.length - 1].paths;
+                return `${paths[paths.length - 1].state}: ${d.data.length} / ${numSpecies}`
+            });
+        ratio.style('text-anchor', 'middle')
+        ratio.style('font-size', '12px')
+        ratio.attr('x', 90).attr('y', 25)
         
     }
 export function drawGroups(stateBins, scales){
@@ -994,6 +1018,7 @@ export function drawGroups(stateBins, scales){
 
     attWraps.attr('transform', (d, i)=> 'translate(0,'+((i * (height+5))+ 30)+')');
     wrappers.attr('transform', (d, i)=> 'translate(60,'+(i * (5 * (height+15))+ 50)+')');
+    
     svg.attr('height', (wrappers.data().length * (5 * (height+15))+ 50));
 
        //END EXPERIMENT
@@ -1073,15 +1098,16 @@ export function drawGroups(stateBins, scales){
      bCirc.classed('win-state', true);
 
      bCirc.attr('fill', (d, i, n)=> {
-        if(i === 0){
+        if(i === 0 || i === n.length - 1){
             return d.color;
+            /*
         }else if(i === n.length - 1){
             if(d.state === d3.select(n[i-1]).data()[0].state){
                 return 'rgba(189, 195, 199, 0.3)';
             }else{
                 d.shift = true;
                 return d.color;
-            }
+            }*/
         }else{
             if(d.state === d3.select(n[i+1]).data()[0].state || d.state === d3.select(n[i-1]).data()[0].state){
                 return 'rgba(189, 195, 199, 0.3)';

@@ -314,7 +314,6 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
                     return node.edgeMove >= n.base && node.edgeMove <= n.top;
                 } ));
                 n.data = edges;
-          
                 let mean = d3.mean(edges.map(e=> e.realVal));
                 n.mean = mean === undefined ? normBins[i-1].mean : mean;
                 let standard = Math.sqrt(d3.mean(edges.map(e=> e.variance)));
@@ -345,17 +344,17 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
     let wrapRect = innerWrap.selectAll('rect.outline-rect').data(d=> [d]).join('rect').classed('outline-rect', true)
                     .attr('width', 800).attr('height', 60).attr('fill', '#fff').attr('stroke', 'gray');
     
-if(d3.select('#compare-button').empty() || d3.select('#compare-button').text() === "Normal Mode"){
-        let lineGen = d3.line()
-        .x((d, i)=> {
-            let x = d3.scaleLinear().domain([0, 5]).range([0, 800]);
-            return x(i);
-        })
-        .y(d=> {
-           let y = d3.scaleLinear().domain([d.min, d.max])
-            y.range([60, 1]);
-            return y(d.mean);
-        });
+    if(d3.select('#compare-button').empty() || d3.select('#compare-button').text() === "Normal Mode"){
+            let lineGen = d3.line()
+            .x((d, i)=> {
+                let x = d3.scaleLinear().domain([0, 5]).range([0, 800]);
+                return x(i);
+            })
+            .y(d=> {
+            let y = d3.scaleLinear().domain([d.min, d.max])
+                y.range([60, 1]);
+                return y(d.mean);
+    });
 
     let pathGroups = innerWrap.selectAll('g.path-groups').data(d=> d.data).join('g').classed('path-groups', true);
     pathGroups.selectAll('*').remove();
