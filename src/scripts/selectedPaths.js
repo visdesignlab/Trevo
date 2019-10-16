@@ -270,7 +270,9 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
 
     let button = buttonGroup.selectAll('button').data(comparisonKeeper).join('button').classed('btn btn-info', true).style('background', d=> d.groupColor);
     button.selectAll('span').data(t=> [t]).join('span').text(t=> {
-        return t.first[1]+ "/" + t.second[1] + " "}).append('span').text(t=> t.data.length).classed("badge badge-light", true)
+        console.log('t',t)
+        return t.first ? `${t.first[1]} / ${t.second[1]}` : t.state;
+    }).append('span').text(t=> t.data.length).classed("badge badge-light", true)
     
     let xOut = button.selectAll('i').data(d=> [d]).join('i').classed('close fas fa-times', true).style('padding-left', '10px');
     xOut.on('click', (d, i)=> {

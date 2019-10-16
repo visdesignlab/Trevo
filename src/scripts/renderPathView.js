@@ -427,7 +427,7 @@ function drawLeaves(attWraps, groupBy){
             let groupedData = d3.groups(d.data.map(m=> m.paths[m.paths.length - 1]), d=> d.state);
             groupedData.sort((a, b)=> b[1].length - a[1].length)
             return groupedData;
-        }).join('rect').attr('height', 20).attr('width', (d, i, n)=>{
+        }).join('rect').attr('height', 15).attr('width', (d, i, n)=>{
             let scale = d3.scaleLinear().domain([0, d3.sum(d3.selectAll(n).data().map(m=> m[1].length))])
             .range([5, 170]);
             d.width = scale(d[1].length);
@@ -440,7 +440,7 @@ function drawLeaves(attWraps, groupBy){
                 d3.selectAll(n).filter((f, j)=> j< i);
                 let move = d3.sum(d3.selectAll(n).filter((f, j)=> j< i).data().map(m=> m.width));
                 return move;}
-        }).attr('y', 8)
+        }).attr('y', 12)
 
         rects.attr('fill', d=> d[1][0].color);
 
@@ -970,10 +970,27 @@ export function drawGroups(stateBins, scales){
         branchBar.select('line').attr('stroke', '#fff');
     });
 
-    let groupLabels = wrappers.append('text').text((d, i)=> d.state);
-    groupLabels.attr('transform', (d, i)=> 'translate(15, 15)');
-    groupLabels.style('text-anchor', 'end');
-    groupLabels.attr('fill', '#fff');
+    let groupLabels = wrappers.append('g');
+   
+
+     //groupLabels.
+     let pathAdd = groupLabels.append('g').classed("fas fa-search-plus", true);
+     pathAdd.attr('transform', 'translate(20, -5)');
+     pathAdd.append('circle').attr('r', 7).attr('fill', '#fff');
+     pathAdd.append('text').text('+').attr('transform', 'translate(5, 3)').attr('fill', 'gray');
+ 
+     pathAdd.style('cursor', 'pointer');
+
+     pathAdd.on('click', (d, i, n)=> {
+         console.log(d, i, n)
+         let other = d3.selectAll(n).filter((f,j)=> j != i);
+         renderComparison(d, other.data(), d3.select('#selected'), scales);
+     });
+
+     groupLabels.append('text').text((d, i)=> d.state);
+     groupLabels.attr('transform', (d, i)=> 'translate(40, 16)');
+     groupLabels.style('text-anchor', 'end');
+     groupLabels.attr('fill', '#fff');
 
     let innerGroup = wrappers.append('g').classed('inner-wrap', true);
     innerGroup.attr('transform', (d,i)=> 'translate(110, 0)');
