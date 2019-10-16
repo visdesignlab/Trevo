@@ -29,6 +29,10 @@ let wrap = d3.select('#wrapper');
 let main = wrap.select('#main');
 let selectedPaths = wrap.select('#selected');
 let sidebar = wrap.select('#sidebar');
+
+//hiding this for dev
+//sidebar.style('opacity', 0)
+
 let toolbarDiv = wrap.select('#toolbar');
 
 loadData(d3.json, './public/data/body-length-res.json', '').then(d=> console.log('new data!', d))
@@ -70,15 +74,11 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
         'PCIII_padwidth_vs_tail': await loadData(d3.json, './public/data/padwidth-vs-tail-res.json', 'continuous'),
     }
 
-    console.log('pad v tail', calculatedAtt['PCIII_padwidth_vs_tail'])
-
     ////CALCULATE THE SCALES FOR EACH ATTRIBUTE////////
     let calculatedScales = calculateScales(calculatedAtt, colorKeeper);
 
     ///MATCH LEAF CHARACTERS AND LABELS TO LEAVES///
     let matchedLeaves = matchLeaves(labels, leaves, leafChar, calculatedScales);
-
-    console.log(matchedLeaves);
 
     //MATCH CALC ATTRIBUTES TO EDGES///
     let matchedEdges = matchEdges(edges, edgeLen, calculatedAtt, calculatedScales);
@@ -94,6 +94,7 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     let filterDiv = wrap.select('#filter-tab').classed('hidden', true);
 
     ////////TREE RENDER IN SIDEBAR////////
+    
     nestedData.push(buildTreeStructure(paths, edges));
     renderTreeButtons(normedPaths, calculatedScales, sidebar, false);
     let tree = renderTree(sidebar, null, false);

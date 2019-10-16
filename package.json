@@ -52,6 +52,7 @@
     "core-js": "^3.0.1",
     "csv-parser": "^2.3.0",
     "d3": "^5.9.2",
+    "d3-array": "^2.3.2",
     "fs": "0.0.1-security",
     "lodash": "^4.17.15",
     "papaparse": "^5.0.0",

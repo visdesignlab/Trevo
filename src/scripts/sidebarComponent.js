@@ -11,7 +11,7 @@ import { dropDown } from './buttonComponents';
 export function buildTreeStructure(paths, edges){
     let root = paths[0][0];
     let nestedData = getNested(root, edges.rows);
-   // console.log('nested data', nestedData);
+  
     return nestedData;
 }
 
@@ -173,7 +173,7 @@ function collapseTree(treeData){
 
 function assignPosition(node, position) {
     if (node.children === undefined || node.children === null){
-        console.log('leaf',node)
+        
         position = position + 1.5;
         node.position = position;
         return position;

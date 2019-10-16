@@ -378,9 +378,14 @@ export function findMaxState(states, offset){
     return winState;
 }
     //BEGIN TEST
-function drawLeaves(attWraps){
+function drawLeaves(attWraps, groupBy){
+    //THIS IS HARD CODED AND SHOULD NOT BE
+
+    let numSpecies = 100;
+   
     let height = 40;
-        let leafWraps = attWraps.filter(f=> f.type === 'continuous').selectAll('g.observe-wrap-first').data(d=> {
+    //CONTINUOUS 
+        let leafWraps = attWraps.filter(f=> f.type === 'continuous').selectAll('g.observe-wrap-first.continuous').data(d=> {
             let totalVal = attWraps.data().filter(f=> f.label === d.label).map(m=> m.data);
             let totalArray = totalVal.flatMap(p=> p.flatMap(f=> f.paths[f.paths.length - 1].realVal));
             let max = d3.max(totalArray);
@@ -394,7 +399,7 @@ function drawLeaves(attWraps){
             });
             let groupMean = d3.mean(newVal.map(v=> v.value));
             return [{'dotVals':newVal, 'x': x, 'totalMean': totalMean, 'groupMean':groupMean}];
-        }).join('g').classed('observe-wrap-first', true);
+        }).join('g').classed('observe-wrap-first continuous', true);
         
         leafWraps.attr('transform', 'translate(850, 0)');
         
@@ -413,6 +418,39 @@ function drawLeaves(attWraps){
         let distCircGroupOut = leafWraps.append('g').attr('transform', 'translate(0, 20)');
         let distcirclesOut = distCircGroupOut.selectAll('circle').data(d=> d.dotVals).join('circle');
         distcirclesOut.attr('r', 4).attr('cx', (d, i)=> d.x(d.value)).style('opacity', '0.3');
+
+        //DISCRETE//
+        let leafWrapsD = attWraps.filter(f=> f.type === 'discrete').selectAll('g.observe-wrap-first.discrete').data(d=> {
+          //console.log('discrete',d.data.map(m=> m.paths[m.paths.length - 1]))
+          //return d.data.map(m=> m.paths[m.paths.length - 1]);
+          return [d];
+        }).join('g').classed('observe-wrap-first discrete', true);
+
+
+        let rects = leafWrapsD.filter(f=> {
+            console.log(f)
+            return f.label != groupBy;
+        }).selectAll('rect').data(d=> {
+            console.log(d.data.map(m=> m.paths[m.paths.length - 1]), d3.groups(d.data.map(m=> m.paths[m.paths.length - 1]), d=> d.label))
+            let groupedData = d3.groups(d.data.map(m=> m.paths[m.paths.length - 1]), d=> d.state);
+            console.log(groupedData)
+            return groupedData;
+        }).join('rect').attr('height', 20).attr('width', (d, i, n)=>{
+            console.log(d, d3.sum(d3.selectAll(n).data().map(m=> m[1].length)))
+            let scale = d3.scaleLinear().domain([1, d3.sum(d3.selectAll(n).data().map(m=> m[1].length))]).range([5, 400]);
+            d.width = scale(d[1].length);
+            return scale(d[1].length);
+        });
+
+        rects.attr('x', (d, i, n)=> {
+            console.log(d3.select(n[i - 1]).data()[0])
+            if(i === 0){ return 0}
+            else {return d3.select(n[i - 1]).data()[0].width;}
+        })
+
+        rects.attr('fill', d=> d[1][0].color)
+
+        leafWrapsD.attr('transform', 'translate(850, 0)');
         
     }
 export function drawGroups(stateBins, scales){
@@ -436,7 +474,6 @@ export function drawGroups(stateBins, scales){
         d3.select('#toolbar').append('text').text(d.field);
         
         if(d.type === 'discrete'){
-
             let newBins = stateBins.map(state=> {
                 let newBinData = d.scales.map(sc=> {
                     let field = sc.field;
@@ -960,7 +997,7 @@ export function drawGroups(stateBins, scales){
     svg.attr('height', (wrappers.data().length * (5 * (height+15))+ 50));
 
        //END EXPERIMENT
-    drawLeaves(attWraps);
+    drawLeaves(attWraps, stateBins[0].field);
 
     let labels = attWraps.append('text')
     .text(d=> d.label)
@@ -1136,6 +1173,7 @@ export function drawGroups(stateBins, scales){
          svg.selectAll('path.inner-line.'+ d.species).classed('selected', true);
          d3.select(n[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(3));
          d3.select(n[i]).selectAll('.other').style('opacity', 0.7);
+
      }).on('mouseout', (d, i, n)=> {
          d3.select(n[i]).select('g.y-axis')
          d3.select(n[i]).select('g.y-axis').remove();
@@ -1169,7 +1207,6 @@ export function drawGroups(stateBins, scales){
      /////HIGHLIGHTING NODES IN A TREE ON HOVER//////
      d3.selectAll('.att-wrapper').selectAll('.branch').on('mouseover', (d, i, n)=> {
          let treeNode  = d3.select('#sidebar').selectAll('.node');
-      
         treeNode.filter(f=> {
             return d.node === f.data.node;
         }).classed('selected', true);
@@ -1177,13 +1214,12 @@ export function drawGroups(stateBins, scales){
     }).on('mouseout', (d, i, n)=> {
        
         let treeNode  = d3.select('#sidebar').selectAll('.node');
-      
+
         treeNode.filter(f=> {
             return d.node === f.data.node;
         }).classed('selected', false);
     })
      
-     console.log(d3.selectAll('.att-wrapper').selectAll('.branch'))
 }
 export function drawDiscreteAtt(predictedAttrGrps, moveMetric, collapsed, bars){
 
