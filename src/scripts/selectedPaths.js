@@ -294,8 +294,8 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
 
     let attWraps = selectedTool.selectAll('.att-wrapper').data(comparisonCombined.filter(f=> f.type === 'continuous').map((com)=>{
        
-        let max = d3.max(com.data.flatMap(d=> d.data.flatMap(m=> m.map(f=> f.upperCI95))));
-        let min = d3.min(com.data.flatMap(d=> d.data.flatMap(m=> m.map(f=> f.lowerCI95))))
+        let max = d3.max(com.data.flatMap(d=> d.data.flatMap(m=> m.map(f=> f.upperCI95)))) + .2;
+        let min = d3.min(com.data.flatMap(d=> d.data.flatMap(m=> m.map(f=> f.lowerCI95)))) - .2;
         
         com.data.map(c=> {
             let binLength = 6;
@@ -354,7 +354,7 @@ if(d3.select('#compare-button').empty() || d3.select('#compare-button').text() =
             return x(i);
         })
         .y(d=> {
-            let y = d.yScale;
+           let y = d3.scaleLinear().domain([d.min, d.max])
             y.range([60, 1]);
             return y(d.mean);
         });
@@ -368,7 +368,8 @@ if(d3.select('#compare-button').empty() || d3.select('#compare-button').text() =
                 b.mean = d.bins[i-1].mean;
                 d.missing = true;
             }
-            b.yScale = scale;
+           
+            b.yScale = d3.scaleLinear().domain([b.min, b.max]).range([60, 1])
             return b;
         });
         return lineGen(d.bins);
@@ -413,22 +414,23 @@ if(d3.select('#compare-button').empty() || d3.select('#compare-button').text() =
 
     paths.style('fill', 'none');
     paths.style('stroke', d=> d.group.color);
-    paths.style('stroke-width', '1px');
+    paths.style('stroke-width', '2px');
 
     conf.style('fill', d=> d.group.color);
-    conf.style('opacity', 0.2);
+    conf.style('opacity', 0.15);
 
     let yAxisG = innerWrap.append('g').classed('y-axis', true);
 
     innerWrap.on('mousemove', function(d, i) {
-        
-        let scale = scales.filter(f=> f.field === d.field)[0];
+     
+        let scale = d3.scaleLinear().domain([d.data[0].bins[0].min, d.data[0].bins[0].max]).range([1, 60]);
         let axisGroupTest = d3.select(this).select('.y-axis');
         let axisGroup = axisGroupTest.empty() ? d3.select(this).append('g').classed('y-axis', true) : axisGroupTest;
         
         if(d3.select('#compare-button').empty() || d3.select('#compare-button').text()==='Normal Mode'){
             axisGroup.attr('transform', (d, i)=> 'translate('+(d3.mouse(this)[0] - 10)+',0)')
-            axisGroup.call(d3.axisLeft(scale.yScale).ticks(5));
+           // let scale = d3.scaleLinear().domain([])
+            axisGroup.call(d3.axisLeft(scale).ticks(5));
         }else{
             let pathD = d3.select(this).select('.path-groups').selectAll('path');
             let maxDiff = pathD.data().map(d=> d[0].maxDiff)[0];
@@ -447,6 +449,7 @@ if(d3.select('#compare-button').empty() || d3.select('#compare-button').text() =
 }else{
 
     innerWrap.selectAll('.path-groups').remove();
+    innerWrap.selectAll('g.conf-groups').remove();
     let pathGroups = innerWrap.selectAll('g.path-groups').data(d=> {
         let startBins = d.data[0].bins;
         let difArray = [];
@@ -484,7 +487,7 @@ if(d3.select('#compare-button').empty() || d3.select('#compare-button').text() =
 
     paths.style('fill', 'none');
     paths.style('stroke', 'black');
-    paths.style('stroke-width', '1px');
+    paths.style('stroke-width', '2px');
 }
 
 /////////////////////////
