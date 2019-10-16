@@ -47,8 +47,6 @@ export function groupDistributions(pathData, mainDiv, scales, moveMetric){
         return {'label': clade, 'paths': group }
     });
  
-  
-
     let groupDivs = mainDiv.selectAll('.group-div').data(pathGroups).join('div').classed('group-div', true);
 
     groupDivs.each((d, i, n)=> {
@@ -64,8 +62,6 @@ export function groupDistributions(pathData, mainDiv, scales, moveMetric){
 
 export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
     
-  
-
     let observedWidth = 200;
     let predictedWidth = 800;
     let height = 90;
@@ -318,9 +314,8 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
     })
 
     let discreteBinWrap = predictedWrap.filter(f=> f.type === 'discrete');
-
     let stateGroups = discreteBinWrap.selectAll('.path-wrapper').selectAll('g.state').data(d=> d.states).join('g').classed('state', true);
-
+    discreteBinWrap.append('line').attr('x1', 100).attr('x2', 900).attr('y1', 48).attr('y2', 48).attr('stroke-width', 0.3).attr('stroke', 'black')
     stateGroups.append('path').attr('d', (p, i)=> {
         var lineGenD = d3.area()
         .curve(d3.curveCardinal)
@@ -419,7 +414,6 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
     }).on('mouseout', (d, i, n)=> {
         d3.select(n[i]).attr('opacity', 0.3);
         let state = d3.select('g.'+d[0].label).selectAll('g.state').attr('opacity', 0.6);
-     
     })
 
     discOb.each((d, i, nodes)=> {

@@ -199,12 +199,11 @@ function addingEdgeLength(edge, data){
 }
 
 export function renderTree(sidebar, att, uncollapse){
-
     // set the dimensions and margins of the diagram
     let dimensions = {
         margin : {top: 10, right: 90, bottom: 50, left: 20},
         width : 290,
-        height : 650
+        height : 520
     }
 
     // declares a tree layout and assigns the size
@@ -269,9 +268,9 @@ function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length){
     let yScale = d3.scaleLinear().range([dimensions.height, 0]).domain([0, branchCount.length])
 
     if(length){   
-        g.attr('transform', 'translate(20, 320)');
-        treeSvg.attr('height', 1000);
-        yScale.range([560, 0])
+        g.attr('transform', 'translate(20, 265)');
+        treeSvg.attr('height', 800);
+        yScale.range([500, 0])
         xScale.range([0, dimensions.width + 10]);
     } 
 

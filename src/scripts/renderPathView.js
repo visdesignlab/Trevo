@@ -982,7 +982,6 @@ export function drawGroups(stateBins, scales){
      pathAdd.style('cursor', 'pointer');
 
      pathAdd.on('click', (d, i, n)=> {
-         console.log(d, i, n)
          let other = d3.selectAll(n).filter((f,j)=> j != i);
          renderComparison(d, other.data(), d3.select('#selected'), scales);
      });
