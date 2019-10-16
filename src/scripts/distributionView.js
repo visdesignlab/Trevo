@@ -76,28 +76,40 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
 
     let maxBranch = d3.max(newNormed.map(p=> p.length)) - 1;
     let medBranchLength = d3.median(newNormed.map(p=> p.length));
-
+/*
     let normBins = new Array(medBranchLength).fill().map((m, i)=> {
         let step = 1 / medBranchLength;
         let base = (i * step);
         let top = ((i + 1)* step);
         return {'base': base, 'top': top, 'binI': i }
+    });*/
+
+    let normBins = new Array(medBranchLength).fill().map((m, i)=> {
+  
+            let step = 1 / medBranchLength;
+            let base = (i * step);
+            let top = ((i + 1)* step);
+            return {'base': base, 'top': top, 'binI': i }
+        
+       
     });
-   
+
     let internalNodes = newNormed.map(path => path.filter(node=> node.leaf != true));
+    //let internalNodes = newNormed.map(path => path.filter(node=> node.leaf != true && node.root != true));
     let leafNodes = newNormed.flatMap(path => path.filter(node=> node.leaf === true));
+    let rootNodes = newNormed.flatMap(path => path.filter(node=> node.root === true));
 
     normBins.map((n, i)=> {
         let edges = internalNodes.flatMap(path => path.filter(node=> {
-            if(i === 0){
-                return node.edgeLength === 0;
-            }else{
+          
                 return node.edgeMove > n.base && node.edgeMove <= n.top;
-            }
+            
         } ));
         n.data = edges;
         return n;
     });
+
+    console.log('newnormed', newNormed, normBins, rootNodes)
 
     let sortedBins = keys.map(key=> {
         let scale = scales.filter(f=> f.field === key)[0];
@@ -207,10 +219,18 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
     let label = binnedWrap.append('text').text(d=> d.key).attr('y', 40).attr('x', 80).style('text-anchor', 'end');
 
     let predictedWrap = binnedWrap.append('g').classed('predicted', true);
+    predictedWrap.attr('transform', 'translate(25, 0)')
+
+    let root = predictedWrap.append('g').classed('root', true);
+    root.append('rect').attr('height', 90).attr('width', 15).attr('x', 70);
 
     let pathGroup = predictedWrap.append('g').classed('path-wrapper', true);
 
-    let branchGroup = predictedWrap.selectAll('g.branch-bin').data(d=> d.branches).join('g').classed('branch-bin', true);
+    //let branchGroup = predictedWrap.selectAll('g.branch-bin').data(d=> d.branches).join('g').classed('branch-bin', true);
+
+    let branchGroup = predictedWrap.selectAll('g.branch-bin').data(d=> {
+        console.log(d.branches)
+        return d.branches}).join('g').classed('branch-bin', true);
     branchGroup.attr('transform', (d, i)=> 'translate('+(100 + branchScale(i))+', 0)');
 
     let continDist = branchGroup.filter(f=> f.type === 'continuous');
