@@ -91,6 +91,8 @@ export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
        }
     });
 
+    treeViewButton.style('opacity', 0).style('width', 0).style('padding', 0).style('margin', 0)
+
     let optionArray = [{'field':'None'}];
 
     calculatedScales.map(m=> optionArray.push(m))
@@ -100,10 +102,13 @@ export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
     dropOptions.on('click', (d, i, n)=> {
         if(d.type === 'discrete'){
             renderTree(sidebar, d, true);
+            //updateTree(tree, dimensions, treeSvg, g, d, lengthBool);
         }else if(d.type === 'continuous'){
             renderTree(sidebar, null, false);
+            //updateTree(tree, dimensions, treeSvg, g, null, lengthBool);
         }else{
             renderTree(sidebar, null, false);
+           // updateTree(tree, dimensions, treeSvg, g, null, lengthBool);
         }
        sidebar.select('#show-drop-div-sidebar').classed('show', false);
     });
@@ -166,11 +171,35 @@ function collapseTree(treeData){
     }
 }
 
-export function renderTree(sidebar, attrDraw, uncollapse){
-
-    if(attrDraw != null){
-        console.log('attDraw',attrDraw);
+function assignPosition(node, position) {
+    if (node.children === undefined || node.children === null){
+        console.log('leaf',node)
+        position = position + 1.5;
+        node.position = position;
+        return position;
+    }else{
+        let positionArray = []
+        node.children.forEach((child) => {
+            position = assignPosition(child, position);
+            positionArray.push(position);
+        });
+        node.options = positionArray;
+        node.position = d3.max(positionArray);
+        return position;
     }
+}
+
+function addingEdgeLength(edge, data){
+    data.combEdge = data.edgeLength + edge;
+    if(data.children){
+        data.children.forEach(chil=> {
+            addingEdgeLength(data.combEdge, chil);
+        });
+    }
+}
+
+export function renderTree(sidebar, att, uncollapse){
+
     // set the dimensions and margins of the diagram
     let dimensions = {
         margin : {top: 10, right: 90, bottom: 50, left: 20},
@@ -181,17 +210,8 @@ export function renderTree(sidebar, attrDraw, uncollapse){
     // declares a tree layout and assigns the size
     var treemap = d3.tree()
     .size([dimensions.height, dimensions.width]);
-  
-    function addingEdgeLength(edge, data){
-        data.combEdge = data.edgeLength + edge;
-        if(data.children){
-            data.children.forEach(chil=> {
-                addingEdgeLength(data.combEdge, chil);
-            });
-        }
-    }
 
-    addingEdgeLength(0, nestedData[0])
+    addingEdgeLength(0, nestedData[0]);
 
     //  assigns the data to a hierarchy using parent-child relationships
     var treenodes = d3.hierarchy(nestedData[0]);
@@ -199,66 +219,70 @@ export function renderTree(sidebar, attrDraw, uncollapse){
     // maps the node data to the tree layout
     treenodes = treemap(treenodes);
 
-    function assignPosition(node, position) {
-        if (node.children == undefined || node.children.length === 0){
-            position = position + 1.5;
-            node.position = position;
-            return position;
-        }else{
-            let positionArray = []
-            node.children.forEach((child) => {
-                position = assignPosition(child, position);
-                positionArray.push(position);
-            });
-            node.options = positionArray;
-            node.position = d3.max(positionArray);
-            return position;
-        }
-    }
-
-    assignPosition(treenodes, 0);
-
     let groupedBool = d3.select('#show-drop-div-group').attr('value');
     let lengthBool = d3.select('button#length').text() === 'Hide Lengths';
 
-    console.log(lengthBool)
+    let sidebarTest = sidebar.select('svg');
+    let treeSvg = sidebarTest.empty() ? sidebar.append("svg") : sidebarTest;
+    treeSvg.attr("width", dimensions.width + dimensions.margin.left + dimensions.margin.right)
+    .attr("height", dimensions.height + dimensions.margin.top + dimensions.margin.bottom);
+
+    let gTest = treeSvg.select('g.tree-g');
+    let g = gTest.empty() ? treeSvg.append("g").classed('tree-g', true) : gTest;
+    g.attr("transform",
+      "translate(" + dimensions.margin.left + "," + dimensions.margin.top + ")");
 
     if(groupedBool === "ungrouped" && uncollapse === false){
         let newNodes = collapseTree(treenodes);
-        updateTree(newNodes, dimensions, sidebar, attrDraw, lengthBool);
+        updateTree(newNodes, dimensions, treeSvg, g, att, lengthBool);
     }else{
         ////Break this out into other nodes////
-        updateTree(treenodes, dimensions, sidebar, attrDraw, lengthBool);
+        updateTree(treenodes, dimensions, treeSvg, g, att, lengthBool);
     }
     /////END TREE STUFF
     ///////////
 }
 
-function updateTree(treenodes, dimensions, sidebar, attrDraw, length){
+function findDepth(node, array){
 
+    function stepDown(n){
+        if(n.children != null){
+            n.children.forEach(child=> {
+                stepDown(child);
+            })
+        }else{
+            array.push(n);
+        }
+    }
+    stepDown(node);
+
+    return array;
+    
+}
+
+function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length){
+    
+    assignPosition(treenodes, 0);
+
+    let branchCount = findDepth(treenodes, []);
     let xScale = d3.scaleLinear().domain([0, 1]).range([0, dimensions.width]).clamp(true);
-    let yScale = d3.scaleLinear().range([0, dimensions.height]).domain([100, 0])
-
-    sidebar.select('svg').remove();
-    var treeSvg = sidebar.append("svg")
-    .attr("width", dimensions.width + dimensions.margin.left + dimensions.margin.right)
-    .attr("height", dimensions.height + dimensions.margin.top + dimensions.margin.bottom),
-    g = treeSvg.append("g")
-    .attr("transform",
-      "translate(" + dimensions.margin.left + "," + dimensions.margin.top + ")");
+    let yScale = d3.scaleLinear().range([dimensions.height, 0]).domain([0, branchCount.length])
 
     if(length){   
         g.attr('transform', 'translate(20, 320)');
         treeSvg.attr('height', 1000);
-        yScale.range([0, 590])
-        xScale.range([0, dimensions.width + 10])
+        yScale.range([560, 0])
+        xScale.range([0, dimensions.width + 10]);
     } 
 
 // adds the links between the nodes
-    var link = g.selectAll(".link")
+    let link = g.selectAll(".link")
     .data( treenodes.descendants().slice(1))
     .join("path")
-    .attr("class", "link")
+    .attr("class", "link");
+
+    link.transition()
+    .duration(500)
     .attr("d", function(d) {
         if(length){
            return "M" + xScale(d.data.combEdge) + "," + yScale(d.position)
@@ -275,11 +299,19 @@ function updateTree(treenodes, dimensions, sidebar, attrDraw, length){
 
     // adds each node as a group
     var node = g.selectAll(".node")
-    .data(treenodes.descendants())
+    .data(treenodes.descendants(), d => d.data.node)
     .join("g")
     .attr("class", function(d) { 
     return "node" + 
-    (d.children ? " node--internal" : " node--leaf"); })
+    (d.children ? " node--internal" : " node--leaf"); });
+
+
+      // adds the circle to the node
+      node.selectAll('circle').data(d=> [d]).join("circle")
+      .attr("r", 3);
+
+    node.transition()
+    .duration(500)
     .attr("transform", function(d) { 
         if(length){
             return "translate(" + xScale(d.data.combEdge) + "," + yScale(d.position) + ")"; 
@@ -287,10 +319,6 @@ function updateTree(treenodes, dimensions, sidebar, attrDraw, length){
             return "translate(" + d.y + "," + d.x + ")"; 
         }
     });
-
-    // adds the circle to the node
-    node.append("circle")
-    .attr("r", 3);
 
     if(attrDraw != null){
         let leaves = node.filter(n=> n.data.leaf === true);
@@ -344,15 +372,20 @@ function updateTree(treenodes, dimensions, sidebar, attrDraw, length){
     });
     let leaves = node.filter(f=> f.data.children.length == 0);
 
-    leaves.on('click', (d, i, n)=> console.log(d));
+    node.selectAll('text').remove();
+    node.selectAll('.triangle').remove();
 
     let branchNodes = node.filter(n=> n.branchPoint === true);
     branchNodes.each((b, i, n)=> {
         if(b.children === null){
-            d3.select(n[i]).append('text').text(b.clade)
+            let triangle = d3.select(n[i]).append('path').classed('triangle', true).attr('d', d3.symbol().type(d3.symbolTriangle).size('400'))
+            triangle.attr('transform', `rotate(-90) translate(0, 65) scale(.9 4)`);
+            triangle.attr('fill', 'gray').style('opacity', 0.3);
+            let text = d3.select(n[i]).selectAll('text').data(d=> [d]).join('text').text(b.clade);
+            text.attr('transform', 'translate(55, 5)');
         }
     })
-    branchNodes.select('circle').attr('fill', 'red');
+    branchNodes.select('circle').attr('fill', 'red').attr('r', 4.5);
     branchNodes.on('click', (d, i, n)=> {
         if(d.children == null){
             uncollapseSub(d);
@@ -360,8 +393,12 @@ function updateTree(treenodes, dimensions, sidebar, attrDraw, length){
             collapseSub(d);
         }
         let lengthBool = d3.select('button#length').text() === 'Hide Lengths';
-        updateTree(treenodes, dimensions, sidebar, attrDraw, lengthBool);
+        updateTree(treenodes, dimensions, treeSvg, g, attrDraw, lengthBool);
       
-    })
+    });
+
+    node.raise();
+    node.selectAll('circle').raise();
+
     return node;
 }

@@ -225,6 +225,8 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
  
     let buttonGroupTest = selectedDiv.select('.button-wrap');
     let buttonGroup = buttonGroupTest.empty() ? selectedDiv.append('div').classed('button-wrap', true) : buttonGroupTest;
+
+
     
     buttonGroup.style('display','inline-block').style('width', '900px').style('height', '50px');
     let main = d3.select('div#main');
@@ -250,10 +252,23 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
         let newAtt = {'field': sc.field, 'type': sc.type, 'data': []}
         comparisonKeeper.map((com, i)=> {
             let atts = formatAttributeData(com.data, scales, [sc.field]);
-            newAtt.data.push({'group': {'first': com.first, 'second': com.second, 'color': com.groupColor}, 'data': atts.flatMap(a=> a)});
+           
+            let added = atts.flatMap(att=> {
+                return att.map(a => {
+                    return a.map(m=> {
+                        let standard = m.leaf === true ? 0 : (m.upperCI95 - m.realVal) / 2;
+                        m.variance = standard * standard;
+                        return m;
+                    });
+                })
+            })
+
+            newAtt.data.push({'group': {'first': com.first, 'second': com.second, 'color': com.groupColor}, 'data': sc.type === 'continuous' ? added : atts.flatMap(a=> a)});
         })
         return newAtt;
     });
+
+    console.log('combined', comparisonCombined);
 
     let button = buttonGroup.selectAll('button').data(comparisonKeeper).join('button').classed('btn btn-info', true).style('background', d=> d.groupColor);
     button.selectAll('span').data(t=> [t]).join('span').text(t=> {
@@ -278,10 +293,14 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
     selectedTool.style('height', '300px');
 
     let attWraps = selectedTool.selectAll('.att-wrapper').data(comparisonCombined.filter(f=> f.type === 'continuous').map((com)=>{
+       
+        let max = d3.max(com.data.flatMap(d=> d.data.flatMap(m=> m.map(f=> f.upperCI95)))) + .2;
+        let min = d3.min(com.data.flatMap(d=> d.data.flatMap(m=> m.map(f=> f.lowerCI95)))) - .2;
+        
         com.data.map(c=> {
             let binLength = 6;
-            let max = scales.filter(f=> f.field === com.field)[0].max;
-            let min = scales.filter(f=> f.field === com.field)[0].min;
+            //let max = scales.filter(f=> f.field === com.field)[0].max;
+           // let min = scales.filter(f=> f.field === com.field)[0].min;
             let normBins = new Array(binLength).fill().map((m, i)=> {
                 let step = 1 / binLength;
                 let base = (i * step);
@@ -291,15 +310,24 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
 
             let internalNodes = c.data.map(path => path.filter(node=> node.leaf != true));
             let leafNodes = c.data.flatMap(path => path.filter(node=> node.leaf === true));
-            c.bins = normBins.map((n)=> {
+
+            c.bins = normBins.map((n, i, nodes)=> {
                 let edges = internalNodes.flatMap(path => path.filter(node=> {
                     return node.edgeMove >= n.base && node.edgeMove <= n.top;
                 } ));
                 n.data = edges;
-                n.mean = d3.mean(edges.map(e=> e.realVal))
+          
+                let mean = d3.mean(edges.map(e=> e.realVal));
+                n.mean = mean === undefined ? normBins[i-1].mean : mean;
+                let standard = Math.sqrt(d3.mean(edges.map(e=> e.variance)));
+                n.meanStandard = edges.length === 0 ? 0 : standard;
+                let sigma2 = standard * 2;
+                n.upCon95 = mean === undefined ? normBins[i-1].upCon95 : mean + sigma2;
+                n.lowCon95 = mean === undefined ? normBins[i-1].lowCon95 : mean - sigma2;
                 return n;
             });
             c.leaves = leafNodes;
+           
             return c;
         })
         
@@ -326,7 +354,7 @@ if(d3.select('#compare-button').empty() || d3.select('#compare-button').text() =
             return x(i);
         })
         .y(d=> {
-            let y = d.yScale;
+           let y = d3.scaleLinear().domain([d.min, d.max])
             y.range([60, 1]);
             return y(d.mean);
         });
@@ -340,27 +368,69 @@ if(d3.select('#compare-button').empty() || d3.select('#compare-button').text() =
                 b.mean = d.bins[i-1].mean;
                 d.missing = true;
             }
-            b.yScale = scale;
+           
+            b.yScale = d3.scaleLinear().domain([b.min, b.max]).range([60, 1])
             return b;
         });
         return lineGen(d.bins);
     }).classed('path', true);
 
+    var areaG = d3.area()
+    .curve(d3.curveCardinal)
+    .x((d, i)=> {
+        let x = d3.scaleLinear().domain([0, 5]).range([0, 800]);
+        return x(i);
+    })
+    .y0(d=> {
+        let y = d.yScale;
+        y.range([60, 1]);
+     
+        return y(d.lowCon95);
+    })
+    .y1(d=> {
+        let y = d.yScale;
+        y.range([60, 1]);
+     
+        return y(d.upCon95); 
+    });
+
+    let confGroups = innerWrap.selectAll('g.conf-groups').data(d=> d.data).join('g').classed('conf-groups', true);
+    confGroups.selectAll('*').remove();
+    let conf = confGroups.append('path').attr('d', d=> { 
+        d.bins = d.bins.map((b, i, n)=> {
+            if(b.upCon95 === NaN){
+                b.upCon95 = d.bins[i-1].upCon95;
+                d.missing = true;
+            }
+            if(b.lowCon95 === NaN){
+                b.lowCon95 = d.bins[i-1].lowCon95;
+                d.missing = true;
+            }
+
+            return b;
+        });
+        return areaG(d.bins);
+    }).classed('path', true);
+
     paths.style('fill', 'none');
     paths.style('stroke', d=> d.group.color);
-    paths.style('stroke-width', '1px');
+    paths.style('stroke-width', '2px');
+
+    conf.style('fill', d=> d.group.color);
+    conf.style('opacity', 0.15);
 
     let yAxisG = innerWrap.append('g').classed('y-axis', true);
 
     innerWrap.on('mousemove', function(d, i) {
-        
-        let scale = scales.filter(f=> f.field === d.field)[0];
+     
+        let scale = d3.scaleLinear().domain([d.data[0].bins[0].min, d.data[0].bins[0].max]).range([1, 60]);
         let axisGroupTest = d3.select(this).select('.y-axis');
         let axisGroup = axisGroupTest.empty() ? d3.select(this).append('g').classed('y-axis', true) : axisGroupTest;
         
         if(d3.select('#compare-button').empty() || d3.select('#compare-button').text()==='Normal Mode'){
             axisGroup.attr('transform', (d, i)=> 'translate('+(d3.mouse(this)[0] - 10)+',0)')
-            axisGroup.call(d3.axisLeft(scale.yScale).ticks(5));
+           // let scale = d3.scaleLinear().domain([])
+            axisGroup.call(d3.axisLeft(scale).ticks(5));
         }else{
             let pathD = d3.select(this).select('.path-groups').selectAll('path');
             let maxDiff = pathD.data().map(d=> d[0].maxDiff)[0];
@@ -379,6 +449,7 @@ if(d3.select('#compare-button').empty() || d3.select('#compare-button').text() =
 }else{
 
     innerWrap.selectAll('.path-groups').remove();
+    innerWrap.selectAll('g.conf-groups').remove();
     let pathGroups = innerWrap.selectAll('g.path-groups').data(d=> {
         let startBins = d.data[0].bins;
         let difArray = [];
@@ -416,7 +487,7 @@ if(d3.select('#compare-button').empty() || d3.select('#compare-button').text() =
 
     paths.style('fill', 'none');
     paths.style('stroke', 'black');
-    paths.style('stroke-width', '1px');
+    paths.style('stroke-width', '2px');
 }
 
 /////////////////////////
