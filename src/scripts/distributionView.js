@@ -124,7 +124,7 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
             }
             return {'data': bin.fData, 'range': [bin.base, bin.top], 'index': bin.binI, 'key': key };
         });
-
+        console.log(rootNodes.map(m=> m.attributes[key])[0])
         let leafAttr = leafNodes.map(m=> m.attributes[key]);
         let leafData = {'data': leafAttr}
    
@@ -159,7 +159,7 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
 
             leafData.bins = histogramO(leafAttr);
 
-            let newK = {'key': key, 'branches': [...mapNorm], 'type': scale.type, 'leafData': leafData}
+            let newK = {'key': key, 'branches': [...mapNorm], 'type': scale.type, 'leafData': leafData, 'rootData': rootNodes.map(m=> m.attributes[key])[0]}
             return newK;
 
         }else{
@@ -183,15 +183,13 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
                 
                 return n;
             });
-
             let test = states.map(stat=> {
                 let key = stat.state;
                 return mapNorm.flatMap(m=> {
                     return m.bins.filter(f=> f.state === key);
                 });
             });
-
-            let newK = {'key': key, 'branches': [...mapNorm], 'type': scale.type, 'leafData': leafData, 'states': test}
+            let newK = {'key': key, 'branches': [...mapNorm], 'type': scale.type, 'leafData': leafData, 'states': test, 'rootData': rootNodes.map(m=> m.attributes[key])[0]}
             return newK;
         }
     });
@@ -223,6 +221,10 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
 
     let root = predictedWrap.append('g').classed('root', true);
     root.append('rect').attr('height', 90).attr('width', 15).attr('x', 70);
+    root.selectAll('rect.range').data(d=> {
+        console.log('d',d)
+        return d;
+    })
 
     let pathGroup = predictedWrap.append('g').classed('path-wrapper', true);
 
