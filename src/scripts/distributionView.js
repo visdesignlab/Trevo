@@ -252,6 +252,17 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
       
         }).attr('fill', '#004573');
 
+        let disRoot = root.filter(f=> f.type === "discrete");
+
+        disRoot.selectAll('rect').data(d=> {
+            //console.log(d)
+            return d.states;
+        }).join('rect').attr('width', 15).attr('height', (d)=>{
+            console.log(d)
+            let scale = d3.scaleLinear().domain([0, 1]).range([90, 2]);
+            return scale(d.realVal);
+        }).attr('fill', d=> d.color).style('opacity', 0.5)
+
     let pathGroup = predictedWrap.append('g').classed('path-wrapper', true);
 
     //let branchGroup = predictedWrap.selectAll('g.branch-bin').data(d=> d.branches).join('g').classed('branch-bin', true);
