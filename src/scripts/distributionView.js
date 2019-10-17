@@ -219,12 +219,38 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
     let predictedWrap = binnedWrap.append('g').classed('predicted', true);
     predictedWrap.attr('transform', 'translate(25, 0)')
 
-    let root = predictedWrap.append('g').classed('root', true);
-    root.append('rect').attr('height', 90).attr('width', 15).attr('x', 70);
-    root.selectAll('rect.range').data(d=> {
-        console.log('d',d)
-        return d;
-    })
+    let root = predictedWrap.selectAll('g.root').data(d=> {
+        console.log(d)
+        return [d.rootData]}).join('g').classed('root', true);
+    
+        root.attr('transform', `translate(70,0)`);
+
+    let contRoot = root.filter(f=> f.type === "continuous");
+    
+    contRoot.append('rect').attr('height', 90).attr('width', 15).attr('fill', '#fff')//.attr('x', 70);
+
+    let rootRange = contRoot.append('rect')
+        .attr('width', 15)
+        .attr('height', d=> {
+            let newy = d.yScale;
+            newy.range([80, 0]);
+            return newy(d.lowerCI95) - newy(d.upperCI95)
+        }).attr('transform', (d, i) => {
+            let newy = d.yScale;
+            newy.range([80, 0]);
+            return 'translate(0,'+newy(d.upperCI95)+')'
+        }).style('opacity', 0.5).attr('fill', "rgba(133, 193, 233)");
+
+        let rootAv = contRoot.append('rect').attr('width', 15).attr('height', 3);
+    
+        rootAv.attr('transform', (d, i) => {
+         
+                let newy = d.yScale;
+                newy.range([height, 0]);
+                let mean = d.realVal;
+                return 'translate(0,'+newy(mean)+')';
+      
+        }).attr('fill', '#004573');
 
     let pathGroup = predictedWrap.append('g').classed('path-wrapper', true);
 
