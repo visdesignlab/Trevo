@@ -222,7 +222,7 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
     let root = predictedWrap.selectAll('g.root').data(d=> {
         return [d.rootData]}).join('g').classed('root', true);
     
-        root.attr('transform', `translate(70,0)`);
+        root.attr('transform', `translate(60,0)`);
 
     let contRoot = root.filter(f=> f.type === "continuous");
     
@@ -266,7 +266,6 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
         .attr('fill', d=> d.color).style('opacity', 0.9)
 
         disRects.on('mouseover', (d, i, n)=> {
-            console.log(d)
             let tool = d3.select('#tooltip');
             tool.transition()
               .duration(200)
