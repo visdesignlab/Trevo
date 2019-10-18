@@ -3,6 +3,7 @@ import {formatAttributeData} from './dataFormat';
 import * as d3 from "d3";
 import {filterMaster} from './filterComponent';
 import {dataMaster} from './index';
+import * as d3Array from 'd3-array'
 
 export function drawBranchPointDistribution(data, svg){
 

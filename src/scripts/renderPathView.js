@@ -1,5 +1,6 @@
 import '../styles/index.scss';
 import * as d3 from "d3";
+import * as d3Array from 'd3-array'
 import { colorKeeper } from './index';
 import {pathSelected, renderComparison} from './selectedPaths';
 import {formatAttributeData} from './dataFormat';
@@ -424,7 +425,7 @@ function drawLeaves(attWraps, groupBy){
         let rects = leafWrapsD.filter(f=> {
             return f.label != groupBy;
         }).selectAll('rect').data(d=> {
-            let groupedData = d3.groups(d.data.map(m=> m.paths[m.paths.length - 1]), d=> d.state);
+            let groupedData = d3Array.groups(d.data.map(m=> m.paths[m.paths.length - 1]), d=> d.state);
             groupedData.sort((a, b)=> b[1].length - a[1].length)
             return groupedData;
         }).join('rect').attr('height', 15).attr('width', (d, i, n)=>{
