@@ -196,7 +196,7 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
 
     ///////RENDERING//////////
     
-    let branchScale = d3.scaleLinear().domain([0, medBranchLength]).range([0, 780]);
+    let branchScale = d3.scaleLinear().domain([0, medBranchLength]).range([0, 760]);
 
     //let dataCount = mainDiv.append('div').classed('species-count', true);
     //dataCount.append('text').text("Shown: "+ pathData.length + " /"+ dataMaster[0].length);
@@ -220,17 +220,16 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
     predictedWrap.attr('transform', 'translate(25, 0)')
 
     let root = predictedWrap.selectAll('g.root').data(d=> {
-        console.log(d)
         return [d.rootData]}).join('g').classed('root', true);
     
         root.attr('transform', `translate(70,0)`);
 
     let contRoot = root.filter(f=> f.type === "continuous");
     
-    contRoot.append('rect').attr('height', 90).attr('width', 15).attr('fill', '#fff')//.attr('x', 70);
+    contRoot.append('rect').attr('height', 90).attr('width', 12).attr('fill', '#fff').style('stroke-width', '0.5px').style('stroke', 'black')//.attr('x', 70);
 
     let rootRange = contRoot.append('rect')
-        .attr('width', 15)
+        .attr('width', 12)
         .attr('height', d=> {
             let newy = d.yScale;
             newy.range([80, 0]);
@@ -241,10 +240,9 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
             return 'translate(0,'+newy(d.upperCI95)+')'
         }).style('opacity', 0.5).attr('fill', "rgba(133, 193, 233)");
 
-        let rootAv = contRoot.append('rect').attr('width', 15).attr('height', 3);
+        let rootAv = contRoot.append('rect').attr('width', 12).attr('height', 3);
     
         rootAv.attr('transform', (d, i) => {
-         
                 let newy = d.yScale;
                 newy.range([height, 0]);
                 let mean = d.realVal;
@@ -254,21 +252,43 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
 
         let disRoot = root.filter(f=> f.type === "discrete");
 
-        disRoot.selectAll('rect').data(d=> {
-            //console.log(d)
-            return d.states;
-        }).join('rect').attr('width', 15).attr('height', (d)=>{
-            console.log(d)
-            let scale = d3.scaleLinear().domain([0, 1]).range([90, 2]);
+        let disRects = disRoot.selectAll('rect.dist').data(d=> {
+            let sorted = d.states.sort((a, b)=> a.realVal - b.realVal);
+            return sorted;
+        }).join('rect').classed('dist', true).attr('width', 12).attr('height', (d)=>{
+            let scale = d3.scaleLinear().domain([0, 1.0]).range([0, 80]).clamp(true);
+            d.height = scale(d.realVal);
             return scale(d.realVal);
-        }).attr('fill', d=> d.color).style('opacity', 0.5)
+        })
+        .attr('transform', (d, i, n) => {
+            let move = d3.selectAll(n).filter((f, j)=> j < i).data().map(m=> m.height);
+            return `translate(0, ${2 + d3.sum(move) * 1.2})`})
+        .attr('fill', d=> d.color).style('opacity', 0.9)
+
+        disRects.on('mouseover', (d, i, n)=> {
+            console.log(d)
+            let tool = d3.select('#tooltip');
+            tool.transition()
+              .duration(200)
+              .style("opacity", .9);
+            let f = d3.format(".3f");
+            tool.html(d.state + ": " + f(d.realVal))
+              .style("left", (d3.event.pageX + 10) + "px")
+              .style("top", (d3.event.pageY - 28) + "px");
+            })
+          .on("mouseout", function(d) {
+            let tool = d3.select('#tooltip');
+            tool.transition()
+              .duration(500)
+              .style("opacity", 0);
+            });
+        
 
     let pathGroup = predictedWrap.append('g').classed('path-wrapper', true);
 
     //let branchGroup = predictedWrap.selectAll('g.branch-bin').data(d=> d.branches).join('g').classed('branch-bin', true);
 
     let branchGroup = predictedWrap.selectAll('g.branch-bin').data(d=> {
-        console.log(d.branches)
         return d.branches}).join('g').classed('branch-bin', true);
     branchGroup.attr('transform', (d, i)=> 'translate('+(100 + branchScale(i))+', 0)');
 
