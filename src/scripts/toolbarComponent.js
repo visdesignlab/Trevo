@@ -12,6 +12,12 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, mov
     let viewButton = toolbar.append('button').attr('id', 'view-toggle').attr('attr' , 'button').attr('class', 'btn btn-outline-secondary');
     viewButton.on('click', ()=> togglePathView(viewButton, calculatedScales, moveMetric));
 
+    let pairButton = toolbar.append('button').attr('id', 'pair-toggle').attr('attr' , 'button').attr('class', 'btn btn-outline-secondary');
+    
+    pairButton.text('Pair View');
+    
+    pairButton.on('click', ()=> togglePathView(viewButton, calculatedScales, moveMetric));
+
     if(pathView === 'paths'){
         viewButton.text('View Summary');
     }else if(pathView === 'summary'){

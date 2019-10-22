@@ -63,7 +63,6 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     
  //   let leafChar = {'rows': rows.map(m=> m[1]), 'type': leafChar2.type, 'fields': leafChar2.columns};
 
-   // console.log(leafChar, leafCharNew);
 
     ///MAKE A ESTIMATED SCALES THING
     let calculatedAtt = {
