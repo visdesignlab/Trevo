@@ -8,7 +8,7 @@ import { renderDistibutions } from "./distributionView";
 export let selectedPaths = [];
 export let comparisonKeeper = [];
 
-export function pathSelected(selectedPath, otherPaths, scales, moveMetric) {
+export function pathSelected(selectedPath, otherPaths, scales) {
 
     let selectedDiv = d3.select('div#selected');
     let main = d3.select('div#main');
@@ -20,16 +20,16 @@ export function pathSelected(selectedPath, otherPaths, scales, moveMetric) {
         selectedDiv.style('height', 0);
         d3.select('div#main').style('padding-top', '0px');
         let main = d3.select('div#main');
-        drawPathsAndAttributes([...otherPaths], main, scales, moveMetric, false);
+        drawPathsAndAttributes([...otherPaths], main, scales, false);
 
     } else {
       
         selectedPaths = selectedPaths.concat(selectedPath);
-        let commonNodes = renderSelectedView([...selectedPaths], [...otherPaths], selectedDiv, scales, moveMetric);
+        let commonNodes = renderSelectedView([...selectedPaths], [...otherPaths], selectedDiv, scales);
         let sortedPaths = sortOtherPaths([...selectedPaths], [...otherPaths], [...commonNodes]);
         
         /// LOWER ATTRIBUTE VISUALIZATION ///
-        let pathGroups = drawPathsAndAttributes(sortedPaths.map(s => s.data), main, scales, moveMetric, false);
+        let pathGroups = drawPathsAndAttributes(sortedPaths.map(s => s.data), main, scales, false);
 
         main.style('padding-top', '250px');
     }
@@ -108,7 +108,7 @@ export function sortOtherPaths(pathData, otherPaths, commonNode) {
     }
 
 }
-function renderSelectedTopology(commonNodeStart, svg, scales, branchFrequency, moveMetric){
+function renderSelectedTopology(commonNodeStart, svg, scales, branchFrequency){
 
         let selectWrap = svg.append('g').classed('select-wrap', true);
         selectWrap.attr('transform', 'translate(0, 20)')
@@ -125,7 +125,7 @@ function renderSelectedTopology(commonNodeStart, svg, scales, branchFrequency, m
         //////////
         ///Selecting species
         /////////
-        addRemoveBubble(selectedGroups, scales, moveMetric)
+        addRemoveBubble(selectedGroups, scales)
 
         /////////
         let timelines = selectedGroups.append('g').classed('time-line', true);
@@ -206,7 +206,7 @@ function renderSelectedTopology(commonNodeStart, svg, scales, branchFrequency, m
        
 
 }
-export function addRemoveBubble(group, scales, moveMetric){
+export function addRemoveBubble(group, scales){
 
     let pathRemove = group.append('g').classed('x-icon', true);
     pathRemove.attr('transform', 'translate(15, 10)');
@@ -217,7 +217,7 @@ export function addRemoveBubble(group, scales, moveMetric){
         d3.selectAll('.high').classed('high', false);
         d3.selectAll('.low').classed('low', false);
         treeNodes.select('.selected').classed('selected', false);
-        pathSelected(null, dataMaster[0], scales, moveMetric);
+        pathSelected(null, dataMaster[0], scales);
     });
 
 }
@@ -546,7 +546,7 @@ let obsDistWrap = attWraps.selectAll('.observed-dist-wrap').data(d=> {
         return 0;
     }).attr('fill', d=> d.group.color);
 }
-export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, moveMetric) {
+export function renderSelectedView(pathData, otherPaths, selectedDiv, scales) {
 
     let attributeHeight = 50;
 
@@ -613,7 +613,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
         //////////
         ///Selecting species
         /////////
-        addRemoveBubble(selectedGroups, scales, moveMetric)
+        addRemoveBubble(selectedGroups, scales)
 
         /////////
         selectedGroups.on('mouseover', function(d, i) {
@@ -717,7 +717,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
     
             let main = d3.select('div#main');
             /// LOWER ATTRIBUTE VISUALIZATION ///
-            drawPathsAndAttributes(sorted.reverse(), main, scales, moveMetric);
+            drawPathsAndAttributes(sorted.reverse(), main, scales);
             main.style('padding-top', '250px');
     
             let paths = main.select('svg#main-path-view').selectAll('.paths');
@@ -754,7 +754,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
     } else if(pathData.length > 1 && pathData.length < 5) {
        
         let commonNodeStart = getCommonNodes(pathData);
-        renderSelectedTopology(commonNodeStart, svg, scales, branchFrequency, moveMetric);
+        renderSelectedTopology(commonNodeStart, svg, scales, branchFrequency);
 
         /////END PATH RENDER///////
         let attWrap = svg.append('g').classed('attribute-wrapper', true);
@@ -1028,11 +1028,11 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
             d3.selectAll('.high').classed('high', false);
             d3.selectAll('.low').classed('low', false);
             treeNodes.select('.selected').classed('selected', false);
-            pathSelected(null, dataMaster[0], scales, moveMetric);
+            pathSelected(null, dataMaster[0], scales);
         });        
 
         /////////
-        renderDistibutions(pathData, selectedDiv, scales, moveMetric);
+        renderDistibutions(pathData, selectedDiv, scales);
         selectedDiv.style('height', '550px');
 
         d3.selectAll('.selected-path').classed('selected-path', false);
@@ -1046,7 +1046,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, mo
     
             let main = d3.select('div#main');
             /// LOWER ATTRIBUTE VISUALIZATION ///
-            drawPathsAndAttributes(sorted.reverse(), main, scales, moveMetric);
+            drawPathsAndAttributes(sorted.reverse(), main, scales);
             main.style('padding-top', '250px');
     
             let paths = main.select('svg#main-path-view').selectAll('.paths');

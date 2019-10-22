@@ -7,16 +7,16 @@ import { collapsed } from '.';
 import { dropDown } from './buttonComponents';
 
 
-export function toolbarControl(toolbar, normedPaths, main, calculatedScales, moveMetric, pathView){
+export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pathView){
 
     let viewButton = toolbar.append('button').attr('id', 'view-toggle').attr('attr' , 'button').attr('class', 'btn btn-outline-secondary');
-    viewButton.on('click', ()=> togglePathView(viewButton, calculatedScales, moveMetric));
+    viewButton.on('click', ()=> togglePathView(viewButton, calculatedScales));
 
     let pairButton = toolbar.append('button').attr('id', 'pair-toggle').attr('attr' , 'button').attr('class', 'btn btn-outline-secondary');
     
     pairButton.text('Pair View');
     
-    pairButton.on('click', ()=> togglePathView(viewButton, calculatedScales, moveMetric));
+    pairButton.on('click', ()=> togglePathView(viewButton, calculatedScales));
 
     if(pathView === 'paths'){
         viewButton.text('View Summary');
@@ -28,7 +28,7 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, mov
     
     let filterButton = toolbar.append('button').attr('id', 'view-filter');
     filterButton.attr('class', 'btn btn-outline-secondary').text('Show Filters');
-    filterButton.on('click', ()=> toggleFilters(filterButton, main, moveMetric, calculatedScales));
+    filterButton.on('click', ()=> toggleFilters(filterButton, main, calculatedScales));
     ///LENGTH BUTTON CODE
 
     let scrunchButton = toolbar.append('button').attr('id', 'scrunch');
@@ -43,10 +43,10 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, mov
         let discretePredictedGroups = d3.selectAll('.predicated-attr-groups');
         if(discreteViewButton.text() === 'Switch to Discrete Bars'){
             discreteViewButton.text('Switch to Discrete Dots');
-            drawDiscreteAtt(discretePredictedGroups, moveMetric, collapsed, true);
+            drawDiscreteAtt(discretePredictedGroups, collapsed, true);
         }else{
             discreteViewButton.text('Switch to Discrete Bars');
-            drawDiscreteAtt(discretePredictedGroups, moveMetric, collapsed, false);
+            drawDiscreteAtt(discretePredictedGroups, collapsed, false);
         }
     });
 
@@ -109,14 +109,14 @@ function toggleScrunch(button, main, calculatedScales){
  * @param {*} main 
  * @param {*} calculatedScales 
  */
-function togglePathView(viewButton, calculatedScales, moveMetric){
+function togglePathView(viewButton, calculatedScales){
 
     if(viewButton.text() === 'View Paths'){
         viewButton.text('View Summary');
     }else{
         viewButton.text('View Paths');
     }
-    updateMainView(calculatedScales, moveMetric);
+    updateMainView(calculatedScales);
 }
 
 

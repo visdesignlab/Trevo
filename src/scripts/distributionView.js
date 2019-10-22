@@ -35,7 +35,7 @@ export function drawBranchPointDistribution(data, svg){
     return branchBar;
 }
 
-export function groupDistributions(pathData, mainDiv, scales, moveMetric){
+export function groupDistributions(pathData, mainDiv, scales){
 
    
 
@@ -55,13 +55,13 @@ export function groupDistributions(pathData, mainDiv, scales, moveMetric){
         group.style('text-align', 'center');
         group.append('text').text(d.label);
         group.append('text').text(" Shown:" + d.paths.length);
-        renderDistibutions(d.paths, d3.select(n[i]), scales, moveMetric);
+        renderDistibutions(d.paths, d3.select(n[i]), scales);
     });
 
     
 }
 
-export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
+export function renderDistibutions(pathData, mainDiv, scales){
     
     let observedWidth = 200;
     let predictedWidth = 800;

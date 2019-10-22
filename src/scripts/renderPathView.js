@@ -9,7 +9,7 @@ import { drawBranchPointDistribution } from './distributionView';
 import { dropDown } from './buttonComponents';
 import { groupedView } from './viewControl';
 
-export function drawPathsAndAttributes(pathData, main, calculatedScales, moveMetric){
+export function drawPathsAndAttributes(pathData, main, calculatedScales){
 
     let nodeTooltipFlag = true;
 
@@ -17,7 +17,7 @@ export function drawPathsAndAttributes(pathData, main, calculatedScales, moveMet
   
     main.select('#main-path-view').selectAll('*').remove();
 
-    let pathGroups = renderPaths(pathData, main, calculatedScales, moveMetric);
+    let pathGroups = renderPaths(pathData, main, calculatedScales);
   
       /// LOWER ATTRIBUTE VISUALIZATION ///
     let attributeWrapper = pathGroups.append('g').classed('attribute-wrapper', true);
@@ -33,8 +33,8 @@ export function drawPathsAndAttributes(pathData, main, calculatedScales, moveMet
     let attributeHeight = (collapsed === 'true')? 22 : 45;
     pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (attrMove + 1))) +')');
     
-    let cGroups = drawContAtt(predictedAttrGrps, moveMetric, collapsed);
-    let dGroups = drawDiscreteAtt(predictedAttrGrps, moveMetric, collapsed, false);
+    let cGroups = drawContAtt(predictedAttrGrps, collapsed);
+    let dGroups = drawDiscreteAtt(predictedAttrGrps, collapsed, false);
     sizeAndMove(main.select('#main-path-view'), attributeWrapper, pathData, (attrMove * attributeHeight));
 
     let leafStates = d3.selectAll('.discrete-leaf');
@@ -72,7 +72,7 @@ export function drawPathsAndAttributes(pathData, main, calculatedScales, moveMet
                 nodeTooltipFlag = false;
                 d3.select("#state-tooltip").classed("hidden", true);
 
-                pathSelected(test, notIt, calculatedScales, moveMetric);
+                pathSelected(test, notIt, calculatedScales);
 
             });
 
@@ -87,7 +87,7 @@ export function sizeAndMove(svg, attribWrap, data, attrMove){
     attribWrap.attr('transform', (d)=> 'translate(140, 25)');
         ///////////////////////////////////
 }
-export function renderPaths(pathData, main, scales, moveMetric){
+export function renderPaths(pathData, main, scales){
     
     ////YOU SHOULD MOVE THESE APPENDING THINGS OUT OF HERE///////
     /////Rendering ///////
@@ -132,10 +132,10 @@ export function renderPaths(pathData, main, scales, moveMetric){
      
         if(d3.select(n[i]).classed('selected-path')){
             d3.select(n[i]).classed('selected-path', false);
-            pathSelected(null, notIt.data(), scales, moveMetric);
+            pathSelected(null, notIt.data(), scales);
         }else{
             d3.select(n[i]).classed('selected-path', true);
-            pathSelected([d], notIt.data(), scales, moveMetric);
+            pathSelected([d], notIt.data(), scales);
         }
     });
 
@@ -177,7 +177,8 @@ export function renderPaths(pathData, main, scales, moveMetric){
    
     nodeGroups.attr('transform', (d)=> {
         let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
-        let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove);
+       // let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove);
+        let distance = x(d.edgeMove);
         return 'translate('+ distance +', 10)';});
 
     nodeGroups.on('click', (d, i, n)=> {
@@ -210,7 +211,7 @@ export function renderPaths(pathData, main, scales, moveMetric){
 
                 nodeTooltipFlag = false;
                 d3.select("#branch-tooltip").classed("hidden", true);
-                pathSelected(test.data(), notIt.data(), scales, moveMetric);
+                pathSelected(test.data(), notIt.data(), scales);
             });
         }
     });
@@ -256,10 +257,10 @@ function collapsedPathGen(data){
         p.change = test;
     })
 }
-async function continuousPaths(innerTimeline, moveMetric, collapsed){
+async function continuousPaths(innerTimeline, collapsed){
 
     innerTimeline.data().forEach(path => {
-        collapsedPathGen(path, moveMetric);
+        collapsedPathGen(path);
     });
 
     //THIS IS THE PATH GENERATOR FOR THE CONTINUOUS VARIABLES
@@ -267,7 +268,8 @@ async function continuousPaths(innerTimeline, moveMetric, collapsed){
     var lineGen = d3.line()
     .x(d=> {
         let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
-        let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove);
+       // let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove);
+       let distance = x(d.edgeMove);
         return distance; })
     .y(d=> {
         let y = d.yScale;
@@ -287,7 +289,7 @@ async function continuousPaths(innerTimeline, moveMetric, collapsed){
     return innerPaths;
     ///////////////////////////////////////////////////////////
 }
-export function drawContAtt(predictedAttrGrps, moveMetric, collapsed){
+export function drawContAtt(predictedAttrGrps, collapsed){
 
     let continuousAtt = predictedAttrGrps.filter(d=> {
         return (d[d.length - 1] != undefined) ? d[d.length - 1].type === 'continuous' : d.type === 'continuous';
@@ -297,7 +299,7 @@ export function drawContAtt(predictedAttrGrps, moveMetric, collapsed){
 
     let innerTimeline = continuousAtt.append('g').classed('attribute-time-line', true);
     /////DO NOT DELETE THIS! YOU NEED TO SEP CONT AND DICRETE ATTR. THIS DRAWS LINE FOR THE CONT/////
-    let innerPaths = continuousPaths(innerTimeline, moveMetric, collapsed);
+    let innerPaths = continuousPaths(innerTimeline, collapsed);
  ////////
     let attribRectCont = innerTimeline.append('rect').classed('attribute-rect', true);
     attribRectCont.attr('height', attributeHeight);
@@ -309,7 +311,8 @@ export function drawContAtt(predictedAttrGrps, moveMetric, collapsed){
     innerRect.attr('height', attributeHeight);
     innerBars.attr('transform', (d)=> {
         let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
-        let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove);
+       // let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove);
+       let distance = x(d.edgeMove);
         return 'translate('+ distance +', 0)';});
       
     let rangeRect = innerBars.append('rect').classed('range-rect', true);
@@ -1264,7 +1267,7 @@ export function drawGroups(stateBins, scales){
     })
      
 }
-export function drawDiscreteAtt(predictedAttrGrps, moveMetric, collapsed, bars){
+export function drawDiscreteAtt(predictedAttrGrps, collapsed, bars){
 
     let discreteAtt = predictedAttrGrps.filter(d=> {
         return d[d.length - 1].type === 'discrete';
@@ -1298,7 +1301,8 @@ export function drawDiscreteAtt(predictedAttrGrps, moveMetric, collapsed, bars){
     var lineGen = d3.line()
     .x(d=> {
         let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
-        let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove);
+        //let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove);
+        let distance = x(d.edgeMove);
         return distance + 7;})
     .y(d=> {
         let y = d3.scaleLinear().domain([0, 1]).range([attributeHeight-2, 1]);
@@ -1321,10 +1325,12 @@ export function drawDiscreteAtt(predictedAttrGrps, moveMetric, collapsed, bars){
     attributeNodesDisc.attr('transform', (d)=> {
         let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
         if(d[0]){
-            let distance = (moveMetric === 'move') ? d[0].move : x(d[0].edgeMove);
+           // let distance = (moveMetric === 'move') ? d[0].move : x(d[0].edgeMove);
+           let distance = x(d[0].edgeMove);
             return 'translate('+distance+', 0)';
         }else{
-            let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove);
+           // let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove);
+            let distance = x(d.edgeMove);
             return 'translate('+distance+', 0)';
         }
     });
