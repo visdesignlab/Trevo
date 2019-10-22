@@ -1,5 +1,5 @@
 export function dropDown(div, optionArray, dropText, dropId){
-    let dropdiv = div.append('div').classed('dropdown', true);
+    let dropdiv = div.append('div').classed(`dropdown ${dropId}`, true);
     dropdiv.style('display', 'inline-block')
     let button = dropdiv.append('button').classed('btn dropbtn btn-secondary', true).text(dropText);
     let dropContent = dropdiv.append('div').attr('id', dropId).classed('dropdown-content', true);

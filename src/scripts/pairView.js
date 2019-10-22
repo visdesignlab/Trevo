@@ -15,21 +15,25 @@ export function generatePairs(data, main){
                         return {'field': m.key, 'value': m.key }
                     });
         
-        dropDown(d3.select('#toolbar'), attKeys, attKeys[0].field, 'attr-drop');
+        let drop = dropDown(d3.select('#toolbar'), attKeys, attKeys[0].field, 'attr-drop');
+        drop.on('click', (d, i, n)=> {
+            updateRanking(pairPaths(data), d.field);
+            d3.select('.attr-drop.dropdown').select('button').text(d.field)
+        });
 
-        updateRanking(pairs, attKeys[0].field);
+        updateRanking([...pairs], attKeys[0].field);
 
 }
 
 function updateRanking(pairs, field){
     
-    let deltaMax = d3.max(pairs.map(m=> m.deltas.filter(f=> f.key === field)[0]).map(m=> m.value));
-    let closeMax = d3.max(pairs.map(m=> m.closeness.filter(f=> f.key === field)[0]).map(m=> m.value));
-    let distMax = d3.max(pairs.map(d=> d.distance))
+    let deltaMax = d3.max([...pairs].map(m=> m.deltas.filter(f=> f.key === field)[0]).map(m=> m.value));
+    let closeMax = d3.max([...pairs].map(m=> m.closeness.filter(f=> f.key === field)[0]).map(m=> m.value));
+    let distMax = d3.max([...pairs].map(d=> d.distance))
     let deltaScale = d3.scaleLinear().domain([0, deltaMax]).range([0, 1]);
     let closeScale = d3.scaleLinear().domain([closeMax, 0]).range([0, 1]);
     let distScale = d3.scaleLinear().domain([0, distMax]).range([0, 1]);
-    pairs = pairs.map(p=> {
+    let pickedPairs = [...pairs].map(p=> {
         p.delta = p.deltas.filter(d=> d.key === field)[0];
         p.closeness = p.closeness.filter(d=> d.key === field)[0];
         p.deltaRank = deltaScale(p.delta.value);
@@ -38,7 +42,7 @@ function updateRanking(pairs, field){
         p.totalRank = p.deltaRank + p.closenessRank + p.distanceRank;
         return p;
     })
-    let sortedPairs = pairs.sort((a, b)=> b.totalRank - a.totalRank).slice(0, 40);
+    let sortedPairs = pickedPairs.sort((a, b)=> b.totalRank - a.totalRank).slice(0, 40);
     sortedPairs = sortedPairs.filter((f, i)=> i%2 === 0)
     drawSorted(sortedPairs);
 
