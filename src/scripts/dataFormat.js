@@ -3,13 +3,15 @@ import * as d3 from "d3";
 
 export function pairPaths(pathData){
 
-    return pathData.map((path, i)=> {
+    return pathData.flatMap((path, i)=> {
         let pairs = pathData.filter((f, j)=> j != i);
         let paired =  pairs.map((p)=> {
             return {'p1': path, 'p2': p}
         });
         return paired.map(m=> {
             m.distance = getDistance(m);
+            m.deltas = calculateDelta(m);
+            m.closeness = calculateCloseness(m);
             return m;
         })
     })
@@ -28,6 +30,72 @@ function getDistance(pair){
     let p2 = pair.p2.filter((f, i)=> i >= p2Index);
 
     return d3.sum(p1.map(m=> m.edgeLength)) + d3.sum(p2.map(m=> m.edgeLength));
+}
+
+function calculateDelta(pair){
+   
+    let verts = pair.p2.map(m=> m.node);
+
+    let test = pair.p1.filter(f=> verts.indexOf(f.node) != -1);
+    let lastNode = test[test.length - 1].node;
+
+    let p1Index = pair.p1.map(m=> m.node).indexOf(lastNode);
+    let p2Index = pair.p2.map(m=> m.node).indexOf(lastNode);
+  
+    let p1 = pair.p1.filter((f, i)=> i >= p1Index);
+    let p2 = pair.p2.filter((f, i)=> i >= p2Index);
+
+    let range = 1 - p1[0].edgeMove;
+    let binCount = d3.max([p1.length, p2.length])
+    let binStep = range / binCount;
+   
+    let bins = [...new Array(binCount-1)].map((d, i)=> {
+        return {'bottom': p1[0].edgeMove + (i*binStep), 'top': p1[0].edgeMove + ((i+1)*binStep) }
+    })
+   
+    bins = bins.map((d, i)=> {
+        let one = p1.filter(f=> (f.edgeMove <= d.top) && (f.edgeMove >= d.bottom))
+        let two = p2.filter(f=> (f.edgeMove <= d.top) && (f.edgeMove >= d.bottom))
+        d.one = one;
+        d.two = two;
+        return d;
+    });
+
+    bins = bins.map((b, i)=> {
+        if(b.one.length === 0){
+            b.one = bins[i-1].one;
+        }
+        if(b.two.length === 0){
+            b.two = bins[i-1].two;
+        }
+
+        return b;
+    })
+    
+    let attributes = d3.entries(p1[0].attributes)
+                    .filter(f => f.value.type === 'continuous')
+                    .map(m=> {
+                        let name = m.key;
+                        let valdiffs = bins.map((b, i)=> {
+                            return Math.abs(b.one[0].attributes[name].realVal - b.two[0].attributes[name].realVal);
+                        });
+                        m.value = d3.max(valdiffs)
+                        return m;
+                    });
+
+    return attributes;
+}
+
+function calculateCloseness(pair){
+
+ let leaf1 = pair.p1.filter(p=> p.leaf === true)[0].attributes;
+ let leaf2 = pair.p2.filter(p=> p.leaf === true)[0].attributes;
+ 
+ return d3.entries(leaf1).filter(f=> f.value.type === 'continuous').map(m=> {
+     m.value = Math.abs(m.value.realVal - leaf2[m.key].realVal);
+     
+     return m
+ });
 }
 
 

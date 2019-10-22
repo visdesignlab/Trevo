@@ -37,7 +37,6 @@ export function drawBranchPointDistribution(data, svg){
 
 export function groupDistributions(pathData, mainDiv, scales){
 
-   
 
     let clades = Array.from(new Set(pathData.map(path=> path.filter(f=> f.leaf === true)[0].clade === "" ? "Anolis" : "Norops")));
  

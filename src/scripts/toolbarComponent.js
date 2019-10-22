@@ -5,9 +5,12 @@ import {toggleFilters, getLatestData} from './filterComponent';
 import { updateMainView } from './viewControl';
 import { collapsed } from '.';
 import { dropDown } from './buttonComponents';
+import { generatePairs } from './pairView';
 
 
 export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pathView){
+
+    console.log('paths',pathView)
 
     let viewButton = toolbar.append('button').attr('id', 'view-toggle').attr('attr' , 'button').attr('class', 'btn btn-outline-secondary');
     viewButton.on('click', ()=> togglePathView(viewButton, calculatedScales));
@@ -16,7 +19,7 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pat
     
     pairButton.text('Pair View');
     
-    pairButton.on('click', ()=> togglePathView(viewButton, calculatedScales));
+    pairButton.on('click', ()=> generatePairs(normedPaths, main));
 
     if(pathView === 'paths'){
         viewButton.text('View Summary');
