@@ -1,6 +1,36 @@
 import * as d3 from "d3";
 
 
+export function pairPaths(pathData){
+
+    return pathData.map((path, i)=> {
+        let pairs = pathData.filter((f, j)=> j != i);
+        let paired =  pairs.map((p)=> {
+            return {'p1': path, 'p2': p}
+        });
+        return paired.map(m=> {
+            m.distance = getDistance(m);
+            return m;
+        })
+    })
+}
+
+function getDistance(pair){
+    let verts = pair.p2.map(m=> m.node);
+
+    let test = pair.p1.filter(f=> verts.indexOf(f.node) != -1);
+    let lastNode = test[test.length - 1].node;
+
+    let p1Index = pair.p1.map(m=> m.node).indexOf(lastNode);
+    let p2Index = pair.p2.map(m=> m.node).indexOf(lastNode);
+  
+    let p1 = pair.p1.filter((f, i)=> i >= p1Index);
+    let p2 = pair.p2.filter((f, i)=> i >= p2Index);
+
+    return d3.sum(p1.map(m=> m.edgeLength)) + d3.sum(p2.map(m=> m.edgeLength));
+}
+
+
 export function calculateScales(calculatedAtt, colorKeeper){
     return Object.keys(calculatedAtt).map((d, i)=> {
        

@@ -110,7 +110,6 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
         return n;
     });
 
-    console.log('newnormed', newNormed, normBins, rootNodes)
 
     let sortedBins = keys.map(key=> {
         let scale = scales.filter(f=> f.field === key)[0];
@@ -125,7 +124,7 @@ export function renderDistibutions(pathData, mainDiv, scales, moveMetric){
             }
             return {'data': bin.fData, 'range': [bin.base, bin.top], 'index': bin.binI, 'key': key };
         });
-        console.log(rootNodes.map(m=> m.attributes[key])[0])
+       
         let leafAttr = leafNodes.map(m=> m.attributes[key]);
         let leafData = {'data': leafAttr}
    

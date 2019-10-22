@@ -1,7 +1,7 @@
 import '../styles/index.scss';
 import * as d3 from "d3";
 import {loadData} from './dataLoad';
-import {calculateScales, matchLeaves, matchEdges, normPaths, filterKeeper} from './dataFormat';
+import {calculateScales, matchLeaves, matchEdges, normPaths, filterKeeper, pairPaths} from './dataFormat';
 import {allPaths, pullPath, getPath} from './pathCalc';
 import {drawPathsAndAttributes} from './renderPathView';
 import {renderTree, buildTreeStructure, renderTreeButtons} from './sidebarComponent';
@@ -85,9 +85,15 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
 
     ///CALCULATES PATHS FROM THE DATA////
     let paths = allPaths(matchedEdges, matchedLeaves, "V1", "V2");
+
+
  
     let normedPaths = normPaths(paths, calculatedAtt, calculatedScales);
     dataMaster.push(normedPaths);
+
+    let test = pairPaths(normedPaths);
+
+    console.log('this is a test', test, test.length);
    
     toolbarControl(toolbarDiv, normedPaths, main, calculatedScales, 'edgeLength', 'paths');
     
