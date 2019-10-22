@@ -44,9 +44,14 @@ function updateRanking(pairs, field){
         p.deltaRank = deltaScale(p.delta.value);
         p.closenessRank = closeScale(p.closeness.value);
         p.distanceRank = distScale(p.distance);
+        p.totalRank = p.deltaRank + p.closenessRank + p.distanceRank;
         return p;
     })
-    console.log(pairs)
+    let sortedPairs = pairs.sort((a, b)=> b.totalRank - a.totalRank).slice(0, 20);
+
+    
+
+    console.log(sortedPairs)
 
 
 }
