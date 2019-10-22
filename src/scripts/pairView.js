@@ -19,15 +19,6 @@ export function generatePairs(data, main){
 
         updateRanking(pairs, attKeys[0].field);
 
-
-
-         ////YOU SHOULD MOVE THESE APPENDING THINGS OUT OF HERE///////
-        /////Rendering ///////
-        let svgTest = main.select('#main-path-view');
-        let svg = svgTest.empty() ? main.append('svg').attr('id', 'main-path-view') : svgTest;
-
-        svg.selectAll('*').remove();
-
 }
 
 function updateRanking(pairs, field){
@@ -47,11 +38,26 @@ function updateRanking(pairs, field){
         p.totalRank = p.deltaRank + p.closenessRank + p.distanceRank;
         return p;
     })
-    let sortedPairs = pairs.sort((a, b)=> b.totalRank - a.totalRank).slice(0, 20);
+    let sortedPairs = pairs.sort((a, b)=> b.totalRank - a.totalRank).slice(0, 40);
+    sortedPairs = sortedPairs.filter((f, i)=> i%2 === 0)
+    drawSorted(sortedPairs);
 
-    
+}
 
-    console.log(sortedPairs)
+function drawSorted(pairs){
+    console.log(pairs);
+    d3.select('#main').selectAll('*').remove();
+    let svg = d3.select('#main').append('svg');
+    svg.attr('height', pairs.length * 130)
+    let wrap = svg.append('g');
+    wrap.attr('transform', 'translate(20, 70)')
+    let pairWraps = wrap.selectAll('g.pair-wrap').data(pairs).join('g').classed('pair-wrap', true);
+    pairWraps.attr('transform', (d, i)=> `translate(50,${i*120})`)
+    pairWraps.append('rect').attr('width', 600).attr('height', 100).attr('stroke-width', 1).attr('stroke', 'black').attr('fill', 'none');
 
+    pairWraps.append('text').text((d, i)=> {
+        console.log(d)
+        return `${d.p1[d.p1.length - 1].label} + ${d.p2[d.p2.length - 1].label}`
+    })
 
 }
