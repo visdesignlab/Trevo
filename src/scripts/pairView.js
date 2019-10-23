@@ -60,7 +60,7 @@ function drawSorted(pairs, field){
     let wrap = svg.append('g');
     wrap.attr('transform', 'translate(20, 70)')
     let pairWraps = wrap.selectAll('g.pair-wrap').data(pairs).join('g').classed('pair-wrap', true);
-    pairWraps.attr('transform', (d, i)=> `translate(50,${i*130})`);
+    pairWraps.attr('transform', (d, i)=> `translate(50,${i*150})`);
     pairWraps.append('rect')
         .attr('width', (d, i)=> {
             return width - xScale(d.common.edgeMove);
@@ -116,6 +116,19 @@ function drawSorted(pairs, field){
         let xAxisG = pairWraps.append('g').classed('x-axis', true);
         xAxisG.call(d3.axisBottom(xScale).ticks(10));
         xAxisG.attr('transform', `translate(0, ${height})`)
+
+    pairWraps.on('mouseover', (d, i)=> {
+        console.log('mouseover', d.p1[d.p1.length - 1].label, d.p2[d.p2.length - 1].label)
+        let species = [d.p1[d.p1.length - 1].label, d.p2[d.p2.length - 1].label];
+
+        let treeNode  = d3.select('#sidebar').selectAll('.node');
+        let treeLinks  = d3.select('#sidebar').selectAll('.link');
+        treeNode.filter(f=> {
+            return species.indexOf(f.data.node) > -1;
+        }).classed('hover', true);
+        treeLinks.filter(f=> d.map(m=> m.node).indexOf(f.data.node) > -1).classed('hover', true);
+        return d3.select(this).classed('hover', true);
+    })
 
     pairWraps.on('mousemove', function(d, i) {
         let scale = d.p1[0].attributes[field].yScale;
