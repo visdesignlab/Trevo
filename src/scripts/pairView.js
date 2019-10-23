@@ -69,20 +69,13 @@ function drawSorted(pairs, field){
         .attr('height', height)
         .attr('x', d=> xScale(d.common.edgeMove))
         .attr('stroke-width', 1).attr('stroke', 'black')
-        .attr('fill', 'none');
+        .attr('fill', '#fff');
 
     pairWraps.append('text').text((d, i)=> {
         return `${d.p1[d.p1.length - 1].label} + ${d.p2[d.p2.length - 1].label}`
     });
 
-    
-
     let pairGroup = pairWraps.selectAll('g.pair').data(d=> [d.p1, d.p2]).join('g').classed('pair', true);
-    let branches = pairGroup.selectAll('g.branch').data(d=> d).join('g').classed('branch', true);
-    branches.attr('transform', (d, i)=> `translate(${xScale(d.edgeMove)}, 0)`);
-    branches.append('rect').attr('width', 10).attr('height', 5).attr('y', (d, i)=> {
-        return d.attributes[field].yScale(d.attributes[field].realVal);
-    });
 
     var lineGen = d3.line()
     .x(d=> {
@@ -102,6 +95,49 @@ function drawSorted(pairs, field){
     .attr("d", lineGen)
     .attr("class", "inner-line")
     .style('stroke', 'rgb(165, 185, 198)');
+
+    let branches = pairGroup.selectAll('g.branch').data(d=> d).join('g').classed('branch', true);
+    branches.attr('transform', (d, i)=> `translate(${xScale(d.edgeMove)}, 0)`);
+    branches.filter(f=> f.leaf != true).append('rect').attr('width', 10).attr('height', (d)=> {
+        let y = d.attributes[field].yScale;
+        return y(d.attributes[field].lowerCI95) - y(d.attributes[field].upperCI95)
+    }).attr('fill', 'rgb(165, 185, 198, .5)').attr('y', (d, i)=> {
+        let y = d.attributes[field].yScale;
+        return y(d.attributes[field].upperCI95);
+    });
+
+    branches.append('rect').attr('width', 10).attr('height', 5).attr('y', (d, i)=> {
+        return d.attributes[field].yScale(d.attributes[field].realVal);
+    });
+
+    let yAxisG = pairGroup.append('g').classed('y-axis', true);
+
+    pairGroup.on('mousemove', function(d, i) {
+        let scale = d[0].attributes[field].yScale;
+        //let scale = d3.scaleLinear().domain([0, ]).range([1, 60]);
+        let axisGroupTest = d3.select(this).select('.y-axis');
+        let axisGroup = axisGroupTest.empty() ? d3.select(this).append('g').classed('y-axis', true) : axisGroupTest;
+        
+        if(d3.select('#compare-button').empty() || d3.select('#compare-button').text()==='Normal Mode'){
+            axisGroup.attr('transform', (d, i)=> 'translate('+(d3.mouse(this)[0] - 10)+',0)')
+           // let scale = d3.scaleLinear().domain([])
+            axisGroup.call(d3.axisLeft(scale).ticks(5));
+        }else{
+            let pathD = d3.select(this).select('.path-groups').selectAll('path');
+            let maxDiff = pathD.data().map(d=> d[0].maxDiff)[0];
+            
+            axisGroup.attr('transform', (d, i)=> 'translate('+(d3.mouse(this)[0] - 10)+',0)');
+            let newScale = d3.scaleLinear().domain([maxDiff, 0]).range([0, 60]);
+            axisGroup.call(d3.axisLeft(newScale).ticks(5));
+        }
+
+    
+    }).on('mouseleave', function(){
+        let axisGroup = d3.select(this).select('.y-axis');
+        axisGroup.remove();
+    });
+    
+
 
 
 
