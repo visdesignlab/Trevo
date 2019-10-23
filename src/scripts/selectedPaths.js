@@ -427,7 +427,6 @@ export function renderComparison(group, otherPaths, selectedDiv, scales){
         
         if(d3.select('#compare-button').empty() || d3.select('#compare-button').text()==='Normal Mode'){
             axisGroup.attr('transform', (d, i)=> 'translate('+(d3.mouse(this)[0] - 10)+',0)')
-           // let scale = d3.scaleLinear().domain([])
             axisGroup.call(d3.axisLeft(scale).ticks(5));
         }else{
             let pathD = d3.select(this).select('.path-groups').selectAll('path');

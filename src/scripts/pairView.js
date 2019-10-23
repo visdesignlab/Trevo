@@ -54,16 +54,15 @@ function drawSorted(pairs, field){
     let height = 100;
     let xScale = d3.scaleLinear().domain([0, 1]).range([0, width]);
 
-    d3.select('#main').selectAll('*').remove();
+    d3.select('#main').selectAll('*').remove()
     let svg = d3.select('#main').append('svg');
-    svg.attr('height', pairs.length * 130)
+    svg.attr('height', pairs.length * 150)
     let wrap = svg.append('g');
     wrap.attr('transform', 'translate(20, 70)')
     let pairWraps = wrap.selectAll('g.pair-wrap').data(pairs).join('g').classed('pair-wrap', true);
-    pairWraps.attr('transform', (d, i)=> `translate(50,${i*120})`)
+    pairWraps.attr('transform', (d, i)=> `translate(50,${i*130})`);
     pairWraps.append('rect')
         .attr('width', (d, i)=> {
-            console.log('d', d);
             return width - xScale(d.common.edgeMove);
         })
         .attr('height', height)
@@ -86,9 +85,7 @@ function drawSorted(pairs, field){
     .y(d=> {
         let y = d.attributes[field].yScale;
         y.range([height, 0]);
-      
         return y(d.attributes[field].realVal);
-       
     });
 
     let innerPaths = pairGroup.append('path')
@@ -107,31 +104,36 @@ function drawSorted(pairs, field){
     });
 
     branches.append('rect').attr('width', 10).attr('height', 5).attr('y', (d, i)=> {
-        return d.attributes[field].yScale(d.attributes[field].realVal);
+        return d.attributes[field].yScale(d.attributes[field].realVal) - 2;
     });
 
-    let yAxisG = pairGroup.append('g').classed('y-axis', true);
+    pairWraps.append('rect').attr('width', (d, i)=> {
+        return xScale(d.common.edgeMove)})
+        .attr('height', height)
+        .attr('fill', '#fff').style('opacity', 0.7);
 
-    pairGroup.on('mousemove', function(d, i) {
-        let scale = d[0].attributes[field].yScale;
+        let yAxisG = pairWraps.append('g').classed('y-axis', true);
+        let xAxisG = pairWraps.append('g').classed('x-axis', true);
+        xAxisG.call(d3.axisBottom(xScale).ticks(10));
+        xAxisG.attr('transform', `translate(0, ${height})`)
+
+    pairWraps.on('mousemove', function(d, i) {
+        let scale = d.p1[0].attributes[field].yScale;
         //let scale = d3.scaleLinear().domain([0, ]).range([1, 60]);
         let axisGroupTest = d3.select(this).select('.y-axis');
         let axisGroup = axisGroupTest.empty() ? d3.select(this).append('g').classed('y-axis', true) : axisGroupTest;
         
         if(d3.select('#compare-button').empty() || d3.select('#compare-button').text()==='Normal Mode'){
             axisGroup.attr('transform', (d, i)=> 'translate('+(d3.mouse(this)[0] - 10)+',0)')
-           // let scale = d3.scaleLinear().domain([])
             axisGroup.call(d3.axisLeft(scale).ticks(5));
         }else{
             let pathD = d3.select(this).select('.path-groups').selectAll('path');
             let maxDiff = pathD.data().map(d=> d[0].maxDiff)[0];
-            
             axisGroup.attr('transform', (d, i)=> 'translate('+(d3.mouse(this)[0] - 10)+',0)');
             let newScale = d3.scaleLinear().domain([maxDiff, 0]).range([0, 60]);
             axisGroup.call(d3.axisLeft(newScale).ticks(5));
         }
 
-    
     }).on('mouseleave', function(){
         let axisGroup = d3.select(this).select('.y-axis');
         axisGroup.remove();
