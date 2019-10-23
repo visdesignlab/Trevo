@@ -29,6 +29,8 @@ function getDistance(pair){
     let p1 = pair.p1.filter((f, i)=> i >= p1Index);
     let p2 = pair.p2.filter((f, i)=> i >= p2Index);
 
+    pair.common = pair.p1[p1Index]
+
     return d3.sum(p1.map(m=> m.edgeLength)) + d3.sum(p2.map(m=> m.edgeLength));
 }
 

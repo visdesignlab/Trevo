@@ -44,12 +44,16 @@ function updateRanking(pairs, field){
     })
     let sortedPairs = pickedPairs.sort((a, b)=> b.totalRank - a.totalRank).slice(0, 40);
     sortedPairs = sortedPairs.filter((f, i)=> i%2 === 0)
-    drawSorted(sortedPairs);
+    drawSorted(sortedPairs, field);
 
 }
 
-function drawSorted(pairs){
-    console.log(pairs);
+function drawSorted(pairs, field){
+    console.log('pairs', pairs, field);
+    let width = 600;
+    let height = 100;
+    let xScale = d3.scaleLinear().domain([0, 1]).range([0, width]);
+
     d3.select('#main').selectAll('*').remove();
     let svg = d3.select('#main').append('svg');
     svg.attr('height', pairs.length * 130)
@@ -57,11 +61,48 @@ function drawSorted(pairs){
     wrap.attr('transform', 'translate(20, 70)')
     let pairWraps = wrap.selectAll('g.pair-wrap').data(pairs).join('g').classed('pair-wrap', true);
     pairWraps.attr('transform', (d, i)=> `translate(50,${i*120})`)
-    pairWraps.append('rect').attr('width', 600).attr('height', 100).attr('stroke-width', 1).attr('stroke', 'black').attr('fill', 'none');
+    pairWraps.append('rect')
+        .attr('width', (d, i)=> {
+            console.log('d', d);
+            return width - xScale(d.common.edgeMove);
+        })
+        .attr('height', height)
+        .attr('x', d=> xScale(d.common.edgeMove))
+        .attr('stroke-width', 1).attr('stroke', 'black')
+        .attr('fill', 'none');
 
     pairWraps.append('text').text((d, i)=> {
-        console.log(d)
         return `${d.p1[d.p1.length - 1].label} + ${d.p2[d.p2.length - 1].label}`
-    })
+    });
+
+    
+
+    let pairGroup = pairWraps.selectAll('g.pair').data(d=> [d.p1, d.p2]).join('g').classed('pair', true);
+    let branches = pairGroup.selectAll('g.branch').data(d=> d).join('g').classed('branch', true);
+    branches.attr('transform', (d, i)=> `translate(${xScale(d.edgeMove)}, 0)`);
+    branches.append('rect').attr('width', 10).attr('height', 5).attr('y', (d, i)=> {
+        return d.attributes[field].yScale(d.attributes[field].realVal);
+    });
+
+    var lineGen = d3.line()
+    .x(d=> {
+        let x = d3.scaleLinear().domain([0, 1]).range([0, width]);
+       // let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove);
+       let distance = x(d.edgeMove);
+        return distance; })
+    .y(d=> {
+        let y = d.attributes[field].yScale;
+        y.range([height, 0]);
+      
+        return y(d.attributes[field].realVal);
+       
+    });
+
+    let innerPaths = pairGroup.append('path')
+    .attr("d", lineGen)
+    .attr("class", "inner-line")
+    .style('stroke', 'rgb(165, 185, 198)');
+
+
 
 }
