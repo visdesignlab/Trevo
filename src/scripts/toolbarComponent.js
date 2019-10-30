@@ -19,7 +19,9 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pat
     
     pairButton.text('Pair View');
     
-    pairButton.on('click', ()=> generatePairs(normedPaths, main));
+    pairButton.on('click', ()=> {
+        generatePairs(normedPaths, main);
+    });
 
     if(pathView === 'paths'){
         viewButton.text('View Summary');

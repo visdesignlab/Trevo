@@ -69,6 +69,7 @@ function updateBrush(treeBrush, scales){
 
 export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
     ///SIDBAR STUFF
+    sidebar = sidebar.append('div').classed('button-wrap', true);
     let treeButton = sidebar.append('button').text('Filter by Tree').classed('btn btn-outline-secondary', true);  
     let treeBrush = d3.brush().extent([[0, 0], [400, 600]]).on('end', (d, i, n) => updateBrush(treeBrush, calculatedScales));
     treeButton.on('click', ()=> {

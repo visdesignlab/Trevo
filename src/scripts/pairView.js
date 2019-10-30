@@ -22,6 +22,10 @@ export function generatePairs(data, main){
         });
 
         updateRanking([...pairs], attKeys[0].field);
+        
+        ///BUTTON FOR PHENOGRAM VIEW. MAYBE MOVE THIS TO SIDEBAR
+        let phenogramButton = d3.select('#sidebar').select('.button-wrap').append('button').text('Phenogram');
+        phenogramButton.classed('btn btn-outline-secondary', true); 
 
 }
 
@@ -72,7 +76,7 @@ function drawSorted(pairs, field){
 
     pairWraps.append('text').text((d, i)=> {
         return `${d.p1[d.p1.length - 1].label} + ${d.p2[d.p2.length - 1].label}`
-    });
+    }).attr('y', -10);
 
     let pairGroup = pairWraps.selectAll('g.pair').data(d=> [d.p1, d.p2]).join('g').classed('pair', true);
 
@@ -118,24 +122,20 @@ function drawSorted(pairs, field){
         xAxisG.attr('transform', `translate(0, ${height})`)
 
     pairWraps.on('mouseover', (d, i)=> {
-        console.log('mouseover', d.p1[d.p1.length - 1].label, d.p2[d.p2.length - 1].label)
-        let species = [d.p1[d.p1.length - 1].label, d.p2[d.p2.length - 1].label];
-
+        let species = [...d.p1.map(n=> n.node)].concat(d.p2.map(n=> n.node));
         let treeNode  = d3.select('#sidebar').selectAll('.node');
         let treeLinks  = d3.select('#sidebar').selectAll('.link');
         treeNode.filter(f=> {
             return species.indexOf(f.data.node) > -1;
         }).classed('hover', true);
-        treeLinks.filter(f=> d.map(m=> m.node).indexOf(f.data.node) > -1).classed('hover', true);
+        treeLinks.filter(f=> species.indexOf(f.data.node) > -1).classed('hover', true);
         return d3.select(this).classed('hover', true);
     })
 
     pairWraps.on('mousemove', function(d, i) {
         let scale = d.p1[0].attributes[field].yScale;
-        //let scale = d3.scaleLinear().domain([0, ]).range([1, 60]);
         let axisGroupTest = d3.select(this).select('.y-axis');
         let axisGroup = axisGroupTest.empty() ? d3.select(this).append('g').classed('y-axis', true) : axisGroupTest;
-        
         if(d3.select('#compare-button').empty() || d3.select('#compare-button').text()==='Normal Mode'){
             axisGroup.attr('transform', (d, i)=> 'translate('+(d3.mouse(this)[0] - 10)+',0)')
             axisGroup.call(d3.axisLeft(scale).ticks(5));
@@ -150,6 +150,9 @@ function drawSorted(pairs, field){
     }).on('mouseleave', function(){
         let axisGroup = d3.select(this).select('.y-axis');
         axisGroup.remove();
+        let treeNode  = d3.select('#sidebar').selectAll('.node').classed('hover', false);
+        let treeLinks  = d3.select('#sidebar').selectAll('.link').classed('hover', false);
+        return d3.select(this).classed('hover', false);
     });
     
 
