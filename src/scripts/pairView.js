@@ -17,6 +17,7 @@ export function generatePairs(data, main){
         let drop = dropDown(d3.select('#toolbar'), attKeys, attKeys[0].field, 'attr-drop');
         drop.on('click', (d, i, n)=> {
             updateRanking(pairPaths(data), d.field);
+            renderTree(d3.select('#sidebar'), null, true, d.field);
             d3.select('.attr-drop.dropdown').select('button').text(d.field)
         });
 
@@ -28,7 +29,6 @@ export function generatePairs(data, main){
         phenogramButton.on('click', ()=> {
             renderTree(d3.select('#sidebar'), null, true, d3.select('.attr-drop.dropdown').select('button').text())
         })
-
 }
 
 function updateRanking(pairs, field){

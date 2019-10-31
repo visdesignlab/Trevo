@@ -199,7 +199,7 @@ function addingEdgeLength(edge, data){
     }
 }
 
-export function renderTree(sidebar, att, uncollapse){
+export function renderTree(sidebar, att, uncollapse, pheno){
     // set the dimensions and margins of the diagram
     let dimensions = {
         margin : {top: 10, right: 90, bottom: 50, left: 20},
@@ -212,6 +212,8 @@ export function renderTree(sidebar, att, uncollapse){
     .size([dimensions.height, dimensions.width]);
 
     addingEdgeLength(0, nestedData[0]);
+
+    console.log('neeested', pheno ? nestedData[0].attributes[pheno].yScale.domain() : null)
 
     //  assigns the data to a hierarchy using parent-child relationships
     var treenodes = d3.hierarchy(nestedData[0]);
@@ -237,7 +239,8 @@ export function renderTree(sidebar, att, uncollapse){
         updateTree(newNodes, dimensions, treeSvg, g, att, lengthBool);
     }else{
         ////Break this out into other nodes////
-        updateTree(treenodes, dimensions, treeSvg, g, att, lengthBool);
+        console.log('pheno',pheno)
+        updateTree(treenodes, dimensions, treeSvg, g, att, lengthBool, pheno);
     }
     /////END TREE STUFF
     ///////////
@@ -260,11 +263,13 @@ function findDepth(node, array){
     
 }
 
-function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length){
+function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, pheno){
     
     assignPosition(treenodes, 0);
 
-    console.log('length in tree',length, d3.select('.attr-drop.dropdown').empty() ? 'nope': d3.select('.attr-drop.dropdown').select('button').text())
+   // console.log('PHENOO', pheno ? treenodes.data.attributes[pheno].yScale.domain() : null)
+
+    //console.log('length in tree', pheno, d3.select('.attr-drop.dropdown').empty() ? 'nope': d3.select('.attr-drop.dropdown').select('button').text())
 
     let branchCount = findDepth(treenodes, []);
     let xScale = d3.scaleLinear().domain([0, 1]).range([0, dimensions.width]).clamp(true);
@@ -276,6 +281,12 @@ function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length){
         yScale.range([500, 0]).domain([0, branchCount.length])
         xScale.range([0, dimensions.width + 10]);
     } 
+    if(pheno){
+        g.attr('transform', 'translate(20, 50)');
+        treeSvg.attr('height', 800);
+        xScale.domain(treenodes.data.attributes[pheno].yScale.domain())
+        yScale.domain([0, 1]).range([0, 500])
+    }
 
 // adds the links between the nodes
     let link = g.selectAll(".link")
@@ -286,18 +297,26 @@ function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length){
     link.transition()
     .duration(500)
     .attr("d", function(d) {
-        if(length){
+        if(length && pheno === undefined){
            return "M" + xScale(d.data.combEdge) + "," + yScale(d.position)
            + "C" + (xScale(d.data.combEdge) + xScale(d.parent.data.combEdge)) / 2 + "," + yScale(d.position)
            + " " + (xScale(d.parent.data.combEdge)) + "," + yScale(d.position)
            + " " + xScale(d.parent.data.combEdge) + "," + yScale(d.parent.position);
         }else{
+            return "M" + xScale(d.data.attributes[pheno].realVal) + "," + yScale(d.data.combEdge)
+            + " " + xScale(d.parent.data.attributes[pheno].realVal) + "," + yScale(d.parent.data.combEdge);
+            /*
             return "M" + d.y + "," + d.x
             + "C" + (d.y + d.parent.y) / 2 + "," + d.x
             + " " + (d.y + d.parent.y) / 2 + "," + d.parent.x
             + " " + d.parent.y + "," + d.parent.x;
+            */
         }       
     });
+
+    if(pheno){
+        link.style('opacity', 0.3)
+    }
 
     // adds each node as a group
     var node = g.selectAll(".node")
@@ -314,11 +333,11 @@ function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length){
     node.transition()
     .duration(500)
     .attr("transform", function(d) { 
-        if(length){
+        if(length && pheno === undefined){
             return "translate(" + xScale(d.data.combEdge) + "," + yScale(d.position) + ")"; 
         }else{
            // return "translate(" + d.y + "," + d.x + ")"; 
-           return "translate(" + xScale(d.data.combEdge) + "," + yScale(d.position) + ")"; 
+           return "translate(" + xScale(d.data.attributes[pheno].realVal) + "," + yScale(d.data.combEdge) + ")"; 
         }
     });
 
