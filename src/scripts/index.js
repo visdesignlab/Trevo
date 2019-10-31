@@ -12,6 +12,7 @@ export const dataMaster = [];
 export const savedSelected = [];
 export const collapsed = false;
 export const nestedData = [];
+export const speciesTest = [];
 
 export const colorKeeper = [
     ['#0dc1d1', '#c8f7fd'],
@@ -63,7 +64,6 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     
  //   let leafChar = {'rows': rows.map(m=> m[1]), 'type': leafChar2.type, 'fields': leafChar2.columns};
 
-
     ///MAKE A ESTIMATED SCALES THING
     let calculatedAtt = {
         'awesomeness' : await loadData(d3.json, './public/data/anolis-awesomeness-res.json', 'continuous'),
@@ -87,6 +87,10 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
 
     let normedPaths = normPaths(paths, calculatedAtt, calculatedScales);
     dataMaster.push(normedPaths);
+//console.log(normedPaths.flatMap(m=> m.filter(f=> f.leaf === true)).map(l=> l.label))
+  //  console.log(normedPaths.filter(f=> f.label));
+
+    speciesTest.push(normedPaths.flatMap(m=> m.filter(f=> f.leaf === true)).map(l=> l.label));
    
     toolbarControl(toolbarDiv, normedPaths, main, calculatedScales, 'paths');
     

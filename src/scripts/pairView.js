@@ -2,6 +2,7 @@ import { pairPaths } from "./dataFormat";
 import { dropDown } from "./buttonComponents";
 import * as d3 from "d3";
 import { renderTree } from "./sidebarComponent";
+import { speciesTest } from ".";
 
 
 export function generatePairs(data, main){
@@ -18,7 +19,7 @@ export function generatePairs(data, main){
         drop.on('click', (d, i, n)=> {
             updateRanking(pairPaths(data), d.field);
             renderTree(d3.select('#sidebar'), null, true, d.field);
-            d3.select('.attr-drop.dropdown').select('button').text(d.field)
+            d3.select('.attr-drop.dropdown').select('button').text(d.field);
         });
 
         updateRanking([...pairs], attKeys[0].field);
@@ -49,13 +50,14 @@ function updateRanking(pairs, field){
         return p;
     })
     let sortedPairs = pickedPairs.sort((a, b)=> b.totalRank - a.totalRank).slice(0, 40);
+    
     sortedPairs = sortedPairs.filter((f, i)=> i%2 === 0)
     drawSorted(sortedPairs, field);
 
 }
 
 function drawSorted(pairs, field){
-    console.log('pairs', pairs, field);
+   // console.log('pairs', pairs, field);
     let width = 600;
     let height = 100;
     let xScale = d3.scaleLinear().domain([0, 1]).range([0, width]);
@@ -109,7 +111,7 @@ function drawSorted(pairs, field){
         return y(d.attributes[field].upperCI95);
     });
 
-    branches.append('rect').attr('width', 10).attr('height', 5).attr('y', (d, i)=> {
+    branches.append('rect').attr('width', 10).attr('height', 4).attr('y', (d, i)=> {
         return d.attributes[field].yScale(d.attributes[field].realVal) - 2;
     });
 
@@ -124,7 +126,16 @@ function drawSorted(pairs, field){
         xAxisG.attr('transform', `translate(0, ${height})`)
 
     pairWraps.on('mouseover', (d, i)=> {
+        
         let species = [...d.p1.map(n=> n.node)].concat(d.p2.map(n=> n.node));
+        let labels = [...d.p1.filter(n=> n.leaf === true).map(m=> m.label)].concat(d.p1.filter(n=> n.leaf === true).map(m=> m.label));
+        let neighbors = labels.map(m=> {
+           // console.log('m',m)
+            let start = speciesTest.indexOf(m);
+            let ne = speciesTest.filter((f, j)=> (j < (start + 4)) && (j > (start - 3)));
+            return ne;
+        });
+        console.log('nnnnnnn',neighbors)
         let treeNode  = d3.select('#sidebar').selectAll('.node');
         let treeLinks  = d3.select('#sidebar').selectAll('.link');
         treeNode.filter(f=> {
