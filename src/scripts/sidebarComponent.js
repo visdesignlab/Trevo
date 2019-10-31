@@ -6,6 +6,8 @@ import {filterMaster, removeFilter, addFilter} from './filterComponent';
 import { updateMainView, groupedView } from './viewControl';
 import {getNested} from './pathCalc';
 import { dropDown } from './buttonComponents';
+import { updateRanking } from './pairView';
+import { pairPaths } from './dataFormat';
 
 
 export function buildTreeStructure(paths, edges){
@@ -113,6 +115,29 @@ export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
         }
        sidebar.select('#show-drop-div-sidebar').classed('show', false);
     });
+
+      ///BUTTON FOR PHENOGRAM VIEW. MAYBE MOVE THIS TO SIDEBAR
+      let phenogramButton = d3.select('#sidebar').select('.button-wrap').append('button').text('Phenogram');
+      phenogramButton.classed('btn btn-outline-secondary', true); 
+      phenogramButton.on('click', ()=> {
+            console.log(phenogramButton.text())
+          if(d3.select('.attr-drop.dropdown').select('button').empty()){
+              console.log(optionArray[1].field)
+            let drop = dropDown(d3.select('#toolbar'), optionArray, optionArray[1].field, 'attr-drop');
+            drop.on('click', (d, i, n)=> {
+                
+                updateRanking(pairPaths(normedPaths), d.field);
+                renderTree(d3.select('#sidebar'), null, true, d.field);
+                d3.select('.attr-drop.dropdown').select('button').text(d.field);
+            });
+
+            renderTree(d3.select('#sidebar'), null, true, d3.select('.attr-drop.dropdown').select('button').text())
+          }else{
+
+            renderTree(d3.select('#sidebar'), null, true, d3.select('.attr-drop.dropdown').select('button').text())
+          }
+          
+      })
 }
 
 function treeFilter(data, selectedNodes){
@@ -138,7 +163,6 @@ function collapseSub(d){
         d.children = null
     }  
 }
-
 
 function collapseTree(treeData){
 

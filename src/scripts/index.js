@@ -56,8 +56,6 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     let leafChar2 = await loadData(d3.csv, './public/data/anolisDataNew.csv', '');
     let labels = await loadData(d3.json, './public/data/anolis-labels.json', '');
 
-    console.log('leafffs', leafChar)
-
 // console.log('new attribute data',leafChar, leafChar2)
   //  console.log(Object.entries(leafChar2).filter(en=> en[0] != 'columns' && en[0] != 'type'));
     let rows = Object.entries(leafChar2).filter(en=> en[0] != 'columns' && en[0] != 'type');

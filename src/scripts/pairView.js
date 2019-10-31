@@ -25,14 +25,14 @@ export function generatePairs(data, main){
         updateRanking([...pairs], attKeys[0].field);
 
         ///BUTTON FOR PHENOGRAM VIEW. MAYBE MOVE THIS TO SIDEBAR
-        let phenogramButton = d3.select('#sidebar').select('.button-wrap').append('button').text('Phenogram');
-        phenogramButton.classed('btn btn-outline-secondary', true); 
-        phenogramButton.on('click', ()=> {
-            renderTree(d3.select('#sidebar'), null, true, d3.select('.attr-drop.dropdown').select('button').text())
-        })
+            // let phenogramButton = d3.select('#sidebar').select('.button-wrap').append('button').text('Phenogram');
+            // phenogramButton.classed('btn btn-outline-secondary', true); 
+            // phenogramButton.on('click', ()=> {
+            //     renderTree(d3.select('#sidebar'), null, true, d3.select('.attr-drop.dropdown').select('button').text())
+            // })
 }
 
-function updateRanking(pairs, field){
+export function updateRanking(pairs, field){
     
     let deltaMax = d3.max([...pairs].map(m=> m.deltas.filter(f=> f.key === field)[0]).map(m=> m.value));
     let closeMax = d3.max([...pairs].map(m=> m.closeness.filter(f=> f.key === field)[0]).map(m=> m.value));
