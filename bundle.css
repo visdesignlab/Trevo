@@ -347,13 +347,15 @@ g.node.low circle {
   cursor: pointer; }
 
 .node.hover circle {
-  fill: red !important;
+  fill: #FF5733 !important;
+  opacity: 1 !important;
   r: 4px;
   stroke-width: 1px;
   stroke: gainsboro; }
 
 .node.hover-neighbor circle {
-  fill: yellow;
+  fill: #7FB3D5;
+  opacity: .8 !important;
   r: 4px;
   stroke-width: 1px;
   stroke: gainsboro; }
@@ -384,12 +386,14 @@ g.node.low circle {
 
 .link.hover {
   fill: none;
-  stroke: red !important;
+  stroke: #FF5733 !important;
+  opacity: 0.8 !important;
   stroke-width: 2px; }
 
 .link.hover-neighbor {
   fill: none;
-  stroke: yellow;
+  stroke: #7FB3D5;
+  opacity: 1 !important;
   stroke-width: 2px; }
 
 .link.hover-not {
