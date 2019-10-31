@@ -264,14 +264,16 @@ function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length){
     
     assignPosition(treenodes, 0);
 
+    console.log('length in tree',length, d3.select('.attr-drop.dropdown').empty() ? 'nope': d3.select('.attr-drop.dropdown').select('button').text())
+
     let branchCount = findDepth(treenodes, []);
     let xScale = d3.scaleLinear().domain([0, 1]).range([0, dimensions.width]).clamp(true);
-    let yScale = d3.scaleLinear().range([dimensions.height, 0]).domain([0, branchCount.length])
+    let yScale = d3.scaleLinear().range([dimensions.height, 0]).domain([0, 1])
 
     if(length){   
         g.attr('transform', 'translate(20, 265)');
         treeSvg.attr('height', 800);
-        yScale.range([500, 0])
+        yScale.range([500, 0]).domain([0, branchCount.length])
         xScale.range([0, dimensions.width + 10]);
     } 
 
@@ -305,9 +307,8 @@ function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length){
     return "node" + 
     (d.children ? " node--internal" : " node--leaf"); });
 
-
-      // adds the circle to the node
-      node.selectAll('circle').data(d=> [d]).join("circle")
+    // adds the circle to the node
+    node.selectAll('circle').data(d=> [d]).join("circle")
       .attr("r", 3);
 
     node.transition()
@@ -316,7 +317,8 @@ function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length){
         if(length){
             return "translate(" + xScale(d.data.combEdge) + "," + yScale(d.position) + ")"; 
         }else{
-            return "translate(" + d.y + "," + d.x + ")"; 
+           // return "translate(" + d.y + "," + d.x + ")"; 
+           return "translate(" + xScale(d.data.combEdge) + "," + yScale(d.position) + ")"; 
         }
     });
 

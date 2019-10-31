@@ -1,13 +1,12 @@
 import { pairPaths } from "./dataFormat";
 import { dropDown } from "./buttonComponents";
 import * as d3 from "d3";
+import { renderTree } from "./sidebarComponent";
 
 
 export function generatePairs(data, main){
 
-        let pairs = pairPaths(data);//.sort((a, b)=> +b.distance - +a.distance);
-
-        //let pairs = test.slice(0, 20);
+        let pairs = pairPaths(data);
 
         let attKeys = d3.entries(pairs[0].p1[0].attributes)
                     .filter(f=> f.value.type === 'continuous')
@@ -22,10 +21,13 @@ export function generatePairs(data, main){
         });
 
         updateRanking([...pairs], attKeys[0].field);
-        
+
         ///BUTTON FOR PHENOGRAM VIEW. MAYBE MOVE THIS TO SIDEBAR
         let phenogramButton = d3.select('#sidebar').select('.button-wrap').append('button').text('Phenogram');
         phenogramButton.classed('btn btn-outline-secondary', true); 
+        phenogramButton.on('click', ()=> {
+            renderTree(d3.select('#sidebar'), null, true, d3.select('.attr-drop.dropdown').select('button').text())
+        })
 
 }
 
