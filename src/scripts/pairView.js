@@ -2,7 +2,7 @@ import { pairPaths } from "./dataFormat";
 import { dropDown } from "./buttonComponents";
 import * as d3 from "d3";
 import { renderTree } from "./sidebarComponent";
-import { speciesTest } from ".";
+import { speciesTest, dataMaster } from ".";
 
 
 export function generatePairs(data, main){
@@ -129,19 +129,29 @@ function drawSorted(pairs, field){
         
         let species = [...d.p1.map(n=> n.node)].concat(d.p2.map(n=> n.node));
         let labels = [...d.p1.filter(n=> n.leaf === true).map(m=> m.label)].concat(d.p1.filter(n=> n.leaf === true).map(m=> m.label));
-        let neighbors = labels.map(m=> {
-           // console.log('m',m)
-            let start = speciesTest.indexOf(m);
-            let ne = speciesTest.filter((f, j)=> (j < (start + 4)) && (j > (start - 3)));
+        let neighbors = labels.flatMap(m=> {
+            let start = speciesTest[0].indexOf(m);
+            let ne = speciesTest[0].filter((f, j)=> (j < (+start + 4)) && (j > (+start - 4)));
             return ne;
         });
-        console.log('nnnnnnn',neighbors)
+        
+        let neighNodes = dataMaster[0].filter(f=> neighbors.indexOf(f[f.length -1].label) > -1).flatMap(m=> m.map(f=> f.node))
+       
         let treeNode  = d3.select('#sidebar').selectAll('.node');
         let treeLinks  = d3.select('#sidebar').selectAll('.link');
         treeNode.filter(f=> {
             return species.indexOf(f.data.node) > -1;
         }).classed('hover', true);
         treeLinks.filter(f=> species.indexOf(f.data.node) > -1).classed('hover', true);
+
+        treeNode.filter(f=> neighNodes.indexOf(f.data.node) > -1).classed('hover-neighbor', true);
+        //Hiding Others
+        treeNode.filter(f=> (neighNodes.indexOf(f.data.node) === -1) && (species.indexOf(f.data.node) === -1)).classed('hover-not', true);
+        //Coloring Niehgbors
+        treeLinks.filter(f=> neighNodes.indexOf(f.data.node) > -1).classed('hover-neighbor', true);
+        //Hiding Others
+        treeLinks.filter(f=> (neighNodes.indexOf(f.data.node) === -1) && (species.indexOf(f.data.node) === -1)).classed('hover-not', true);
+
         return d3.select(this).classed('hover', true);
     })
 
@@ -163,8 +173,8 @@ function drawSorted(pairs, field){
     }).on('mouseleave', function(){
         let axisGroup = d3.select(this).select('.y-axis');
         axisGroup.remove();
-        let treeNode  = d3.select('#sidebar').selectAll('.node').classed('hover', false);
-        let treeLinks  = d3.select('#sidebar').selectAll('.link').classed('hover', false);
+        let treeNode  = d3.select('#sidebar').selectAll('.node').classed('hover', false).classed('hover-neighbor', false).classed('hover-not', false);
+        let treeLinks  = d3.select('#sidebar').selectAll('.link').classed('hover', false).classed('hover-neighbor', false).classed('hover-not', false);
         return d3.select(this).classed('hover', false);
     });
     

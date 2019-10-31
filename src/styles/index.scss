@@ -419,10 +419,25 @@ g.node.low circle{
 
 .node.hover circle {
   //fill: #fff;
-  fill: red;
+  fill: red !important;
   r: 4px;
   stroke-width: 1px;
   stroke: gainsboro;
+}
+
+.node.hover-neighbor circle {
+  //fill: #fff;
+  fill: yellow;
+  r: 4px;
+  stroke-width: 1px;
+  stroke: gainsboro;
+}
+
+.node.hover-not circle {
+  r: 4px;
+  stroke-width: .25px;
+  stroke: gainsboro;
+  opacity: 0.2;
 }
 
 //.node text { font: 12px sans-serif; }
@@ -450,8 +465,18 @@ g.node.low circle{
 
 .link.hover {
   fill: none;
-  stroke: red;
+  stroke: red !important;
   stroke-width: 2px;
+}
+.link.hover-neighbor {
+  fill: none;
+  stroke: yellow;
+  stroke-width: 2px;
+}
+.link.hover-not {
+  fill: none;
+  stroke-width: 0.2px;
+  opacity:0.2;
 }
 
 ////CHECKBOX STYLING/////
