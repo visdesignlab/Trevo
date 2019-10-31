@@ -347,10 +347,22 @@ g.node.low circle {
   cursor: pointer; }
 
 .node.hover circle {
-  fill: red;
+  fill: red !important;
   r: 4px;
   stroke-width: 1px;
   stroke: gainsboro; }
+
+.node.hover-neighbor circle {
+  fill: yellow;
+  r: 4px;
+  stroke-width: 1px;
+  stroke: gainsboro; }
+
+.node.hover-not circle {
+  r: 4px;
+  stroke-width: .25px;
+  stroke: gainsboro;
+  opacity: 0.2; }
 
 .node--internal text {
   text-shadow: 0 1px 0 #fff, 0 -1px 0 #fff, 1px 0 0 #fff, -1px 0 0 #fff; }
@@ -372,8 +384,18 @@ g.node.low circle {
 
 .link.hover {
   fill: none;
-  stroke: red;
+  stroke: red !important;
   stroke-width: 2px; }
+
+.link.hover-neighbor {
+  fill: none;
+  stroke: yellow;
+  stroke-width: 2px; }
+
+.link.hover-not {
+  fill: none;
+  stroke-width: 0.2px;
+  opacity: 0.2; }
 
 /* Hide the default checkbox */
 .custom-sq input[type=checkbox] {
