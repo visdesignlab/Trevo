@@ -120,24 +120,30 @@ export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
       let phenogramButton = d3.select('#sidebar').select('.button-wrap').append('button').text('Phenogram');
       phenogramButton.classed('btn btn-outline-secondary', true); 
       phenogramButton.on('click', ()=> {
-          
-          if(d3.select('.attr-drop.dropdown').select('button').empty()){
-
-            let drop = dropDown(d3.select('#toolbar'), optionArray, optionArray[1].field, 'attr-drop');
-            drop.on('click', (d, i, n)=> {
-                console.log(d3.select('.dropdown.change-view').select('button').node().value)
-                if(d3.select('.dropdown.change-view').select('button').node().value === "View Pairs"){
-                    updateRanking(pairPaths(normedPaths), d.field);
-                }
-                renderTree(d3.select('#sidebar'), null, true, d.field);
-                d3.select('.attr-drop.dropdown').select('button').text(d.field);
-            });
-
-            renderTree(d3.select('#sidebar'), null, true, d3.select('.attr-drop.dropdown').select('button').text())
+          if(phenogramButton.text() === 'Phenogram'){
+            if(d3.select('.attr-drop.dropdown').select('button').empty()){
+                let drop = dropDown(d3.select('#toolbar'), optionArray, optionArray[1].field, 'attr-drop');
+                drop.on('click', (d, i, n)=> {
+                    if(d3.select('.dropdown.change-view').select('button').node().value === "View Pairs"){
+                        updateRanking(pairPaths(normedPaths), d.field);
+                    }
+                    renderTree(d3.select('#sidebar'), null, true, d.field);
+                    d3.select('.attr-drop.dropdown').select('button').text(d.field);
+                });
+    
+                renderTree(d3.select('#sidebar'), null, true, d3.select('.attr-drop.dropdown').select('button').text())
+              }else{
+    
+                renderTree(d3.select('#sidebar'), null, true, d3.select('.attr-drop.dropdown').select('button').text())
+              }
+              phenogramButton.text('Phylogeny');
           }else{
 
-            renderTree(d3.select('#sidebar'), null, true, d3.select('.attr-drop.dropdown').select('button').text())
+            renderTree(d3.select('#sidebar'), null, false);
+            phenogramButton.text('Phenogram');
+
           }
+          
           
       })
 }

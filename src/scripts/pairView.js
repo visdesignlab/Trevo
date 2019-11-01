@@ -16,8 +16,7 @@ export function generatePairs(data, main){
                     });
         
         let drop = d3.select('.attr-drop.dropdown').selectAll('a').empty() ? dropDown(d3.select('#toolbar'), attKeys, attKeys[0].field, 'attr-drop') : d3.select('.attr-drop.dropdown').selectAll('a');
-        
-       // dropDown(d3.select('#toolbar'), attKeys, attKeys[0].field, 'attr-drop');
+
         drop.on('click', (d, i, n)=> {
             updateRanking(pairPaths(data), d.field);
             renderTree(d3.select('#sidebar'), null, true, d.field);
@@ -25,13 +24,6 @@ export function generatePairs(data, main){
         });
 
         updateRanking([...pairs], attKeys[0].field);
-
-        ///BUTTON FOR PHENOGRAM VIEW. MAYBE MOVE THIS TO SIDEBAR
-            // let phenogramButton = d3.select('#sidebar').select('.button-wrap').append('button').text('Phenogram');
-            // phenogramButton.classed('btn btn-outline-secondary', true); 
-            // phenogramButton.on('click', ()=> {
-            //     renderTree(d3.select('#sidebar'), null, true, d3.select('.attr-drop.dropdown').select('button').text())
-            // })
 }
 
 export function updateRanking(pairs, field){
@@ -89,7 +81,6 @@ function drawSorted(pairs, field){
     var lineGen = d3.line()
     .x(d=> {
         let x = d3.scaleLinear().domain([0, 1]).range([0, width]);
-       // let distance = (moveMetric === 'move') ? d.move : x(d.edgeMove);
        let distance = x(d.edgeMove);
         return distance; })
     .y(d=> {
