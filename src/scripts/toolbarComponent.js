@@ -81,33 +81,11 @@ function toggleScrunch(button, main, calculatedScales){
         button.text('Expand Attributes');
         main.selectAll('*').remove();
         button.attr('value', true);
-        drawPathsAndAttributes(data, main, calculatedScales, 'edgeLength');
+        drawPathsAndAttributes(data, main, calculatedScales);
     }else{
         button.text('Collapse Attributes');
         main.selectAll('*').remove();
         button.attr('value', false);
-        drawPathsAndAttributes(data, main, calculatedScales, 'edgeLength');
+        drawPathsAndAttributes(data, main, calculatedScales);
     }
 }
-
-/**
- * 
- * @param {*} viewButton button that changes the actual view the text of the button determines what the view should change to 
- * @param {*} normedPaths 
- * @param {*} main 
- * @param {*} calculatedScales 
- */
-function togglePathView(viewButton, calculatedScales){
-
-    if(viewButton.text() === 'View Paths'){
-        viewButton.text('View Summary');
-    }else{
-        viewButton.text('View Paths');
-    }
-    updateMainView(calculatedScales);
-}
-
-
-
-
-

@@ -73,13 +73,12 @@ export function toggleFilters(filterButton, main, scales){
         filterButton.text('Hide Filters');
         filterDiv.classed('hidden', false);
         main.style('padding-top', '200px');
-        console.log('in toggle filters', scales)
 
         //move metric is 'edgeLength'
 
-        renderAttToggles(filterDiv, data, main, scales, moveMetric);
-        stateFilter(filterDiv, filterButton, data, main, moveMetric, scales);
-        queryFilter(filterDiv, filterButton, data, main, moveMetric, scales);
+        renderAttToggles(filterDiv, data, scales);
+        stateFilter(filterDiv, filterButton, data, main, scales);
+        queryFilter(filterDiv, filterButton, data, main, scales);
 
     }else{
         filterButton.text('Show Filters');
@@ -106,7 +105,7 @@ function addFilterTag(data, scales){
             let filterLine = filterMaster.filter(f=> f.filterType === 'data-filter').filter(f=> data.attribute != f.attribute);
             ////YOU NEED TO CHANGE THIS TO REMOVE FILTER FUNCTION
             removeFilter(data.filterId, scales);
-            updateMainView(scales, 'edgeLength')
+            updateMainView(scales, null);
             d3.selectAll('.link-not-there').classed('link-not-there', false);
             d3.selectAll('.node-not-there').classed('node-not-there', false);
             button.remove();
@@ -124,7 +123,7 @@ function addFilterTag(data, scales){
         let xSpan = button.append('i').classed('close fas fa-times', true);
         xSpan.on('click', ()=> {
             removeFilter(data.filterId, scales);
-            updateMainView(scales, 'edgeLength')
+            updateMainView(scales, null);
             d3.selectAll('.link-not-there').classed('link-not-there', false);
             d3.selectAll('.node-not-there').classed('node-not-there', false);
             button.remove();
@@ -139,7 +138,7 @@ function addFilterTag(data, scales){
         let xSpan = button.append('i').classed('close fas fa-times', true);
         xSpan.on('click', ()=> {
             removeFilter(data.filterId, scales);
-            updateMainView(scales, 'edgeLength')
+            updateMainView(scales, null);
             d3.selectAll('.link-not-there').classed('link-not-there', false);
             d3.selectAll('.node-not-there').classed('node-not-there', false);
             button.remove();
@@ -187,7 +186,7 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                     let filId = 'd-'+filterMaster.filter(f=> f.attributeType === 'discrete').length;
                     let filterOb = addFilter('data-filter', 'discrete', filId, discreteFilter, [...data], [...test], [['state', [fromState, toState]], ['selectedOption', selectedOption]]);
 
-                    updateMainView(scales, moveMetric);
+                    updateMainView(scales, null);
 
                     ////Class Tree Links////
                     let treeLinks  = d3.select('#sidebar').selectAll('.link');
@@ -269,7 +268,7 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                     let filId = 'c-'+filterMaster.filter(f=> f.attributeType === 'continuous').length;
                     let filterOb = addFilter('data-filter', 'continuous', filId, continuousFilter, [...data], [...test], [['selectedOption', selectedOption], ['predictedFilter', predictedFilter], ['observedFilter', observedFilter]]);
 
-                    updateMainView(scales, moveMetric);
+                    updateMainView(scales, null);
 
                     /////ADD THE FILTER TO THE TOOLBAR/////
                     addFilterTag(filterOb, scales);
@@ -316,7 +315,7 @@ export function nodeFilter(selectedNode, scales){
 
     let filterOb = addFilter('data-filter', 'branch', filId, nodeFilter, [...data], [...test], [['nodeId', selectedNode]])
     addFilterTag(filterOb, scales);
-    updateMainView(scales, 'edgeLength');
+    updateMainView(scales, null);
 
    ////Class Tree Links////
    let treeLinks  = d3.select('#sidebar').selectAll('.link');
@@ -349,7 +348,7 @@ export function leafStateFilter(selectedState, scales){
 
     let filterOb = addFilter('data-filter', 'leaf', filId, nodeFilter, [...data], [...test], [['leafState', [selectedState.label, selectedState.winState]]])
     addFilterTag(filterOb, scales);
-    updateMainView(scales, 'edgeLength');
+    updateMainView(scales, null);
 
    ////Class Tree Links////
    let treeLinks  = d3.select('#sidebar').selectAll('.link');
@@ -406,7 +405,9 @@ function discreteFilter(data, selectedOption, fromState, toState){
         });
     }
 }
-function queryFilter(filterDiv, filterButton, normedPaths, main, moveMetric, scales){
+function queryFilter(filterDiv, filterButton, normedPaths, main, scales){
+
+    let moveMetric = 'edgeLength';
 
     let searchDiv = filterDiv.append('div').classed('search-bar-div', true);
         searchDiv.append('h6').text('Query Filter:');
@@ -425,7 +426,7 @@ function queryFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
 
              ////DRAW THE PATHS
          
-            updateMainView(scales, moveMetric);
+             updateMainView(scales, null);
 
             let filterToolbar = d3.select("#toolbar");
             let button = filterToolbar.append('button').classed('btn btn-info', true);
@@ -434,7 +435,7 @@ function queryFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
             button.append('h6').text('Query Filter');
             let xSpan = button.append('i').classed('close fas fa-times', true);
             xSpan.on('click', ()=> {
-                updateMainView(scales, moveMetric);
+                updateMainView(scales, null);
                 button.remove();
             });
             d3.select('#main-path-view').style('height', ()=>{
@@ -449,9 +450,9 @@ function queryFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
         });
 
 }
-function renderAttToggles(filterDiv, normedPaths, main, scales, moveMetric){
+function renderAttToggles(filterDiv, normedPaths, scales){
 
-    console.log('scales', scales)
+    let moveMetric = 'edgeLength';
 
     ////NEED TO GET RID OF TOGGLE SVG
     let keys = Object.keys(normedPaths[0][0].attributes);
@@ -493,7 +494,7 @@ function renderAttToggles(filterDiv, normedPaths, main, scales, moveMetric){
             newFilMaster.push({'type':'hide-attribute', 'attribute':key.field, 'before-data': [...normedPaths], 'data': [...normedPaths]});
         });
         filterMaster = newFilMaster;
-        updateMainView(scales, moveMetric)
+        updateMainView(scales, null);
     });
     let labelText = labelGroups.append('text').text(d=> d).style('font-size', 10);
     labelText.attr('transform', 'translate(10, 4)');  

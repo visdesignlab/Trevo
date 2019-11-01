@@ -3,10 +3,9 @@ import * as d3 from "d3";
 import {loadData} from './dataLoad';
 import {calculateScales, matchLeaves, matchEdges, normPaths, filterKeeper, pairPaths} from './dataFormat';
 import {allPaths, pullPath, getPath} from './pathCalc';
-import {drawPathsAndAttributes} from './renderPathView';
 import {renderTree, buildTreeStructure, renderTreeButtons} from './sidebarComponent';
-import {toolbarControl, renderAttToggles} from './toolbarComponent';
-import { updateMainView, initialViewLoad } from './viewControl';
+import {toolbarControl} from './toolbarComponent';
+import { initialViewLoad } from './viewControl';
 
 export const dataMaster = [];
 export const savedSelected = [];

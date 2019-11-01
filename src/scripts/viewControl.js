@@ -6,10 +6,11 @@ import { generatePairs } from "./pairView";
 
 export let groupedView = false;
 
-export function updateMainView(scales, d, moveMetric){
+export function updateMainView(scales, d){
 
     let main = d3.select('#main');
     let data = getLatestData();
+    let moveMetric = 'edgeLength';
 
     main.selectAll('*').remove();
   
@@ -28,9 +29,7 @@ export function updateMainView(scales, d, moveMetric){
 
 }
 
-
-
-export function initialViewLoad(scales, moveMetric){
+export function initialViewLoad(scales){
 
     let main = d3.select('#main');
     let data = getLatestData();
@@ -38,11 +37,11 @@ export function initialViewLoad(scales, moveMetric){
     main.selectAll('*').remove();
 
     if(data.length > 50){
-        groupDistributions(data, main, scales, moveMetric);
+        groupDistributions(data, main, scales);
         d3.select('#view-toggle').text('View Paths');
         document.getElementById("scrunch").disabled = true;
     }else{
-        drawPathsAndAttributes(data, main, scales, moveMetric);
+        drawPathsAndAttributes(data, main, scales);
         d3.select('#view-toggle').text('View Summary');
         document.getElementById("scrunch").disabled = false;
     }
