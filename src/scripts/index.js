@@ -35,7 +35,12 @@ let sidebar = wrap.select('#sidebar');
 
 let toolbarDiv = wrap.select('#toolbar');
 
-loadData(d3.json, './public/data/body-length-res.json', '').then(d=> console.log('new data!', d))
+//loadData(d3.json, './public/data/body-length-res.json', '').then(d=> console.log('new data!', d))
+loadData(d3.json, './public/data/anolis_Losis_asr_tree.json', '').then(data=> {
+    let pathArray = pullPath([], [data], [], [], 0);
+
+    console.log('NEW NEW',pathArray);
+});
 
 loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges => {
 
