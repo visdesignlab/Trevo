@@ -5,8 +5,6 @@ import {toggleFilters, getLatestData} from './filterComponent';
 import { updateMainView } from './viewControl';
 import { collapsed } from '.';
 import { dropDown } from './buttonComponents';
-import { generatePairs } from './pairView';
-
 
 export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pathView){
 

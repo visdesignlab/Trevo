@@ -62,7 +62,9 @@ export function getLatestData(){
 }
 
 ///NEED TO BREAK THESE OUT INTO SEPARATE FILTERS
-export function toggleFilters(filterButton, main, moveMetric, scales){
+export function toggleFilters(filterButton, main, scales){
+
+    let moveMetric = 'edgeLength';
 
     let filterDiv = d3.select('#filter-tab');
     let data = getLatestData();
@@ -71,8 +73,11 @@ export function toggleFilters(filterButton, main, moveMetric, scales){
         filterButton.text('Hide Filters');
         filterDiv.classed('hidden', false);
         main.style('padding-top', '200px');
+        console.log('in toggle filters', scales)
 
-        renderAttToggles(filterDiv, data, main, scales, 'edgeLength');
+        //move metric is 'edgeLength'
+
+        renderAttToggles(filterDiv, data, main, scales, moveMetric);
         stateFilter(filterDiv, filterButton, data, main, moveMetric, scales);
         queryFilter(filterDiv, filterButton, data, main, moveMetric, scales);
 
@@ -445,6 +450,8 @@ function queryFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
 
 }
 function renderAttToggles(filterDiv, normedPaths, main, scales, moveMetric){
+
+    console.log('scales', scales)
 
     ////NEED TO GET RID OF TOGGLE SVG
     let keys = Object.keys(normedPaths[0][0].attributes);
