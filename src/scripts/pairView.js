@@ -112,16 +112,14 @@ function drawSorted(pairs, field){
         return xScale(d.common.edgeMove)})
         .attr('height', height)
         .attr('fill', '#fff').style('opacity', 0.7);
-
         let yAxisG = pairWraps.append('g').classed('y-axis', true);
         let xAxisG = pairWraps.append('g').classed('x-axis', true);
         xAxisG.call(d3.axisBottom(xScale).ticks(10));
         xAxisG.attr('transform', `translate(0, ${height})`)
 
     pairWraps.on('mouseover', (d, i)=> {
-        
         let species = [...d.p1.map(n=> n.node)].concat(d.p2.map(n=> n.node));
-        let labels = [...d.p1.filter(n=> n.leaf === true).map(m=> m.label)].concat(d.p1.filter(n=> n.leaf === true).map(m=> m.label));
+        let labels = [...d.p1.filter(n=> n.leaf === true).map(m=> m.label)].concat(d.p2.filter(n=> n.leaf === true).map(m=> m.label));
         let neighbors = labels.flatMap(m=> {
             let start = speciesTest[0].indexOf(m);
             let ne = speciesTest[0].filter((f, j)=> (j < (+start + 4)) && (j > (+start - 4)));
