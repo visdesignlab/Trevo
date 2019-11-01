@@ -10,26 +10,13 @@ import { generatePairs } from './pairView';
 
 export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pathView){
 
-    console.log('paths',pathView)
+    let viewDrop = dropDown(toolbar, [{'field':'View Summary'},{'field':'View Paths'},{'field':'View Pairs'}], 'Change View', 'change-view');
 
-    let viewButton = toolbar.append('button').attr('id', 'view-toggle').attr('attr' , 'button').attr('class', 'btn btn-outline-secondary');
-    viewButton.on('click', ()=> togglePathView(viewButton, calculatedScales));
-
-    let pairButton = toolbar.append('button').attr('id', 'pair-toggle').attr('attr' , 'button').attr('class', 'btn btn-outline-secondary');
-    
-    pairButton.text('Pair View');
-    
-    pairButton.on('click', ()=> {
-        generatePairs(normedPaths, main);
+    viewDrop.on('click', (d, i, n)=> {
+        updateMainView(calculatedScales, d);
+        d3.select('.dropdown.change-view').select('button').node().value = d.field;
+        d3.select('#change-view').classed('show', false);
     });
-
-    if(pathView === 'paths'){
-        viewButton.text('View Summary');
-    }else if(pathView === 'summary'){
-        viewButton.text('View Paths');
-    }else{
-        console.error('pathView parameter not found');
-    }
     
     let filterButton = toolbar.append('button').attr('id', 'view-filter');
     filterButton.attr('class', 'btn btn-outline-secondary').text('Show Filters');
@@ -65,7 +52,6 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pat
 
     let dropOptions = dropDown(toolbar, optionArray, 'Group By','show-drop-div-group');
     toolbar.select('#show-drop-div-group').attr('value', 'ungrouped');
-    console.log('dropOptions', toolbar.select('#show-drop-div-group').attr('value'));
 
     dropOptions.on('click', (d, i, n)=> {
         if(d.type === 'discrete'){
