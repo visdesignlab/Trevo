@@ -120,13 +120,15 @@ export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
       let phenogramButton = d3.select('#sidebar').select('.button-wrap').append('button').text('Phenogram');
       phenogramButton.classed('btn btn-outline-secondary', true); 
       phenogramButton.on('click', ()=> {
-            console.log(phenogramButton.text())
+          
           if(d3.select('.attr-drop.dropdown').select('button').empty()){
-              console.log(optionArray[1].field)
+
             let drop = dropDown(d3.select('#toolbar'), optionArray, optionArray[1].field, 'attr-drop');
             drop.on('click', (d, i, n)=> {
-                
-                updateRanking(pairPaths(normedPaths), d.field);
+                console.log(d3.select('.dropdown.change-view').select('button').node().value)
+                if(d3.select('.dropdown.change-view').select('button').node().value === "View Pairs"){
+                    updateRanking(pairPaths(normedPaths), d.field);
+                }
                 renderTree(d3.select('#sidebar'), null, true, d.field);
                 d3.select('.attr-drop.dropdown').select('button').text(d.field);
             });

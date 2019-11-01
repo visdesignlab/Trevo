@@ -88,7 +88,6 @@ function toggleScrunch(button, main, calculatedScales){
         button.text('Collapse Attributes');
         main.selectAll('*').remove();
         button.attr('value', false);
-
         drawPathsAndAttributes(data, main, calculatedScales, 'edgeLength');
     }
 }

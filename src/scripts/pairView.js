@@ -15,7 +15,9 @@ export function generatePairs(data, main){
                         return {'field': m.key, 'value': m.key }
                     });
         
-        let drop = dropDown(d3.select('#toolbar'), attKeys, attKeys[0].field, 'attr-drop');
+        let drop = d3.select('.attr-drop.dropdown').selectAll('a').empty() ? dropDown(d3.select('#toolbar'), attKeys, attKeys[0].field, 'attr-drop') : d3.select('.attr-drop.dropdown').selectAll('a');
+        
+       // dropDown(d3.select('#toolbar'), attKeys, attKeys[0].field, 'attr-drop');
         drop.on('click', (d, i, n)=> {
             updateRanking(pairPaths(data), d.field);
             renderTree(d3.select('#sidebar'), null, true, d.field);
