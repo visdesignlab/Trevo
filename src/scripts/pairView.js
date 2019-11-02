@@ -1,11 +1,66 @@
 import { pairPaths } from "./dataFormat";
 import { dropDown } from "./buttonComponents";
 import * as d3 from "d3";
+import * as slide from 'd3-simple-slider';
 import { renderTree } from "./sidebarComponent";
 import { speciesTest, dataMaster } from ".";
 
 export function rankingControl(){
+    let rankDiv = d3.select('#pair-rank').classed('hidden', false);
+    rankDiv.selectAll('*').remove();
 
+    var num2hex = rgb => {
+        return rgb
+          .map(color => {
+            let str = color.toString(16);
+    
+            if (str.length === 1) {
+              str = '0' + str;
+            }
+    
+            return str;
+          })
+          .join('');
+      };
+
+    var defaultW = [100, 100, 100];
+    var colors = ['red', 'green', 'blue'];
+  
+    var weightPicker = rankDiv
+      .append('svg')
+      .attr('width', 800)
+      .attr('height', 80)
+      .append('g')
+      .attr('transform', 'translate(30,10)');
+
+    let labels = ['Distance', 'Delta', 'Closeness'];
+
+    weightPicker.selectAll('text').data(labels).join('text')
+    .text(d=> d)
+    .attr('y', 10)
+    .attr('x', (d, i)=> (200+(200 * i)));
+  
+    defaultW.forEach((color, i) => {
+      var slider = slide
+        .sliderBottom()
+        .min(0)
+        .max(100)
+        .step(1)
+        .width(150)
+        .default(defaultW[i])
+        .displayValue(false)
+        .fill(colors[i])
+        .on('onchange', num => {
+         
+        });
+  
+      weightPicker
+        .append('g')
+        .attr('transform', `translate(${200+(200 * i)}, 20)`)
+        .call(slider);
+    });
+    
+   // d3.select('p#value-color-picker').text(`#${num2hex(rgb)}`);
 }
 
 export function generatePairs(data, main){

@@ -2,7 +2,7 @@ import * as d3 from "d3";
 import { renderDistibutions, groupDistributions } from './distributionView';
 import {drawPathsAndAttributes} from './renderPathView';
 import { getLatestData } from "./filterComponent";
-import { generatePairs } from "./pairView";
+import { generatePairs, rankingControl } from "./pairView";
 
 export let groupedView = false;
 
@@ -15,12 +15,15 @@ export function updateMainView(scales, d){
     main.selectAll('*').remove();
   
     if(d.field === 'View Paths'){
+        d3.select('#pair-rank').classed('hidden', true);
         drawPathsAndAttributes(data, main, scales, moveMetric);
         document.getElementById("scrunch").disabled = false;
     }else if(d.field === 'View Summary'){
+        d3.select('#pair-rank').classed('hidden', true);
         renderDistibutions(data, main, scales, moveMetric);
         document.getElementById("scrunch").disabled = true;
     }else if(d.field === 'View Pairs'){
+        rankingControl();
         generatePairs(data, main);
     }else{
         console.error('field not found');
