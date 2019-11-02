@@ -23,8 +23,8 @@ export function updateMainView(scales, d){
         renderDistibutions(data, main, scales, moveMetric);
         document.getElementById("scrunch").disabled = true;
     }else if(d.field === 'View Pairs'){
-        rankingControl();
-        generatePairs(data, main);
+        rankingControl(data);
+        generatePairs(data);
     }else{
         console.error('field not found');
     }

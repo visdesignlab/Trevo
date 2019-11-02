@@ -5,28 +5,13 @@ import * as slide from 'd3-simple-slider';
 import { renderTree } from "./sidebarComponent";
 import { speciesTest, dataMaster } from ".";
 
-export function rankingControl(){
+export function rankingControl(data){
     let rankDiv = d3.select('#pair-rank').classed('hidden', false);
     rankDiv.selectAll('*').remove();
 
-    var num2hex = rgb => {
-        return rgb
-          .map(color => {
-            let str = color.toString(16);
-    
-            if (str.length === 1) {
-              str = '0' + str;
-            }
-    
-            return str;
-          })
-          .join('');
-      };
-
-    var defaultW = [100, 100, 100];
-    var colors = ['red', 'green', 'blue'];
+    let defaultW = [1, 1, 1];
   
-    var weightPicker = rankDiv
+    let weightPicker = rankDiv
       .append('svg')
       .attr('width', 800)
       .attr('height', 80)
@@ -44,14 +29,15 @@ export function rankingControl(){
       var slider = slide
         .sliderBottom()
         .min(0)
-        .max(100)
-        .step(1)
+        .max(1)
+        .step(.1)
         .width(150)
         .default(defaultW[i])
         .displayValue(false)
-        .fill(colors[i])
-        .on('onchange', num => {
-         
+        .fill('#7FB3D5')
+        .on('end', num => {
+         defaultW[i] = num;
+         updateRanking(pairPaths(data), d3.select('.attr-drop.dropdown').select('button').text(), defaultW);
         });
   
       weightPicker
@@ -60,12 +46,13 @@ export function rankingControl(){
         .call(slider);
     });
     
-   // d3.select('p#value-color-picker').text(`#${num2hex(rgb)}`);
+  
 }
 
-export function generatePairs(data, main){
+export function generatePairs(data){
 
         let pairs = pairPaths(data);
+        let weights = [1, 1, 1];
 
         let attKeys = d3.entries(pairs[0].p1[0].attributes)
                     .filter(f=> f.value.type === 'continuous')
@@ -81,10 +68,10 @@ export function generatePairs(data, main){
             d3.select('.attr-drop.dropdown').select('button').text(d.field);
         });
 
-        updateRanking([...pairs], attKeys[0].field);
+        updateRanking([...pairs], attKeys[0].field, weights);
 }
 
-export function updateRanking(pairs, field){
+export function updateRanking(pairs, field, weights){
     
     let deltaMax = d3.max([...pairs].map(m=> m.deltas.filter(f=> f.key === field)[0]).map(m=> m.value));
     let closeMax = d3.max([...pairs].map(m=> m.closeness.filter(f=> f.key === field)[0]).map(m=> m.value));
@@ -98,7 +85,7 @@ export function updateRanking(pairs, field){
         p.deltaRank = deltaScale(p.delta.value);
         p.closenessRank = closeScale(p.closeness.value);
         p.distanceRank = distScale(p.distance);
-        p.totalRank = p.deltaRank + p.closenessRank + p.distanceRank;
+        p.totalRank = (weights[0] * p.distanceRank) + (weights[1] * p.deltaRank) + (weights[2] * p.closenessRank);
         return p;
     })
 
