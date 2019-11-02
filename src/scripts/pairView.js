@@ -201,7 +201,10 @@ function drawSorted(pairs, field){
    .style("stroke-width", "1px")
    .style("opacity", "0");
 
- mousePerLine.append("text")
+ mousePerLine.append("text").attr('class', 'value')
+   .attr("transform", "translate(10,3)");
+
+mousePerLine.append("text").attr('class', 'species')
    .attr("transform", "translate(10,3)");
 
    let lines = pairWraps.selectAll('.pair').selectAll('path')
@@ -247,8 +250,7 @@ function drawSorted(pairs, field){
                 idx = bisect(d.values, xDate);
             
             let line = n[i].parentNode.parentNode.getElementsByClassName('inner-line');
-            console.log('line', line)
-           // console.log('line',line)
+          
             var beginning = 0,
                 end = line[j].getTotalLength(),
                 target = null
@@ -264,13 +266,20 @@ function drawSorted(pairs, field){
               else break; //position found
             }
             let y = dat.p1[0].attributes[field].yScale;
-            
-            d3.select(node[j]).select('text')
+            console.log('ddddd',d[d.length-1].label)
+            d3.select(node[j]).select('text.value')
               .text(y.invert(pos.y).toFixed(2))
               .style('font-size', 11)
               .attr('y', ()=> {
                   return j === 0 ? 10 : -10;
                 });
+
+            d3.select(node[j]).select('text.species')
+                .text(d[d.length-1].label)
+                .style('font-size', 11)
+                .attr('y', ()=> {
+                    return j === 0 ? 19 : -19;
+                  });
               
             return "translate(" + mouse[0] + "," + pos.y +")";
           });
