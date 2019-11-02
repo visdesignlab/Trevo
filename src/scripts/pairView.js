@@ -240,7 +240,7 @@ function drawSorted(pairs, field){
          // console.log('dat??',dat)
           d3.select(n[i].parentNode).selectAll('.mouse-per-line')
          // d3.selectAll(".mouse-per-line")
-          .attr("transform", function(d, j) {
+          .attr("transform", function(d, j, node) {
            // console.log('test',width/mouse[0], d)
             var xDate = xScale.invert(mouse[0]),
                 bisect = d3.bisector(function(d) { return d.edgeLength; }).right,
@@ -265,8 +265,12 @@ function drawSorted(pairs, field){
             }
             let y = dat.p1[0].attributes[field].yScale;
             
-            d3.select(n[i]).select('text')
-              .text(y.invert(pos.y).toFixed(2));
+            d3.select(node[j]).select('text')
+              .text(y.invert(pos.y).toFixed(2))
+              .style('font-size', 11)
+              .attr('y', ()=> {
+                  return j === 0 ? 10 : -10;
+                });
               
             return "translate(" + mouse[0] + "," + pos.y +")";
           });
