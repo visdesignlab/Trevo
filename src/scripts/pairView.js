@@ -174,26 +174,125 @@ function drawSorted(pairs, field){
     axisGroup.each((d, i, n)=> {
         let scale = d.p1[0].attributes[field].yScale;
         d3.select(n[i]).call(d3.axisLeft(scale).ticks(5));
-    })
+    });
+
+    let mouseG = pairWraps.append("g")
+    .attr("class", "mouse-over-effects");
+
+  mouseG.append("path") // this is the black vertical line to follow mouse
+    .attr("class", "mouse-line")
+    .style("stroke", "black")
+    .style("stroke-width", "1px")
+   // .style("opacity", "0");
+
+   var mousePerLine = mouseG.selectAll('.mouse-per-line')
+   .data((d, i)=> {
+      // console.log(d)
+    return [d.p1, d.p2]})
+   .join("g")
+   .attr("class", "mouse-per-line");
+
+ mousePerLine.append("circle")
+   .attr("r", 7)
+   .style("stroke", function(d) {
+     return 'red';
+   })
+   .style("fill", "none")
+   .style("stroke-width", "1px")
+  // .style("opacity", "0");
+
+ mousePerLine.append("text")
+   .attr("transform", "translate(10,3)");
+
+   let lines = pairWraps.selectAll('.pair').selectAll('path')
+
+   mouseG.append('svg:rect') // append a rect to catch mouse movements on canvas
+      .attr('width', width) // can't catch mouse events on a g element
+      .attr('height', height)
+      .attr('fill', 'none')
+      .attr('pointer-events', 'all')
+      .on('mouseout', function() { // on mouse out hide line, circles and text
+        d3.selectAll(".mouse-line")
+          .style("opacity", "0");
+        d3.selectAll(".mouse-per-line circle")
+          .style("opacity", "0");
+        d3.selectAll(".mouse-per-line text")
+          .style("opacity", "0");
+      })
+      .on('mouseover', (d, i, n)=> { // on mouse in show line, circles and text
+
+        d3.select(n[i].parentNode).selectAll('.mouse-line')
+          .style("opacity", "1");
+          d3.select(n[i].parentNode).selectAll(".mouse-per-line circle")
+          .style("opacity", "1");
+          d3.select(n[i].parentNode).selectAll(".mouse-per-line text")
+          .style("opacity", "1");
+      })
+      .on('mousemove', (dat, i, n)=> { // mouse moving over canvas
+        var mouse = d3.mouse(n[i]);
+        //console.log('this', d3.select(n[i].parentNode).select('.mouse-line'))
+        d3.select(n[i].parentNode).select('.mouse-line')
+          .attr("d", function() {
+            var d = "M" + mouse[0] + "," + height;
+            d += " " + mouse[0] + "," + 0;
+            return d;
+          });
+         // console.log('dat??',dat)
+          d3.select(n[i].parentNode).selectAll('.mouse-per-line')
+         // d3.selectAll(".mouse-per-line")
+          .attr("transform", function(d, j) {
+           // console.log('test',width/mouse[0], d)
+            var xDate = xScale.invert(mouse[0]),
+                bisect = d3.bisector(function(d) { return d.edgeLength; }).right,
+                idx = bisect(d.values, xDate);
+            
+            let line = n[i].parentNode.parentNode.getElementsByClassName('inner-line');
+            console.log('line', line)
+           // console.log('line',line)
+            var beginning = 0,
+                end = line[j].getTotalLength(),
+                target = null
+
+            while (true){
+               target = Math.floor((beginning + end) / 2);
+               var pos = line[j].getPointAtLength(target);
+              if ((target === end || target === beginning) && pos.x !== mouse[0]) {
+                  break;
+              }
+              if (pos.x > mouse[0])      end = target;
+              else if (pos.x < mouse[0]) beginning = target;
+              else break; //position found
+            }
+            let y = dat.p1[0].attributes[field].yScale;
+            
+            d3.select(n[i]).select('text')
+              .text(y.invert(pos.y).toFixed(2));
+              
+            return "translate(" + mouse[0] + "," + pos.y +")";
+          });
+      });
    
     pairWraps.on('mousemove', function(d, i) {
         let scale = d.p1[0].attributes[field].yScale;
-        let axisGroupTest = d3.select(this).select('.y-axis');
-        let axisGroup = axisGroupTest.empty() ? d3.select(this).append('g').classed('y-axis', true) : axisGroupTest;
-        if(d3.select('#compare-button').empty() || d3.select('#compare-button').text()==='Normal Mode'){
-            axisGroup.attr('transform', (d, i)=> 'translate('+(d3.mouse(this)[0] - 10)+',0)')
-            axisGroup.call(d3.axisLeft(scale).ticks(5));
-        }else{
-            let pathD = d3.select(this).select('.path-groups').selectAll('path');
-            let maxDiff = pathD.data().map(d=> d[0].maxDiff)[0];
-            axisGroup.attr('transform', (d, i)=> 'translate('+(d3.mouse(this)[0] - 10)+',0)');
-            let newScale = d3.scaleLinear().domain([maxDiff, 0]).range([0, 60]);
-            axisGroup.call(d3.axisLeft(newScale).ticks(5));
-        }
+        // let axisGroupTest = d3.select(this).select('.y-axis');
+        // let axisGroup = axisGroupTest.empty() ? d3.select(this).append('g').classed('y-axis', true) : axisGroupTest;
+        // if(d3.select('#compare-button').empty() || d3.select('#compare-button').text()==='Normal Mode'){
+        //     axisGroup.attr('transform', (d, i)=> 'translate('+(d3.mouse(this)[0] - 10)+',0)')
+        //     axisGroup.call(d3.axisLeft(scale).ticks(5));
+        // }else{
+        //     let pathD = d3.select(this).select('.path-groups').selectAll('path');
+        //     let maxDiff = pathD.data().map(d=> d[0].maxDiff)[0];
+        //     axisGroup.attr('transform', (d, i)=> 'translate('+(d3.mouse(this)[0] - 10)+',0)');
+        //     let newScale = d3.scaleLinear().domain([maxDiff, 0]).range([0, 60]);
+        //     axisGroup.call(d3.axisLeft(newScale).ticks(5));
+        // }
+        let valueGroupTest = d3.select(this).select('.data-axis');
+        let valueGroup = valueGroupTest.empty() ? d3.select(this).append('g').classed('data-axis', true) : valueGroupTest;
+        //console.log('this data',d)
 
     }).on('mouseleave', function(){
-        let axisGroup = d3.select(this).select('.y-axis');
-        axisGroup.remove();
+        // let axisGroup = d3.select(this).select('.y-axis');
+        // axisGroup.remove();
         let treeNode  = d3.select('#sidebar').selectAll('.node').classed('hover', false).classed('hover-neighbor', false).classed('hover-not', false);
         let treeLinks  = d3.select('#sidebar').selectAll('.link').classed('hover', false).classed('hover-neighbor', false).classed('hover-not', false);
         return d3.select(this).classed('hover', false);
