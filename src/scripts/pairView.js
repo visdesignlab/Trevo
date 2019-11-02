@@ -4,6 +4,9 @@ import * as d3 from "d3";
 import { renderTree } from "./sidebarComponent";
 import { speciesTest, dataMaster } from ".";
 
+export function rankingControl(){
+
+}
 
 export function generatePairs(data, main){
 
@@ -44,16 +47,13 @@ export function updateRanking(pairs, field){
         return p;
     })
 
-    
     let sortedPairs = pickedPairs.sort((a, b)=> b.totalRank - a.totalRank).slice(0, 40);
-    
     sortedPairs = sortedPairs.filter((f, i)=> i%2 === 0)
     drawSorted(sortedPairs, field);
-
 }
 
 function drawSorted(pairs, field){
-    console.log('pairs', pairs, field);
+   
     let width = 600;
     let height = 100;
     let xScale = d3.scaleLinear().domain([0, 1]).range([0, width]);
@@ -62,7 +62,7 @@ function drawSorted(pairs, field){
     let svg = d3.select('#main').append('svg');
     svg.attr('height', pairs.length * 150)
     let wrap = svg.append('g');
-    wrap.attr('transform', 'translate(20, 70)')
+    wrap.attr('transform', 'translate(20, 100)')
     let pairWraps = wrap.selectAll('g.pair-wrap').data(pairs).join('g').classed('pair-wrap', true);
     pairWraps.attr('transform', (d, i)=> `translate(50,${i*150})`);
     pairWraps.append('rect')
@@ -168,6 +168,13 @@ function drawSorted(pairs, field){
 
         return d3.select(this).classed('hover', true);
     })
+    .on('mouseleave', function(){
+       // let axisGroup = d3.select(this).select('.y-axis');
+       // axisGroup.remove();
+        let treeNode  = d3.select('#sidebar').selectAll('.node').classed('hover', false).classed('hover-neighbor', false).classed('hover-not', false);
+        let treeLinks  = d3.select('#sidebar').selectAll('.link').classed('hover', false).classed('hover-neighbor', false).classed('hover-not', false);
+        return d3.select(this).classed('hover', false);
+    });
 
     let axisGroup = pairWraps.append('g').classed('y-axis', true);
   
@@ -201,15 +208,13 @@ function drawSorted(pairs, field){
    .style("stroke-width", "1px")
    .style("opacity", "0");
 
- mousePerLine.append("text").attr('class', 'value')
+  mousePerLine.append("text").attr('class', 'value')
    .attr("transform", "translate(10,3)");
 
-mousePerLine.append("text").attr('class', 'species')
+  mousePerLine.append("text").attr('class', 'species')
    .attr("transform", "translate(10,3)");
 
-   let lines = pairWraps.selectAll('.pair').selectAll('path')
-
-   mouseG.append('svg:rect') // append a rect to catch mouse movements on canvas
+mouseG.append('svg:rect') // append a rect to catch mouse movements on canvas
       .attr('width', width) // can't catch mouse events on a g element
       .attr('height', height)
       .attr('fill', 'none')
@@ -223,7 +228,6 @@ mousePerLine.append("text").attr('class', 'species')
           .style("opacity", "0");
       })
       .on('mouseover', (d, i, n)=> { // on mouse in show line, circles and text
-
         d3.select(n[i].parentNode).selectAll('.mouse-line')
           .style("opacity", "1");
           d3.select(n[i].parentNode).selectAll(".mouse-per-line circle")
@@ -233,18 +237,17 @@ mousePerLine.append("text").attr('class', 'species')
       })
       .on('mousemove', (dat, i, n)=> { // mouse moving over canvas
         var mouse = d3.mouse(n[i]);
-        //console.log('this', d3.select(n[i].parentNode).select('.mouse-line'))
+       
         d3.select(n[i].parentNode).select('.mouse-line')
           .attr("d", function() {
             var d = "M" + mouse[0] + "," + height;
             d += " " + mouse[0] + "," + 0;
             return d;
           });
-         // console.log('dat??',dat)
+       
           d3.select(n[i].parentNode).selectAll('.mouse-per-line')
-         // d3.selectAll(".mouse-per-line")
           .attr("transform", function(d, j, node) {
-           // console.log('test',width/mouse[0], d)
+         
             var xDate = xScale.invert(mouse[0]),
                 bisect = d3.bisector(function(d) { return d.edgeLength; }).right,
                 idx = bisect(d.values, xDate);
@@ -266,7 +269,7 @@ mousePerLine.append("text").attr('class', 'species')
               else break; //position found
             }
             let y = dat.p1[0].attributes[field].yScale;
-            console.log('ddddd',d[d.length-1].label)
+          
             d3.select(node[j]).select('text.value')
               .text(y.invert(pos.y).toFixed(2))
               .style('font-size', 11)
@@ -285,34 +288,4 @@ mousePerLine.append("text").attr('class', 'species')
           });
       });
    
-    pairWraps.on('mousemove', function(d, i) {
-        let scale = d.p1[0].attributes[field].yScale;
-        // let axisGroupTest = d3.select(this).select('.y-axis');
-        // let axisGroup = axisGroupTest.empty() ? d3.select(this).append('g').classed('y-axis', true) : axisGroupTest;
-        // if(d3.select('#compare-button').empty() || d3.select('#compare-button').text()==='Normal Mode'){
-        //     axisGroup.attr('transform', (d, i)=> 'translate('+(d3.mouse(this)[0] - 10)+',0)')
-        //     axisGroup.call(d3.axisLeft(scale).ticks(5));
-        // }else{
-        //     let pathD = d3.select(this).select('.path-groups').selectAll('path');
-        //     let maxDiff = pathD.data().map(d=> d[0].maxDiff)[0];
-        //     axisGroup.attr('transform', (d, i)=> 'translate('+(d3.mouse(this)[0] - 10)+',0)');
-        //     let newScale = d3.scaleLinear().domain([maxDiff, 0]).range([0, 60]);
-        //     axisGroup.call(d3.axisLeft(newScale).ticks(5));
-        // }
-        let valueGroupTest = d3.select(this).select('.data-axis');
-        let valueGroup = valueGroupTest.empty() ? d3.select(this).append('g').classed('data-axis', true) : valueGroupTest;
-        //console.log('this data',d)
-
-    }).on('mouseleave', function(){
-        // let axisGroup = d3.select(this).select('.y-axis');
-        // axisGroup.remove();
-        let treeNode  = d3.select('#sidebar').selectAll('.node').classed('hover', false).classed('hover-neighbor', false).classed('hover-not', false);
-        let treeLinks  = d3.select('#sidebar').selectAll('.link').classed('hover', false).classed('hover-neighbor', false).classed('hover-not', false);
-        return d3.select(this).classed('hover', false);
-    });
-    
-
-
-
-
 }
