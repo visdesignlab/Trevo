@@ -43,6 +43,8 @@ export function updateRanking(pairs, field){
         p.totalRank = p.deltaRank + p.closenessRank + p.distanceRank;
         return p;
     })
+
+    
     let sortedPairs = pickedPairs.sort((a, b)=> b.totalRank - a.totalRank).slice(0, 40);
     
     sortedPairs = sortedPairs.filter((f, i)=> i%2 === 0)
@@ -51,7 +53,7 @@ export function updateRanking(pairs, field){
 }
 
 function drawSorted(pairs, field){
-   // console.log('pairs', pairs, field);
+    console.log('pairs', pairs, field);
     let width = 600;
     let height = 100;
     let xScale = d3.scaleLinear().domain([0, 1]).range([0, width]);
@@ -75,6 +77,27 @@ function drawSorted(pairs, field){
     pairWraps.append('text').text((d, i)=> {
         return `${d.p1[d.p1.length - 1].label} + ${d.p2[d.p2.length - 1].label}`
     }).attr('y', -10);
+
+    let scoreWrap = pairWraps.append('g').classed('score-wrap', true);
+    let scoreGroups = scoreWrap.selectAll('g.score').data((d, i)=> {
+        return [{label: 'Distance', value: d.distance, rank: d.distanceRank}, 
+         {label: 'Delta', value: d.delta.value, rank: d.deltaRank},
+         {label: 'Closeness', value: d.closeness.value, rank: d.closenessRank}
+        ];
+    }).join('g').classed('score', true);
+
+    let scoreLabel = scoreWrap.append('g').attr('transform', `translate(650, 0)`);
+    scoreLabel.append('text').text('Rank').attr('y', 20).style('text-anchor', 'end').style('font-size', 11);
+    scoreLabel.append('text').text('Value').attr('y', 40).style('text-anchor', 'end').style('font-size', 11);
+
+    scoreGroups.attr('transform', (d, i, n)=> {
+       return  i === 0 ? `translate(${(660)},0)` : 
+       `translate(${(660+(d3.sum(d3.selectAll(n).filter((f, j)=> i > j).data().map(m=> m.label.length * 6)))+ (i*30))},0)`;
+    });
+    var zero = d3.format(".3n");
+    scoreGroups.append('text').text((d, i)=>  d.label).style('font-size', 10);
+    scoreGroups.append('text').text((d, i)=> zero(d.rank)).style('font-size', 10).attr('y', 20);
+    scoreGroups.append('text').text((d, i)=> zero(d.value)).style('font-size', 10).attr('y', 40);
 
     let pairGroup = pairWraps.selectAll('g.pair').data(d=> [d.p1, d.p2]).join('g').classed('pair', true);
 

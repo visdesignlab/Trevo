@@ -34,12 +34,17 @@ let sidebar = wrap.select('#sidebar');
 //sidebar.style('opacity', 0)
 
 let toolbarDiv = wrap.select('#toolbar');
-
+//WF produce rich tree containing the full ASR matrix tree_attributed
 //loadData(d3.json, './public/data/body-length-res.json', '').then(d=> console.log('new data!', d))
 loadData(d3.json, './public/data/anolis_Losis_asr_tree.json', '').then(data=> {
     let pathArray = pullPath([], [data], [], [], 0);
-
+    let pathTest = pathArray.map(m=> d3.sum(m.map(e=> e.edge_data.weight)))
     console.log('NEW NEW',pathArray);
+});
+loadData(d3.json, './public/data/asr-test.json', '').then(data=> {
+    let pathArray = pullPath([], [data], [], [], 0);
+    let pathTest = pathArray.map(m=> d3.sum(m.map(e=> e.edge_data.weight)))
+    console.log('NEW NEW ASR',pathArray);
 });
 
 loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges => {

@@ -70,20 +70,20 @@ function updateBrush(treeBrush, scales){
 }
 
 export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
+    
     ///SIDBAR STUFF
     sidebar = sidebar.append('div').classed('button-wrap', true);
-    let treeButton = sidebar.append('button').text('Filter by Tree').classed('btn btn-outline-secondary', true);  
-    let treeBrush = d3.brush().extent([[0, 0], [400, 600]]).on('end', (d, i, n) => updateBrush(treeBrush, calculatedScales));
-    treeButton.on('click', ()=> {
-        renderTree(sidebar, true, null, true);
-        let treeBrushG = sidebar.select('svg').append('g').classed('tree-brush', true).call(treeBrush);
-    });
+    // let treeButton = sidebar.append('button').text('Filter by Tree').classed('btn btn-outline-secondary', true);  
+    // let treeBrush = d3.brush().extent([[0, 0], [400, 600]]).on('end', (d, i, n) => updateBrush(treeBrush, calculatedScales));
+    // treeButton.on('click', ()=> {
+    //     renderTree(sidebar, true, null, true);
+    //     let treeBrushG = sidebar.select('svg').append('g').classed('tree-brush', true).call(treeBrush);
+    // });
 
         ///SIDBAR STUFF
     let treeViewButton = sidebar.append('button').text('Hide Lengths').attr('id', 'length').classed('btn btn-outline-secondary', true);  
 
     treeViewButton.on('click', ()=> {
-  
        sidebar.select('svg').remove();
        if(treeViewButton.text() === 'Show Lengths'){
             renderTree(sidebar, null, true);
@@ -94,14 +94,13 @@ export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
        }
     });
 
-    treeViewButton.style('opacity', 0).style('width', 0).style('padding', 0).style('margin', 0)
+    treeViewButton.style('opacity', 0).style('width', 0).style('padding', 0).style('margin', 0);
 
     let optionArray = [{'field':'None'}];
 
-    calculatedScales.map(m=> optionArray.push(m))
+    calculatedScales.map(m=> optionArray.push(m));
 
     let dropOptions = dropDown(sidebar, optionArray, 'See Values','show-drop-div-sidebar');
-
     dropOptions.on('click', (d, i, n)=> {
         if(d.type === 'discrete'){
             renderTree(sidebar, d, true);
