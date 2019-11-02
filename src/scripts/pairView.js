@@ -91,7 +91,7 @@ function drawSorted(pairs, field){
     scoreLabel.append('text').text('Value').attr('y', 40).style('text-anchor', 'end').style('font-size', 11);
 
     scoreGroups.attr('transform', (d, i, n)=> {
-       return  i === 0 ? `translate(${(660)},0)` : 
+       return  i === 0 ? `translate(${(670)},0)` : 
        `translate(${(660+(d3.sum(d3.selectAll(n).filter((f, j)=> i > j).data().map(m=> m.label.length * 6)))+ (i*30))},0)`;
     });
     var zero = d3.format(".3n");
@@ -169,6 +169,13 @@ function drawSorted(pairs, field){
         return d3.select(this).classed('hover', true);
     })
 
+    let axisGroup = pairWraps.append('g').classed('y-axis', true);
+  
+    axisGroup.each((d, i, n)=> {
+        let scale = d.p1[0].attributes[field].yScale;
+        d3.select(n[i]).call(d3.axisLeft(scale).ticks(5));
+    })
+   
     pairWraps.on('mousemove', function(d, i) {
         let scale = d.p1[0].attributes[field].yScale;
         let axisGroupTest = d3.select(this).select('.y-axis');
