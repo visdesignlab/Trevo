@@ -183,7 +183,7 @@ function drawSorted(pairs, field){
     .attr("class", "mouse-line")
     .style("stroke", "black")
     .style("stroke-width", "1px")
-   // .style("opacity", "0");
+    .style("opacity", "0");
 
    var mousePerLine = mouseG.selectAll('.mouse-per-line')
    .data((d, i)=> {
@@ -199,7 +199,7 @@ function drawSorted(pairs, field){
    })
    .style("fill", "none")
    .style("stroke-width", "1px")
-  // .style("opacity", "0");
+   .style("opacity", "0");
 
  mousePerLine.append("text")
    .attr("transform", "translate(10,3)");
