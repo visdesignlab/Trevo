@@ -313,7 +313,7 @@ function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, pheno){
         xScale.range([0, dimensions.width + 10]);
     } 
     if(pheno){
-        g.attr('transform', 'translate(20, 50)');
+        g.attr('transform', 'translate(30, 50)');
         treeSvg.attr('height', 800);
         xScale.domain(treenodes.data.attributes[pheno].yScale.domain())
         yScale.domain([0, 1]).range([0, 500])
@@ -346,12 +346,14 @@ function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, pheno){
     });
 
     if(pheno){
-        link.style('opacity', 0.3)
-        
-        xScale.domain(treenodes.data.attributes[pheno].yScale.domain())
-
-        let xAxis = d3.axisBottom(xScale);
+        link.style('opacity', 0.3);
+        let x = xScale.domain(treenodes.data.attributes[pheno].yScale.domain()).range([0, (dimensions.width+20)]);
+        let xAxis = d3.axisBottom(x);
         g.append('g').classed('pheno-x-axis', true).call(xAxis).attr('transform', 'translate(0, 510)');
+
+        let y = d3.scaleLinear().domain([0,1]).range([0, dimensions.height -20]);
+        let yAxis = d3.axisLeft(y);
+        g.append('g').classed('pheno-y-axis', true).call(yAxis).attr('transform', 'translate(0, 2)');
     }
 
     // adds each node as a group
