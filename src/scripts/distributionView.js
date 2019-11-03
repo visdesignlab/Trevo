@@ -31,6 +31,11 @@ export function drawBranchPointDistribution(data, svg){
     let pointGroups = branchBar.selectAll('g.branch-points').data(nodeLengthArray).join('g').attr('class', (d, i)=> d.node).classed('branch-points', true);
     pointGroups.attr('transform', (d, i) => 'translate('+(105 + bPointScale(d.eMove))+', 0)');
     pointGroups.append('circle').attr('r', 5).attr('fill', "rgba(123, 141, 153, 0.5)");
+let x = d3.scaleLinear().domain([0, 1]).range([0, 800]);
+    let axis = d3.axisBottom(x);
+    let axGroup = branchBar.append('g').call(axis)
+    axGroup.attr('transform', 'translate(108, 10)');
+    axGroup.select('path').attr('stroke-width', 0);
 
     return branchBar;
 }
