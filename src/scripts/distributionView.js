@@ -34,7 +34,7 @@ export function drawBranchPointDistribution(data, svg){
 let x = d3.scaleLinear().domain([0, 1]).range([0, 800]);
     let axis = d3.axisBottom(x);
     let axGroup = branchBar.append('g').call(axis)
-    axGroup.attr('transform', 'translate(108, 10)');
+    axGroup.attr('transform', 'translate(103, 10)');
     axGroup.select('path').attr('stroke-width', 0);
 
     return branchBar;
