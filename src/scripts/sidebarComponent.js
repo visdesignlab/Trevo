@@ -244,7 +244,7 @@ export function renderTree(sidebar, att, uncollapse, pheno){
 
     addingEdgeLength(0, nestedData[0]);
 
-    console.log('neeested', pheno ? nestedData[0].attributes[pheno].yScale.domain() : null)
+   // console.log('neeested', pheno ? nestedData[0].attributes[pheno].yScale.domain() : null)
 
     //  assigns the data to a hierarchy using parent-child relationships
     var treenodes = d3.hierarchy(nestedData[0]);
@@ -347,6 +347,11 @@ function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, pheno){
 
     if(pheno){
         link.style('opacity', 0.3)
+        
+        xScale.domain(treenodes.data.attributes[pheno].yScale.domain())
+
+        let xAxis = d3.axisBottom(xScale);
+        g.append('g').classed('pheno-x-axis', true).call(xAxis).attr('transform', 'translate(0, 510)');
     }
 
     // adds each node as a group
