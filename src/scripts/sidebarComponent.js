@@ -295,6 +295,9 @@ function findDepth(node, array){
 }
 
 function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, pheno){
+
+    d3.select('.pheno-y-axis').remove();
+    d3.select('.pheno-x-axis').remove();
     
     assignPosition(treenodes, 0);
 
