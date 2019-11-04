@@ -7,7 +7,7 @@ import * as d3Array from 'd3-array'
 
 export function drawBranchPointDistribution(data, svg){
 
-    let branchBar = svg.append('g').classed('branch-bar', true).attr('transform', 'translate(10, 10)');
+    let branchBar = svg.append('g').classed('branch-bar', true)//.attr('transform', 'translate(10, 10)');
     branchBar.append('rect').classed('point-dis-rect', true).attr('height', 25).attr('x', -10).attr('y', -10).attr('fill', '#fff');
 
     branchBar.append('line').attr('y1', 2).attr('y2', 2).attr('x1', '100').attr('x2', 890).attr('stroke', 'gray').attr('stroke-width', .25)
@@ -41,7 +41,6 @@ let x = d3.scaleLinear().domain([0, 1]).range([0, 800]);
 }
 
 export function groupDistributions(pathData, mainDiv, scales){
-
 
     let clades = Array.from(new Set(pathData.map(path=> path.filter(f=> f.leaf === true)[0].clade === "" ? "Anolis" : "Norops")));
  
@@ -90,13 +89,10 @@ export function renderDistibutions(pathData, mainDiv, scales){
     });*/
 
     let normBins = new Array(medBranchLength).fill().map((m, i)=> {
-  
             let step = 1 / medBranchLength;
             let base = (i * step);
             let top = ((i + 1)* step);
             return {'base': base, 'top': top, 'binI': i }
-        
-       
     });
 
     let internalNodes = newNormed.map(path => path.filter(node=> node.leaf != true));
@@ -106,9 +102,7 @@ export function renderDistibutions(pathData, mainDiv, scales){
 
     normBins.map((n, i)=> {
         let edges = internalNodes.flatMap(path => path.filter(node=> {
-          
                 return node.edgeMove > n.base && node.edgeMove <= n.top;
-            
         } ));
         n.data = edges;
         return n;
@@ -209,6 +203,8 @@ export function renderDistibutions(pathData, mainDiv, scales){
     svg.attr('id', 'main-summary-view');
     svg.attr('height', (keys.length * (height + 25)));
 
+    console.log(svg.data())
+
     let branchBar = drawBranchPointDistribution(newNormed, svg);
     let pointGroups = branchBar.selectAll('g.branch-points');
   
@@ -218,7 +214,19 @@ export function renderDistibutions(pathData, mainDiv, scales){
     let binnedWrap = wrap.selectAll('.attr-wrap').data(sortedBins).join('g').attr('class', d=> d.key + ' attr-wrap');
     binnedWrap.attr('transform', (d, i)=>  'translate(0,'+(i * (height + 5))+')');
     
-    let label = binnedWrap.append('text').text(d=> d.key).attr('y', 40).attr('x', 80).style('text-anchor', 'end');
+    let label = binnedWrap.append('text').text(d=> d.key)
+    .attr('y', 40).attr('x', 80)
+    .style('text-anchor', 'end')
+    .style('font-size', 11);
+
+    let cladeLabel = svg.append('g').classed('clade-label', true).attr('transform', 'translate(10, 0)');
+    cladeLabel.append('rect').attr('width', 50).attr('height', (keys.length * (height+ 15)))
+    .attr('fill', 'gray')
+    .style('opacity', 0.2);
+
+    cladeLabel.append('text').text(d=> d.label)
+    .style('text-anchor', 'middle')
+    .attr('transform', 'translate(23, '+(keys.length * (height+ 15)/2)+') rotate(-90)');
 
     let predictedWrap = binnedWrap.append('g').classed('predicted', true);
     predictedWrap.attr('transform', 'translate(25, 0)')
@@ -251,7 +259,6 @@ export function renderDistibutions(pathData, mainDiv, scales){
                 newy.range([height, 0]);
                 let mean = d.realVal;
                 return 'translate(0,'+newy(mean)+')';
-      
         }).attr('fill', '#004573');
 
         let disRoot = root.filter(f=> f.type === "discrete");
@@ -279,11 +286,11 @@ export function renderDistibutions(pathData, mainDiv, scales){
               .style("left", (d3.event.pageX + 10) + "px")
               .style("top", (d3.event.pageY - 28) + "px");
             })
-          .on("mouseout", function(d) {
-            let tool = d3.select('#tooltip');
-            tool.transition()
-              .duration(500)
-              .style("opacity", 0);
+            .on("mouseout", function(d) {
+                let tool = d3.select('#tooltip');
+                tool.transition()
+                .duration(500)
+                .style("opacity", 0);
             });
         
 
@@ -507,6 +514,9 @@ export function renderDistibutions(pathData, mainDiv, scales){
             d3.select(nodes[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(5)).attr('transform', 'translate(0, '+margin+')');
             d3.select(nodes[i]).append('g').classed('x-axis', true).call(d3.axisBottom(xPoint)).attr('transform', 'translate(0, '+height+')');
     });
+
+    branchBar.attr('transform', 'translate(80, 10)');
+    d3.selectAll('.summary-wrapper').attr('transform', 'translate(90, 50)');
 
 
 }

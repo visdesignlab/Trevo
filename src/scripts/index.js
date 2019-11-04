@@ -28,6 +28,7 @@ export const colorKeeper = [
 let wrap = d3.select('#wrapper');
 let main = wrap.select('#main');
 let selectedPaths = wrap.select('#selected');
+
 let sidebar = wrap.select('#sidebar');
 
 //hiding this for dev
