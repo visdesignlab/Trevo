@@ -225,8 +225,9 @@ export function renderDistibutions(pathData, mainDiv, scales){
     .style('opacity', 0.2)
     .on('mouseover', (d, i)=>{
         let treeNode  = d3.select('#sidebar').selectAll('.node');
+        console.log(treeNode.data(), d.label)
         let treeLinks  = d3.select('#sidebar').selectAll('.link');
-
+        console.log(treeNode.filter(f=> f.data.clade === d.label))
         treeNode.filter(f=> f.data.clade === d.label).classed('hover clade', true);
         treeLinks.filter(f=> f.data.clade === d.label).classed('hover clade', true);
         let species = d.paths.map(m=> m[m.length - 1].label);

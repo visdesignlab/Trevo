@@ -425,6 +425,15 @@ g.node.low circle{
 
 }
 
+.node.hover.clade circle {
+  //fill: #fff;
+  fill: #FF5733 !important;
+  opacity: 1 !important;
+  r: 4.5px;
+  stroke-width: 1px;
+  stroke: gainsboro;
+}
+
 .node.hover.one circle {
   //fill: #fff;
   fill: #FF5733 !important;
@@ -483,6 +492,12 @@ g.node.low circle{
 }
 
 .link.hover.one {
+  fill: none;
+  stroke: #FF5733 !important;
+  opacity: 0.8 !important;
+  stroke-width: 2px;
+}
+.link.hover.clade {
   fill: none;
   stroke: #FF5733 !important;
   opacity: 0.8 !important;
