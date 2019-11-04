@@ -117,10 +117,10 @@ export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
     });
 
       ///BUTTON FOR PHENOGRAM VIEW. MAYBE MOVE THIS TO SIDEBAR
-      let phenogramButton = d3.select('#sidebar').select('.button-wrap').append('button').text('Phenogram');
+      let phenogramButton = d3.select('#sidebar').select('.button-wrap').append('button').text('View Phenogram');
       phenogramButton.classed('btn btn-outline-secondary', true); 
       phenogramButton.on('click', ()=> {
-          if(phenogramButton.text() === 'Phenogram'){
+          if(phenogramButton.text() === 'View Phenogram'){
             if(d3.select('.attr-drop.dropdown').select('button').empty()){
                 let drop = dropDown(d3.select('#toolbar'), optionArray, optionArray[1].field, 'attr-drop');
                 drop.on('click', (d, i, n)=> {
@@ -136,11 +136,11 @@ export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
     
                 renderTree(d3.select('#sidebar'), null, true, d3.select('.attr-drop.dropdown').select('button').text())
               }
-              phenogramButton.text('Phylogeny');
+              phenogramButton.text('View Phylogeny');
           }else{
 
             renderTree(d3.select('#sidebar'), null, false);
-            phenogramButton.text('Phenogram');
+            phenogramButton.text('View Phenogram');
 
           }
           
