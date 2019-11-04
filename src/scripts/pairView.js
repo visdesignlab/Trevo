@@ -95,6 +95,8 @@ export function updateRanking(pairs, field, weights){
 }
 
 function drawSorted(pairs, field){
+
+  let pairColor = ['#FF5733', '#129BF5'];
    
     let width = 600;
     let height = 100;
@@ -157,7 +159,8 @@ function drawSorted(pairs, field){
     let innerPaths = pairGroup.append('path')
     .attr("d", lineGen)
     .attr("class", "inner-line")
-    .style('stroke', 'rgb(165, 185, 198)');
+    .style('stroke', (d, i)=> pairColor[i])
+   // .style('stroke', 'rgb(165, 185, 198)');
 
     let branches = pairGroup.selectAll('g.branch').data(d=> d).join('g').classed('branch', true);
     branches.attr('transform', (d, i)=> `translate(${xScale(d.edgeMove)}, 0)`);
@@ -183,7 +186,9 @@ function drawSorted(pairs, field){
         xAxisG.attr('transform', `translate(0, ${height})`)
 
     pairWraps.on('mouseover', (d, i)=> {
-        let species = [...d.p1.map(n=> n.node)].concat(d.p2.map(n=> n.node));
+        //let species = [...d.p1.map(n=> n.node)].concat(d.p2.map(n=> n.node));
+        let species1 = d.p1.map(n=> n.node);
+        let species2 = d.p2.map(n=> n.node);
         let labels = [...d.p1.filter(n=> n.leaf === true).map(m=> m.label)].concat(d.p2.filter(n=> n.leaf === true).map(m=> m.label));
         let neighbors = labels.flatMap(m=> {
             let start = speciesTest[0].indexOf(m);
@@ -195,26 +200,44 @@ function drawSorted(pairs, field){
        
         let treeNode  = d3.select('#sidebar').selectAll('.node');
         let treeLinks  = d3.select('#sidebar').selectAll('.link');
-        treeNode.filter(f=> {
-            return species.indexOf(f.data.node) > -1;
-        }).classed('hover', true);
-        treeLinks.filter(f=> species.indexOf(f.data.node) > -1).classed('hover', true);
+        let pairNode1 = treeNode.filter(f=> {
+            return species1.indexOf(f.data.node) > -1;
+        }).classed('hover one', true);
 
+        let pairNode2 = treeNode.filter(f=> {
+          return species2.indexOf(f.data.node) > -1;
+      }).classed('hover two', true);
+
+     
+        treeLinks.filter(f=> species1.indexOf(f.data.node) > -1).classed('hover one', true);
+        treeLinks.filter(f=> species2.indexOf(f.data.node) > -1).classed('hover two', true);
+        
         treeNode.filter(f=> neighNodes.indexOf(f.data.node) > -1).classed('hover-neighbor', true);
         //Hiding Others
-        treeNode.filter(f=> (neighNodes.indexOf(f.data.node) === -1) && (species.indexOf(f.data.node) === -1)).classed('hover-not', true);
+        treeNode.filter(f=> (neighNodes.indexOf(f.data.node) === -1) && (species1.concat(species2).indexOf(f.data.node) === -1)).classed('hover-not', true);
+        
         //Coloring Niehgbors
         treeLinks.filter(f=> neighNodes.indexOf(f.data.node) > -1).classed('hover-neighbor', true);
         //Hiding Others
-        treeLinks.filter(f=> (neighNodes.indexOf(f.data.node) === -1) && (species.indexOf(f.data.node) === -1)).classed('hover-not', true);
+        treeLinks.filter(f=> (neighNodes.indexOf(f.data.node) === -1) && (species1.concat(species2).indexOf(f.data.node) === -1)).classed('hover-not', true);
 
         return d3.select(this).classed('hover', true);
     })
     .on('mouseleave', function(){
        // let axisGroup = d3.select(this).select('.y-axis');
        // axisGroup.remove();
-        let treeNode  = d3.select('#sidebar').selectAll('.node').classed('hover', false).classed('hover-neighbor', false).classed('hover-not', false);
-        let treeLinks  = d3.select('#sidebar').selectAll('.link').classed('hover', false).classed('hover-neighbor', false).classed('hover-not', false);
+        let treeNode  = d3.select('#sidebar').selectAll('.node')
+        .classed('hover', false)
+        .classed('hover-neighbor', false)
+        .classed('hover-not', false)
+        .classed('two', false)
+        .classed('one', false);
+        let treeLinks  = d3.select('#sidebar').selectAll('.link')
+        .classed('hover', false)
+        .classed('hover-neighbor', false)
+        .classed('hover-not', false)
+        .classed('two', false)
+        .classed('one', false);
         return d3.select(this).classed('hover', false);
     });
 

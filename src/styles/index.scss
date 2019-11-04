@@ -425,7 +425,7 @@ g.node.low circle{
 
 }
 
-.node.hover circle {
+.node.hover.one circle {
   //fill: #fff;
   fill: #FF5733 !important;
   opacity: 1 !important;
@@ -434,10 +434,19 @@ g.node.low circle{
   stroke: gainsboro;
 }
 
+.node.hover.two circle {
+  //fill: #fff;
+  fill: #129BF5 !important;
+  opacity: 1 !important;
+  r: 4px;
+  stroke-width: 1px;
+  stroke: gainsboro;
+}
+
 .node.hover-neighbor circle {
   //fill: #fff;
-  fill: #7FB3D5;
-  opacity: .8 !important;
+  fill: gray;
+  opacity: .7 !important;
   r: 4px;
   stroke-width: 1px;
   stroke: gainsboro;
@@ -473,16 +482,22 @@ g.node.low circle{
   opacity:.3;
 }
 
-.link.hover {
+.link.hover.one {
   fill: none;
   stroke: #FF5733 !important;
   opacity: 0.8 !important;
   stroke-width: 2px;
 }
+.link.hover.two {
+  fill: none;
+  stroke: #129BF5;
+  opacity: 1 !important;
+  stroke-width: 2px;
+}
 .link.hover-neighbor {
   fill: none;
-  stroke: #7FB3D5;
-  opacity: 1 !important;
+  stroke: gray;
+  opacity: .7 !important;
   stroke-width: 2px;
 }
 .link.hover-not {
