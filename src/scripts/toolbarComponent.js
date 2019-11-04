@@ -8,11 +8,12 @@ import { dropDown } from './buttonComponents';
 
 export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pathView){
 
-    let viewDrop = dropDown(toolbar, [{'field':'View Summary'},{'field':'View Paths'},{'field':'View Pairs'}], 'Change View', 'change-view');
+    let viewDrop = dropDown(toolbar, [{'field':'Summary View'},{'field':'Path View'},{'field':'Pair View'}], 'Summary View', 'change-view');
 
     viewDrop.on('click', (d, i, n)=> {
         updateMainView(calculatedScales, d);
         d3.select('.dropdown.change-view').select('button').node().value = d.field;
+        d3.select('.dropdown.change-view').select('button').text(d.field)
         d3.select('#change-view').classed('show', false);
     });
     

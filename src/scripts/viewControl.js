@@ -14,15 +14,15 @@ export function updateMainView(scales, d){
 
     main.selectAll('*').remove();
   
-    if(d.field === 'View Paths'){
+    if(d.field === 'Path View'){
         d3.select('#pair-rank').classed('hidden', true);
         drawPathsAndAttributes(data, main, scales, moveMetric);
         document.getElementById("scrunch").disabled = false;
-    }else if(d.field === 'View Summary'){
+    }else if(d.field === 'Summary View'){
         d3.select('#pair-rank').classed('hidden', true);
         renderDistibutions(data, main, scales, moveMetric);
         document.getElementById("scrunch").disabled = true;
-    }else if(d.field === 'View Pairs'){
+    }else if(d.field === 'Pair View'){
         rankingControl(data);
         generatePairs(data);
     }else{
