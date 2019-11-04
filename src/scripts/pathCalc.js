@@ -91,12 +91,12 @@ export function pullPath(pathArray, nodes, arrayOfArray, nameArray, depth){
         node.depth = depth;
         node.id = depth + '.' + i;
         if(notEmpty(node.children)){
-            pathArray.push(node);
-            pullPath([...pathArray], node.children, arrayOfArray, nameArray, depth+1);
+            pathArray.push(Object.assign({}, node));
+            pullPath([...pathArray], [...node.children], arrayOfArray, nameArray, depth+1);
         }else{
             nameArray.push(node.node_data['node name']);
             node.flag = true;
-            arrayOfArray.push([...pathArray, node]);
+            arrayOfArray.push([...pathArray, Object.assign({},node)]);
         }
     });
     return arrayOfArray;

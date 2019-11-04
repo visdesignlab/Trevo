@@ -25,6 +25,17 @@ export const colorKeeper = [
     ['#0095b6'],
 ]
 
+export const attributeList = [
+    'PCIII_padwidth_vs_tail',
+    'PCII_head',
+    'PCIV_lamella_num',
+    'PCI_limbs',
+    'SVL',
+    'attitude',
+    'awesomeness',
+    'hostility'
+];
+
 let wrap = d3.select('#wrapper');
 let main = wrap.select('#main');
 let selectedPaths = wrap.select('#selected');
@@ -40,12 +51,24 @@ let toolbarDiv = wrap.select('#toolbar');
 loadData(d3.json, './public/data/anolis_Losis_asr_tree.json', '').then(data=> {
     let pathArray = pullPath([], [data], [], [], 0);
     let pathTest = pathArray.map(m=> d3.sum(m.map(e=> e.edge_data.weight)))
-    console.log('NEW NEW',pathArray);
+    //console.log('NEW NEW',pathArray);
 });
 loadData(d3.json, './public/data/asr-test.json', '').then(data=> {
     let pathArray = pullPath([], [data], [], [], 0);
-    let pathTest = pathArray.map(m=> d3.sum(m.map(e=> e.edge_data.weight)))
-    console.log('NEW NEW ASR',pathArray);
+    
+    let newEdges = pathArray.map(m=> {
+        let branchStep = 1 / (m.length-1);
+        let copy = m.map((n, i)=> {
+            n.edgeLength = i*branchStep;
+            return n;
+        });
+        return copy;
+    });
+    let pathTest = newEdges.map(m=> d3.sum(m.map(e=> e.edgeLength)));
+    console.log('NEW NEW ASR', newEdges[0][0].node_data, Object.keys(newEdges[0][0].node_data));
+    newEdges[0][0]
+    let keys = Object.keys(newEdges[0][0].node_data);
+    keys.map(k=> console.log(k.includes('attitude')))
 });
 
 loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges => {
@@ -95,8 +118,6 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
 
     let normedPaths = normPaths(paths, calculatedAtt, calculatedScales);
     dataMaster.push(normedPaths);
-//console.log(normedPaths.flatMap(m=> m.filter(f=> f.leaf === true)).map(l=> l.label))
-  //  console.log(normedPaths.filter(f=> f.label));
 
     speciesTest.push(normedPaths.flatMap(m=> m.filter(f=> f.leaf === true)).map(l=> l.label));
    
@@ -105,7 +126,6 @@ loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges =>
     let filterDiv = wrap.select('#filter-tab').classed('hidden', true);
 
     ////////TREE RENDER IN SIDEBAR////////
-    
     nestedData.push(buildTreeStructure(paths, edges));
     renderTreeButtons(normedPaths, calculatedScales, sidebar, false);
     let tree = renderTree(sidebar, null, false);
