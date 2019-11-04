@@ -222,7 +222,21 @@ export function renderDistibutions(pathData, mainDiv, scales){
     let cladeLabel = svg.append('g').classed('clade-label', true).attr('transform', 'translate(10, 0)');
     cladeLabel.append('rect').attr('width', 50).attr('height', (keys.length * (height+ 15)))
     .attr('fill', 'gray')
-    .style('opacity', 0.2);
+    .style('opacity', 0.2)
+    .on('mouseover', (d, i)=>{
+        let treeNode  = d3.select('#sidebar').selectAll('.node');
+        let treeLinks  = d3.select('#sidebar').selectAll('.link');
+
+        treeNode.filter(f=> f.data.clade === d.label).classed('hover clade', true);
+        treeLinks.filter(f=> f.data.clade === d.label).classed('hover clade', true);
+        let species = d.paths.map(m=> m[m.length - 1].label);
+        
+    }).on('mouseout', (d, i)=> {
+        let treeNode  = d3.select('#sidebar').selectAll('.node');
+        let treeLinks  = d3.select('#sidebar').selectAll('.link');
+        treeNode.classed('hover clade', false);
+        treeLinks.classed('hover clade', false);
+    })
 
     cladeLabel.append('text').text(d=> d.label)
     .style('text-anchor', 'middle')
