@@ -454,7 +454,7 @@ g.node.low circle{
 
 .node.hover-neighbor circle {
   //fill: #fff;
-  fill: gray;
+  fill: #A08DB8;
   opacity: .7 !important;
   r: 4px;
   stroke-width: 1px;
@@ -511,7 +511,7 @@ g.node.low circle{
 }
 .link.hover-neighbor {
   fill: none;
-  stroke: gray;
+  stroke: #A08DB8;
   opacity: .7 !important;
   stroke-width: 2px;
 }
