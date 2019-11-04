@@ -8,7 +8,9 @@ import { dropDown } from './buttonComponents';
 
 export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pathView){
 
-    let viewDrop = dropDown(toolbar, [{'field':'Summary View'},{'field':'Path View'},{'field':'Pair View'}], 'Summary View', 'change-view');
+    let viewArray = [{'field':'Summary View'},{'field':'Path View'},{'field':'Pair View'}, {'field':'Clade View'}];
+
+    let viewDrop = dropDown(toolbar, viewArray, viewArray[0].field, 'change-view');
 
     viewDrop.on('click', (d, i, n)=> {
         updateMainView(calculatedScales, d);
