@@ -162,7 +162,7 @@ export function renderDistibutions(pathData, mainDiv, scales){
                 let colors = scale.stateColors;
                 n.bins = stateKeys.map(state=> {
                     let test = n.data.flatMap(m=> m.states.filter(f=> f.state === state))
-                    return {[state]: test, color : colors.filter(f=> f.state === state)[0]};
+                    return {state: test, color : colors.filter(f=> f.state === state)[0], max:100};
                 });
                 // n.bins = states.map(state=> {
                 //     let color = colors.filter(f=> f.state === state.state);
@@ -271,7 +271,13 @@ export function renderDistibutions(pathData, mainDiv, scales){
 
        // Discrete Root
         let disRoot = root.filter(f=> f.type === "discrete");
-        console.log(disRoot.data())
+        let rootStateGroups = disRoot.selectAll('g.root-state-groups').data(d=> d.states).join('g').classed('root-state-groups', true);
+        rootStateGroups.attr('transform', (d, i)=> `translate(0, ${i*24})`)
+        let rootRects = rootStateGroups.append('rect').attr('height', 20).attr('width', 20);
+        rootRects.attr('fill', (d, i)=> {
+            return `rgba(200, 203, 219, ${d.realVal})`;
+        }).attr('stroke-width', 0.5).attr('stroke', `rgba(200, 203, 219, 1)`);
+       // rootRects.on('mouseover', (d, i))
 
         // let disRects = disRoot.selectAll('rect.dist').data(d=> {
         //     let sorted = d.states.sort((a, b)=> a.realVal - b.realVal);
@@ -313,6 +319,16 @@ export function renderDistibutions(pathData, mainDiv, scales){
     branchGroup.attr('transform', (d, i)=> 'translate('+(100 + branchScale(i))+', 0)');
 
     let discreteDist = branchGroup.filter(f=> f.type === 'discrete');
+    let stateBinsPredicted = discreteDist.selectAll('g.state-bins').data(d=> d.bins).join('g').classed('state-bins', true)
+    
+    stateBinsPredicted.attr('transform', (d, i)=> `translate(0, ${i*24})`)
+    let stateRects = stateBinsPredicted.append('rect').attr('height', 20).attr('width', 20);
+    stateRects.attr('fill', (d, i)=> {
+        console.log(d3.sum(d.state.map(m=> m.realVal)));
+        let sum = d3.sum(d.state.map(m=> m.realVal))
+        let scale = d3.scaleLinear().domain([0, d.max]).range([0, 1]);
+        return `rgba(200, 203, 219, ${scale(sum)})`;
+    }).attr('stroke-width', 0.5).attr('stroke', `rgba(200, 203, 219, 1)`);
     console.log(discreteDist.data())
 /////
 

@@ -49,9 +49,10 @@ let toolbarDiv = wrap.select('#toolbar');
 //WF produce rich tree containing the full ASR matrix tree_attributed
 //loadData(d3.json, './public/data/body-length-res.json', '').then(d=> console.log('new data!', d))
 loadData(d3.json, './public/data/anolis_Losis_asr_tree.json', '').then(data=> {
+    console.log('data',data)
     let pathArray = pullPath([], [data], [], [], 0);
-    let pathTest = pathArray.map(m=> d3.sum(m.map(e=> e.edge_data.weight)))
-    //console.log('NEW NEW',pathArray);
+    let pathTest = pathArray.map(m=> d3.sum(m.map(e=> e.edgeLength)))
+    console.log('NEW NEW',pathTest, pathArray);
 });
 loadData(d3.json, './public/data/asr-test.json', '').then(data=> {
     let pathArray = pullPath([], [data], [], [], 0);
@@ -65,7 +66,7 @@ loadData(d3.json, './public/data/asr-test.json', '').then(data=> {
         return copy;
     });
     let pathTest = newEdges.map(m=> d3.sum(m.map(e=> e.edgeLength)));
-    console.log('NEW NEW ASR', newEdges[0][0].node_data, Object.keys(newEdges[0][0].node_data));
+    console.log('NEW NEW ASR', pathTest, Object.keys(newEdges[0][0].node_data));
     newEdges[0][0]
     let keys = Object.keys(newEdges[0][0].node_data);
     keys.map(k=> console.log(k.includes('attitude')))

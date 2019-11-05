@@ -90,6 +90,7 @@ export function pullPath(pathArray, nodes, arrayOfArray, nameArray, depth){
     nodes.forEach((node, i)=> {
         node.depth = depth;
         node.id = depth + '.' + i;
+        node.edgeLength = node.edge_data.weight;
         if(notEmpty(node.children)){
             pathArray.push(Object.assign({}, node));
             pullPath([...pathArray], [...node.children], arrayOfArray, nameArray, depth+1);
