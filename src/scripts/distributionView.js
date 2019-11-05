@@ -66,6 +66,7 @@ export function renderDistibutions(pathData, mainDiv, scales){
     let predictedWidth = 800;
     let height = 90;
     let margin = 20;
+    let squareDim = 15;
 
     let attrHide = filterMaster.filter(f=> f.type === 'hide-attribute').map(m=> m.attribute);
     let keys = Object.keys(pathData[0][0].attributes).filter(f=> attrHide.indexOf(f) === -1);
@@ -154,7 +155,7 @@ export function renderDistibutions(pathData, mainDiv, scales){
             
             mapNorm.bins = null
             leafData.bins = states.map(s=> leafAttr.filter(f=> f.winState === s.state));
-           // console.log('mapnorm', mapNorm)
+   
             let x = d3.scaleLinear().domain([0, 1]).range([0, height]);
            
             mapNorm.map(n=> {
@@ -162,7 +163,7 @@ export function renderDistibutions(pathData, mainDiv, scales){
                 let colors = scale.stateColors;
                 n.bins = stateKeys.map(state=> {
                     let test = n.data.flatMap(m=> m.states.filter(f=> f.state === state))
-                    return {state: test, color : colors.filter(f=> f.state === state)[0], max:100};
+                    return {state: test, color : colors.filter(f=> f.state === state)[0], max:80};
                 });
                 // n.bins = states.map(state=> {
                 //     let color = colors.filter(f=> f.state === state.state);
@@ -208,7 +209,16 @@ export function renderDistibutions(pathData, mainDiv, scales){
     wrap.attr('transform', 'translate(10, 50)');
 
     let binnedWrap = wrap.selectAll('.attr-wrap').data(sortedBins).join('g').attr('class', d=> d.key + ' attr-wrap');
-    binnedWrap.attr('transform', (d, i)=>  'translate(0,'+(i * (height + 5))+')');
+    binnedWrap.attr('transform', (d, i, n)=>  {
+            if(i === 0){
+                return 'translate(0,0)';
+            }else{
+                let selected = d3.selectAll(n).filter((f, j)=>j < i).data();
+                let sum = d3.sum(selected.flatMap(s=> s.type === 'continuous'? height+5 : (s.stateKeys.length*(squareDim+4))));
+                d.sum = sum;
+                return `translate(0, ${sum})`
+            }
+        });
     
     let label = binnedWrap.append('text').text(d=> d.key)
     .attr('y', 40).attr('x', 80)
@@ -230,7 +240,7 @@ export function renderDistibutions(pathData, mainDiv, scales){
         let treeLinks  = d3.select('#sidebar').selectAll('.link');
         treeNode.classed('hover clade', false);
         treeLinks.classed('hover clade', false);
-    })
+    });
 
     cladeLabel.append('text').text(d=> d.label)
     .style('text-anchor', 'middle')
@@ -239,13 +249,12 @@ export function renderDistibutions(pathData, mainDiv, scales){
     let predictedWrap = binnedWrap.append('g').classed('predicted', true);
     predictedWrap.attr('transform', 'translate(25, 0)')
 
+    //ROOT RENDERING
     let root = predictedWrap.selectAll('g.root').data(d=> {
         return [d.rootData]}).join('g').classed('root', true);
-    
-        root.attr('transform', `translate(60,0)`);
+    root.attr('transform', `translate(60,0)`);
 
     let contRoot = root.filter(f=> f.type === "continuous");
-    
     contRoot.append('rect').attr('height', 90).attr('width', 12).attr('fill', '#fff').style('stroke-width', '0.5px').style('stroke', 'black')//.attr('x', 70);
 
     let rootRange = contRoot.append('rect')
@@ -270,79 +279,35 @@ export function renderDistibutions(pathData, mainDiv, scales){
         }).attr('fill', '#004573');
 
        // Discrete Root
-        let disRoot = root.filter(f=> f.type === "discrete");
-        let rootStateGroups = disRoot.selectAll('g.root-state-groups').data(d=> d.states).join('g').classed('root-state-groups', true);
-        rootStateGroups.attr('transform', (d, i)=> `translate(0, ${i*24})`)
-        let rootRects = rootStateGroups.append('rect').attr('height', 20).attr('width', 20);
-        rootRects.attr('fill', (d, i)=> {
-            return `rgba(200, 203, 219, ${d.realVal})`;
+    let disRoot = root.filter(f=> f.type === "discrete");
+    let rootStateGroups = disRoot.selectAll('g.root-state-groups').data(d=> d.states).join('g').classed('root-state-groups', true);
+    rootStateGroups.attr('transform', (d, i)=> `translate(0, ${i*(squareDim+2)})`);
+    let rootRects = rootStateGroups.append('rect').attr('height', squareDim).attr('width', squareDim);
+    rootRects.attr('fill', (d, i)=> {
+            return `rgba(89, 91, 101, ${d.realVal})`;
         }).attr('stroke-width', 0.5).attr('stroke', `rgba(200, 203, 219, 1)`);
-       // rootRects.on('mouseover', (d, i))
-
-        // let disRects = disRoot.selectAll('rect.dist').data(d=> {
-        //     let sorted = d.states.sort((a, b)=> a.realVal - b.realVal);
-        //     return sorted;
-        // }).join('rect').classed('dist', true).attr('width', 12).attr('height', (d)=>{
-        //     let scale = d3.scaleLinear().domain([0, 1.0]).range([0, 80]).clamp(true);
-        //     d.height = scale(d.realVal);
-        //     return scale(d.realVal);
-        // })
-        // .attr('transform', (d, i, n) => {
-        //     let move = d3.selectAll(n).filter((f, j)=> j < i).data().map(m=> m.height);
-        //     return `translate(0, ${2 + d3.sum(move) * 1.2})`})
-        // .attr('fill', d=> d.color).style('opacity', 0.9)
-
-    //     disRects.on('mouseover', (d, i, n)=> {
-    //         let tool = d3.select('#tooltip');
-    //         tool.transition()
-    //           .duration(200)
-    //           .style("opacity", .9);
-    //         let f = d3.format(".3f");
-    //         tool.html(d.state + ": " + f(d.realVal))
-    //           .style("left", (d3.event.pageX + 10) + "px")
-    //           .style("top", (d3.event.pageY - 28) + "px");
-    //         })
-    //         .on("mouseout", function(d) {
-    //             let tool = d3.select('#tooltip');
-    //             tool.transition()
-    //             .duration(500)
-    //             .style("opacity", 0);
-    //         });
-        
-
-    // let pathGroup = predictedWrap.append('g').classed('path-wrapper', true);
-
-    //let branchGroup = predictedWrap.selectAll('g.branch-bin').data(d=> d.branches).join('g').classed('branch-bin', true);
 
     let branchGroup = predictedWrap.selectAll('g.branch-bin').data(d=> {
-        return d.branches}).join('g').classed('branch-bin', true);
-    branchGroup.attr('transform', (d, i)=> 'translate('+(100 + branchScale(i))+', 0)');
+            return d.branches}).join('g').classed('branch-bin', true);
+
+    branchGroup.attr('transform', (d, i, n)=> {
+            return 'translate('+(100 + branchScale(i))+', 0)'});
 
     let discreteDist = branchGroup.filter(f=> f.type === 'discrete');
-    let stateBinsPredicted = discreteDist.selectAll('g.state-bins').data(d=> d.bins).join('g').classed('state-bins', true)
-    
-    stateBinsPredicted.attr('transform', (d, i)=> `translate(0, ${i*24})`)
-    let stateRects = stateBinsPredicted.append('rect').attr('height', 20).attr('width', 20);
-    stateRects.attr('fill', (d, i)=> {
-        console.log(d3.sum(d.state.map(m=> m.realVal)));
+    let stateBinsPredicted = discreteDist.selectAll('g.state-bins')
+        .data(d=> d.bins).join('g')
+        .classed('state-bins', true);
+        
+    stateBinsPredicted.attr('transform', (d, i)=> `translate(0, ${2+(i*(squareDim+2))})`)
+    let stateRects = stateBinsPredicted.append('rect').attr('height', squareDim).attr('width', squareDim);
+    stateRects.attr('fill', (d, i, n)=> {
         let sum = d3.sum(d.state.map(m=> m.realVal))
-        let scale = d3.scaleLinear().domain([0, d.max]).range([0, 1]);
-        return `rgba(200, 203, 219, ${scale(sum)})`;
-    }).attr('stroke-width', 0.5).attr('stroke', `rgba(200, 203, 219, 1)`);
-    console.log(discreteDist.data())
-/////
-
-
-
-
-
-
-
-
-
-
-
-//////
+        let av = sum / d.state.length;
+        let scale = d3.scaleLinear().domain([0, 1]).range([0, 1]);
+        return `rgba(89, 91, 101, ${scale(av)})`;
+    }).attr('stroke-width', 0.5).attr('stroke', `rgba(89, 91, 101, .5)`);
+    
+    //CONTIN PREDICTED
     let continDist = branchGroup.filter(f=> f.type === 'continuous');
 
     continDist.on('mouseover', (d, i, node)=> {
