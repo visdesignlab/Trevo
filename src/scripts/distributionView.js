@@ -216,7 +216,7 @@ export function renderDistibutions(pathData, mainDiv, scales){
                 let selected = d3.selectAll(n).filter((f, j)=>j < i).data();
                 let sum = d3.sum(selected.flatMap(s=> s.type === 'continuous'? height+5 : (s.stateKeys.length*(squareDim+4))));
                 d.sum = sum;
-                return `translate(0, ${sum})`
+                return `translate(0, ${sum})`;
             }
         });
     
@@ -335,8 +335,6 @@ export function renderDistibutions(pathData, mainDiv, scales){
     });
 
     lastBranch.attr('y', 10).attr('x', squareDim+4).style('font-size', 10)
-
-    console.log(lastBranch, lastBranch.data())
     
     //CONTIN PREDICTED
     let continDist = branchGroup.filter(f=> f.type === 'continuous');
@@ -423,7 +421,6 @@ export function renderDistibutions(pathData, mainDiv, scales){
     }).attr('fill', '#004573');
 
     ////OBSERVED CONTIUOUS/////
-
     let observedWrap = binnedWrap.append('g').classed('observed', true);
     observedWrap.attr('transform', (d, i, n)=> {
         return 'translate('+ (predictedWidth + 150) +', 0)'})
@@ -458,21 +455,24 @@ export function renderDistibutions(pathData, mainDiv, scales){
 ////Observed Discrete////
     let discOb =  observedWrap.filter(f=> f.type === 'discrete');
     let discBars = discOb.selectAll('g.ob-bars').data(d=> {
-        return d.leafData.bins}).join('g').classed('ob-bars', true);
+        return d.stateKeys.map((key, i)=>{
+            return {state: key, data: d.leafData.bins[i], max: d3.sum(d.leafData.bins.map(b=> b.length))}
+        });
+    }).join('g').classed('ob-bars', true);
     let dRects = discBars.append('rect').attr('width', (d, i, n)=> {
         let width = observedWidth / n.length;
         return width;
     }).attr('height', (d, i, n)=> {
-        let y = d3.scaleLinear().domain([0, 100]).range([(height -margin), 0])
-        return y(d.length)
+        let y = d3.scaleLinear().domain([0, d.max]).range([0, (height - margin)])
+        return y(d.data.length);
     }).attr('fill', (d, i) => {
-        return d[0] != undefined ? d[0].color : '#fff';
+        return d.data[0] != undefined ? d.data[0].color : '#fff';
     }).attr('opacity', 0.3);
 
     discBars.attr('transform', (d, i, n)=> {
         let movex = observedWidth / n.length;
-        let y = d3.scaleLinear().domain([0, 100]).range([(height - margin), 0])
-        let movey = (height) - y(d.length);
+        let y = d3.scaleLinear().domain([0, d.max]).range([0, (height - margin)])
+        let movey = (height) - y(d.data.length);
         return 'translate('+(movex * i)+', '+movey+')'});
 
     dRects.on('mouseover', (d, i, n)=> {
@@ -489,9 +489,9 @@ export function renderDistibutions(pathData, mainDiv, scales){
             let labels = d.leafData.bins.map(b=> {
                 return b[0] != undefined ? b[0].winState : '';
                 })
-            let xPoint = d3.scalePoint().domain(labels).range([0, observedWidth]).padding(.6)
-            let y = d3.scaleLinear().domain([0, 100]).range([(height - margin), 0]);
-            d3.select(nodes[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(5)).attr('transform', 'translate(0, '+margin+')');
+            let xPoint = d3.scalePoint().domain(d.stateKeys).range([0, observedWidth]).padding(.6)
+            let y = d3.scaleLinear().domain([0, d.leafData.data.length]).range([(height - margin), 0]);
+            d3.select(nodes[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(4)).attr('transform', 'translate(0, '+margin+')');
             d3.select(nodes[i]).append('g').classed('x-axis', true).call(d3.axisBottom(xPoint)).attr('transform', 'translate(0, '+height+')');
     });
 
