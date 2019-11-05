@@ -281,11 +281,11 @@ export function renderDistibutions(pathData, mainDiv, scales){
        // Discrete Root
     let disRoot = root.filter(f=> f.type === "discrete");
     let rootStateGroups = disRoot.selectAll('g.root-state-groups').data(d=> d.states).join('g').classed('root-state-groups', true);
-    rootStateGroups.attr('transform', (d, i)=> `translate(0, ${i*(squareDim+2)})`);
+    rootStateGroups.attr('transform', (d, i)=> `translate(0, ${3.5+(i*(squareDim+2))})`);
     let rootRects = rootStateGroups.append('rect').attr('height', squareDim).attr('width', squareDim);
     rootRects.attr('fill', (d, i)=> {
             return `rgba(89, 91, 101, ${d.realVal})`;
-        }).attr('stroke-width', 0.5).attr('stroke', `rgba(200, 203, 219, 1)`);
+        }).attr('stroke-width', 0.5).attr('stroke', `rgba(200, 203, 219, .9)`);
 
     let branchGroup = predictedWrap.selectAll('g.branch-bin').data(d=> {
             return d.branches}).join('g').classed('branch-bin', true);
@@ -298,14 +298,33 @@ export function renderDistibutions(pathData, mainDiv, scales){
         .data(d=> d.bins).join('g')
         .classed('state-bins', true);
         
-    stateBinsPredicted.attr('transform', (d, i)=> `translate(0, ${2+(i*(squareDim+2))})`)
+    stateBinsPredicted.attr('transform', (d, i)=> `translate(0, ${3.5+(i*(squareDim+2))})`)
     let stateRects = stateBinsPredicted.append('rect').attr('height', squareDim).attr('width', squareDim);
     stateRects.attr('fill', (d, i, n)=> {
         let sum = d3.sum(d.state.map(m=> m.realVal))
         let av = sum / d.state.length;
         let scale = d3.scaleLinear().domain([0, 1]).range([0, 1]);
         return `rgba(89, 91, 101, ${scale(av)})`;
-    }).attr('stroke-width', 0.5).attr('stroke', `rgba(89, 91, 101, .5)`);
+    }).attr('stroke-width', 0.5).attr('stroke', `rgba(200, 203, 219, .9)`);
+
+    stateRects.on('mouseover', (d, i, n)=> {
+  
+        let sum = d3.sum(d.state.map(m=> m.realVal))
+        let av = sum / d.state.length;
+        
+        let tool = d3.select('#tooltip');
+        tool.transition()
+            .duration(200)
+            .style("opacity", .9);
+        
+        let f = d3.format(".3f");
+          
+        tool.html(`${d.state[0].state} : ${f(av)}`)
+            .style("left", (d3.event.pageX - 40) + "px")
+            .style("top", (d3.event.pageY - 28) + "px");
+        tool.style('height', 'auto');
+        
+    })
     
     //CONTIN PREDICTED
     let continDist = branchGroup.filter(f=> f.type === 'continuous');
@@ -391,68 +410,11 @@ export function renderDistibutions(pathData, mainDiv, scales){
         }
     }).attr('fill', '#004573');
 
-    // let discreteDist = branchGroup.filter(f=> f.type === 'discrete');
-    // let discreteLine = discreteDist.append('line').attr('x0', 2).attr('x1', 2).attr('y0', 0).attr('y1', height).attr('stroke', 'gray').attr('stroke-width', 0.5);
-    // let hoverRect = discreteDist.append('rect').attr('height', height).attr('width', 10).attr('opacity', 0);
-    // discreteDist.on('mouseover', (d, i, n)=> {
-    //     let y = d3.scaleLinear().domain([1, 0]).range([0, height]);
-    //     d3.select(n[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(3));
-    //     let selected = pointGroups.filter(f=> f.eMove >= d.range[0] && f.eMove < d.range[1]).classed('selected', true);
-    //     let treeNode  = d3.select('#sidebar').selectAll('.node');
-      
-    //     treeNode.filter(node=> node.data.combEdge >= d.range[0] && node.data.combEdge < d.range[1]).classed('selected-branch', true);
-
-    // }).on('mouseout', (d, i, n)=> {
-    //     d3.select(n[i]).select('.y-axis').remove();
-    //     d3.selectAll(".branch-points.selected").classed('selected', false);
-    //     d3.selectAll('.selected-branch').classed('selected-branch', false);
-    // })
-
-    // let discreteBinWrap = predictedWrap.filter(f=> f.type === 'discrete');
-    // let stateGroups = discreteBinWrap.selectAll('.path-wrapper').selectAll('g.state').data(d=> d.states).join('g').classed('state', true);
-    // discreteBinWrap.append('line').attr('x1', 100).attr('x2', 900).attr('y1', 48).attr('y2', 48).attr('stroke-width', 0.3).attr('stroke', 'black')
-    // stateGroups.append('path').attr('d', (p, i)=> {
-    //     var lineGenD = d3.area()
-    //     .curve(d3.curveCardinal)
-    //     .x((d, i)=> {
-    //         let y = d3.scaleLinear().domain([0, 9]).range([0, predictedWidth + 100]);
-    //         return y(i); 
-    //     })
-    //     .y0(d=> {
-    //         let x = d3.scaleLinear().domain([0, 1]).range([80, 0]).clamp(true);
-    //         return x(d.stDown);
-    //     })
-    //     .y1(d=> {
-    //         let x = d3.scaleLinear().domain([0, 1]).range([80, 0]).clamp(true);
-    //         return x(d.stUp); 
-    //     });
-    //     return lineGenD(p);
-
-    // }).attr('transform', 'translate(100, 10)').attr('fill', (d, i)=> {
-    //     return d[0] ? d[0].color : '#fff';
-    // }).attr('opacity', 0.3);
-
-    // stateGroups.append('path').attr('d', (p, i)=> {
-    //     var lineGen = d3.line()
-    //     .curve(d3.curveCardinal)
-    //     .x((d, i)=> {
-    //         let y = d3.scaleLinear().domain([0, 9]).range([0, predictedWidth + 100]);
-    //         return y(i); 
-    //     })
-    //     .y(d=> {
-    //         let x = d3.scaleLinear().domain([0, 1]).range([80, 0]).clamp(true);
-    //         return x(d.average); 
-    //     });
-    //     return lineGen(p);
-
-    // }).attr('transform', 'translate(100, 10)').attr('fill', 'none').attr('stroke', (d, i)=> {
-    //     return d[0] ? d[0].color : '#fff';
-    // });
-
     ////OBSERVED CONTIUOUS/////
 
     let observedWrap = binnedWrap.append('g').classed('observed', true);
-    observedWrap.attr('transform', 'translate('+ (predictedWidth + 150) +', 0)')
+    observedWrap.attr('transform', (d, i, n)=> {
+        return 'translate('+ (predictedWidth + 150) +', 0)'})
 
     let contOb = observedWrap.filter(f=> f.type === 'continuous');
 
