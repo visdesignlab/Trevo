@@ -308,10 +308,8 @@ export function renderDistibutions(pathData, mainDiv, scales){
     }).attr('stroke-width', 0.5).attr('stroke', `rgba(200, 203, 219, .9)`);
 
     stateRects.on('mouseover', (d, i, n)=> {
-  
         let sum = d3.sum(d.state.map(m=> m.realVal))
         let av = sum / d.state.length;
-        
         let tool = d3.select('#tooltip');
         tool.transition()
             .duration(200)
@@ -323,8 +321,22 @@ export function renderDistibutions(pathData, mainDiv, scales){
             .style("left", (d3.event.pageX - 40) + "px")
             .style("top", (d3.event.pageY - 28) + "px");
         tool.style('height', 'auto');
-        
-    })
+    }).on('mouseout', ()=>{
+        let tool = d3.select('#tooltip');
+        tool.transition()
+          .duration(500)
+          .style("opacity", 0);
+    });
+
+    let lastBranch = discreteDist.filter((d, i, n)=>{
+        return i === n.length - 1
+    }).selectAll('g.state-bins').append('text').text((d, i)=> {
+        return d.color.state;
+    });
+
+    lastBranch.attr('y', 10).attr('x', squareDim+2).style('font-size', 10)
+
+    console.log(lastBranch, lastBranch.data())
     
     //CONTIN PREDICTED
     let continDist = branchGroup.filter(f=> f.type === 'continuous');
