@@ -334,6 +334,29 @@ export function renderDistibutions(pathData, mainDiv, scales){
         return d.color.state;
     });
 
+    discreteDist.each((d, i, node)=>{
+        let maxBin = 0;
+        let maxState = null;
+        d.bins.map(m=> {
+
+            if(d3.sum(m.state.flatMap(s=> s.realVal)) > maxBin){
+                maxBin = d3.sum(m.state.flatMap(s=> s.realVal));
+                maxState = m.color.state;
+            }
+        });
+  
+        d3.select(node[i]).selectAll('g.state-bins')
+            .filter((f, j, n)=>{
+                return f.color.state === maxState;
+            }).select('rect').attr('fill', (c)=> {
+                return c.color.color;
+            }).attr('opacity', (c)=>{
+                console.log(c)
+                let sum = d3.sum(c.state.flatMap(s=> s.realVal));
+                return sum/c.state.length;
+            });
+    })
+
     lastBranch.attr('y', 10).attr('x', squareDim+4).style('font-size', 10)
     
     //CONTIN PREDICTED
