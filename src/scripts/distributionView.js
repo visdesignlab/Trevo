@@ -334,7 +334,7 @@ export function renderDistibutions(pathData, mainDiv, scales){
         return d.color.state;
     });
 
-    lastBranch.attr('y', 10).attr('x', squareDim+2).style('font-size', 10)
+    lastBranch.attr('y', 10).attr('x', squareDim+4).style('font-size', 10)
 
     console.log(lastBranch, lastBranch.data())
     
