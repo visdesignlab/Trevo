@@ -298,9 +298,11 @@ export function renderDistibutions(pathData, mainDiv, scales){
     let stateBinsPredicted = discreteDist.selectAll('g.state-bins')
         .data(d=> d.bins).join('g')
         .classed('state-bins', true);
-        
-    stateBinsPredicted.attr('transform', (d, i)=> `translate(0, ${3.5+(i*(squareDim+2))})`)
-    let stateRects = stateBinsPredicted.append('rect').attr('height', squareDim).attr('width', squareDim);
+
+    stateBinsPredicted.attr('transform', (d, i)=> `translate(0, ${3.5+(i*(squareDim+2))})`);
+
+    stateBinsPredicted.append('rect').attr('height', squareDim).attr('width', squareDim).attr('fill', '#fff').attr('opacity', 1)
+    let stateRects = stateBinsPredicted.append('rect').classed('state-rect', true).attr('height', squareDim).attr('width', squareDim);
     stateRects.attr('fill', (d, i, n)=> {
         let sum = d3.sum(d.state.map(m=> m.realVal))
         let av = sum / d.state.length;
@@ -336,11 +338,9 @@ export function renderDistibutions(pathData, mainDiv, scales){
     });
 
     discreteDist.each((d, i, node)=>{
-
         let maxBin = 0;
         let maxState = null;
         d.bins.map(m=> {
-
             if(d3.sum(m.state.flatMap(s=> s.realVal)) > maxBin){
                 maxBin = d3.sum(m.state.flatMap(s=> s.realVal));
                 maxState = m.color.state;
@@ -352,7 +352,7 @@ export function renderDistibutions(pathData, mainDiv, scales){
                 return f.color.state === maxState;
             }).classed('win', true);
 
-        winStates.select('rect').attr('fill', (c)=> {
+        winStates.select('rect.state-rect').attr('fill', (c)=> {
                 return c.color.color;
             }).attr('opacity', (c)=>{
                 let sum = d3.sum(c.state.flatMap(s=> s.realVal));
@@ -364,22 +364,22 @@ export function renderDistibutions(pathData, mainDiv, scales){
     let disWrap = predictedWrap.filter(f=> f.type === 'discrete')
     let pathKeeper = []
     disWrap.each((d, i, node)=> {
-        console.log('distwrap',d, i)
         let winPosArray = [];
-       
         d3.select(node[i]).selectAll('.win').each((r, j, n)=>{
             winPosArray.push([n[j].getBoundingClientRect().x,(n[j].getBoundingClientRect().y-5)])
+            winPosArray.push([n[j].getBoundingClientRect().x + 15,(n[j].getBoundingClientRect().y-5)])
         });
         pathKeeper.push([...winPosArray]);
         let lineThing = d3.line();
         winPosArray[winPosArray.length -1][1] = winPosArray[winPosArray.length -1][1] + 15;
+        winPosArray[winPosArray.length -2][1] = winPosArray[winPosArray.length -2][1] + 15;
         d.win = winPosArray;
     });
 
     disWrap.each((e, i, n)=> {
         let lineThing = d3.line();
         d3.select(n[i]).select('.win-line').append('path').attr('d', (d)=> lineThing(d.win))
-        .attr('transform', 'translate(-25, -'+n[i].getBoundingClientRect().y+')')
+        .attr('transform', 'translate(-35, -'+n[i].getBoundingClientRect().y+')')
         .attr('fill', 'none')
         .attr('stroke', 'gray')
         .attr('stoke-width', 1)
