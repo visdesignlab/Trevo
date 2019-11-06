@@ -26,14 +26,37 @@ export const colorKeeper = [
 ]
 
 export const attributeList = [
-    'PCIII_padwidth_vs_tail',
-    'PCII_head',
-    'PCIV_lamella_num',
-    'PCI_limbs',
-    'SVL',
-    'attitude',
-    'awesomeness',
-    'hostility'
+    // 'PCIII_padwidth_vs_tail',
+    // 'PCII_head',
+    // 'PCIV_lamella_num',
+    // 'PCI_limbs',
+    {field: 'Body_height', type: 'continuous'},
+    {field:'Body_width', type:'continuous'},
+    {field:'Carpus', type:'continuous'},
+    {field:'Clade', type:'discrete'},
+    {field:'Close', type: 'continuous'},
+    {field:'Femur', type: 'continuous'},
+    {field:'Forelimb', type: 'continuous'},
+    {field:'Group', type: 'discrete'},
+    {field:'Head_length', type: 'continuous'},
+    {field:'Head_width', type: 'continuous'},
+    {field:'Head_depth', type: 'continuous'},
+    {field:'Hind_limb', type: 'continuous'},
+    {field:'Humerus', type: 'continuous'},
+    {field:'island', type:'discrete'},
+    {field:'Interlimb', type: 'continuous'},
+    {field:'Longest_toe', type: 'continuous'},
+    {field:'Ltoe', type: 'continuous'},
+    {field:'Lower_jaw', type: 'continuous'},
+    {field:'Nmorpho', type: 'continuous'},
+    {field:'Open', type: 'continuous'},
+    {field:'Outlever', type: 'continuous'},
+    {field:'Radius', type: 'continuous'},
+    {field:'Snout', type: 'continuous'},
+    {field:'SVL', type: 'continuous'},
+    {field:'Tail', type: 'continuous'},
+    {field:'Tarsus', type: 'continuous'},
+    {field:'Tibia', type: 'continuous'},
 ];
 
 let wrap = d3.select('#wrapper');
@@ -48,91 +71,245 @@ let sidebar = wrap.select('#sidebar');
 let toolbarDiv = wrap.select('#toolbar');
 //WF produce rich tree containing the full ASR matrix tree_attributed
 //loadData(d3.json, './public/data/body-length-res.json', '').then(d=> console.log('new data!', d))
-loadData(d3.json, './public/data/anolis_Losis_asr_tree.json', '').then(data=> {
-    console.log('data',data)
-    let pathArray = pullPath([], [data], [], [], 0);
-    let pathTest = pathArray.map(m=> d3.sum(m.map(e=> e.edgeLength)))
-    console.log('NEW NEW',pathTest, pathArray);
-});
-loadData(d3.json, './public/data/asr-test.json', '').then(data=> {
-    let pathArray = pullPath([], [data], [], [], 0);
+// loadData(d3.json, './public/data/anolis_Losis_asr_tree.json', '').then(data=> {
+//     let pathArray = pullPath([], [data], [], [], 0);
+//     let pathTest = pathArray.map(m=> d3.sum(m.map(e=> e.edge_data.weight)))
+//     //console.log('NEW NEW',pathArray);
+// });
+// loadData(d3.json, './public/data/asr-test.json', '').then(data=> {
+//     let pathArray = pullPath([], [data], [], [], 0);
     
-    let newEdges = pathArray.map(m=> {
-        let branchStep = 1 / (m.length-1);
-        let copy = m.map((n, i)=> {
-            n.edgeLength = i*branchStep;
-            return n;
-        });
-        return copy;
-    });
-    let pathTest = newEdges.map(m=> d3.sum(m.map(e=> e.edgeLength)));
-    console.log('NEW NEW ASR', pathTest, Object.keys(newEdges[0][0].node_data));
-    newEdges[0][0]
-    let keys = Object.keys(newEdges[0][0].node_data);
-    keys.map(k=> console.log(k.includes('attitude')))
-});
+//     let newEdges = pathArray.map(m=> {
+//         let branchStep = 1 / (m.length-1);
+//         let copy = m.map((n, i)=> {
+//             n.edgeLength = i*branchStep;
+//             return n;
+//         });
+//         return copy;
+//     });
+//     let pathTest = newEdges.map(m=> d3.sum(m.map(e=> e.edgeLength)));
+//     console.log('NEW NEW ASR', newEdges[0][0].node_data, Object.keys(newEdges[0][0].node_data));
+//     newEdges[0][0]
+//     let keys = Object.keys(newEdges[0][0].node_data);
+//     keys.map(k=> console.log(k.includes('attitude')))
+// });
 
-loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges => {
+// loadData(d3.json, './public/data/anolis-edges.json', 'edge').then(async edges => {
+   
+//     //helper function to create array of unique elements
+//     Array.prototype.unique = function() {
+//         return this.filter(function (value, index, self) { 
+//             return self.indexOf(value) === index;
+//         });
+//     }
 
+//     let edgeLen = await loadData(d3.json, './public/data/anolis-edge-length.json', 'edge');
+
+//     //Mapping data together/////
+//     let edgeSource = edges.rows.map(d=> d.V1);
+//     let leaves = edges.rows.filter(f=> edgeSource.indexOf(f.V2) == -1 );
+//     let leafChar = await loadData(d3.json, './public/data/anolisLeafChar.json', '');
+//     let leafChar2 = await loadData(d3.csv, './public/data/anolisDataNew.csv', '');
+//     let labels = await loadData(d3.json, './public/data/anolis-labels.json', '');
+
+// // console.log('new attribute data',leafChar, leafChar2)
+//   //  console.log(Object.entries(leafChar2).filter(en=> en[0] != 'columns' && en[0] != 'type'));
+//     let rows = Object.entries(leafChar2).filter(en=> en[0] != 'columns' && en[0] != 'type');
+    
+//  //   let leafChar = {'rows': rows.map(m=> m[1]), 'type': leafChar2.type, 'fields': leafChar2.columns};
+
+//     ///MAKE A ESTIMATED SCALES THING
+//     let calculatedAtt = {
+//         'awesomeness' : await loadData(d3.json, './public/data/anolis-awesomeness-res.json', 'continuous'),
+//         'island' : await loadData(d3.json, './public/data/anolis-island-res.json', 'discrete'),
+//         'SVL' : await loadData(d3.json, './public/data/anolis-svl-res.json', 'continuous'),
+//         'ecomorph': await loadData(d3.json, './public/data/anolis-ecomorph-res.json', 'discrete'),
+//         'PCIII_padwidth_vs_tail': await loadData(d3.json, './public/data/padwidth-vs-tail-res.json', 'continuous'),
+//     }
+
+//     ////CALCULATE THE SCALES FOR EACH ATTRIBUTE////////
+//     let calculatedScales = calculateScales(calculatedAtt, colorKeeper);
+
+//     console.log('calculated sclaes',calculatedScales);
+
+//     ///MATCH LEAF CHARACTERS AND LABELS TO LEAVES///
+//     let matchedLeaves = matchLeaves(labels, leaves, leafChar, calculatedScales);
+
+//     //MATCH CALC ATTRIBUTES TO EDGES///
+//     let matchedEdges = matchEdges(edges, edgeLen, calculatedAtt, calculatedScales);
+
+//     console.log(matchedLeaves, matchedEdges)
+
+//     ///CALCULATES PATHS FROM THE DATA////
+//     let paths = allPaths(matchedEdges, matchedLeaves, "V1", "V2");
+
+//     let normedPaths = normPaths(paths, calculatedAtt, calculatedScales);
+//     dataMaster.push(normedPaths);
+
+//     speciesTest.push(normedPaths.flatMap(m=> m.filter(f=> f.leaf === true)).map(l=> l.label));
+   
+//     toolbarControl(toolbarDiv, normedPaths, main, calculatedScales, 'paths');
+    
+//     let filterDiv = wrap.select('#filter-tab').classed('hidden', true);
+
+//     ////////TREE RENDER IN SIDEBAR////////
+//     nestedData.push(buildTreeStructure(paths, edges));
+//     renderTreeButtons(normedPaths, calculatedScales, sidebar, false);
+//     let tree = renderTree(sidebar, null, false);
+    
+//     /// LOWER ATTRIBUTE VISUALIZATION ///
+//     initialViewLoad(calculatedScales, 'edgeLength');
+// });
+
+loadData(d3.json, './public/data/new-anolis-edges.json', 'edge').then(async edges => {
+   console.log(edges)
     //helper function to create array of unique elements
     Array.prototype.unique = function() {
         return this.filter(function (value, index, self) { 
             return self.indexOf(value) === index;
         });
     }
+    
+    let edgeLen = await loadData(d3.json, './public/data/new-anolis-edge-length.json', 'edge');
 
-    let edgeLen = await loadData(d3.json, './public/data/anolis-edge-length.json', 'edge');
+    let char = await loadData(d3.json, './public/data/new-anolis-res.json', '');
+
+    console.log('char',char)
+   
+    edges.rows = edges.rows.filter(f=> f.From != "").map((edge, i)=> {
+        edge.edgeLength = edgeLen.rows[i].x;
+        edge.att = char.rows.filter(f=> f.nodeLabels === edge.To)[0];
+        return edge;
+    });  
 
     //Mapping data together/////
-    let edgeSource = edges.rows.map(d=> d.V1);
-    let leaves = edges.rows.filter(f=> edgeSource.indexOf(f.V2) == -1 );
-    let leafChar = await loadData(d3.json, './public/data/anolisLeafChar.json', '');
-    let leafChar2 = await loadData(d3.csv, './public/data/anolisDataNew.csv', '');
-    let labels = await loadData(d3.json, './public/data/anolis-labels.json', '');
-
-// console.log('new attribute data',leafChar, leafChar2)
-  //  console.log(Object.entries(leafChar2).filter(en=> en[0] != 'columns' && en[0] != 'type'));
-    let rows = Object.entries(leafChar2).filter(en=> en[0] != 'columns' && en[0] != 'type');
-    
- //   let leafChar = {'rows': rows.map(m=> m[1]), 'type': leafChar2.type, 'fields': leafChar2.columns};
-
-    ///MAKE A ESTIMATED SCALES THING
-    let calculatedAtt = {
-        'awesomeness' : await loadData(d3.json, './public/data/anolis-awesomeness-res.json', 'continuous'),
-        'island' : await loadData(d3.json, './public/data/anolis-island-res.json', 'discrete'),
-        'SVL' : await loadData(d3.json, './public/data/anolis-svl-res.json', 'continuous'),
-        'ecomorph': await loadData(d3.json, './public/data/anolis-ecomorph-res.json', 'discrete'),
-        'PCIII_padwidth_vs_tail': await loadData(d3.json, './public/data/padwidth-vs-tail-res.json', 'continuous'),
-    }
-
-    ////CALCULATE THE SCALES FOR EACH ATTRIBUTE////////
-    let calculatedScales = calculateScales(calculatedAtt, colorKeeper);
-
-    ///MATCH LEAF CHARACTERS AND LABELS TO LEAVES///
-    let matchedLeaves = matchLeaves(labels, leaves, leafChar, calculatedScales);
-
-    //MATCH CALC ATTRIBUTES TO EDGES///
-    let matchedEdges = matchEdges(edges, edgeLen, calculatedAtt, calculatedScales);
-
-    ///CALCULATES PATHS FROM THE DATA////
-    let paths = allPaths(matchedEdges, matchedLeaves, "V1", "V2");
-
-    let normedPaths = normPaths(paths, calculatedAtt, calculatedScales);
-    dataMaster.push(normedPaths);
-
-    speciesTest.push(normedPaths.flatMap(m=> m.filter(f=> f.leaf === true)).map(l=> l.label));
+    let edgeSource = edges.rows.map(d=> d.From);
    
-    toolbarControl(toolbarDiv, normedPaths, main, calculatedScales, 'paths');
-    
-    let filterDiv = wrap.select('#filter-tab').classed('hidden', true);
+    let leaves = edges.rows.filter(f=> edgeSource.indexOf(f.To) == -1 );
+    let leafChar = await loadData(d3.csv, './public/data/new-anolis-leaf-char.csv', '');
+    console.log(leafChar)
+    //let char = await loadData(d3.json, './public/data/new-anolis-res.json', '');
+     console.log(edges)
+//     let leafChar2 = await loadData(d3.csv, './public/data/anolisDataNew.csv', '');
+//     let labels = await loadData(d3.json, './public/data/anolis-labels.json', '');
 
-    ////////TREE RENDER IN SIDEBAR////////
-    nestedData.push(buildTreeStructure(paths, edges));
-    renderTreeButtons(normedPaths, calculatedScales, sidebar, false);
-    let tree = renderTree(sidebar, null, false);
+// // console.log('new attribute data',leafChar, leafChar2)
+//   //  console.log(Object.entries(leafChar2).filter(en=> en[0] != 'columns' && en[0] != 'type'));
+//     let rows = Object.entries(leafChar2).filter(en=> en[0] != 'columns' && en[0] != 'type');
     
-    /// LOWER ATTRIBUTE VISUALIZATION ///
-    initialViewLoad(calculatedScales, 'edgeLength');
+//  //   let leafChar = {'rows': rows.map(m=> m[1]), 'type': leafChar2.type, 'fields': leafChar2.columns};
+let calculatedAtt = char.rows.map((row, i)=> {
+    let newRow = {};
+    attributeList.forEach((att)=>{
+        newRow[att.field] = {};
+        newRow[att.field].field = att.field;
+        newRow[att.field].type = att.type;
+        let values = {}
+        d3.entries(row).filter(f=> f.key.includes(att.field)).map(m=> {
+            if(att.type === 'continuous'){
+                if(m.key.includes('upperCI')){
+                    values.upperCI95 = m.value;
+                }else if(m.key.includes('lowerCI')){
+                    values.lowerCI95 = m.value;
+                }else{
+                    values.realVal = m.value;
+                }
+            }else{
+                values[m.key] = m.value;   
+            }
+        });
+        newRow[att.field].values = values;
+    });
+    newRow.node = row.nodeLabels;
+    return newRow;
+});
+
+console.log('CALCULATED',calculatedAtt)
+calculatedNewScales(calculatedAtt, attributeList.map(m=> m.field))
+
+
+function calculatedNewScales(attributes, keyList){
+
+        return keyList.map((d, i)=> {
+
+            let attData = attributes.flatMap(f=> f[d]);
+           
+            if(attData[0].type == 'continuous'){
+                
+                let max = d3.max(attData.flatMap(m=> m.values.upperCI95));
+                let min = d3.min(attData.flatMap(m=> m.values.lowerCI95));
+                let mean = d3.mean(attData.flatMap(m=> m.values.realVal));
+                
+                return {
+                    'field': d, 
+                    'type':'continuous',
+                    'max': max, 
+                    'min':  min,
+                    'yScale': d3.scaleLinear().range([0, 43]).domain([min, max]).clamp(true),
+                    'satScale': d3.scaleLinear().range([0, .9]).domain([min, max]),
+                    'colorScale': d3.scaleLinear().range([colorKeeper[i][0], '#f23929']).domain([min, max]),
+                    'catColor': colorKeeper[i][0],
+                };
+            }else{
+                console.log('indiscreeeet', d3.keys(attData[0].values))
+                
+                let scaleCat = d3.keys(attData[0].values);
+                return { 
+                    'field': d.field,
+                    'type':'discrete',
+                    'stateColors': scaleCat.map((sc, i)=> {
+                        return {'state': sc, 'color': colorKeeper[i][0]};
+                    }),
+                    'catColor': colorKeeper[i][0],
+                    'scales': scaleCat.map(sc=> {
+                    let scaleName = sc;
+                   
+                    let max = 1;
+                    let min = 0;
+                    return {
+                        'field': d, 
+                        'scaleName': scaleName,
+                        'max': max, 
+                        'min':  min,
+                        'yScale': d3.scaleLinear().range([45, 0]).domain([min, max]),
+                    };
+                    
+                }) };
+            }
+        });
+}
+
+console.log(calculatedScales)
+
+
+//     ////CALCULATE THE SCALES FOR EACH ATTRIBUTE////////
+     let calculatedScales = calculateScales(calculatedAtt, colorKeeper);
+
+//     ///MATCH LEAF CHARACTERS AND LABELS TO LEAVES///
+//     let matchedLeaves = matchLeaves(labels, leaves, leafChar, calculatedScales);
+
+//     //MATCH CALC ATTRIBUTES TO EDGES///
+     let matchedEdges = matchEdges(edges, edgeLen, calculatedAtt, calculatedScales);
+
+//     ///CALCULATES PATHS FROM THE DATA////
+//     let paths = allPaths(matchedEdges, matchedLeaves, "V1", "V2");
+
+//     let normedPaths = normPaths(paths, calculatedAtt, calculatedScales);
+//     dataMaster.push(normedPaths);
+
+//     speciesTest.push(normedPaths.flatMap(m=> m.filter(f=> f.leaf === true)).map(l=> l.label));
+   
+//     toolbarControl(toolbarDiv, normedPaths, main, calculatedScales, 'paths');
+    
+//     let filterDiv = wrap.select('#filter-tab').classed('hidden', true);
+
+//     ////////TREE RENDER IN SIDEBAR////////
+//     nestedData.push(buildTreeStructure(paths, edges));
+//     renderTreeButtons(normedPaths, calculatedScales, sidebar, false);
+//     let tree = renderTree(sidebar, null, false);
+    
+//     /// LOWER ATTRIBUTE VISUALIZATION ///
+//     initialViewLoad(calculatedScales, 'edgeLength');
 });
 
 let tooltip = wrap.append("div")
