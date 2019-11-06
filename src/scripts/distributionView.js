@@ -247,7 +247,8 @@ export function renderDistibutions(pathData, mainDiv, scales){
     .attr('transform', 'translate(23, '+(keys.length * (height+ 15)/2)+') rotate(-90)');
 
     let predictedWrap = binnedWrap.append('g').classed('predicted', true);
-    predictedWrap.attr('transform', 'translate(25, 0)')
+    predictedWrap.attr('transform', 'translate(25, 0)');
+    predictedWrap.filter(f=> f.type === 'discrete').append('g').classed('win-line', true);
 
     //ROOT RENDERING
     let root = predictedWrap.selectAll('g.root').data(d=> {
@@ -335,6 +336,8 @@ export function renderDistibutions(pathData, mainDiv, scales){
     });
 
     discreteDist.each((d, i, node)=>{
+
+        console.log(i, d)
         let maxBin = 0;
         let maxState = null;
         d.bins.map(m=> {
@@ -345,19 +348,45 @@ export function renderDistibutions(pathData, mainDiv, scales){
             }
         });
   
-        d3.select(node[i]).selectAll('g.state-bins')
+        let winStates = d3.select(node[i]).selectAll('g.state-bins')
             .filter((f, j, n)=>{
                 return f.color.state === maxState;
-            }).select('rect').attr('fill', (c)=> {
+            });
+
+        winStates.select('rect').attr('fill', (c)=> {
                 return c.color.color;
             }).attr('opacity', (c)=>{
-                console.log(c)
                 let sum = d3.sum(c.state.flatMap(s=> s.realVal));
                 return sum/c.state.length;
-            });
-    })
+            }).classed('win', true);
 
-    lastBranch.attr('y', 10).attr('x', squareDim+4).style('font-size', 10)
+    });
+
+        
+    
+    let disWrap = predictedWrap.filter(f=> f.type === 'discrete')
+    disWrap.each((d, i, node)=> {
+        let winPosArray = [];
+
+
+       
+        d3.select(node[i]).selectAll('.win').each((r, j, n)=>{
+            winPosArray.push([n[j].getBoundingClientRect().x,n[j].getBoundingClientRect().y])
+        });
+
+        console.log(winPosArray)
+        let lineThing = d3.line();
+        var pathString = lineThing(winPosArray);
+        let line = d3.select(node[i]).select('.win-line')
+            .append('path').attr('d', pathString)
+
+        line.attr('stroke', 'gray').attr('stroke-width', 1).attr('fill', 'none')
+        d.winPosArray = winPosArray;
+    });
+
+    console.log(disWrap.data())
+
+    lastBranch.attr('y', 10).attr('x', squareDim+4).style('font-size', 10);
     
     //CONTIN PREDICTED
     let continDist = branchGroup.filter(f=> f.type === 'continuous');
