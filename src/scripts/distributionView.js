@@ -381,7 +381,7 @@ export function renderDistibutions(pathData, mainDiv, scales){
         d3.select(n[i]).select('.win-line').append('path').attr('d', (d)=> lineThing(d.win))
         .attr('transform', 'translate(-35, -'+n[i].getBoundingClientRect().y+')')
         .attr('fill', 'none')
-        .attr('stroke', 'gray')
+        .attr('stroke', `rgba(200, 203, 219, .9)`)
         .attr('stoke-width', 1)
     })
 
