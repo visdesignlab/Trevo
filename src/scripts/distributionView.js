@@ -337,7 +337,6 @@ export function renderDistibutions(pathData, mainDiv, scales){
 
     discreteDist.each((d, i, node)=>{
 
-        console.log(i, d)
         let maxBin = 0;
         let maxState = null;
         d.bins.map(m=> {
@@ -351,40 +350,40 @@ export function renderDistibutions(pathData, mainDiv, scales){
         let winStates = d3.select(node[i]).selectAll('g.state-bins')
             .filter((f, j, n)=>{
                 return f.color.state === maxState;
-            });
+            }).classed('win', true);
 
         winStates.select('rect').attr('fill', (c)=> {
                 return c.color.color;
             }).attr('opacity', (c)=>{
                 let sum = d3.sum(c.state.flatMap(s=> s.realVal));
                 return sum/c.state.length;
-            }).classed('win', true);
+            })
 
     });
 
-        
-    
     let disWrap = predictedWrap.filter(f=> f.type === 'discrete')
+    let pathKeeper = []
     disWrap.each((d, i, node)=> {
+        console.log('distwrap',d, i)
         let winPosArray = [];
-
-
        
         d3.select(node[i]).selectAll('.win').each((r, j, n)=>{
-            winPosArray.push([n[j].getBoundingClientRect().x,n[j].getBoundingClientRect().y])
+            winPosArray.push([n[j].getBoundingClientRect().x,(n[j].getBoundingClientRect().y-5)])
         });
-
-        console.log(winPosArray)
+        pathKeeper.push([...winPosArray]);
         let lineThing = d3.line();
-        var pathString = lineThing(winPosArray);
-        let line = d3.select(node[i]).select('.win-line')
-            .append('path').attr('d', pathString)
-
-        line.attr('stroke', 'gray').attr('stroke-width', 1).attr('fill', 'none')
-        d.winPosArray = winPosArray;
+        winPosArray[winPosArray.length -1][1] = winPosArray[winPosArray.length -1][1] + 15;
+        d.win = winPosArray;
     });
 
-    console.log(disWrap.data())
+    disWrap.each((e, i, n)=> {
+        let lineThing = d3.line();
+        d3.select(n[i]).select('.win-line').append('path').attr('d', (d)=> lineThing(d.win))
+        .attr('transform', 'translate(-25, -'+n[i].getBoundingClientRect().y+')')
+        .attr('fill', 'none')
+        .attr('stroke', 'gray')
+        .attr('stoke-width', 1)
+    })
 
     lastBranch.attr('y', 10).attr('x', squareDim+4).style('font-size', 10);
     
