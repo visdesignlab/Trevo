@@ -1,4 +1,4 @@
-import { pairPaths } from "./dataFormat";
+import { pairPaths, maxTimeKeeper } from "./dataFormat";
 import { dropDown } from "./buttonComponents";
 import * as d3 from "d3";
 import * as slide from 'd3-simple-slider';
@@ -49,12 +49,10 @@ export function rankingControl(data){
   
 }
 
-export function generatePairs(data, field){
+export function generatePairs(data){
 
-  console.log('data',data)
-
-        let pairs = pairPaths(data, field);
-        console.log(pairs)
+        let pairs = pairPaths(data);
+     
         let weights = [1, 1, 1];
 
         let attKeys = d3.entries(pairs[0].p1[0].attributes)
@@ -67,7 +65,7 @@ export function generatePairs(data, field){
           .selectAll('a').empty() ? dropDown(d3.select('#toolbar'), attKeys, attKeys[0].field, 'attr-drop') : d3.select('.attr-drop.dropdown').selectAll('a');
 
         drop.on('click', (d, i, n)=> {
-            updateRanking(pairPaths(data, d.field), d.field);
+            updateRanking(pairPaths(data), d.field, weights);
             renderTree(d3.select('#sidebar'), null, true, d.field);
             d3.select('.attr-drop.dropdown').select('button').text(d.field);
         });
@@ -76,7 +74,7 @@ export function generatePairs(data, field){
 }
 
 export function updateRanking(pairs, field, weights){
-    
+    console.log(pairs, field, weights)
     let deltaMax = d3.max([...pairs].map(m=> m.deltas.filter(f=> f.key === field)[0]).map(m=> m.value));
     let closeMax = d3.max([...pairs].map(m=> m.closeness.filter(f=> f.key === field)[0]).map(m=> m.value));
     let distMax = d3.max([...pairs].map(d=> d.distance))
@@ -104,7 +102,7 @@ function drawSorted(pairs, field){
    
     let width = 600;
     let height = 100;
-    let xScale = d3.scaleLinear().domain([0, 1]).range([0, width]);
+    let xScale = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, width]);
 
     d3.select('#main').selectAll('*').remove()
     let svg = d3.select('#main').append('svg');
@@ -115,10 +113,10 @@ function drawSorted(pairs, field){
     pairWraps.attr('transform', (d, i)=> `translate(50,${i*150})`);
     pairWraps.append('rect')
         .attr('width', (d, i)=> {
-            return width - xScale(d.common.edgeMove);
+            return width - xScale(d.common.combLength);
         })
         .attr('height', height)
-        .attr('x', d=> xScale(d.common.edgeMove))
+        .attr('x', d=> xScale(d.common.combLength))
         .attr('stroke-width', 1).attr('stroke', 'black')
         .attr('fill', '#fff');
 
@@ -151,13 +149,13 @@ function drawSorted(pairs, field){
 
     var lineGen = d3.line()
     .x(d=> {
-        let x = d3.scaleLinear().domain([0, 1]).range([0, width]);
-       let distance = x(d.edgeMove);
+        let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, width]);
+       let distance = x(d.combLength);
         return distance; })
     .y(d=> {
-        let y = d.attributes[field].yScale;
+        let y = d.attributes[field].scales.yScale;
         y.range([height, 0]);
-        return y(d.attributes[field].realVal);
+        return y(d.attributes[field].values.realVal);
     });
 
     let innerPaths = pairGroup.append('path')
@@ -167,21 +165,22 @@ function drawSorted(pairs, field){
    // .style('stroke', 'rgb(165, 185, 198)');
 
     let branches = pairGroup.selectAll('g.branch').data(d=> d).join('g').classed('branch', true);
-    branches.attr('transform', (d, i)=> `translate(${xScale(d.edgeMove)}, 0)`);
+    branches.attr('transform', (d, i)=> `translate(${xScale(d.combLength)}, 0)`);
     branches.filter(f=> f.leaf != true).append('rect').attr('width', 10).attr('height', (d)=> {
-        let y = d.attributes[field].yScale;
-        return y(d.attributes[field].lowerCI95) - y(d.attributes[field].upperCI95)
+        let y = d.attributes[field].scales.yScale;
+        return y(d.attributes[field].values.lowerCI95) - y(d.attributes[field].values.upperCI95)
     }).attr('fill', 'rgb(165, 185, 198, .5)').attr('y', (d, i)=> {
-        let y = d.attributes[field].yScale;
-        return y(d.attributes[field].upperCI95);
+        let y = d.attributes[field].scales.yScale;
+        return y(d.attributes[field].values.upperCI95);
     });
 
     branches.append('rect').attr('width', 10).attr('height', 4).attr('y', (d, i)=> {
-        return d.attributes[field].yScale(d.attributes[field].realVal) - 2;
+        return d.attributes[field].scales.yScale(d.attributes[field].values.realVal) - 2;
     });
 
     pairWraps.append('rect').attr('width', (d, i)=> {
-        return xScale(d.common.edgeMove)})
+     
+        return xScale(d.common.combLength)})
         .attr('height', height)
         .attr('fill', '#fff').style('opacity', 0.7);
         let yAxisG = pairWraps.append('g').classed('y-axis', true);
@@ -193,14 +192,14 @@ function drawSorted(pairs, field){
         //let species = [...d.p1.map(n=> n.node)].concat(d.p2.map(n=> n.node));
         let species1 = d.p1.map(n=> n.node);
         let species2 = d.p2.map(n=> n.node);
-        let labels = [...d.p1.filter(n=> n.leaf === true).map(m=> m.label)].concat(d.p2.filter(n=> n.leaf === true).map(m=> m.label));
+        let labels = [...d.p1.filter(n=> n.leaf === true).map(m=> m.node)].concat(d.p2.filter(n=> n.leaf === true).map(m=> m.node));
         let neighbors = labels.flatMap(m=> {
             let start = speciesTest[0].indexOf(m);
             let ne = speciesTest[0].filter((f, j)=> (j < (+start + 4)) && (j > (+start - 4)));
             return ne;
         });
         
-        let neighNodes = dataMaster[0].filter(f=> neighbors.indexOf(f[f.length -1].label) > -1).flatMap(m=> m.map(f=> f.node))
+        let neighNodes = dataMaster[0].filter(f=> neighbors.indexOf(f[f.length -1].node) > -1).flatMap(m=> m.map(f=> f.node))
        
         let treeNode  = d3.select('#sidebar').selectAll('.node');
         let treeLinks  = d3.select('#sidebar').selectAll('.link');
@@ -248,7 +247,7 @@ function drawSorted(pairs, field){
     let axisGroup = pairWraps.append('g').classed('y-axis', true);
   
     axisGroup.each((d, i, n)=> {
-        let scale = d.p1[0].attributes[field].yScale;
+        let scale = d.p1[0].attributes[field].scales.yScale;
         d3.select(n[i]).call(d3.axisLeft(scale).ticks(5));
     });
 
@@ -337,7 +336,7 @@ mouseG.append('svg:rect') // append a rect to catch mouse movements on canvas
               else if (pos.x < mouse[0]) beginning = target;
               else break; //position found
             }
-            let y = dat.p1[0].attributes[field].yScale;
+            let y = dat.p1[0].attributes[field].scales.yScale;
           
             d3.select(node[j]).select('text.value')
               .text(y.invert(pos.y).toFixed(2))
@@ -347,7 +346,7 @@ mouseG.append('svg:rect') // append a rect to catch mouse movements on canvas
                 });
 
             d3.select(node[j]).select('text.species')
-                .text(d[d.length-1].label)
+                .text(d[d.length-1].node)
                 .style('font-size', 11)
                 .attr('y', ()=> {
                     return j === 0 ? 19 : -19;

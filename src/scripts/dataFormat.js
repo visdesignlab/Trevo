@@ -90,14 +90,8 @@ function calculateDelta(pair, field){
                         return m;
                     });
 
-    // let attributeKey = field;
-    // let valdiffs = bins.map((b, i)=> {
-    //         return Math.abs(b.one[0].attributes[field].values.realVal - b.two[0].attributes[field].values.realVal);
-    //     });
-
-  
 return attributes;
-    //return d3.max(valdiffs);
+
 }
 
 function calculateCloseness(pair, field){

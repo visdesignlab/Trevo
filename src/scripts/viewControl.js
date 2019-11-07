@@ -24,7 +24,7 @@ export function updateMainView(scales, d){
         document.getElementById("scrunch").disabled = true;
     }else if(d.field === 'Pair View'){
         rankingControl(data);
-        generatePairs(data, 'SVL');
+        generatePairs(data);
     }else{
         console.error('field not found');
     }
