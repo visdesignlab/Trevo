@@ -7,7 +7,7 @@ import { updateMainView, groupedView } from './viewControl';
 import {getNested} from './pathCalc';
 import { dropDown } from './buttonComponents';
 import { updateRanking } from './pairView';
-import { pairPaths } from './dataFormat';
+import { pairPaths, maxTimeKeeper } from './dataFormat';
 import { linkSync } from 'fs';
 
 
@@ -318,7 +318,7 @@ function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, pheno){
     //console.log('length in tree', pheno, d3.select('.attr-drop.dropdown').empty() ? 'nope': d3.select('.attr-drop.dropdown').select('button').text())
 
     let branchCount = findDepth(treenodes, []);
-    let xScale = d3.scaleLinear().domain([0, 1]).range([0, dimensions.width]).clamp(true);
+    let xScale = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, dimensions.width]).clamp(true);
     let yScale = d3.scaleLinear().range([dimensions.height, 0]).domain([0, 1])
 
     if(length){   
@@ -329,8 +329,8 @@ function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, pheno){
     } 
     if(pheno){
         treeSvg.attr('height', 800);
-        xScale.domain(treenodes.data.attributes[pheno].yScale.domain())
-        yScale.domain([0, 1]).range([0, 500])
+        xScale.domain(treenodes.data.attributes[pheno].scales.yScale.domain())
+        yScale.domain([0, maxTimeKeeper[0]]).range([0, 500])
     }
 
 // adds the links between the nodes
@@ -348,8 +348,8 @@ function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, pheno){
            + " " + (xScale(d.parent.data.combEdge)) + "," + yScale(d.position)
            + " " + xScale(d.parent.data.combEdge) + "," + yScale(d.parent.position);
         }else{
-            return "M" + xScale(d.data.attributes[pheno].realVal) + "," + yScale(d.data.combEdge)
-            + " " + xScale(d.parent.data.attributes[pheno].realVal) + "," + yScale(d.parent.data.combEdge);
+            return "M" + xScale(d.data.attributes[pheno].values.realVal) + "," + yScale(d.data.combEdge)
+            + " " + xScale(d.parent.data.attributes[pheno].values.realVal) + "," + yScale(d.parent.data.combEdge);
             /*
             return "M" + d.y + "," + d.x
             + "C" + (d.y + d.parent.y) / 2 + "," + d.x
@@ -364,11 +364,11 @@ function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, pheno){
         g.attr('transform', 'translate(30, 50)');
         //link.attr('transform', 'translate(30, 0)');
 
-        let x = xScale.domain(treenodes.data.attributes[pheno].yScale.domain()).range([0, (dimensions.width+20)]);
+        let x = xScale.domain(treenodes.data.attributes[pheno].scales.yScale.domain()).range([0, (dimensions.width+20)]);
         let xAxis = d3.axisBottom(x);
         g.append('g').classed('pheno-x-axis', true).call(xAxis).attr('transform', 'translate(0, 510)').select('path').attr('stroke-width', 0);
 
-        let y = d3.scaleLinear().domain([0,1]).range([0, dimensions.height -20]);
+        let y = d3.scaleLinear().domain([0,maxTimeKeeper[0]]).range([0, dimensions.height -20]);
         let yAxis = d3.axisLeft(y);
         g.append('g').classed('pheno-y-axis', true).call(yAxis).attr('transform', 'translate(0, 2)').select('path').attr('stroke-width', 0);;
     }
@@ -392,7 +392,7 @@ function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, pheno){
             return "translate(" + xScale(d.data.combEdge) + "," + yScale(d.position) + ")"; 
         }else{
            // return "translate(" + d.y + "," + d.x + ")"; 
-           return "translate(" + (xScale(d.data.attributes[pheno].realVal) - 5) + "," + yScale(d.data.combEdge) + ")"; 
+           return "translate(" + (xScale(d.data.attributes[pheno].values.realVal) - 5) + "," + yScale(d.data.combEdge) + ")"; 
         }
     });
 
