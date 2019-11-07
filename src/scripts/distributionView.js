@@ -218,7 +218,12 @@ export function binGroups(pathData, groupLabel, scales){
            
             let stateKeys = states[0].state? states.map(s=> s.state) : states.map(s=> s.scaleName)
           
-            let rootNode = rootNodes[0].attributes[key];
+            let rootNode = rootNodes[0].attributes[key]
+            rootNode.bins = d3.entries(rootNodes[0].attributes[key].values).map(m=> {       
+                let states = [{'state': m.key, 'value':m.value}];
+                return {state: states, color : scale.stateColors.filter(f=> f.state === m.key)[0], max:80};
+               });
+            
             mapNorm.bins = null
             leafData.bins = states.map(s=> {
                 return leafAttr.filter(f=> s.scaleName.includes(f.states.state))});
@@ -235,13 +240,13 @@ export function binGroups(pathData, groupLabel, scales){
                     });
                     return {state: test, color : colors.filter(f=> f.state === state)[0], max:80};
                 });
-//IF WE DONT HAVE ANY BRANCHES< WE ASSUME THAT THEY ARE THE SAME AS THE PREVIOUS
+                //IF WE DONT HAVE ANY BRANCHES< WE ASSUME THAT THEY ARE THE SAME AS THE PREVIOUS
                 if(n.bins[0].state.length === 0){
                     if(i === 0){
                         n.bins = d3.entries(rootNode.values).map(m=> {
                              let states = [{'state': m.key, 'value':m.value}];
                              return {state: states, color : colors.filter(f=> f.state === m.key)[0], max:80};
-                        });
+                            });
                     }else{
                         n.bins = nodeArray[i-1].bins;
                     }
@@ -255,14 +260,15 @@ export function binGroups(pathData, groupLabel, scales){
                         'branches': [...mapNorm], 
                         'type': scale.type, 
                         'leafData': leafData, 
-                        'rootData': rootNodes.map(m=> m.attributes[key])[0],
+                         'rootData': rootNodes.map(m=> m.attributes[key])[0],
+                        //'rootData': rootNodes,
                         'stateKeys': stateKeys,
                         'maxCount': d3.max(mapNorm.map(n=> n.data.length))
                     }
             return newK;
         }
-
     });
+
     sortedBins.group = groupLabel;
     sortedBins.branchCount = branchCount;
     sortedBins.keys = keys;
@@ -315,6 +321,7 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
 
     //ROOT RENDERING
     let root = predictedWrap.selectAll('g.root').data(d=> {
+        console.log(d.rootData)
         return [d.rootData]}).join('g').classed('root', true);
     root.attr('transform', `translate(60,0)`);
 
@@ -345,13 +352,26 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
        // Discrete Root
     let disRoot = root.filter(f=> f.type === "discrete");
     let rootStateGroups = disRoot.selectAll('g.root-state-groups').data(d=> {
-        return Object.entries(d.values)}).join('g').classed('root-state-groups', true);
+        return d.bins}).join('g').classed('root-state-groups', true);
 
     rootStateGroups.attr('transform', (d, i)=> `translate(0, ${3.5+(i*(dimensions.squareDim+2))})`);
     let rootRects = rootStateGroups.append('rect').attr('height', dimensions.squareDim).attr('width', dimensions.squareDim);
     rootRects.attr('fill', (d, i)=> {
-            return `rgba(89, 91, 101, ${d[1]})`;
+            return `rgba(89, 91, 101, ${d.state[0].value})`;
         }).attr('stroke-width', 0.5).attr('stroke', `rgba(200, 203, 219, .9)`);
+
+    let winStateRoot = disRoot.selectAll('g.root-state-groups')
+        .filter((f, j, n)=>{
+            let maxVal = d3.max(d3.selectAll(n).data().map(m=> m.state[0].value));
+            return f.color.state === d3.selectAll(n).data().filter(m=> m.state[0].value === maxVal)[0].color.state;
+        }).classed('win', true);
+
+    winStateRoot.select('rect').attr('fill', (c)=> {
+            return c.color.color;
+        }).attr('opacity', (c)=>{
+            let sum = d3.sum(c.state.flatMap(s=> s.value));
+            return sum/c.state.length;
+        })
 
     let branchGroup = predictedWrap.selectAll('g.branch-bin').data(d=> {
             return d.branches}).join('g').classed('branch-bin', true);
@@ -376,7 +396,6 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
         .attr('height', dimensions.squareDim)
         .attr('width', dimensions.squareDim);
     stateRects.attr('fill', (d, i, n)=> {
-
         let sum = d3.sum(d.state.map(m=> m.value))
         let av = sum / d.state.length;
         let scale = d3.scaleLinear().domain([0, 1]).range([0, 1]);
