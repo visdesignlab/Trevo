@@ -177,12 +177,12 @@ function collapseTree(treeData){
 
     let leaves = getLeaves(treeData, []);
 
-    console.log(leaves)
+   
     //GOING TO CHANGE ALL BLANK TO ANOLIS FOR THIS SITUATION///
     //leaves.forEach(l=> l.data.clade === "Norops" ? l.data.clade = "Norops" : l.data.clade = "Anolis");
 
     // leaves.forEach(l=> {
-    //     console.log(l.data.attributes.Clade.values.Clade)
+    
     //     l.data.attributes.Clade === "Norops" ? l.data.clade = "Norops" : l.data.clade = "Anolis"});
 
     return stepDown(treeData);
@@ -240,7 +240,7 @@ function addingEdgeLength(edge, data){
 
 export function renderTree(sidebar, att, uncollapse, pheno){
 
-    console.log(nestedData)
+  
     // set the dimensions and margins of the diagram
     let dimensions = {
         margin : {top: 10, right: 90, bottom: 50, left: 20},
@@ -254,7 +254,7 @@ export function renderTree(sidebar, att, uncollapse, pheno){
 
     addingEdgeLength(0, nestedData[0]);
 
-   // console.log('neeested', pheno ? nestedData[0].attributes[pheno].yScale.domain() : null)
+   
 
     //  assigns the data to a hierarchy using parent-child relationships
     var treenodes = d3.hierarchy(nestedData[0]);
@@ -262,7 +262,7 @@ export function renderTree(sidebar, att, uncollapse, pheno){
     // maps the node data to the tree layout
     treenodes = treemap(treenodes);
 
-    console.log(treenodes)
+   
 
     let groupedBool = d3.select('#show-drop-div-group').attr('value');
     let lengthBool = d3.select('button#length').text() === 'Hide Lengths';
@@ -282,7 +282,7 @@ export function renderTree(sidebar, att, uncollapse, pheno){
         updateTree(newNodes, dimensions, treeSvg, g, att, lengthBool);
     }else{
         ////Break this out into other nodes////
-        console.log('pheno',pheno)
+       
         updateTree(treenodes, dimensions, treeSvg, g, att, lengthBool, pheno);
     }
     /////END TREE STUFF
@@ -313,10 +313,7 @@ function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, pheno){
     
     assignPosition(treenodes, 0);
 
-   // console.log('PHENOO', pheno ? treenodes.data.attributes[pheno].yScale.domain() : null)
-
-    //console.log('length in tree', pheno, d3.select('.attr-drop.dropdown').empty() ? 'nope': d3.select('.attr-drop.dropdown').select('button').text())
-
+   
     let branchCount = findDepth(treenodes, []);
     let xScale = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, dimensions.width]).clamp(true);
     let yScale = d3.scaleLinear().range([dimensions.height, 0]).domain([0, 1])

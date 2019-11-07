@@ -6,6 +6,8 @@ export function dropDown(div, optionArray, dropText, dropId){
     dropContent.append('a').text('text');
     let options = dropContent.selectAll('a').data(optionArray).join('a').text(d=> d.field);
 
+
+
     button.on('click', (d, i, n)=> {
         if(dropContent.classed('show')){
             dropContent.classed('show', false);
@@ -13,6 +15,6 @@ export function dropDown(div, optionArray, dropText, dropId){
             dropContent.classed('show', true);
         }
     });
-
+    options.raise()
     return options;
 }
