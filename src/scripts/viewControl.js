@@ -40,7 +40,7 @@ export function initialViewLoad(scales){
     main.selectAll('*').remove();
 
     if(data.length > 50){
-        groupDistributions(data, main, scales);
+        groupDistributions(data, main, scales, 'Clade');
         d3.select('#view-toggle').text('View Paths');
         document.getElementById("scrunch").disabled = true;
     }else{

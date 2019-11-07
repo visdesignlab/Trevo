@@ -43,7 +43,7 @@ export const attributeList = [
     {field:'Head_depth', type: 'continuous'},
     {field:'Hind_limb', type: 'continuous'},
     {field:'Humerus', type: 'continuous'},
-    {field:'island', type:'discrete'},
+    {field:'island/mainland', type:'discrete'},
     {field:'Interlimb', type: 'continuous'},
     {field:'Longest_toe', type: 'continuous'},
     {field:'Ltoe', type: 'continuous'},
@@ -293,14 +293,14 @@ let matchedLeaves = leaves.map((leaf, i)=>{
 
     speciesTest.push(normedPaths.flatMap(m=> m.filter(f=> f.leaf === true)).map(l=> l.label));
    
-    toolbarControl(toolbarDiv, normedPaths, main, calculatedScales, 'paths');
+     toolbarControl(toolbarDiv, normedPaths, main, calculatedScales, 'paths');
     
-    let filterDiv = wrap.select('#filter-tab').classed('hidden', true);
+     let filterDiv = wrap.select('#filter-tab').classed('hidden', true);
 
-    ////////TREE RENDER IN SIDEBAR////////
-    nestedData.push(buildTreeStructure(paths, edges));
-    renderTreeButtons(normedPaths, calculatedScales, sidebar, false);
-    let tree = renderTree(sidebar, null, false);
+    // ////////TREE RENDER IN SIDEBAR////////
+    // nestedData.push(buildTreeStructure(paths, edges));
+    // renderTreeButtons(normedPaths, calculatedScales, sidebar, false);
+    // let tree = renderTree(sidebar, null, false);
     
     /// LOWER ATTRIBUTE VISUALIZATION ///
     initialViewLoad(calculatedScales, 'edgeLength');

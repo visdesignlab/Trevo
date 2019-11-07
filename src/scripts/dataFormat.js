@@ -300,12 +300,12 @@ export function rootAttribute(paths, calculatedAtt, calculatedScales){
 
 export function combineLength(paths){
 
-    let maxTime = paths.map(path=> d3.sum(path.map(p=> p.edgeLength)));
+    let maxTime = paths.map(path=> d3.sum(path.map(p=> p.edgeLength)))[0];
     return paths.map(path=> {
         return path.map((node, i, n)=> {
-            n.maxTime = maxTime;
-            n.combLength = d3.sum(n.filter((f, j)=> i>j).map(m=> m.edgeLength));
-            return n
+            node.maxTime = maxTime;
+            node.combLength = d3.sum(n.filter((f, j)=> i>j).map(m=> m.edgeLength));
+            return node;
         })
     })
 
@@ -385,41 +385,56 @@ export function filterKeeper(){
 
 export function formatAttributeData(pathData, scales, filterArray){
 
-    let keys = (filterArray == null)? Object.keys(pathData[0][0].attributes): filterArray;
+    let keys = (filterArray == null)? Object.keys(pathData[0][0].attributes).filter(f=> f != 'node'): filterArray;
    
     let newData = pathData.map(path=> {
         return keys.map((key)=> {
             return path.map((m)=> {
-                let speciesLabel = path[path.length - 1].label;
+                let speciesLabel = path[path.length - 1].node;
+                
                 if(m.attributes[key].type === 'continuous'){
                     m.attributes[key].species = speciesLabel;
                     m.attributes[key].color = scales.filter(f=> f.field === key)[0].catColor;
-                    m.attributes[key].move = m.move;
+                    m.attributes[key].move = m.combineLength;
+                    m.attributes[key].combLength = m.combLength;
                     m.attributes[key].node = m.node;
-                    m.attributes[key].edgeMove = m.edgeMove;
+                    m.attributes[key].edgeMove = m.edgeLength;
+                    m.attributes[key].edgeLength = m.edgeLength;
                     m.attributes[key].label = key;
-                    m.attributes[key].yScale = scales.filter(s=> s.field === key)[0].yScale;
-                    m.attributes[key].satScale = scales.filter(s=> s.field === key)[0].satScale;
-                    m.attributes[key].colorScale = scales.filter(s=> s.field === key)[0].colorScale;
+                    m.attributes[key].yScale = m.attributes[key].scales.yScale;
+                    m.attributes[key].satScale = m.attributes[key].scales.satScale;
+                    m.attributes[key].colorScale = m.attributes[key].scales.colorScale;
+                    //console.log(m)
                     return m.attributes[key];
                 }else if(m.attributes[key].type === 'discrete'){
+                    //console.log('discrete', m)
                     if(m.leaf){
+                        let states = Object.entries(m.attributes[key].values);
                         let state = m.attributes[key];
                         state.species = speciesLabel;
-                        state.winState = m.attributes[key].states.filter(f=> f.realVal === 1)[0].state;
-                        state.color = scales.filter(f=> f.field === key)[0].stateColors.filter(f=> f.state === state.winState)[0].color;
-                        state.move = m.move;
+                        state.winState = m.attributes[key].values[key] ?  m.attributes[key].values[key] : Object.entries(m.attributes[key].values)[1];
+                        state.color = m.attributes[key].scales.stateColors.filter(f=> {
+                            return f.state.includes(state.winState)})[0].color;
+                        state.move = m.combLength;
+                        state.combLength = m.combLength;
                         state.node = m.node;
-                        state.edgeMove = m.edgeMove;
+                        state.edgeMove = m.edgeLength;
+                        state.edgeLength = m.edgeLength;
                         state.attrLabel = key;
                         return state;
                     }else{
-                        let states = m.attributes[key].states ? m.attributes[key].states : m.attributes[key];//.filter(f => f.state != undefined);
+                        
+                        let states = m.attributes[key].states ? m.attributes[key].states : Object.entries(m.attributes[key].values);//.filter(f => f.state != undefined);
                         return states.map((st, j)=> {
-                            st.color = scales.filter(f=> f.field === key)[0].stateColors.filter(f=> f.state === st.state)[0].color;
-                            st.move = m.move;
+                            
+                            st.state = st[0];
+                            st.value = st[1];
+                         //   st.color = scales.filter(f=> f.field === key)[0].stateColors.filter(f=> f.state === st.state)[0].color;
+                            st.move = m.combLength;
+                            st.combLength = m.combLength;
                             st.node = m.node;
-                            st.edgeMove = m.edgeMove;
+                            st.edgeMove = m.edgeLength;
+                            st.edgeLength = m.edgeLength;
                             st.attrLabel = key;
                             st.species = speciesLabel;
                             return st;

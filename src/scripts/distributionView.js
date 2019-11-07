@@ -38,16 +38,19 @@ let x = d3.scaleLinear().domain([0, 1]).range([0, 800]);
     return branchBar;
 }
 
-export function groupDistributions(pathData, mainDiv, scales){
+export function groupDistributions(pathData, mainDiv, scales, groupAttr){
 
-    let clades = Array.from(new Set(pathData.map(path=> path.filter(f=> f.leaf === true)[0].clade === "" ? "Anolis" : "Norops")));
+  
+    let groupKeys = scales.filter(f=> f.field === groupAttr)[0].scales.map(s=> s.scaleName);
  
-    let pathGroups = clades.map(clade => {
+    let pathGroups = groupKeys.map(clade => {
         let group = pathData.filter(path => {
-         path[path.length - 1].clade === "Norops" ? path[path.length - 1].clade = "Norops" : path[path.length - 1].clade = "Anolis" ; 
-         return path[path.length - 1].clade === clade});
+            return clade.includes(path[path.length - 1].attributes[groupAttr].values[groupAttr]);
+        });
         return {'label': clade, 'paths': group }
     });
+
+    console.log(pathGroups)
  
     let groupDivs = mainDiv.selectAll('.group-div').data(pathGroups).join('div').classed('group-div', true);
 
@@ -74,6 +77,8 @@ export function renderDistibutions(pathData, mainDiv, scales){
     let keysToHide = attrHide.length > 0 ? scales.filter(f=> attrHide.indexOf(f.field) === -1).map(m=> m.field) : null;
 
     formatAttributeData(newNormed, scales, keysToHide);
+
+    console.log(newNormed)
 
     let maxBranch = d3.max(newNormed.map(p=> p.length)) - 1;
     let medBranchLength = d3.median(newNormed.map(p=> p.length));
