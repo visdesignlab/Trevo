@@ -283,6 +283,34 @@ export function matchEdges(edges, edgeLen, calculatedAtt, calculatedScales){
 
 }
 
+export function rootAttribute(paths, calculatedAtt, calculatedScales){
+
+    let rootAtt = calculatedAtt.filter(f=> f.node === paths[0][0].node)[0];
+
+    Object.keys(rootAtt).filter(f=> f != 'node').map(att=> {
+        rootAtt[att].scales = calculatedScales.filter(f=> f.field === att)[0];
+    });
+
+    return paths.map((p, i)=> {
+        p[0].attributes = rootAtt;
+        return p
+    });
+
+};
+
+export function combineLength(paths){
+
+    let maxTime = paths.map(path=> d3.sum(path.map(p=> p.edgeLength)));
+    return paths.map(path=> {
+        return path.map((node, i, n)=> {
+            n.maxTime = maxTime;
+            n.combLength = d3.sum(n.filter((f, j)=> i>j).map(m=> m.edgeLength));
+            return n
+        })
+    })
+
+}
+
 export function normPaths(paths, calculatedAtt, calculatedScales){
     paths.forEach((p, i)=> {
         p[0].attributes = {};

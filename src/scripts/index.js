@@ -1,7 +1,7 @@
 import '../styles/index.scss';
 import * as d3 from "d3";
 import {loadData} from './dataLoad';
-import {calculateScales, calculateNewScales, matchLeaves, matchEdges, normPaths, filterKeeper, pairPaths} from './dataFormat';
+import {calculateScales, calculateNewScales, matchLeaves, matchEdges, normPaths, filterKeeper, pairPaths, rootAttribute, combineLength} from './dataFormat';
 import {allPaths, pullPath, getPathRevised, getPath} from './pathCalc';
 import {renderTree, buildTreeStructure, renderTreeButtons} from './sidebarComponent';
 import {toolbarControl} from './toolbarComponent';
@@ -281,43 +281,29 @@ let matchedLeaves = leaves.map((leaf, i)=>{
 })
 
 
-let all = matchedEdges.filter(f=> f.attributes != null);
+    let all = matchedEdges.filter(f=> f.attributes != null);
 
-let paths = allPaths(all, matchedLeaves, "V1", "V2");
-//let normedPaths = normPaths(paths, calculatedAtt, calculatedScales);
-
-console.log('paths',paths.map(path=> d3.sum(path.map(p=> p.edgeLength))));
-
-
-
-//     ////CALCULATE THE SCALES FOR EACH ATTRIBUTE////////
-   //  let calculatedScales = calculateScales(calculatedAtt, colorKeeper);
-
-//     ///MATCH LEAF CHARACTERS AND LABELS TO LEAVES///
-//     let matchedLeaves = matchLeaves(labels, leaves, leafChar, calculatedScales);
-
-//     //MATCH CALC ATTRIBUTES TO EDGES///
-
-
-//     ///CALCULATES PATHS FROM THE DATA////
-//     let paths = allPaths(matchedEdges, matchedLeaves, "V1", "V2");
-
-//     let normedPaths = normPaths(paths, calculatedAtt, calculatedScales);
-//     dataMaster.push(normedPaths);
-
-//     speciesTest.push(normedPaths.flatMap(m=> m.filter(f=> f.leaf === true)).map(l=> l.label));
+    let paths = allPaths(all, matchedLeaves, "V1", "V2");
    
-//     toolbarControl(toolbarDiv, normedPaths, main, calculatedScales, 'paths');
-    
-//     let filterDiv = wrap.select('#filter-tab').classed('hidden', true);
+    let addedRoot = rootAttribute(paths, calculatedAtt, calculatedScales);
 
-//     ////////TREE RENDER IN SIDEBAR////////
-//     nestedData.push(buildTreeStructure(paths, edges));
-//     renderTreeButtons(normedPaths, calculatedScales, sidebar, false);
-//     let tree = renderTree(sidebar, null, false);
+    let normedPaths = combineLength(addedRoot);
+
+    dataMaster.push(normedPaths);
+
+    speciesTest.push(normedPaths.flatMap(m=> m.filter(f=> f.leaf === true)).map(l=> l.label));
+   
+    toolbarControl(toolbarDiv, normedPaths, main, calculatedScales, 'paths');
     
-//     /// LOWER ATTRIBUTE VISUALIZATION ///
-//     initialViewLoad(calculatedScales, 'edgeLength');
+    let filterDiv = wrap.select('#filter-tab').classed('hidden', true);
+
+    ////////TREE RENDER IN SIDEBAR////////
+    nestedData.push(buildTreeStructure(paths, edges));
+    renderTreeButtons(normedPaths, calculatedScales, sidebar, false);
+    let tree = renderTree(sidebar, null, false);
+    
+    /// LOWER ATTRIBUTE VISUALIZATION ///
+    initialViewLoad(calculatedScales, 'edgeLength');
 });
 
 let tooltip = wrap.append("div")
