@@ -13,8 +13,9 @@ import { linkSync } from 'fs';
 
 export function buildTreeStructure(paths, edges){
     let root = paths[0][0];
-    let nestedData = getNested(root, edges.rows);
-  
+    
+    let nestedData = getNested(root, edges);
+   
     return nestedData;
 }
 
@@ -175,14 +176,20 @@ function collapseSub(d){
 function collapseTree(treeData){
 
     let leaves = getLeaves(treeData, []);
+
+    console.log(leaves)
     //GOING TO CHANGE ALL BLANK TO ANOLIS FOR THIS SITUATION///
-    leaves.forEach(l=> l.data.clade === "Norops" ? l.data.clade = "Norops" : l.data.clade = "Anolis");
+    //leaves.forEach(l=> l.data.clade === "Norops" ? l.data.clade = "Norops" : l.data.clade = "Anolis");
+
+    // leaves.forEach(l=> {
+    //     console.log(l.data.attributes.Clade.values.Clade)
+    //     l.data.attributes.Clade === "Norops" ? l.data.clade = "Norops" : l.data.clade = "Anolis"});
 
     return stepDown(treeData);
 
     function stepDown(node){
         let leaves = getLeaves(node, []);
-        let ids = new Set(leaves.map(m=> m.data.clade));
+        let ids = new Set(leaves.map(m=> m.data.attributes.Clade.values.Clade));
         if(ids.size > 1){
             node.children.map(n=> stepDown(n))
         }else{
@@ -232,6 +239,8 @@ function addingEdgeLength(edge, data){
 }
 
 export function renderTree(sidebar, att, uncollapse, pheno){
+
+    console.log(nestedData)
     // set the dimensions and margins of the diagram
     let dimensions = {
         margin : {top: 10, right: 90, bottom: 50, left: 20},
@@ -252,6 +261,8 @@ export function renderTree(sidebar, att, uncollapse, pheno){
 
     // maps the node data to the tree layout
     treenodes = treemap(treenodes);
+
+    console.log(treenodes)
 
     let groupedBool = d3.select('#show-drop-div-group').attr('value');
     let lengthBool = d3.select('button#length').text() === 'Hide Lengths';

@@ -301,9 +301,9 @@ let matchedLeaves = leaves.map((leaf, i)=>{
      let filterDiv = wrap.select('#filter-tab').classed('hidden', true);
 
     // ////////TREE RENDER IN SIDEBAR////////
-    // nestedData.push(buildTreeStructure(paths, edges));
-    // renderTreeButtons(normedPaths, calculatedScales, sidebar, false);
-    // let tree = renderTree(sidebar, null, false);
+    nestedData.push(buildTreeStructure(normedPaths, all.concat(matchedLeaves)));
+    renderTreeButtons(normedPaths, calculatedScales, sidebar, false);
+    let tree = renderTree(sidebar, null, false);
     
     /// LOWER ATTRIBUTE VISUALIZATION ///
     initialViewLoad(calculatedScales, 'edgeLength');
