@@ -67,9 +67,11 @@ export function calculateMovingStandardDeviation(data, i, avg) {
  * @param {string for target header} target (V2)
  */
 export function getPath(edgeArray, leaf, pathKeeper, source, target){
+    
     let path = edgeArray.filter(ed=> {
         return ed[target] === leaf[source];
     });
+    
     if(path.length > 0){
         pathKeeper.push(path[0]);
         return getPath(edgeArray, path[0], pathKeeper, source, target);
@@ -78,6 +80,31 @@ export function getPath(edgeArray, leaf, pathKeeper, source, target){
         return pathKeeper.reverse();
     }
 }
+
+/**
+ * 
+ * @param {array of all graph edges} edgeArray 
+ * @param {one row of the leaf array} leaf 
+ * @param {array that holds the constructed path} pathKeeper 
+ * @param {string for source header} source (V1)
+ * @param {string for target header} target (V2)
+ */
+export function getPathRevised(edgeArray, leaf, pathKeeper, source, target){
+    console.log(edgeArray, leaf)
+     let path = edgeArray.filter(ed=> {
+        return ed[target] === leaf[source];
+     });
+     console.log(path)
+    // if(path.length > 0){
+    //     pathKeeper.push(path[0]);
+    //     return getPathRevised(edgeArray, path[0], pathKeeper, source, target);
+    // }else{
+    //     pathKeeper.push({'root': true, 'node': leaf[source], 'edgeLength': 0.0});
+    //     return pathKeeper.reverse();
+    // }
+}
+
+
 /**
  * 
  * @param {*} pathArray 
