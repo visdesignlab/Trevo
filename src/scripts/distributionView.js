@@ -115,14 +115,14 @@ export function groupDistributions(pathData, mainDiv, scales, groupAttr){
         group.style('text-align', 'center');
         group.append('text').text(d.label);
         group.append('text').text(" Shown:" + d.paths.length);
-
+      
         let svg = group.append('svg');
         svg.attr('class', 'main-summary-view');
         svg.attr('id', `${d.label}-svg`);
         svg.attr('height', (d.groupBins.keys.length * (dimensions.height + 5)));
     
         let branchBar = drawBranchPointDistribution(d.paths, svg);
-        branchBar.attr('transform', 'translate(0, 10)')
+        branchBar.attr('transform', 'translate(40, 10)')
 
         renderDistibutions(d.groupBins, d.label, group, branchBar, scales);
     });
@@ -293,7 +293,7 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
     let pointGroups = branchBar.selectAll('g.branch-points');
   
     let wrap = svg.append('g').classed('summary-wrapper', true);
-    wrap.attr('transform', 'translate(10, 50)');
+    wrap.attr('transform', 'translate(50, 50)');
 
     let binnedWrap = wrap.selectAll('.attr-wrap').data(pathData).join('g').attr('class', d=> d.key + ' attr-wrap');
 
@@ -321,7 +321,6 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
 
     //ROOT RENDERING
     let root = predictedWrap.selectAll('g.root').data(d=> {
-        console.log(d.rootData)
         return [d.rootData]}).join('g').classed('root', true);
     root.attr('transform', `translate(60,0)`);
 
@@ -451,7 +450,6 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
                 let sum = d3.sum(c.state.flatMap(s=> s.value));
                 return sum/c.state.length;
             })
-
     });
 
     let disWrap = predictedWrap.filter(f=> f.type === 'discrete')
@@ -478,172 +476,174 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
         .attr('stoke-width', 1)
     })
 
-//     
-    
-//     //CONTIN PREDICTED
-//     let continDist = branchGroup.filter(f=> f.type === 'continuous');
+    //CONTIN PREDICTED
+    let continDist = branchGroup.filter(f=> f.type === 'continuous');
 
-//     continDist.on('mouseover', (d, i, node)=> {
-//         let list = d.data.map(m=> m.nodeLabels);
-//         let selected = pointGroups.filter(p=> list.indexOf(p.node) > -1).classed('selected', true);
-//         let treeNode  = d3.select('#sidebar').selectAll('.node');
-//         let selectedBranch = treeNode.filter(f=> list.indexOf(f.data.node) > 0).classed('selected-branch', true);
-//         let y = d3.scaleLinear().domain(d.domain).range([0, height])
-//         let axis = d3.select(node[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(5));
-//     }).on('mouseout', (d, i, node)=> {
-//         d3.selectAll(".branch-points.selected").classed('selected', false);
-//         d3.selectAll('.selected-branch').classed('selected-branch', false);
-//         d3.select(node[i]).select('.y-axis').remove();
-//     });
+    continDist.on('mouseover', (d, i, node)=> {
+        let list = d.data.map(m=> m.nodeLabels);
+        let selected = pointGroups.filter(p=> list.indexOf(p.node) > -1).classed('selected', true);
+        let treeNode  = d3.select('#sidebar').selectAll('.node');
+        let selectedBranch = treeNode.filter(f=> list.indexOf(f.data.node) > 0).classed('selected-branch', true);
+        let y = d3.scaleLinear().domain(d.domain).range([0, dimensions.height])
+        let axis = d3.select(node[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(5));
+    }).on('mouseout', (d, i, node)=> {
+        d3.selectAll(".branch-points.selected").classed('selected', false);
+        d3.selectAll('.selected-branch').classed('selected-branch', false);
+        d3.select(node[i]).select('.y-axis').remove();
+    });
 
-//     var lineGen = d3.area()
-//     .curve(d3.curveCardinal)
-//     .x((d, i, n)=> {
-//         let y = d3.scaleLinear().domain([0, n.length - 1]).range([0, height]).clamp(true);
-//         return y(i); 
-//     })
-//     .y0(d=> {
-//         return 0;
-//     })
-//     .y1(d=> {
-//         let dat = Object.keys(d).length - 1
-//         let x = d3.scaleLinear().domain([0, 50]).range([0, 80]).clamp(true);
-//         return x(dat); 
-//     });
+    var lineGen = d3.area()
+    .curve(d3.curveCardinal)
+    .x((d, i, n)=> {
+        let y = d3.scaleLinear().domain([0, n.length - 1]).range([0, dimensions.height]).clamp(true);
+        return y(i); 
+    })
+    .y0(d=> {
+        return 0;
+    })
+    .y1(d=> {
+        let dat = Object.keys(d).length - 1
+        let x = d3.scaleLinear().domain([0, 50]).range([0, dimensions.height]).clamp(true);
+        return x(dat); 
+    });
 
-//     continDist.each((d, i, nodes)=> {
-//         let distrib = d3.select(nodes[i]).selectAll('g').data([d.bins]).join('g').classed('distribution', true);
-//         distrib.attr('transform', 'translate(11, '+height+') rotate(-90)');
-//         let path = distrib.append('path').attr('d', lineGen);
-//         path.attr("fill", "rgba(133, 193, 233, .4)")
-//         .style('stroke', "rgba(133, 193, 233, .9)");
-//     });
+    continDist.each((d, i, nodes)=> {
+        let distrib = d3.select(nodes[i]).selectAll('g').data([d.bins]).join('g').classed('distribution', true);
+        distrib.attr('transform', 'translate(11, '+dimensions.height+') rotate(-90)');
+        let path = distrib.append('path').attr('d', lineGen);
+        path.attr("fill", "rgba(133, 193, 233, .4)")
+        .style('stroke', "rgba(133, 193, 233, .9)");
+    });
 
-//     let contRect = continDist.append('rect').attr('height', height).attr('width', 10).style('fill', 'none').style('stroke', 'gray');
+    let contRect = continDist.append('rect')
+        .attr('height', dimensions.height)
+        .attr('width', 10)
+        .style('fill', 'none')
+        .style('stroke', 'gray');
 
-//     let rangeRect = continDist.selectAll('rect.range').data(d=> {
-//         let newData = d.data.map(m=> {
-//             m.range = d.range;
-//             return m;
-//         })
-//         return newData}).join('rect').classed('range', true);
+    let rangeRect = continDist.selectAll('rect.range').data(d=> {
+        let newData = d.data.map(m=> {
+            m.range = d.range;
+            return m;
+        })
+        return newData}).join('rect').classed('range', true);
 
-//     rangeRect.attr('width', 10);
-//     rangeRect.attr('height', (d, i)=> {
-//         if(d.scales.yScale != undefined){
-//             let newy = d.scales.yScale;
-//             newy.range([80, 0]);
-//             return newy(d.values.lowerCI95) - newy(d.values.upperCI95)
-//         }else{
-//             return 0;
-//         }
-//     }).attr('transform', (d, i) => {
+    rangeRect.attr('width', 10);
+    rangeRect.attr('height', (d, i)=> {
+        if(d.scales.yScale != undefined){
+            let newy = d.scales.yScale;
+            newy.range([80, 0]);
+            return newy(d.values.lowerCI95) - newy(d.values.upperCI95)
+        }else{
+            return 0;
+        }
+    }).attr('transform', (d, i) => {
         
-//         let newy = d.scales.yScale;
-//         newy.range([80, 0]);
-//         return 'translate(0,'+newy(d.values.upperCI95)+')'
-//     });
+        let newy = d.scales.yScale;
+        newy.range([80, 0]);
+        return 'translate(0,'+newy(d.values.upperCI95)+')'
+    });
 
-//     rangeRect.attr('fill', "rgba(133, 193, 233, .05)");
+    rangeRect.attr('fill', "rgba(133, 193, 233, .05)");
 
-//     let avRect = continDist.append('rect').attr('width', 10).attr('height', (d, i)=> {
-//         if(d.data[0] != undefined){
-//             return 3;
-//         }else{
-//             return 0;
-//         }
-//     });
+    let avRect = continDist.append('rect').attr('width', 10).attr('height', (d, i)=> {
+        if(d.data[0] != undefined){
+            return 3;
+        }else{
+            return 0;
+        }
+    });
 
-//     avRect.attr('transform', (d, i) => {
-//         if(d.data[0] != undefined){
-//             let newy = d.data[0].scales.yScale;
-//             newy.range([height, 0]);
-//             let mean = d3.mean(d.data.map(m=> +m.values.realVal));
-//             return 'translate(0,'+newy(mean)+')';
-//         }else{
-//             return 'translate(0,0)';
-//         }
-//     }).attr('fill', '#004573');
+    avRect.attr('transform', (d, i) => {
+        if(d.data[0] != undefined){
+            let newy = d.data[0].scales.yScale;
+            newy.range([dimensions.height, 0]);
+            let mean = d3.mean(d.data.map(m=> +m.values.realVal));
+            return 'translate(0,'+newy(mean)+')';
+        }else{
+            return 'translate(0,0)';
+        }
+    }).attr('fill', '#004573');
 
-//     ////OBSERVED CONTIUOUS/////
-//     let observedWrap = binnedWrap.append('g').classed('observed', true);
-//     observedWrap.attr('transform', (d, i, n)=> {
-//         return 'translate('+ (predictedWidth + 150) +', 0)'})
+    ////OBSERVED CONTIUOUS/////
+    let observedWrap = binnedWrap.append('g').classed('observed', true);
+    observedWrap.attr('transform', (d, i, n)=> {
+        return 'translate('+ (dimensions.predictedWidth + 150) +', 0)'})
 
-//     let contOb = observedWrap.filter(f=> f.type === 'continuous');
+    let contOb = observedWrap.filter(f=> f.type === 'continuous');
 
-//     let contBars = contOb.selectAll('g.ob-bars').data(d=> {
-//         return d.leafData.bins}).join('g').classed('ob-bars', true);
+    let contBars = contOb.selectAll('g.ob-bars').data(d=> {
+        return d.leafData.bins}).join('g').classed('ob-bars', true);
 
-//     let cRects = contBars.append('rect').attr('width', (d, i, n)=> {
-//         let width = observedWidth / n.length;
-//         return width;
-//     }).attr('height', (d, i)=> {
-//         let y = d3.scaleLinear().domain([0, Object.keys(d).length]).range([(height - margin), 0])
-//         return y(Object.keys(d).length - 2)
-//     }).attr('fill', 'rgba(133, 193, 233, .5)');
+    let cRects = contBars.append('rect').attr('width', (d, i, n)=> {
+        let width = dimensions.observedWidth / n.length;
+        return width;
+    }).attr('height', (d, i)=> {
+        let y = d3.scaleLinear().domain([0, Object.keys(d).length]).range([(dimensions.height - dimensions.margin), 0])
+        return y(Object.keys(d).length - 2)
+    }).attr('fill', 'rgba(133, 193, 233, .5)');
 
-//     contBars.attr('transform', (d, i, n)=> {
-//         let movex = observedWidth / n.length;
-//         let y = d3.scaleLinear().domain([0, Object.keys(d).length]).range([(height - margin), 0])
-//         let movey = height - y(Object.keys(d).length - 2);
-//         return 'translate('+(movex * i)+', '+movey+')'});
+    contBars.attr('transform', (d, i, n)=> {
+        let movex = dimensions.observedWidth / n.length;
+        let y = d3.scaleLinear().domain([0, Object.keys(d).length]).range([(dimensions.height - dimensions.margin), 0])
+        let movey = dimensions.height - y(Object.keys(d).length - 2);
+        return 'translate('+(movex * i)+', '+movey+')'});
 
-//     contOb.each((d, i, nodes)=> {
-//         let xvalues = d.leafData.data.map(m=> {
-//             return +m.values.realVal});
-//         let x = d3.scaleLinear().domain([d3.min(xvalues), d3.max(xvalues)]).range([0, observedWidth])
-//         let y = d3.scaleLinear().domain([0, d3.max(d.leafData.bins.map(b=> Object.keys(b).length)) - 2]).range([(height - margin), 0]);
-//         d3.select(nodes[i]).append('g').classed('x-axis', true).call(d3.axisBottom(x)).attr('transform', 'translate(0, '+height+')');
-//         d3.select(nodes[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(4)).attr('transform', 'translate(0, '+margin+')');
-//     });
+    contOb.each((d, i, nodes)=> {
+        let xvalues = d.leafData.data.map(m=> {
+            return +m.values.realVal});
+        let x = d3.scaleLinear().domain([d3.min(xvalues), d3.max(xvalues)]).range([0, dimensions.observedWidth])
+        let y = d3.scaleLinear().domain([0, d3.max(d.leafData.bins.map(b=> Object.keys(b).length)) - 2]).range([(dimensions.height - dimensions.margin), 0]);
+        d3.select(nodes[i]).append('g').classed('x-axis', true).call(d3.axisBottom(x)).attr('transform', 'translate(0, '+dimensions.height+')');
+        d3.select(nodes[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(4)).attr('transform', 'translate(0, '+dimensions.margin+')');
+    });
     
-// ////Observed Discrete////
-//     let discOb =  observedWrap.filter(f=> f.type === 'discrete');
-//     let discBars = discOb.selectAll('g.ob-bars').data(d=> {
-//         return d.stateKeys.map((key, i)=>{
-//             return {state: key, data: d.leafData.bins[i], max: d3.sum(d.leafData.bins.map(b=> b.length))}
-//         });
-//     }).join('g').classed('ob-bars', true);
-//     let dRects = discBars.append('rect').attr('width', (d, i, n)=> {
-//         let width = observedWidth / n.length;
-//         return width;
-//     }).attr('height', (d, i, n)=> {
-//         let y = d3.scaleLinear().domain([0, d.max]).range([0, (height - margin)])
-//         return y(d.data.length);
-//     }).attr('fill', (d, i) => {
-//         return d.data[0] != undefined ? d.data[0].color : '#fff';
-//     }).attr('opacity', 0.3);
+////Observed Discrete////
+    let discOb =  observedWrap.filter(f=> f.type === 'discrete');
+    let discBars = discOb.selectAll('g.ob-bars').data(d=> {
+        return d.stateKeys.map((key, i)=>{
+            return {state: key, data: d.leafData.bins[i], max: d3.sum(d.leafData.bins.map(b=> b.length))}
+        });
+    }).join('g').classed('ob-bars', true);
+    let dRects = discBars.append('rect').attr('width', (d, i, n)=> {
+        let width = dimensions.observedWidth / n.length;
+        return width;
+    }).attr('height', (d, i, n)=> {
+        let y = d3.scaleLinear().domain([0, d.max]).range([0, (dimensions.height - dimensions.margin)])
+        return y(d.data.length);
+    }).attr('fill', (d, i) => {
+        return d.data[0] != undefined ? d.data[0].color : '#fff';
+    }).attr('opacity', 0.3);
 
-//     discBars.attr('transform', (d, i, n)=> {
-//         let movex = observedWidth / n.length;
-//         let y = d3.scaleLinear().domain([0, d.max]).range([0, (height - margin)])
-//         let movey = (height) - y(d.data.length);
-//         return 'translate('+(movex * i)+', '+movey+')'});
+    discBars.attr('transform', (d, i, n)=> {
+        let movex = dimensions.observedWidth / n.length;
+        let y = d3.scaleLinear().domain([0, d.max]).range([0, (dimensions.height - dimensions.margin)])
+        let movey = (dimensions.height) - y(d.data.length);
+        return 'translate('+(movex * i)+', '+movey+')'});
 
-//     dRects.on('mouseover', (d, i, n)=> {
-//         let state = d3.select('g.'+d[0].label).selectAll('g.state');
-//         state.filter(f=> {
-//             return f[0].state === d[0].winState}).attr('opacity', 0.8);
-//         state.filter(f=> f[0].state != d[0].winState).attr('opacity', 0.1);
-//         d3.select(n[i]).attr('opacity', 0.9);
-//     }).on('mouseout', (d, i, n)=> {
-//         d3.select(n[i]).attr('opacity', 0.3);
-//         let state = d3.select('g.'+d[0].label).selectAll('g.state').attr('opacity', 0.6);
-//     })
+    dRects.on('mouseover', (d, i, n)=> {
+        let state = d3.select('g.'+d[0].label).selectAll('g.state');
+        state.filter(f=> {
+            return f[0].state === d[0].winState}).attr('opacity', 0.8);
+        state.filter(f=> f[0].state != d[0].winState).attr('opacity', 0.1);
+        d3.select(n[i]).attr('opacity', 0.9);
+    }).on('mouseout', (d, i, n)=> {
+        d3.select(n[i]).attr('opacity', 0.3);
+        let state = d3.select('g.'+d[0].label).selectAll('g.state').attr('opacity', 0.6);
+    })
 
-//     discOb.each((d, i, nodes)=> {
-//             let labels = d.leafData.bins.map(b=> {
-//                 return b[0] != undefined ? b[0].winState : '';
-//                 })
-//             let xPoint = d3.scalePoint().domain(d.stateKeys).range([0, observedWidth]).padding(.6)
-//             let y = d3.scaleLinear().domain([0, d.leafData.data.length]).range([(height - margin), 0]);
-//             d3.select(nodes[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(4)).attr('transform', 'translate(0, '+margin+')');
-//             d3.select(nodes[i]).append('g').classed('x-axis', true).call(d3.axisBottom(xPoint)).attr('transform', 'translate(0, '+height+')');
-//     });
+    discOb.each((d, i, nodes)=> {
+            let labels = d.leafData.bins.map(b=> {
+                return b[0] != undefined ? b[0].winState : '';
+                })
+            let xPoint = d3.scalePoint().domain(d.stateKeys).range([0, dimensions.observedWidth]).padding(.6)
+            let y = d3.scaleLinear().domain([0, d.leafData.data.length]).range([(dimensions.height - dimensions.margin), 0]);
+            d3.select(nodes[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(4)).attr('transform', 'translate(0, '+dimensions.margin+')');
+            d3.select(nodes[i]).append('g').classed('x-axis', true).call(d3.axisBottom(xPoint)).attr('transform', 'translate(0, '+dimensions.height+')');
+    });
 
  //   branchBar.attr('transform', 'translate(80, 10)');
-    d3.selectAll('.summary-wrapper').attr('transform', 'translate(90, 50)');
+ //   d3.selectAll('.summary-wrapper').attr('transform', 'translate(90, 50)');
 
 
 }
