@@ -49,11 +49,11 @@ export function rankingControl(data){
   
 }
 
-export function generatePairs(data){
+export function generatePairs(data, field){
 
-  console.log(data)
+  console.log('data',data)
 
-        let pairs = pairPaths(data);
+        let pairs = pairPaths(data, field);
         console.log(pairs)
         let weights = [1, 1, 1];
 
@@ -63,10 +63,11 @@ export function generatePairs(data){
                         return {'field': m.key, 'value': m.key }
                     });
         
-        let drop = d3.select('.attr-drop.dropdown').selectAll('a').empty() ? dropDown(d3.select('#toolbar'), attKeys, attKeys[0].field, 'attr-drop') : d3.select('.attr-drop.dropdown').selectAll('a');
+        let drop = d3.select('.attr-drop.dropdown')
+          .selectAll('a').empty() ? dropDown(d3.select('#toolbar'), attKeys, attKeys[0].field, 'attr-drop') : d3.select('.attr-drop.dropdown').selectAll('a');
 
         drop.on('click', (d, i, n)=> {
-            updateRanking(pairPaths(data), d.field);
+            updateRanking(pairPaths(data, d.field), d.field);
             renderTree(d3.select('#sidebar'), null, true, d.field);
             d3.select('.attr-drop.dropdown').select('button').text(d.field);
         });

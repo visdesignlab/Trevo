@@ -201,7 +201,8 @@ loadData(d3.json, './public/data/new-anolis-edges.json', 'edge').then(async edge
                         values.realVal = m.value;
                     }
                 }else{
-                    values[m.key] = m.value;   
+                     values[m.key] = m.value;   
+                    
                 }
             });
             newRow[att.field].values = values;
@@ -210,18 +211,20 @@ loadData(d3.json, './public/data/new-anolis-edges.json', 'edge').then(async edge
         return newRow;
     });
 
+  
+
 
 let calculatedScales = calculateNewScales(calculatedAtt, attributeList.map(m=> m.field), colorKeeper)
 
 let matchedEdges = edges.rows.map((edge, i)=> {
     let attrib = calculatedAtt.filter(f=> f.node === edge.To)[0]
     if(attrib){
-        Object.keys(attrib).map((att, i)=>{
-            if(att!='node'){
-                let scales = calculatedScales.filter(f=> f.field=== att)[0]
-                attrib[att].scales = scales;
-                return att;
-            }
+        Object.keys(attrib).filter(f=> f != 'node').map((att, i)=>{
+            
+            let scales = calculatedScales.filter(f=> f.field=== att)[0]
+            attrib[att].scales = scales;
+            return att;
+            
         })
     }
     let newEdge = {
@@ -244,7 +247,7 @@ let calcLeafAtt = leafChar.map((row, i)=> {
         let values = {}
         d3.entries(row).filter(f=> f.key.includes(att.field)).map(m=> {
             if(att.type === 'continuous'){
-                values[m.key] = m.value;
+                values.realVal = m.value;
             }else{
                 values[m.key] = m.value;   
             }

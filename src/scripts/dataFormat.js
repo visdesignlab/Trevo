@@ -3,7 +3,8 @@ import * as d3 from "d3";
 export const maxTimeKeeper = []
 
 
-export function pairPaths(pathData){
+export function pairPaths(pathData, field){
+
 
     return pathData.flatMap((path, i)=> {
         let pairs = pathData.filter((f, j)=> j != i);
@@ -12,9 +13,9 @@ export function pairPaths(pathData){
         });
         return paired.map(m=> {
             m.distance = getDistance(m);
-            m.deltas = calculateDelta(m);
-            m.closeness = calculateCloseness(m);
-            console.log(m.closeness)
+            m.deltas = calculateDelta(m, field);
+            m.closeness = calculateCloseness(m, field);
+            
             return m;
         })
     })
@@ -37,7 +38,7 @@ function getDistance(pair){
     return d3.sum(p1.map(m=> m.edgeLength)) + d3.sum(p2.map(m=> m.edgeLength));
 }
 
-function calculateDelta(pair){
+function calculateDelta(pair, field){
    
     let verts = pair.p2.map(m=> m.node);
 
@@ -89,18 +90,24 @@ function calculateDelta(pair){
                         return m;
                     });
 
-  
+    // let attributeKey = field;
+    // let valdiffs = bins.map((b, i)=> {
+    //         return Math.abs(b.one[0].attributes[field].values.realVal - b.two[0].attributes[field].values.realVal);
+    //     });
 
-    return attributes;
+  
+return attributes;
+    //return d3.max(valdiffs);
 }
 
-function calculateCloseness(pair){
+function calculateCloseness(pair, field){
 
  let leaf1 = pair.p1.filter(p=> p.leaf === true)[0].attributes;
  let leaf2 = pair.p2.filter(p=> p.leaf === true)[0].attributes;
- 
+
  return d3.entries(leaf1).filter(f=> f.value.type === 'continuous').map(m=> {
-     m.value = Math.abs(m.value.values.realVal - +d3.entries(leaf2[m.key].values)[0].value);
+    
+     m.value = Math.abs(m.value.values.realVal - leaf2[m.key].values.realVal);
      
      return m
  });
@@ -308,8 +315,6 @@ export function rootAttribute(paths, calculatedAtt, calculatedScales){
 
 export function combineLength(paths){
 
-
-
     let maxTime = paths.map(path=> d3.sum(path.map(p=> p.edgeLength)))[0];
     maxTimeKeeper.push(maxTime);
     return paths.map(path=> {
@@ -322,62 +327,62 @@ export function combineLength(paths){
 
 }
 
-export function normPaths(paths, calculatedAtt, calculatedScales){
-    paths.forEach((p, i)=> {
-        p[0].attributes = {};
-        Object.keys(calculatedAtt).map(att=> { 
-            if(calculatedAtt[att].type == 'continuous'){
-                let root = calculatedAtt[att].rows.filter(f=> (f.nodeLabels == p[0].node) || (f.nodeLabels == ('node ' + p[0].node)))[0];
-                p[0].attributes[att] = {};
+// export function normPaths(paths, calculatedAtt, calculatedScales){
+//     paths.forEach((p, i)=> {
+//         p[0].attributes = {};
+//         Object.keys(calculatedAtt).map(att=> { 
+//             if(calculatedAtt[att].type == 'continuous'){
+//                 let root = calculatedAtt[att].rows.filter(f=> (f.nodeLabels == p[0].node) || (f.nodeLabels == ('node ' + p[0].node)))[0];
+//                 p[0].attributes[att] = {};
                 
-                let scale = calculatedScales.filter(f=> f.field == att)[0].yScale;
+//                 let scale = calculatedScales.filter(f=> f.field == att)[0].yScale;
             
-                p[0].attributes[att].realVal = root.estimate;
-                p[0].attributes[att].upperCI95 = root.upperCI95;
-                p[0].attributes[att].lowerCI95 = root.lowerCI95;
-                p[0].attributes[att].scale = scale;
-                p[0].attributes[att].type = 'continuous';
-            }else if(calculatedAtt[att].type == 'discrete'){
-                let root = calculatedAtt[att].rows.filter(f=> f.nodeLabels == p[0].node)[0];
-                let scales = calculatedScales.filter(f=> f.field == att)[0].scales;
-                let rootAttr = scales.map(s=> {
-                    //return {'state': s.scaleName,  scaleVal: s.yScale(root[s.scaleName]), realVal: root[s.scaleName]};
-                    return {'state': s.scaleName, realVal: root[s.scaleName]};
-                });
-                p[0].attributes[att] = {'states':rootAttr, 'type': 'discrete'};
+//                 p[0].attributes[att].realVal = root.estimate;
+//                 p[0].attributes[att].upperCI95 = root.upperCI95;
+//                 p[0].attributes[att].lowerCI95 = root.lowerCI95;
+//                 p[0].attributes[att].scale = scale;
+//                 p[0].attributes[att].type = 'continuous';
+//             }else if(calculatedAtt[att].type == 'discrete'){
+//                 let root = calculatedAtt[att].rows.filter(f=> f.nodeLabels == p[0].node)[0];
+//                 let scales = calculatedScales.filter(f=> f.field == att)[0].scales;
+//                 let rootAttr = scales.map(s=> {
+//                     //return {'state': s.scaleName,  scaleVal: s.yScale(root[s.scaleName]), realVal: root[s.scaleName]};
+//                     return {'state': s.scaleName, realVal: root[s.scaleName]};
+//                 });
+//                 p[0].attributes[att] = {'states':rootAttr, 'type': 'discrete'};
                
-            }else{
-                console.error('type not found');
-            }
-        });
-    });
+//             }else{
+//                 console.error('type not found');
+//             }
+//         });
+//     });
     
-    let maxBranch = d3.max(paths.map(r=> r.length));
+//     let maxBranch = d3.max(paths.map(r=> r.length));
 
-    //SCALES for X, Y /////
-    let xScale = d3.scaleLinear().range([0, 1000]).clamp(true);
+//     //SCALES for X, Y /////
+//     let xScale = d3.scaleLinear().range([0, 1000]).clamp(true);
  
-    let normedPaths = paths.map((p, i)=> {
-        p.xScale = xScale.domain([0, maxBranch - 1]);
+//     let normedPaths = paths.map((p, i)=> {
+//         p.xScale = xScale.domain([0, maxBranch - 1]);
      
-        let leafIndex = p.length - 1;
-        let lengths = p.map(l=> l.edgeLength);
-        let prevStep = 0;
-        return p.map((m, j)=> {
-            let node = Object.assign({}, m);
-            //INTEGRATE THE DISTNACES HERE WHEN THEY WORK
-            let step = node.edgeLength + prevStep;
-            node.edgeMove = (j < leafIndex) ? step : 1;
-            prevStep = prevStep + node.edgeLength;
+//         let leafIndex = p.length - 1;
+//         let lengths = p.map(l=> l.edgeLength);
+//         let prevStep = 0;
+//         return p.map((m, j)=> {
+//             let node = Object.assign({}, m);
+//             //INTEGRATE THE DISTNACES HERE WHEN THEY WORK
+//             let step = node.edgeLength + prevStep;
+//             node.edgeMove = (j < leafIndex) ? step : 1;
+//             prevStep = prevStep + node.edgeLength;
          
-            node.move = (j < leafIndex) ? p.xScale(j) : p.xScale(maxBranch - 1);
+//             node.move = (j < leafIndex) ? p.xScale(j) : p.xScale(maxBranch - 1);
         
-            return node;
-        });
-    });
+//             return node;
+//         });
+//     });
 
-    return normedPaths;
-}
+//     return normedPaths;
+// }
 
 export function filterKeeper(){
 
