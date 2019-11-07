@@ -1,5 +1,7 @@
 import * as d3 from "d3";
 
+export const maxTimeKeeper = []
+
 
 export function pairPaths(pathData){
 
@@ -293,6 +295,7 @@ export function rootAttribute(paths, calculatedAtt, calculatedScales){
 
     return paths.map((p, i)=> {
         p[0].attributes = rootAtt;
+        p[0].root = true;
         return p
     });
 
@@ -300,11 +303,14 @@ export function rootAttribute(paths, calculatedAtt, calculatedScales){
 
 export function combineLength(paths){
 
+
+
     let maxTime = paths.map(path=> d3.sum(path.map(p=> p.edgeLength)))[0];
+    maxTimeKeeper.push(maxTime);
     return paths.map(path=> {
         return path.map((node, i, n)=> {
             node.maxTime = maxTime;
-            node.combLength = d3.sum(n.filter((f, j)=> i>j).map(m=> m.edgeLength));
+            node.combLength = d3.sum(n.filter((f, j)=> i >= j).map(m=> m.edgeLength));
             return node;
         })
     })
@@ -391,7 +397,6 @@ export function formatAttributeData(pathData, scales, filterArray){
         return keys.map((key)=> {
             return path.map((m)=> {
                 let speciesLabel = path[path.length - 1].node;
-                
                 if(m.attributes[key].type === 'continuous'){
                     m.attributes[key].species = speciesLabel;
                     m.attributes[key].color = scales.filter(f=> f.field === key)[0].catColor;
@@ -404,13 +409,13 @@ export function formatAttributeData(pathData, scales, filterArray){
                     m.attributes[key].yScale = m.attributes[key].scales.yScale;
                     m.attributes[key].satScale = m.attributes[key].scales.satScale;
                     m.attributes[key].colorScale = m.attributes[key].scales.colorScale;
-                    //console.log(m)
                     return m.attributes[key];
                 }else if(m.attributes[key].type === 'discrete'){
-                    //console.log('discrete', m)
                     if(m.leaf){
                         let states = Object.entries(m.attributes[key].values);
+
                         let state = m.attributes[key];
+                        state.states = {field: states[0], state: states[1]}
                         state.species = speciesLabel;
                         state.winState = m.attributes[key].values[key] ?  m.attributes[key].values[key] : Object.entries(m.attributes[key].values)[1];
                         state.color = m.attributes[key].scales.stateColors.filter(f=> {
@@ -423,10 +428,9 @@ export function formatAttributeData(pathData, scales, filterArray){
                         state.attrLabel = key;
                         return state;
                     }else{
-                        
                         let states = m.attributes[key].states ? m.attributes[key].states : Object.entries(m.attributes[key].values);//.filter(f => f.state != undefined);
+                    
                         return states.map((st, j)=> {
-                            
                             st.state = st[0];
                             st.value = st[1];
                          //   st.color = scales.filter(f=> f.field === key)[0].stateColors.filter(f=> f.state === st.state)[0].color;

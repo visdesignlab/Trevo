@@ -1,9 +1,11 @@
 import '../styles/index.scss';
-import {formatAttributeData} from './dataFormat';
+import {formatAttributeData, maxTimeKeeper} from './dataFormat';
 import * as d3 from "d3";
 import {filterMaster} from './filterComponent';
 
 export function drawBranchPointDistribution(data, svg){
+
+    
 
     let branchBar = svg.append('g').classed('branch-bar', true)//.attr('transform', 'translate(10, 10)');
     branchBar.append('rect').classed('point-dis-rect', true).attr('height', 25).attr('x', -10).attr('y', -10).attr('fill', '#fff');
@@ -20,16 +22,17 @@ export function drawBranchPointDistribution(data, svg){
         path.filter(n=> n.leaf != true).map(node=> {
             if(nodeDuplicateCheck.indexOf(node.node) == -1){
                 nodeDuplicateCheck.push(node.node);
-                nodeLengthArray.push({'node': node.node, 'eMove': node.edgeMove });
+                nodeLengthArray.push({'node': node.node, 'eMove': node.combLength });
             }
         })
     });
 
-    let bPointScale = d3.scaleLinear().domain([0, 1]).range([0, 795]);
+    let bPointScale = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, 795]);
     let pointGroups = branchBar.selectAll('g.branch-points').data(nodeLengthArray).join('g').attr('class', (d, i)=> d.node).classed('branch-points', true);
-    pointGroups.attr('transform', (d, i) => 'translate('+(105 + bPointScale(d.eMove))+', 0)');
+    pointGroups.attr('transform', (d, i) => {
+        return `translate(${(105 + bPointScale(d.eMove))}, 0)`});
     pointGroups.append('circle').attr('r', 5).attr('fill', "rgba(123, 141, 153, 0.5)");
-let x = d3.scaleLinear().domain([0, 1]).range([0, 800]);
+let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, 800]);
     let axis = d3.axisBottom(x);
     let axGroup = branchBar.append('g').call(axis)
     axGroup.attr('transform', 'translate(103, 10)');
@@ -39,8 +42,6 @@ let x = d3.scaleLinear().domain([0, 1]).range([0, 800]);
 }
 
 export function groupDistributions(pathData, mainDiv, scales, groupAttr){
-
-  
     let groupKeys = scales.filter(f=> f.field === groupAttr)[0].scales.map(s=> s.scaleName);
  
     let pathGroups = groupKeys.map(clade => {
@@ -50,7 +51,7 @@ export function groupDistributions(pathData, mainDiv, scales, groupAttr){
         return {'label': clade, 'paths': group }
     });
 
-    console.log(pathGroups)
+
  
     let groupDivs = mainDiv.selectAll('.group-div').data(pathGroups).join('div').classed('group-div', true);
 
@@ -72,19 +73,20 @@ export function renderDistibutions(pathData, mainDiv, scales){
     let squareDim = 15;
 
     let attrHide = filterMaster.filter(f=> f.type === 'hide-attribute').map(m=> m.attribute);
-    let keys = Object.keys(pathData[0][0].attributes).filter(f=> attrHide.indexOf(f) === -1);
+    
+    let keys = scales.map(s=> s.field).filter(f=> attrHide.indexOf(f) === -1);
+
     let newNormed = [...pathData];
     let keysToHide = attrHide.length > 0 ? scales.filter(f=> attrHide.indexOf(f.field) === -1).map(m=> m.field) : null;
 
     formatAttributeData(newNormed, scales, keysToHide);
 
-    console.log(newNormed)
-
     let maxBranch = d3.max(newNormed.map(p=> p.length)) - 1;
     let medBranchLength = d3.median(newNormed.map(p=> p.length));
+    let max = maxTimeKeeper[0]
 
     let normBins = new Array(medBranchLength).fill().map((m, i)=> {
-            let step = 1 / medBranchLength;
+            let step = max / medBranchLength;
             let base = (i * step);
             let top = ((i + 1)* step);
             return {'base': base, 'top': top, 'binI': i }
@@ -96,7 +98,7 @@ export function renderDistibutions(pathData, mainDiv, scales){
 
     normBins.map((n, i)=> {
         let edges = internalNodes.flatMap(path => path.filter(node=> {
-                return node.edgeMove > n.base && node.edgeMove <= n.top;
+                return node.combLength > n.base && node.combLength <= n.top;
         } ));
         n.data = edges;
         return n;
@@ -126,7 +128,7 @@ export function renderDistibutions(pathData, mainDiv, scales){
             let x = d3.scaleLinear().domain([scale.min, scale.max]).range([0, height]);
     
             let histogram = d3.histogram()
-            .value(function(d) { return d.realVal; })  
+            .value(function(d) { return d.values.realVal; })  
             .domain(x.domain())  
             .thresholds(x.ticks(20)); 
   
@@ -143,49 +145,45 @@ export function renderDistibutions(pathData, mainDiv, scales){
             let xO = d3.scaleLinear().domain([minO, maxO]).range([0, height])
 
             let histogramO = d3.histogram()
-            .value(function(d) { return d.realVal; })  
+            .value(function(d) { return d.values.realVal; })  
             .domain(xO.domain())  
             .thresholds(xO.ticks(20)); 
 
             leafData.bins = histogramO(leafAttr);
 
             let newK = {'key': key, 'branches': [...mapNorm], 'type': scale.type, 'leafData': leafData, 'rootData': rootNodes.map(m=> m.attributes[key])[0]}
+
             return newK;
 
         }else{
             //HANDLING DISCRETE//
-            let states = leafAttr[0].states;
-            let stateKeys = states.map(s=> s.state);
+            // let states = leafAttr[0].states;
+            let states = leafAttr[0].scales.scales;
+           
+            let stateKeys = states[0].state? states.map(s=> s.state) : states.map(s=> s.scaleName)
+          
             let rootNode = rootNodes[0].attributes[key];
             
             mapNorm.bins = null
             leafData.bins = states.map(s=> leafAttr.filter(f=> f.winState === s.state));
    
-            let x = d3.scaleLinear().domain([0, 1]).range([0, height]);
+            let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, height]);
            
             mapNorm.map(n=> {
                 n.type = scale.type;
+                
                 let colors = scale.stateColors;
                 n.bins = stateKeys.map(state=> {
-                    let test = n.data.flatMap(m=> m.states.filter(f=> f.state === state))
+                    let test = n.data.flatMap(m=> Object.entries(m.values).filter(f=> f[0] === state))
+                    .map(m=> {
+                        return {'state': m[0], 'value':m[1]}
+                    });
                     return {state: test, color : colors.filter(f=> f.state === state)[0], max:80};
                 });
-                // n.bins = states.map(state=> {
-                //     let color = colors.filter(f=> f.state === state.state);
-                //     let chosen = n.data.flatMap(m=> m.states.filter(f=> f.state === state.state)).map(v=> v.realVal);
-                //     let average = d3.mean(chosen);
-                //     let stDev = d3.deviation(chosen);
-                //     return {'state': state.state, 'average': average, 'stDev': stDev, 'stUp': average + stDev, 'stDown': average - stDev, 'color': color[0].color, 'range': n.range }
-                // });
+ 
                 return n;
             });
-            // let test = states.map(stat=> {
-            //     let key = stat.state;
-            //     return mapNorm.flatMap(m=> {
-            //         return m.bins.filter(f=> f.state === key);
-            //     });
-            // });
-            
+
             let newK = {'key': key, 
                         'branches': [...mapNorm], 
                         'type': scale.type, 
@@ -212,7 +210,7 @@ export function renderDistibutions(pathData, mainDiv, scales){
   
     let wrap = svg.append('g').classed('summary-wrapper', true);
     wrap.attr('transform', 'translate(10, 50)');
-
+ 
     let binnedWrap = wrap.selectAll('.attr-wrap').data(sortedBins).join('g').attr('class', d=> d.key + ' attr-wrap');
     binnedWrap.attr('transform', (d, i, n)=>  {
             if(i === 0){
@@ -249,7 +247,7 @@ export function renderDistibutions(pathData, mainDiv, scales){
 
     cladeLabel.append('text').text(d=> d.label)
     .style('text-anchor', 'middle')
-    .attr('transform', 'translate(23, '+(keys.length * (height+ 15)/2)+') rotate(-90)');
+    .attr('transform', `translate(23, ${(keys.length * (height+ 15)/2)}), rotate(-90)`);
 
     let predictedWrap = binnedWrap.append('g').classed('predicted', true);
     predictedWrap.attr('transform', 'translate(25, 0)');
@@ -266,31 +264,33 @@ export function renderDistibutions(pathData, mainDiv, scales){
     let rootRange = contRoot.append('rect')
         .attr('width', 12)
         .attr('height', d=> {
-            let newy = d.yScale;
+            let newy = d.scales.yScale;
             newy.range([80, 0]);
-            return newy(d.lowerCI95) - newy(d.upperCI95)
+            return newy(d.values.lowerCI95) - newy(d.values.upperCI95)
         }).attr('transform', (d, i) => {
-            let newy = d.yScale;
+            let newy = d.scales.yScale;
             newy.range([80, 0]);
-            return 'translate(0,'+newy(d.upperCI95)+')'
+            return 'translate(0,'+newy(d.values.upperCI95)+')'
         }).style('opacity', 0.5).attr('fill', "rgba(133, 193, 233)");
 
         let rootAv = contRoot.append('rect').attr('width', 12).attr('height', 3);
     
         rootAv.attr('transform', (d, i) => {
-                let newy = d.yScale;
+                let newy = d.scales.yScale;
                 newy.range([height, 0]);
-                let mean = d.realVal;
+                let mean = d.values.realVal;
                 return 'translate(0,'+newy(mean)+')';
         }).attr('fill', '#004573');
 
        // Discrete Root
     let disRoot = root.filter(f=> f.type === "discrete");
-    let rootStateGroups = disRoot.selectAll('g.root-state-groups').data(d=> d.states).join('g').classed('root-state-groups', true);
+    let rootStateGroups = disRoot.selectAll('g.root-state-groups').data(d=> {
+        return Object.entries(d.values)}).join('g').classed('root-state-groups', true);
+
     rootStateGroups.attr('transform', (d, i)=> `translate(0, ${3.5+(i*(squareDim+2))})`);
     let rootRects = rootStateGroups.append('rect').attr('height', squareDim).attr('width', squareDim);
     rootRects.attr('fill', (d, i)=> {
-            return `rgba(89, 91, 101, ${d.realVal})`;
+            return `rgba(89, 91, 101, ${d[1]})`;
         }).attr('stroke-width', 0.5).attr('stroke', `rgba(200, 203, 219, .9)`);
 
     let branchGroup = predictedWrap.selectAll('g.branch-bin').data(d=> {
@@ -309,14 +309,14 @@ export function renderDistibutions(pathData, mainDiv, scales){
     stateBinsPredicted.append('rect').attr('height', squareDim).attr('width', squareDim).attr('fill', '#fff').attr('opacity', 1)
     let stateRects = stateBinsPredicted.append('rect').classed('state-rect', true).attr('height', squareDim).attr('width', squareDim);
     stateRects.attr('fill', (d, i, n)=> {
-        let sum = d3.sum(d.state.map(m=> m.realVal))
+        let sum = d3.sum(d.state.map(m=> m.value))
         let av = sum / d.state.length;
         let scale = d3.scaleLinear().domain([0, 1]).range([0, 1]);
         return `rgba(89, 91, 101, ${scale(av)})`;
     }).attr('stroke-width', 0.5).attr('stroke', `rgba(200, 203, 219, .9)`);
 
     stateRects.on('mouseover', (d, i, n)=> {
-        let sum = d3.sum(d.state.map(m=> m.realVal))
+        let sum = d3.sum(d.state.map(m=> m.value))
         let av = sum / d.state.length;
         let tool = d3.select('#tooltip');
         tool.transition()
@@ -345,9 +345,10 @@ export function renderDistibutions(pathData, mainDiv, scales){
     discreteDist.each((d, i, node)=>{
         let maxBin = 0;
         let maxState = null;
+    
         d.bins.map(m=> {
-            if(d3.sum(m.state.flatMap(s=> s.realVal)) > maxBin){
-                maxBin = d3.sum(m.state.flatMap(s=> s.realVal));
+            if(d3.sum(m.state.flatMap(s=> s.value)) > maxBin){
+                maxBin = d3.sum(m.state.flatMap(s=> s.value));
                 maxState = m.color.state;
             }
         });
@@ -360,7 +361,7 @@ export function renderDistibutions(pathData, mainDiv, scales){
         winStates.select('rect.state-rect').attr('fill', (c)=> {
                 return c.color.color;
             }).attr('opacity', (c)=>{
-                let sum = d3.sum(c.state.flatMap(s=> s.realVal));
+                let sum = d3.sum(c.state.flatMap(s=> s.value));
                 return sum/c.state.length;
             })
 
@@ -418,6 +419,7 @@ export function renderDistibutions(pathData, mainDiv, scales){
         return 0;
     })
     .y1(d=> {
+        console.log(d)
         let dat = Object.keys(d).length - 1
         let x = d3.scaleLinear().domain([0, 50]).range([0, 80]).clamp(true);
         return x(dat); 
@@ -442,17 +444,18 @@ export function renderDistibutions(pathData, mainDiv, scales){
 
     rangeRect.attr('width', 10);
     rangeRect.attr('height', (d, i)=> {
-        if(d.yScale != undefined){
-            let newy = d.yScale;
+        if(d.scales.yScale != undefined){
+            let newy = d.scales.yScale;
             newy.range([80, 0]);
-            return newy(d.lowerCI95) - newy(d.upperCI95)
+            return newy(d.values.lowerCI95) - newy(d.values.upperCI95)
         }else{
             return 0;
         }
     }).attr('transform', (d, i) => {
-        let newy = d.yScale;
+        
+        let newy = d.scales.yScale;
         newy.range([80, 0]);
-        return 'translate(0,'+newy(d.upperCI95)+')'
+        return 'translate(0,'+newy(d.values.upperCI95)+')'
     });
 
     rangeRect.attr('fill', "rgba(133, 193, 233, .05)");
@@ -467,9 +470,9 @@ export function renderDistibutions(pathData, mainDiv, scales){
 
     avRect.attr('transform', (d, i) => {
         if(d.data[0] != undefined){
-            let newy = d.data[0].yScale;
+            let newy = d.data[0].scales.yScale;
             newy.range([height, 0]);
-            let mean = d3.mean(d.data.map(m=> m.realVal));
+            let mean = d3.mean(d.data.map(m=> m.values.realVal));
             return 'translate(0,'+newy(mean)+')';
         }else{
             return 'translate(0,0)';
