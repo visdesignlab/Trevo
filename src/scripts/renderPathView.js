@@ -248,9 +248,11 @@ export function renderAttributes(attributeWrapper, data, scales, filterArray, co
     predictedAttrGrps.attr('transform', (d, i) => 'translate(0, '+(i * (attributeHeight + 5))+')');
 
     let attrLabel = predictedAttrGrps.append('text').text(d=> {
-        return d[d.length - 1].label});
+        return d[d.length - 1].label ? d[d.length - 1].label : d[d.length - 1].attrLabel});
     attrLabel.classed('attribute-label', true);
     attrLabel.attr('transform', 'translate(-15, 20)');
+
+    console.log(predictedAttrGrps.data())
 
     return predictedAttrGrps;
 }
