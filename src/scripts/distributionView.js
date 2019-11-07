@@ -454,29 +454,29 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
 
     });
 
-//     let disWrap = predictedWrap.filter(f=> f.type === 'discrete')
-//     let pathKeeper = []
-//     disWrap.each((d, i, node)=> {
-//         let winPosArray = [];
-//         d3.select(node[i]).selectAll('.win').each((r, j, n)=>{
-//             winPosArray.push([n[j].getBoundingClientRect().x,(n[j].getBoundingClientRect().y-5)])
-//             winPosArray.push([n[j].getBoundingClientRect().x + 15,(n[j].getBoundingClientRect().y-5)])
-//         });
-//         pathKeeper.push([...winPosArray]);
-//         let lineThing = d3.line();
-//         winPosArray[winPosArray.length -1][1] = winPosArray[winPosArray.length -1][1] + 15;
-//         winPosArray[winPosArray.length -2][1] = winPosArray[winPosArray.length -2][1] + 15;
-//         d.win = winPosArray;
-//     });
+    let disWrap = predictedWrap.filter(f=> f.type === 'discrete')
+    let pathKeeper = []
+    disWrap.each((d, i, node)=> {
+        let winPosArray = [];
+        d3.select(node[i]).selectAll('.win').each((r, j, n)=>{
+            winPosArray.push([n[j].getBoundingClientRect().x,(n[j].getBoundingClientRect().y + 10)])
+            winPosArray.push([n[j].getBoundingClientRect().x + 15,(n[j].getBoundingClientRect().y + 10)])
+        });
+        pathKeeper.push([...winPosArray]);
+        let lineThing = d3.line();
+        winPosArray[winPosArray.length -1][1] = winPosArray[winPosArray.length -1][1] + 2;
+        winPosArray[winPosArray.length -2][1] = winPosArray[winPosArray.length -2][1] + 2;
+        d.win = winPosArray;
+    });
 
-//     disWrap.each((e, i, n)=> {
-//         let lineThing = d3.line();
-//         d3.select(n[i]).select('.win-line').append('path').attr('d', (d)=> lineThing(d.win))
-//         .attr('transform', 'translate(-35, -'+n[i].getBoundingClientRect().y+')')
-//         .attr('fill', 'none')
-//         .attr('stroke', `rgba(200, 203, 219, .9)`)
-//         .attr('stoke-width', 1)
-//     })
+    disWrap.each((e, i, n)=> {
+        let lineThing = d3.line();
+        d3.select(n[i]).select('.win-line').append('path').attr('d', (d)=> lineThing(d.win))
+        .attr('transform', 'translate(-20, -'+n[i].getBoundingClientRect().y+')')
+        .attr('fill', 'none')
+        .attr('stroke', `rgba(200, 203, 219, .9)`)
+        .attr('stoke-width', 1)
+    })
 
 //     
     
