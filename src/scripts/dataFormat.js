@@ -100,6 +100,56 @@ function calculateCloseness(pair){
  });
 }
 
+export function calculateNewScales(attributes, keyList, colorKeeper){
+
+    return keyList.map((d, i)=> {
+
+        let attData = attributes.flatMap(f=> f[d]);
+        let color = colorKeeper[i] != undefined ? colorKeeper[i][0] : colorKeeper[0][0];
+       
+        if(attData[0].type == 'continuous'){
+            
+            let max = d3.max(attData.flatMap(m=> m.values.upperCI95));
+            let min = d3.min(attData.flatMap(m=> m.values.lowerCI95));
+            let mean = d3.mean(attData.flatMap(m=> m.values.realVal));
+            
+            return {
+                'field': d, 
+                'type':'continuous',
+                'max': max, 
+                'min':  min,
+                'yScale': d3.scaleLinear().range([0, 43]).domain([min, max]).clamp(true),
+                'satScale': d3.scaleLinear().range([0, .9]).domain([min, max]),
+                'colorScale': d3.scaleLinear().range([color, '#f23929']).domain([min, max]),
+                'catColor': color,
+            };
+        }else{
+            let scaleCat = d3.keys(attData[0].values);
+            return { 
+                'field': d,
+                'type':'discrete',
+                'stateColors': scaleCat.map((sc, j)=> {
+                    return {'state': sc, 'color': colorKeeper[j][0]};
+                }),
+                'catColor': color,
+                'scales': scaleCat.map(sc=> {
+                let scaleName = sc;
+               
+                let max = 1;
+                let min = 0;
+                return {
+                    'field': d, 
+                    'scaleName': scaleName,
+                    'max': max, 
+                    'min':  min,
+                    'yScale': d3.scaleLinear().range([45, 0]).domain([min, max]),
+                };
+                
+            }) };
+        }
+    });
+}
+
 
 export function calculateScales(calculatedAtt, colorKeeper){
     return Object.keys(calculatedAtt).map((d, i)=> {
