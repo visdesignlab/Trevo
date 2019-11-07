@@ -14,6 +14,7 @@ export function pairPaths(pathData){
             m.distance = getDistance(m);
             m.deltas = calculateDelta(m);
             m.closeness = calculateCloseness(m);
+            console.log(m.closeness)
             return m;
         })
     })
@@ -49,17 +50,18 @@ function calculateDelta(pair){
     let p1 = pair.p1.filter((f, i)=> i >= p1Index);
     let p2 = pair.p2.filter((f, i)=> i >= p2Index);
 
-    let range = 1 - p1[0].edgeMove;
+ 
+    let range = maxTimeKeeper[0] - p1[0].combLength;
     let binCount = d3.max([p1.length, p2.length])
     let binStep = range / binCount;
    
     let bins = [...new Array(binCount-1)].map((d, i)=> {
-        return {'bottom': p1[0].edgeMove + (i*binStep), 'top': p1[0].edgeMove + ((i+1)*binStep) }
+        return {'bottom': p1[0].combLength + (i*binStep), 'top': p1[0].combLength + ((i+1)*binStep) }
     })
    
     bins = bins.map((d, i)=> {
-        let one = p1.filter(f=> (f.edgeMove <= d.top) && (f.edgeMove >= d.bottom))
-        let two = p2.filter(f=> (f.edgeMove <= d.top) && (f.edgeMove >= d.bottom))
+        let one = p1.filter(f=> (f.combLength <= d.top) && (f.combLength >= d.bottom))
+        let two = p2.filter(f=> (f.combLength <= d.top) && (f.combLength >= d.bottom))
         d.one = one;
         d.two = two;
         return d;
@@ -81,11 +83,13 @@ function calculateDelta(pair){
                     .map(m=> {
                         let name = m.key;
                         let valdiffs = bins.map((b, i)=> {
-                            return Math.abs(b.one[0].attributes[name].realVal - b.two[0].attributes[name].realVal);
+                            return Math.abs(b.one[0].attributes[name].values.realVal - b.two[0].attributes[name].values.realVal);
                         });
                         m.value = d3.max(valdiffs)
                         return m;
                     });
+
+  
 
     return attributes;
 }
@@ -96,7 +100,7 @@ function calculateCloseness(pair){
  let leaf2 = pair.p2.filter(p=> p.leaf === true)[0].attributes;
  
  return d3.entries(leaf1).filter(f=> f.value.type === 'continuous').map(m=> {
-     m.value = Math.abs(m.value.realVal - leaf2[m.key].realVal);
+     m.value = Math.abs(m.value.values.realVal - +d3.entries(leaf2[m.key].values)[0].value);
      
      return m
  });
@@ -114,7 +118,7 @@ export function calculateNewScales(attributes, keyList, colorKeeper){
             let max = d3.max(attData.flatMap(m=> m.values.upperCI95));
             let min = d3.min(attData.flatMap(m=> m.values.lowerCI95));
             let mean = d3.mean(attData.flatMap(m=> m.values.realVal));
-            
+
             return {
                 'field': d, 
                 'type':'continuous',
@@ -157,6 +161,7 @@ export function calculateScales(calculatedAtt, colorKeeper){
     return Object.keys(calculatedAtt).map((d, i)=> {
        
         if(calculatedAtt[d].type == 'continuous'){
+            
             let max = d3.max(calculatedAtt[d].rows.map(m=> m.upperCI95));
             let min = d3.min(calculatedAtt[d].rows.map(m=> m.lowerCI95));
             let mean = d3.mean(calculatedAtt[d].rows.map(m=> m.realVal));

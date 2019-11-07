@@ -51,7 +51,10 @@ export function rankingControl(data){
 
 export function generatePairs(data){
 
+  console.log(data)
+
         let pairs = pairPaths(data);
+        console.log(pairs)
         let weights = [1, 1, 1];
 
         let attKeys = d3.entries(pairs[0].p1[0].attributes)

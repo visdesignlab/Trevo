@@ -121,9 +121,6 @@ export function renderDistibutions(pathData, mainDiv, scales){
         let leafData = {'data': leafAttr}
    
         if(scale.type === 'continuous'){
-         
-           // let max = d3.max(mapNorm.flatMap(m=> m.data).map(v=> v.realVal));
-           // let min = d3.min(mapNorm.flatMap(m=> m.data).map(v=> v.realVal));
            
             let x = d3.scaleLinear().domain([scale.min, scale.max]).range([0, height]);
     
@@ -419,7 +416,6 @@ export function renderDistibutions(pathData, mainDiv, scales){
         return 0;
     })
     .y1(d=> {
-        console.log(d)
         let dat = Object.keys(d).length - 1
         let x = d3.scaleLinear().domain([0, 50]).range([0, 80]).clamp(true);
         return x(dat); 
