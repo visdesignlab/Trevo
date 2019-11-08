@@ -29,8 +29,6 @@ export function drawPathsAndAttributes(pathData, main, calculatedScales){
 
     let attrMove = attKeys === null ? calculatedScales.length : attKeys.length;
 
-   
-
     let predictedAttrGrps = renderAttributes(attributeWrapper, attData, calculatedScales, null, collapsed);
     let attributeHeight = (collapsed === 'true')? 22 : 45;
     pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (attrMove + 1))) +')');
@@ -179,7 +177,6 @@ export function renderPaths(pathData, main, scales){
    
     nodeGroups.attr('transform', (d)=> {
         let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, 1000]);
-       // let distance = (moveMetric === 'move') ? d.move : x(d.combLength);
         let distance = x(d.combLength);
         return 'translate('+ distance +', 10)';});
 
@@ -251,8 +248,6 @@ export function renderAttributes(attributeWrapper, data, scales, filterArray, co
         return d[d.length - 1].label ? d[d.length - 1].label : d[d.length - 1].attrLabel});
     attrLabel.classed('attribute-label', true);
     attrLabel.attr('transform', 'translate(-15, 20)');
-
-    console.log(predictedAttrGrps.data())
 
     return predictedAttrGrps;
 }

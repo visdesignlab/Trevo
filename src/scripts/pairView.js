@@ -48,7 +48,6 @@ export function rankingControl(data){
     
   
 }
-
 export function generatePairs(data){
 
         let pairs = pairPaths(data);
@@ -72,9 +71,8 @@ export function generatePairs(data){
 
         updateRanking([...pairs], attKeys[0].field, weights);
 }
-
 export function updateRanking(pairs, field, weights){
-    console.log(pairs, field, weights)
+  
     let deltaMax = d3.max([...pairs].map(m=> m.deltas.filter(f=> f.key === field)[0]).map(m=> m.value));
     let closeMax = d3.max([...pairs].map(m=> m.closeness.filter(f=> f.key === field)[0]).map(m=> m.value));
     let distMax = d3.max([...pairs].map(d=> d.distance))
@@ -121,7 +119,7 @@ function drawSorted(pairs, field){
         .attr('fill', '#fff');
 
     pairWraps.append('text').text((d, i)=> {
-        return `${d.p1[d.p1.length - 1].label} + ${d.p2[d.p2.length - 1].label}`
+        return `${d.p1[d.p1.length - 1].node} + ${d.p2[d.p2.length - 1].node}`
     }).attr('y', -10);
 
     let scoreWrap = pairWraps.append('g').classed('score-wrap', true);
