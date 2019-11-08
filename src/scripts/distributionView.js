@@ -148,7 +148,7 @@ export function binGroups(pathData, groupLabel, scales){
             let step = max / branchCount;
             let base = (i * step);
             let top = ((i + 1)* step);
-            return {'base': base, 'top': top, 'binI': i }
+            return {'base': base, 'top': top, 'binI': i , 'step':step}
     });
 
     let internalNodes = newNormed.map(path => path.filter(node=> (node.leaf != true) && (node.root != true)));
@@ -192,6 +192,7 @@ export function binGroups(pathData, groupLabel, scales){
                 n.type = scale.type;
                 n.bins = histogram(n.data);
                 n.domain = [scale.max, scale.min];
+                n.bins.count = branchCount;
 
                // console.log('bins', d3.mean(n.bins.map(m=> m.length)))
 
@@ -199,6 +200,7 @@ export function binGroups(pathData, groupLabel, scales){
                     if(i === 0){
                          n.bins = histogram(rootNodes.map(m=> m.attributes[key]));
                          n.data = rootNodes.map(m=> m.attributes[key]);
+                         n.bins.count = branchCount;
                     }else{
                         n.bins = nodeArray[i-1].bins;
                         n.data = nodeArray[i-1].data;
@@ -225,7 +227,6 @@ export function binGroups(pathData, groupLabel, scales){
                     'type': scale.type, 
                     'leafData': leafData, 
                     'rootData': rootNodes.map(m=> m.attributes[key])[0]}
-                           //IF WE DONT HAVE ANY BRANCHES< WE ASSUME THAT THEY ARE THE SAME AS THE PREVIOUS
    
             return newK;
 
@@ -270,7 +271,6 @@ export function binGroups(pathData, groupLabel, scales){
                     }
                 }
                 n.type = scale.type;
- 
                 return n;
             });
 
@@ -376,7 +376,12 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
         .attr('height', dimensions.squareDim)
         .attr('width', dimensions.squareDim)
         .attr('fill', '#fff').attr('opacity', 1);
-    let rootRects = rootStateGroups.append('rect').classed('color-rect', true).attr('height', dimensions.squareDim).attr('width', dimensions.squareDim);
+
+    let rootRects = rootStateGroups.append('rect')
+        .classed('color-rect', true)
+        .attr('height', dimensions.squareDim)
+        .attr('width', dimensions.squareDim);
+
     rootRects.attr('fill', (d, i)=> {
             return `rgba(89, 91, 101, ${d.state[0].value})`;
         }).attr('stroke-width', 0.5).attr('stroke', `rgba(200, 203, 219, .9)`);
@@ -523,9 +528,10 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
     .y0(d=> {
         return 0;
     })
-    .y1(d=> {
+    .y1((d, i, n)=> {
         let dat = Object.keys(d).length - 1
-        let x = d3.scaleLinear().domain([0, 50]).range([0, dimensions.height]).clamp(true);
+     
+        let x = d3.scaleLinear().domain([0, 50]).range([0, (dimensions.predictedWidth/n.count)-10]).clamp(true);
         return x(dat); 
     });
 
