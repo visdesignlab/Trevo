@@ -28,7 +28,7 @@ export function rankingControl(data){
     .attr("xlink:href", "./public/mini-diagram.gif");
 
     weightPicker.append('text').text('Distance').attr('font-size', 10).attr('x', 85).attr('y', 60);
-    weightPicker.append('text').text('Delta').attr('font-size', 10).attr('x', 64).attr('y', 20);
+    weightPicker.append('text').text('Delta').attr('font-size', 10).attr('x', 66).attr('y', 20);
     weightPicker.append('text').text('Closeness').attr('font-size', 10).attr('x', 195).attr('y', 22);
 
     let labels = ['Distance', 'Delta', 'Closeness'];
@@ -137,24 +137,32 @@ function drawSorted(pairs, field){
 
     let scoreWrap = pairWraps.append('g').classed('score-wrap', true);
     let scoreGroups = scoreWrap.selectAll('g.score').data((d, i)=> {
-        return [{label: 'Distance', value: d.distance, rank: d.distanceRank}, 
-         {label: 'Delta', value: d.delta.value, rank: d.deltaRank},
-         {label: 'Closeness', value: d.closeness.value, rank: d.closenessRank}
+        return [{label: 'Distance', value: d.distance, score: d.distanceRank}, 
+         {label: 'Delta', value: d.delta.value, score: d.deltaRank},
+         {label: 'Closeness', value: d.closeness.value, score: d.closenessRank}
         ];
     }).join('g').classed('score', true);
 
-    let scoreLabel = scoreWrap.append('g').attr('transform', `translate(650, 0)`);
-    scoreLabel.append('text').text('Rank').attr('y', 20).style('text-anchor', 'end').style('font-size', 11);
+    let scoreLabel = scoreWrap.append('g').attr('transform', `translate(650, 10)`);
+    scoreLabel.append('rect').attr('width', 200).attr('height', 40).attr('fill', 'gray').attr('y', 45).attr('opacity', .2)
+    scoreLabel.append('text').text('Score').attr('y', 20).style('text-anchor', 'end').style('font-size', 11);
     scoreLabel.append('text').text('Value').attr('y', 40).style('text-anchor', 'end').style('font-size', 11);
+
+    scoreLabel.append('text').text('Total Score').attr('y', 60).attr('x', 95).style('text-anchor', 'end').style('font-size', 11);
+    scoreLabel.append('text').text('Rank').attr('y', 80).attr('x', 95).style('text-anchor', 'end').style('font-size', 11);
 
     scoreGroups.attr('transform', (d, i, n)=> {
        return  i === 0 ? `translate(${(670)},0)` : 
        `translate(${(660+(d3.sum(d3.selectAll(n).filter((f, j)=> i > j).data().map(m=> m.label.length * 6)))+ (i*30))},0)`;
     });
     var zero = d3.format(".3n");
-    scoreGroups.append('text').text((d, i)=>  d.label).style('font-size', 10);
-    scoreGroups.append('text').text((d, i)=> zero(d.rank)).style('font-size', 10).attr('y', 20);
-    scoreGroups.append('text').text((d, i)=> zero(d.value)).style('font-size', 10).attr('y', 40);
+    scoreGroups.append('text').text((d, i)=>  d.label).style('font-size', 10).attr('y', 10);;
+    scoreGroups.append('text').text((d, i)=> zero(d.score)).style('font-size', 10).attr('y', 30);
+    scoreGroups.append('text').text((d, i)=> zero(d.value)).style('font-size', 10).attr('y', 50);
+
+    scoreLabel.append('text').text((d, i, n)=> zero(d.closenessRank + d.distanceRank + d.deltaRank)).style('font-size', 10).attr('y', 60).attr('x', 115);
+    scoreLabel.append('text').text((d, i)=> i+1).style('font-size', 10).attr('y', 80).attr('x', 115);
+
 
     let pairGroup = pairWraps.selectAll('g.pair').data(d=> [d.p1, d.p2]).join('g').classed('pair', true);
 
