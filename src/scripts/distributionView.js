@@ -613,7 +613,8 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
         let width = dimensions.observedWidth / n.length;
         return width;
     }).attr('height', (d, i, n)=> {
-        let y = d3.scaleLinear().domain([0, d.max]).range([0, (dimensions.height - dimensions.margin)])
+        let height = d.data[0] ? d.data[0].scales.stateColors.length * dimensions.squareDim : 0;
+        let y = d3.scaleLinear().domain([0, d.max]).range([0, (height)])
         return y(d.data.length);
     }).attr('fill', (d, i) => {
         return d.data[0] != undefined ? d.data[0].color : '#fff';
@@ -621,8 +622,9 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
 
     discBars.attr('transform', (d, i, n)=> {
         let movex = dimensions.observedWidth / n.length;
-        let y = d3.scaleLinear().domain([0, d.max]).range([0, (dimensions.height - dimensions.margin)])
-        let movey = (dimensions.height) - y(d.data.length);
+        let height = d.data[0] ? d.data[0].scales.stateColors.length * dimensions.squareDim : 0;
+        let y = d3.scaleLinear().domain([0, d.max]).range([0, (height)])
+        let movey = (height) - y(d.data.length);
         return 'translate('+(movex * i)+', '+movey+')'});
 
     dRects.on('mouseover', (d, i, n)=> {
@@ -641,13 +643,10 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
                 return b[0] != undefined ? b[0].winState : '';
                 })
             let xPoint = d3.scalePoint().domain(d.stateKeys).range([0, dimensions.observedWidth]).padding(.6)
-            let y = d3.scaleLinear().domain([0, d.leafData.data.length]).range([(dimensions.height - dimensions.margin), 0]);
-            d3.select(nodes[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(4)).attr('transform', 'translate(0, '+dimensions.margin+')');
-            d3.select(nodes[i]).append('g').classed('x-axis', true).call(d3.axisBottom(xPoint)).attr('transform', 'translate(0, '+dimensions.height+')');
+            let height = d.stateKeys ? d.stateKeys.length * dimensions.squareDim : 0;
+            let y = d3.scaleLinear().domain([0, d.leafData.data.length]).range([(height), 0]);
+            d3.select(nodes[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(4)).attr('transform', 'translate(0, '+height+')');
+            d3.select(nodes[i]).append('g').classed('x-axis', true).call(d3.axisBottom(xPoint)).attr('transform', 'translate(0, '+height+')');
     });
-
- //   branchBar.attr('transform', 'translate(80, 10)');
- //   d3.selectAll('.summary-wrapper').attr('transform', 'translate(90, 50)');
-
 
 }

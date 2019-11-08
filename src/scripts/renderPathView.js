@@ -56,7 +56,6 @@ export function drawPathsAndAttributes(pathData, main, calculatedScales){
                 leafStateFilter(d, calculatedScales);
                 nodeTooltipFlag = false;
                 d3.select("#state-tooltip").classed("hidden", true);
-
             });
 
             d3.select("#select-by-state").on('click', ()=> {
