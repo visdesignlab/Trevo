@@ -144,7 +144,7 @@ function drawSorted(pairs, field){
     }).join('g').classed('score', true);
 
     let scoreLabel = scoreWrap.append('g').attr('transform', `translate(650, 10)`);
-    scoreLabel.append('rect').attr('width', 200).attr('height', 40).attr('fill', 'gray').attr('y', 45).attr('opacity', .2)
+    scoreLabel.append('rect').attr('width', 200).attr('height', 40).attr('fill', 'gray').attr('y', 45).attr('opacity', .1)
     scoreLabel.append('text').text('Score').attr('y', 20).style('text-anchor', 'end').style('font-size', 11);
     scoreLabel.append('text').text('Value').attr('y', 40).style('text-anchor', 'end').style('font-size', 11);
 
