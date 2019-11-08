@@ -194,8 +194,6 @@ export function binGroups(pathData, groupLabel, scales){
                 n.domain = [scale.max, scale.min];
                 n.bins.count = branchCount;
 
-               // console.log('bins', d3.mean(n.bins.map(m=> m.length)))
-
                 if(d3.mean(n.bins.map(m=> m.length)) === 0){
                     if(i === 0){
                          n.bins = histogram(rootNodes.map(m=> m.attributes[key]));

@@ -9,21 +9,34 @@ export function rankingControl(data){
     let rankDiv = d3.select('#pair-rank').classed('hidden', false);
     rankDiv.selectAll('*').remove();
 
+    
+
     let defaultW = [1, 1, 1];
   
     let weightPicker = rankDiv
       .append('svg')
       .attr('width', 800)
-      .attr('height', 80)
+      .attr('height', 100)
       .append('g')
-      .attr('transform', 'translate(30,10)');
+      .attr('transform', 'translate(10,10)');
+
+     weightPicker
+    .append("svg:image")
+    .attr('width', 200)
+    .attr('height', 140)
+    .attr('y', -50)
+    .attr("xlink:href", "./public/mini-diagram.gif");
+
+    weightPicker.append('text').text('Distance').attr('font-size', 10).attr('x', 85).attr('y', 60);
+    weightPicker.append('text').text('Delta').attr('font-size', 10).attr('x', 64).attr('y', 20);
+    weightPicker.append('text').text('Closeness').attr('font-size', 10).attr('x', 195).attr('y', 22);
 
     let labels = ['Distance', 'Delta', 'Closeness'];
 
-    weightPicker.selectAll('text').data(labels).join('text')
+    weightPicker.selectAll('text.labels').data(labels).join('text').classed('labels', true)
     .text(d=> d)
     .attr('y', 10)
-    .attr('x', (d, i)=> (200+(200 * i)));
+    .attr('x', (d, i)=> (300+(200 * i)));
   
     defaultW.forEach((color, i) => {
       var slider = slide
@@ -42,7 +55,7 @@ export function rankingControl(data){
   
       weightPicker
         .append('g')
-        .attr('transform', `translate(${200+(200 * i)}, 20)`)
+        .attr('transform', `translate(${300+(200 * i)}, 20)`)
         .call(slider);
     });
     
