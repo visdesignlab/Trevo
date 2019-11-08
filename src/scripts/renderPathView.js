@@ -9,6 +9,11 @@ import { drawBranchPointDistribution } from './distributionView';
 import { dropDown } from './buttonComponents';
 import { groupedView } from './viewControl';
 
+const dimensions = {
+    rectWidth: 6,
+    rectHeight: 20,
+}
+
 export function drawPathsAndAttributes(pathData, main, calculatedScales){
 
     let nodeTooltipFlag = true;
@@ -86,6 +91,8 @@ export function sizeAndMove(svg, attribWrap, data, attrMove){
         ///////////////////////////////////
 }
 export function renderPaths(pathData, main, scales){
+
+
     
     ////YOU SHOULD MOVE THESE APPENDING THINGS OUT OF HERE///////
     /////Rendering ///////
@@ -109,7 +116,7 @@ export function renderPaths(pathData, main, scales){
         }, {});
 
      ///Scales for circles ///
-    let circleScale = d3.scaleLog().range([6, 14]).domain([1, d3.max(Object.values(branchFrequency))]);
+    let circleScale = d3.scaleLog().range([6, 12]).domain([1, d3.max(Object.values(branchFrequency))]);
     let pathGroups = pathWrap.selectAll('.paths').data(pathData).join('g').classed('paths', true);
     let pathBars = pathGroups.append('rect').classed('path-rect', true);
     pathBars.attr('y', -8);
@@ -242,7 +249,8 @@ export function renderAttributes(attributeWrapper, data, scales, filterArray, co
     predictedAttrGrps.attr('transform', (d, i) => 'translate(0, '+(i * (attributeHeight + 5))+')');
 
     let attrLabel = predictedAttrGrps.append('text').text(d=> {
-        return d[d.length - 1].label ? d[d.length - 1].label : d[d.length - 1].attrLabel});
+        return d[d.length - 1].label ? d[d.length - 1].label : d[d.length - 1].attrLabel
+    });
     attrLabel.classed('attribute-label', true);
     attrLabel.attr('transform', 'translate(-15, 20)');
 
@@ -1274,7 +1282,7 @@ export function drawDiscreteAtt(predictedAttrGrps, collapsed, bars){
         return d[d.length - 1].type === 'discrete';
     });
 
-    discreteAtt.selectAll('*').remove();
+   // discreteAtt.selectAll('*').remove();
 
     let attributeHeight = (collapsed === 'true')? 20 : 45;
 

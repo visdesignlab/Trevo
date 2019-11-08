@@ -163,7 +163,6 @@ function drawSorted(pairs, field){
     scoreLabel.append('text').text((d, i, n)=> zero(d.closenessRank + d.distanceRank + d.deltaRank)).style('font-size', 10).attr('y', 60).attr('x', 115);
     scoreLabel.append('text').text((d, i)=> i+1).style('font-size', 10).attr('y', 80).attr('x', 115);
 
-
     let pairGroup = pairWraps.selectAll('g.pair').data(d=> [d.p1, d.p2]).join('g').classed('pair', true);
 
     var lineGen = d3.line()

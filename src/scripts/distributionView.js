@@ -594,7 +594,7 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
     ////OBSERVED CONTIUOUS/////
     let observedWrap = binnedWrap.append('g').classed('observed', true);
     observedWrap.attr('transform', (d, i, n)=> {
-        return 'translate('+ (dimensions.predictedWidth + 150) +', 0)'})
+        return 'translate('+ (dimensions.predictedWidth + 150) +', -5)'})
 
     let contOb = observedWrap.filter(f=> f.type === 'continuous');
 
@@ -635,7 +635,7 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
         let width = dimensions.observedWidth / n.length;
         return width;
     }).attr('height', (d, i, n)=> {
-        let height = d.data[0] ? d.data[0].scales.stateColors.length * dimensions.squareDim : 0;
+        let height = d.data[0] ? (d.data[0].scales.stateColors.length * dimensions.squareDim - 10): 0;
         let y = d3.scaleLinear().domain([0, d.max]).range([0, (height)])
         return y(d.data.length);
     }).attr('fill', (d, i) => {
@@ -644,7 +644,7 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
 
     discBars.attr('transform', (d, i, n)=> {
         let movex = dimensions.observedWidth / n.length;
-        let height = d.data[0] ? d.data[0].scales.stateColors.length * dimensions.squareDim : 0;
+        let height = d.data[0] ? (d.data[0].scales.stateColors.length * dimensions.squareDim - 10) : 0;
         let y = d3.scaleLinear().domain([0, d.max]).range([0, (height-5)])
         let movey = (height-5) - y(d.data.length);
         return 'translate('+(movex * i)+', '+movey+')'});
@@ -665,7 +665,7 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
                 return b[0] != undefined ? b[0].winState : '';
                 })
             let xPoint = d3.scalePoint().domain(d.stateKeys).range([0, dimensions.observedWidth]).padding(.6)
-            let height = d.stateKeys ? d.stateKeys.length * dimensions.squareDim : 0;
+            let height = d.stateKeys ? (d.stateKeys.length * dimensions.squareDim - 10) : 0;
             let y = d3.scaleLinear().domain([0, d.leafData.data.length]).range([(height), 0]);
             d3.select(nodes[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(4)).attr('transform', 'translate(0, '+height+')');
             d3.select(nodes[i]).append('g').classed('x-axis', true).call(d3.axisBottom(xPoint)).attr('transform', 'translate(0, '+height+')');

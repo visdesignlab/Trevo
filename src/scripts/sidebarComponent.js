@@ -13,9 +13,7 @@ import { linkSync } from 'fs';
 
 export function buildTreeStructure(paths, edges){
     let root = paths[0][0];
-    
     let nestedData = getNested(root, edges);
-   
     return nestedData;
 }
 
@@ -106,13 +104,10 @@ export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
     dropOptions.on('click', (d, i, n)=> {
         if(d.type === 'discrete'){
             renderTree(sidebar, d, true);
-            //updateTree(tree, dimensions, treeSvg, g, d, lengthBool);
         }else if(d.type === 'continuous'){
             renderTree(sidebar, null, false);
-            //updateTree(tree, dimensions, treeSvg, g, null, lengthBool);
         }else{
             renderTree(sidebar, null, false);
-           // updateTree(tree, dimensions, treeSvg, g, null, lengthBool);
         }
        sidebar.select('#show-drop-div-sidebar').classed('show', false);
     });
@@ -177,14 +172,6 @@ function collapseTree(treeData){
 
     let leaves = getLeaves(treeData, []);
 
-   
-    //GOING TO CHANGE ALL BLANK TO ANOLIS FOR THIS SITUATION///
-    //leaves.forEach(l=> l.data.clade === "Norops" ? l.data.clade = "Norops" : l.data.clade = "Anolis");
-
-    // leaves.forEach(l=> {
-    
-    //     l.data.attributes.Clade === "Norops" ? l.data.clade = "Norops" : l.data.clade = "Anolis"});
-
     return stepDown(treeData);
 
     function stepDown(node){
@@ -247,6 +234,8 @@ export function renderTree(sidebar, att, uncollapse, pheno){
         width : 290,
         height : 520
     }
+
+    console.log('att',att)
 
     // declares a tree layout and assigns the size
     var treemap = d3.tree()
@@ -312,6 +301,8 @@ function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, pheno){
     d3.select('.pheno-x-axis').remove();
     
     assignPosition(treenodes, 0);
+
+    console.log('atttttt',attrDraw)
 
    
     let branchCount = findDepth(treenodes, []);
@@ -396,10 +387,11 @@ function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, pheno){
     if(attrDraw != null){
         let leaves = node.filter(n=> n.data.leaf === true);
         let notleaves = node.filter(n=> n.data.leaf != true);
-        
+        console.log(attrDraw.stateColors)
         attrDraw.stateColors.forEach(att=> {
             let circ = leaves.filter(f=> {
-                return f.data.attributes[attrDraw.field].winState === att.state;
+                console.log(f.data.attributes[attrDraw.field].states.state)
+                return att.state.includes(f.data.attributes[attrDraw.field].states.state)//f.data.attributes[attrDraw.field].winState === att.state;
             }).select('circle');
             circ.attr('fill', att.color);
             circ.attr('r', 4)
