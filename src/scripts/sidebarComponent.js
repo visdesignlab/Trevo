@@ -8,8 +8,6 @@ import {getNested} from './pathCalc';
 import { dropDown } from './buttonComponents';
 import { updateRanking } from './pairView';
 import { pairPaths, maxTimeKeeper } from './dataFormat';
-import { linkSync } from 'fs';
-
 
 export function buildTreeStructure(paths, edges){
     let root = paths[0][0];
@@ -100,14 +98,17 @@ export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
 
     calculatedScales.map(m=> optionArray.push(m));
 
-    let dropOptions = dropDown(sidebar, optionArray, 'See Values','show-drop-div-sidebar');
+    let dropOptions = dropDown(sidebar, optionArray, `Color By Value`,'show-drop-div-sidebar');
     dropOptions.on('click', (d, i, n)=> {
         if(d.type === 'discrete'){
             renderTree(sidebar, d, true);
+            d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Colored by ${d.field}`)
         }else if(d.type === 'continuous'){
             renderTree(sidebar, d, true);
+            d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Colored by ${d.field}`)
         }else{
             renderTree(sidebar, null, false);
+            d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Color By Value`)
         }
        sidebar.select('#show-drop-div-sidebar').classed('show', false);
     });
@@ -227,15 +228,12 @@ function addingEdgeLength(edge, data){
 
 export function renderTree(sidebar, att, uncollapse, pheno){
 
-  
     // set the dimensions and margins of the diagram
     let dimensions = {
         margin : {top: 10, right: 90, bottom: 50, left: 20},
         width : 290,
         height : 520
     }
-
-    console.log('att',att)
 
     // declares a tree layout and assigns the size
     var treemap = d3.tree()
@@ -297,8 +295,6 @@ function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, pheno){
     
     assignPosition(treenodes, 0);
 
-    console.log('atttttt',attrDraw)
-
     let branchCount = findDepth(treenodes, []);
     let xScale = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, dimensions.width]).clamp(true);
     let yScale = d3.scaleLinear().range([dimensions.height, 0]).domain([0, 1])
@@ -315,7 +311,7 @@ function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, pheno){
         yScale.domain([0, maxTimeKeeper[0]]).range([0, 500])
     }
 
-// adds the links between the nodes
+    // adds the links between the nodes
     let link = g.selectAll(".link")
     .data( treenodes.descendants().slice(1))
     .join("path")
@@ -366,7 +362,6 @@ function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, pheno){
         if(length && pheno === undefined){
             return "translate(" + xScale(d.data.combEdge) + "," + yScale(d.position) + ")"; 
         }else{
-           // return "translate(" + d.y + "," + d.x + ")"; 
            return "translate(" + (xScale(d.data.attributes[pheno].values.realVal) - 5) + "," + yScale(d.data.combEdge) + ")"; 
         }
     });
@@ -385,17 +380,11 @@ function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, pheno){
             });
         }else{
             let scale = attrDraw.yScale;
-            scale.range(['#fff', 'red']);
-       
+            scale.range(['#fff', '#E74C3C']);
             leaves.select('circle').attr('fill', (d, i)=> {
-                console.log(d.data.attributes[attrDraw.field].values.realVal, attrDraw)
                 return scale(d.data.attributes[attrDraw.field].values.realVal);
-            })
-
-
+            });
         }
-            
-       
     }else{
         node.selectAll('circle').attr('fill', 'gray');
     }
