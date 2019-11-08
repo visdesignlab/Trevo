@@ -354,7 +354,11 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
         return d.bins}).join('g').classed('root-state-groups', true);
 
     rootStateGroups.attr('transform', (d, i)=> `translate(0, ${3.5+(i*(dimensions.squareDim+2))})`);
-    let rootRects = rootStateGroups.append('rect').attr('height', dimensions.squareDim).attr('width', dimensions.squareDim);
+    rootStateGroups.append('rect')
+        .attr('height', dimensions.squareDim)
+        .attr('width', dimensions.squareDim)
+        .attr('fill', '#fff').attr('opacity', 1);
+    let rootRects = rootStateGroups.append('rect').classed('color-rect', true).attr('height', dimensions.squareDim).attr('width', dimensions.squareDim);
     rootRects.attr('fill', (d, i)=> {
             return `rgba(89, 91, 101, ${d.state[0].value})`;
         }).attr('stroke-width', 0.5).attr('stroke', `rgba(200, 203, 219, .9)`);
@@ -365,7 +369,7 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
             return f.color.state === d3.selectAll(n).data().filter(m=> m.state[0].value === maxVal)[0].color.state;
         }).classed('win', true);
 
-    winStateRoot.select('rect').attr('fill', (c)=> {
+    winStateRoot.select('rect.color-rect').attr('fill', (c)=> {
             return c.color.color;
         }).attr('opacity', (c)=>{
             let sum = d3.sum(c.state.flatMap(s=> s.value));
@@ -470,7 +474,7 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
     disWrap.each((e, i, n)=> {
         let lineThing = d3.line();
         d3.select(n[i]).select('.win-line').append('path').attr('d', (d)=> lineThing(d.win))
-        .attr('transform', 'translate(-20, -'+n[i].getBoundingClientRect().y+')')
+        .attr('transform', 'translate(-75, -'+n[i].getBoundingClientRect().y+')')
         .attr('fill', 'none')
         .attr('stroke', `rgba(200, 203, 219, .9)`)
         .attr('stoke-width', 1)
