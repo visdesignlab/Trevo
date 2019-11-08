@@ -105,7 +105,7 @@ export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
         if(d.type === 'discrete'){
             renderTree(sidebar, d, true);
         }else if(d.type === 'continuous'){
-            renderTree(sidebar, null, false);
+            renderTree(sidebar, d, true);
         }else{
             renderTree(sidebar, null, false);
         }
@@ -243,15 +243,11 @@ export function renderTree(sidebar, att, uncollapse, pheno){
 
     addingEdgeLength(0, nestedData[0]);
 
-   
-
     //  assigns the data to a hierarchy using parent-child relationships
     var treenodes = d3.hierarchy(nestedData[0]);
 
     // maps the node data to the tree layout
     treenodes = treemap(treenodes);
-
-   
 
     let groupedBool = d3.select('#show-drop-div-group').attr('value');
     let lengthBool = d3.select('button#length').text() === 'Hide Lengths';
@@ -271,7 +267,6 @@ export function renderTree(sidebar, att, uncollapse, pheno){
         updateTree(newNodes, dimensions, treeSvg, g, att, lengthBool);
     }else{
         ////Break this out into other nodes////
-       
         updateTree(treenodes, dimensions, treeSvg, g, att, lengthBool, pheno);
     }
     /////END TREE STUFF
@@ -304,7 +299,6 @@ function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, pheno){
 
     console.log('atttttt',attrDraw)
 
-   
     let branchCount = findDepth(treenodes, []);
     let xScale = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, dimensions.width]).clamp(true);
     let yScale = d3.scaleLinear().range([dimensions.height, 0]).domain([0, 1])
@@ -338,19 +332,12 @@ function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, pheno){
         }else{
             return "M" + xScale(d.data.attributes[pheno].values.realVal) + "," + yScale(d.data.combEdge)
             + " " + xScale(d.parent.data.attributes[pheno].values.realVal) + "," + yScale(d.parent.data.combEdge);
-            /*
-            return "M" + d.y + "," + d.x
-            + "C" + (d.y + d.parent.y) / 2 + "," + d.x
-            + " " + (d.y + d.parent.y) / 2 + "," + d.parent.x
-            + " " + d.parent.y + "," + d.parent.x;
-            */
         }       
     });
 
     if(pheno){
         link.style('opacity', 0.3);
         g.attr('transform', 'translate(30, 50)');
-        //link.attr('transform', 'translate(30, 0)');
 
         let x = xScale.domain(treenodes.data.attributes[pheno].scales.yScale.domain()).range([0, (dimensions.width+20)]);
         let xAxis = d3.axisBottom(x);
@@ -387,16 +374,28 @@ function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, pheno){
     if(attrDraw != null){
         let leaves = node.filter(n=> n.data.leaf === true);
         let notleaves = node.filter(n=> n.data.leaf != true);
-        console.log(attrDraw.stateColors)
-        attrDraw.stateColors.forEach(att=> {
-            let circ = leaves.filter(f=> {
-                console.log(f.data.attributes[attrDraw.field].states.state)
-                return att.state.includes(f.data.attributes[attrDraw.field].states.state)//f.data.attributes[attrDraw.field].winState === att.state;
-            }).select('circle');
-            circ.attr('fill', att.color);
-            circ.attr('r', 4)
-            notleaves.selectAll('circle').attr('fill', 'gray');
-        });
+
+        if(attrDraw.type === 'discrete'){
+            attrDraw.stateColors.forEach(att=> {
+                let circ = leaves.filter(f=> {
+                    return att.state.includes(f.data.attributes[attrDraw.field].states.state)//f.data.attributes[attrDraw.field].winState === att.state;
+                }).select('circle');
+                circ.attr('fill', att.color);
+                notleaves.selectAll('circle').attr('fill', 'gray');
+            });
+        }else{
+            let scale = attrDraw.yScale;
+            scale.range(['#fff', 'red']);
+       
+            leaves.select('circle').attr('fill', (d, i)=> {
+                console.log(d.data.attributes[attrDraw.field].values.realVal, attrDraw)
+                return scale(d.data.attributes[attrDraw.field].values.realVal);
+            })
+
+
+        }
+            
+       
     }else{
         node.selectAll('circle').attr('fill', 'gray');
     }
