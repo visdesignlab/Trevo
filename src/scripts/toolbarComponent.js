@@ -13,7 +13,7 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pat
     let viewDrop = dropDown(toolbar, viewArray, viewArray[0].field, 'change-view');
 
     viewDrop.on('click', (d, i, n)=> {
-        updateMainView(calculatedScales, d);
+        updateMainView(calculatedScales, d.field);
         d3.select('.dropdown.change-view').select('button').node().value = d.field;
         d3.select('.dropdown.change-view').select('button').text(d.field)
         d3.select('#change-view').classed('show', false);

@@ -52,7 +52,6 @@ export function drawPathsAndAttributes(pathData, main, calculatedScales){
             d3.select("#state-tooltip").classed("hidden", false);
 
             d3.select("#filter-by-state").on('click', ()=> {
-                
                 leafStateFilter(d, calculatedScales);
                 nodeTooltipFlag = false;
                 d3.select("#state-tooltip").classed("hidden", true);
@@ -110,7 +109,6 @@ export function renderPaths(pathData, main, scales){
         }, {});
 
      ///Scales for circles ///
-    
     let circleScale = d3.scaleLog().range([6, 14]).domain([1, d3.max(Object.values(branchFrequency))]);
     let pathGroups = pathWrap.selectAll('.paths').data(pathData).join('g').classed('paths', true);
     let pathBars = pathGroups.append('rect').classed('path-rect', true);

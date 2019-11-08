@@ -14,22 +14,20 @@ export function updateMainView(scales, d){
 
     main.selectAll('*').remove();
   
-    if(d.field === 'Path View'){
+    if(d === 'Path View' || d === null){
         d3.select('#pair-rank').classed('hidden', true);
         drawPathsAndAttributes(data, main, scales, moveMetric);
         document.getElementById("scrunch").disabled = false;
-    }else if(d.field === 'Summary View'){
+    }else if(d === 'Summary View'){
         d3.select('#pair-rank').classed('hidden', true);
         renderDistibutions(data, main, scales, moveMetric);
         document.getElementById("scrunch").disabled = true;
-    }else if(d.field === 'Pair View'){
+    }else if(d === 'Pair View'){
         rankingControl(data);
         generatePairs(data);
     }else{
         console.error('field not found');
     }
-
-
 }
 
 export function initialViewLoad(scales){

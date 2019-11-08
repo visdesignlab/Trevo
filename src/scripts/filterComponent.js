@@ -63,8 +63,7 @@ export function getLatestData(){
 
 ///NEED TO BREAK THESE OUT INTO SEPARATE FILTERS
 export function toggleFilters(filterButton, main, scales){
-
-    let moveMetric = 'edgeLength';
+    console.log(filterButton, main, scales)
 
     let filterDiv = d3.select('#filter-tab');
     let data = getLatestData();
@@ -452,10 +451,11 @@ function queryFilter(filterDiv, filterButton, normedPaths, main, scales){
 }
 function renderAttToggles(filterDiv, normedPaths, scales){
 
-    let moveMetric = 'edgeLength';
+    console.log(normedPaths, scales.map(m=> m.field))
 
     ////NEED TO GET RID OF TOGGLE SVG
-    let keys = Object.keys(normedPaths[0][0].attributes);
+   // let keys = Object.keys(normedPaths[0][0].attributes);
+   let keys = scales.map(m=> m.field);
     let presentFilters = filterMaster.filter(f=> f.type === 'hide-attribute');
     let noShow = presentFilters.length > 0 ? presentFilters.map(m=> m.attribute) : [];
 
@@ -484,9 +484,7 @@ function renderAttToggles(filterDiv, normedPaths, scales){
     toggle.on('click', function(d, i){
         let togg = d3.select(this);
         toggleCircle(togg, scales);
-   
         filterMaster.push({'type':'hide-attribute', 'attribute':d, 'before-data': [...normedPaths]});
-
         let newKeys = d3.selectAll('.shown');
         let hideKeys = scales.filter(sc=> newKeys.data().indexOf(sc.field) === -1);
         let newFilMaster = filterMaster.filter(f=> f.type != 'hide-attribute');
@@ -494,6 +492,7 @@ function renderAttToggles(filterDiv, normedPaths, scales){
             newFilMaster.push({'type':'hide-attribute', 'attribute':key.field, 'before-data': [...normedPaths], 'data': [...normedPaths]});
         });
         filterMaster = newFilMaster;
+        console.log(filterMaster)
         updateMainView(scales, null);
     });
     let labelText = labelGroups.append('text').text(d=> d).style('font-size', 10);
@@ -504,6 +503,7 @@ function stateChange(selectorDiv, keys, selectId, label){
 
     let dropDownWrapper = selectorDiv.append('div').classed('selector', true);
     let header = dropDownWrapper.append('h6').text(label);
+
     	// create the drop down menu of cities
 	let selectOp = dropDownWrapper
     .append("select")

@@ -50,26 +50,28 @@ let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, 800]);
 export function drawGroupLabels(pathData, svg, groupLabel){
 
     let cladeLabel = svg.append('g').classed('clade-label', true).attr('transform', 'translate(10, 0)');
-    cladeLabel.append('rect').attr('width', 50).attr('height', (pathData.keys.length * (dimensions.height+ 15)))
-    .attr('fill', 'gray')
-    .style('opacity', 0.2)
-    .on('mouseover', (d, i)=>{
-        let treeNode  = d3.select('#sidebar').selectAll('.node');
-        let treeLinks  = d3.select('#sidebar').selectAll('.link');
-        treeNode.filter(f=> {
-            if(f.data.leaf){
-                let test = d3.entries(f.data.attributes).filter(f=> groupLabel.includes(f.key))[0].value;
-                return groupLabel.includes(test.states.state);
-            }else{
-                let test = d3.entries(f.data.attributes).filter(f=> groupLabel.includes(f.key))[0]
-                let testest = d3.entries(test.value.values).filter((f, i, n)=> {
-                    let max = d3.max(n.map(m=> m.value));
-                    return f.value === max;
-                })[0];
-                return groupLabel == testest.key;
-            }
-        }).classed('hover clade', true);
-     
+    cladeLabel.append('rect')
+        .attr('width', 50)
+        .attr('height', (pathData.keys.length * (dimensions.height+ 15)))
+        .attr('fill', 'gray')
+        .style('opacity', 0.2)
+        .on('mouseover', (d, i)=>{
+            let treeNode  = d3.select('#sidebar').selectAll('.node');
+            let treeLinks  = d3.select('#sidebar').selectAll('.link');
+            treeNode.filter(f=> {
+                if(f.data.leaf){
+                    let test = d3.entries(f.data.attributes).filter(f=> groupLabel.includes(f.key))[0].value;
+                    return groupLabel.includes(test.states.state);
+                }else{
+                    let test = d3.entries(f.data.attributes).filter(f=> groupLabel.includes(f.key))[0]
+                    let testest = d3.entries(test.value.values).filter((f, i, n)=> {
+                        let max = d3.max(n.map(m=> m.value));
+                        return f.value === max;
+                    })[0];
+                    return groupLabel == testest.key;
+                }
+            }).classed('hover clade', true);
+        
         treeLinks.filter(f=> {
             if(f.data.leaf){
                 let test = d3.entries(f.data.attributes).filter(f=> groupLabel.includes(f.key))[0].value;
@@ -94,7 +96,6 @@ export function drawGroupLabels(pathData, svg, groupLabel){
     cladeLabel.append('text').text(d=> d.label)
     .style('text-anchor', 'middle')
     .attr('transform', `translate(23, ${(pathData.keys.length * (dimensions.height+ 15)/2)}), rotate(-90)`);
-
 }
 
 export function groupDistributions(pathData, mainDiv, scales, groupAttr){
@@ -114,7 +115,7 @@ export function groupDistributions(pathData, mainDiv, scales, groupAttr){
         let group = d3.select(n[i]);
         group.style('text-align', 'center');
         group.append('text').text(d.label);
-        group.append('text').text(" Shown:" + d.paths.length);
+        group.append('text').text(` : ${d.paths.length} Paths` );
       
         let svg = group.append('svg');
         svg.attr('class', 'main-summary-view');
@@ -187,10 +188,22 @@ export function binGroups(pathData, groupLabel, scales){
             .domain(x.domain())  
             .thresholds(x.ticks(20)); 
   
-            mapNorm.forEach(n=> {
+            mapNorm.map((n, i, nodeArray)=> {
                 n.type = scale.type;
                 n.bins = histogram(n.data);
                 n.domain = [scale.max, scale.min];
+
+               // console.log('bins', d3.mean(n.bins.map(m=> m.length)))
+
+                if(d3.mean(n.bins.map(m=> m.length)) === 0){
+                    if(i === 0){
+                         n.bins = histogram(rootNodes.map(m=> m.attributes[key]));
+                         n.data = rootNodes.map(m=> m.attributes[key]);
+                    }else{
+                        n.bins = nodeArray[i-1].bins;
+                        n.data = nodeArray[i-1].data;
+                    }
+                }
                 return n;
             });
 
@@ -207,8 +220,13 @@ export function binGroups(pathData, groupLabel, scales){
 
             leafData.bins = histogramO(leafAttr);
       
-            let newK = {'key': key, 'branches': [...mapNorm], 'type': scale.type, 'leafData': leafData, 'rootData': rootNodes.map(m=> m.attributes[key])[0]}
-
+            let newK = {'key': key, 
+                    'branches': [...mapNorm], 
+                    'type': scale.type, 
+                    'leafData': leafData, 
+                    'rootData': rootNodes.map(m=> m.attributes[key])[0]}
+                           //IF WE DONT HAVE ANY BRANCHES< WE ASSUME THAT THEY ARE THE SAME AS THE PREVIOUS
+   
             return newK;
 
         }else{
@@ -623,8 +641,8 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
     discBars.attr('transform', (d, i, n)=> {
         let movex = dimensions.observedWidth / n.length;
         let height = d.data[0] ? d.data[0].scales.stateColors.length * dimensions.squareDim : 0;
-        let y = d3.scaleLinear().domain([0, d.max]).range([0, (height)])
-        let movey = (height) - y(d.data.length);
+        let y = d3.scaleLinear().domain([0, d.max]).range([0, (height-5)])
+        let movey = (height-5) - y(d.data.length);
         return 'translate('+(movex * i)+', '+movey+')'});
 
     dRects.on('mouseover', (d, i, n)=> {
