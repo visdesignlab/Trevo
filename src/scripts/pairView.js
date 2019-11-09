@@ -74,12 +74,14 @@ export function generatePairs(data){
                     });
         
         let drop = d3.select('.attr-drop.dropdown')
-          .selectAll('a').empty() ? dropDown(d3.select('#toolbar'), attKeys, attKeys[0].field, 'attr-drop') : d3.select('.attr-drop.dropdown').selectAll('a');
+          .selectAll('a').empty() ? dropDown(d3.select('#toolbar'), attKeys, `Trait: ${attKeys[0].field}`, 'attr-drop') : d3.select('.attr-drop.dropdown').selectAll('a');
 
         drop.on('click', (d, i, n)=> {
             updateRanking(pairPaths(data), d.field, weights);
             renderTree(d3.select('#sidebar'), null, true, d.field);
-            d3.select('.attr-drop.dropdown').select('button').text(d.field);
+            d3.select('.attr-drop.dropdown').select('button').attr('value', d.field);
+            d3.select('.attr-drop.dropdown').select('button').text(`Trait: ${d.field}`);
+            d3.select('#attr-drop').classed('show', false);
         });
 
         updateRanking([...pairs], attKeys[0].field, weights);
@@ -245,8 +247,7 @@ function drawSorted(pairs, field){
         return d3.select(this).classed('hover', true);
     })
     .on('mouseleave', function(){
-       // let axisGroup = d3.select(this).select('.y-axis');
-       // axisGroup.remove();
+    
         let treeNode  = d3.select('#sidebar').selectAll('.node')
         .classed('hover', false)
         .classed('hover-neighbor', false)

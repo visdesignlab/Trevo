@@ -119,19 +119,22 @@ export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
       phenogramButton.on('click', ()=> {
           if(phenogramButton.text() === 'View Phenogram'){
             if(d3.select('.attr-drop.dropdown').select('button').empty()){
-                let drop = dropDown(d3.select('#toolbar'), optionArray, optionArray[1].field, 'attr-drop');
+                let drop = dropDown(d3.select('#toolbar'), optionArray, `Trait: ${optionArray[1].field}`, 'attr-drop');
+                d3.select('.attr-drop.dropdown').select('button').attr('value', optionArray[1].field);
                 drop.on('click', (d, i, n)=> {
                     if(d3.select('.dropdown.change-view').select('button').node().value === "View Pairs"){
                         updateRanking(pairPaths(normedPaths), d.field);
                     }
                     renderTree(d3.select('#sidebar'), null, true, d.field);
-                    d3.select('.attr-drop.dropdown').select('button').text(d.field);
+                    d3.select('.attr-drop.dropdown').select('button').text(`Trait: ${d.field}`);
+                    d3.select('.attr-drop.dropdown').select('button').attr('value', d.field);
+                    d3.select('#attr-drop').classed('show', false);
                 });
-    
-                renderTree(d3.select('#sidebar'), null, true, d3.select('.attr-drop.dropdown').select('button').text())
+              
+                renderTree(d3.select('#sidebar'), null, true, d3.select('.attr-drop.dropdown').select('button').attr('value'))
               }else{
     
-                renderTree(d3.select('#sidebar'), null, true, d3.select('.attr-drop.dropdown').select('button').text())
+                renderTree(d3.select('#sidebar'), null, true, d3.select('.attr-drop.dropdown').select('button').attr('value'))
               }
               phenogramButton.text('View Phylogeny');
           }else{
@@ -140,8 +143,6 @@ export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
             phenogramButton.text('View Phenogram');
 
           }
-          
-          
       })
 }
 

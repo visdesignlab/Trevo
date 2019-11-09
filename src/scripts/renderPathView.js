@@ -10,8 +10,9 @@ import { dropDown } from './buttonComponents';
 import { groupedView } from './viewControl';
 
 const dimensions = {
-    rectWidth: 6,
-    rectHeight: 20,
+    rectWidth: 15,
+    rectHeight: 40,
+    collapsedHeight: 20,
 }
 
 export function drawPathsAndAttributes(pathData, main, calculatedScales){
@@ -92,8 +93,6 @@ export function sizeAndMove(svg, attribWrap, data, attrMove){
 }
 export function renderPaths(pathData, main, scales){
 
-
-    
     ////YOU SHOULD MOVE THESE APPENDING THINGS OUT OF HERE///////
     /////Rendering ///////
     let svgTest = main.select('#main-path-view');
@@ -211,7 +210,6 @@ export function renderPaths(pathData, main, scales){
                 let notIt = pathGroups.filter(path => {
                     return path.map(node => node.node).indexOf(d.node) === -1;
                 });
-
                 nodeTooltipFlag = false;
                 d3.select("#branch-tooltip").classed("hidden", true);
                 pathSelected(test.data(), notIt.data(), scales);
@@ -270,12 +268,11 @@ async function continuousPaths(innerTimeline, collapsed){
     });
 
     //THIS IS THE PATH GENERATOR FOR THE CONTINUOUS VARIABLES
-    let height = (collapsed === 'true')? 20 : 45;
+    let height = (collapsed === 'true')? dimensions.collapsedHeight : dimensions.rectHeight;
     var lineGen = d3.line()
     .x(d=> {
         let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, 1000]);
-       // let distance = (moveMetric === 'move') ? d.move : x(d.combLength);
-       let distance = x(d.combLength);
+        let distance = x(d.combLength);
         return distance; })
     .y(d=> {
         let y = d.scales.yScale;
@@ -301,7 +298,7 @@ export function drawContAtt(predictedAttrGrps, collapsed){
         return (d[d.length - 1] != undefined) ? d[d.length - 1].type === 'continuous' : d.type === 'continuous';
     });
 
-    let attributeHeight = (collapsed === 'true') ? 20 : 45;
+    let attributeHeight = (collapsed === 'true') ? dimensions.collapsedHeight : dimensions.rectHeight;
 
     let innerTimeline = continuousAtt.append('g').classed('attribute-time-line', true);
     /////DO NOT DELETE THIS! YOU NEED TO SEP CONT AND DICRETE ATTR. THIS DRAWS LINE FOR THE CONT/////
@@ -313,21 +310,21 @@ export function drawContAtt(predictedAttrGrps, collapsed){
 
     let innerBars = attributeNodesCont.append('g').classed('inner-bars', true);
 
-    let innerRect = innerBars.append('rect').classed('attribute-inner-bar', true);
-    innerRect.attr('height', attributeHeight);
+    // let innerRect = innerBars.append('rect').classed('attribute-inner-bar', true);
+    // innerRect.attr('height', attributeHeight).attr('width', dimensions.rectWidth);
+
     innerBars.attr('transform', (d)=> {
         let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, 1000]);
-       // let distance = (moveMetric === 'move') ? d.move : x(d.combLength);
-       let distance = x(d.combLength);
+        let distance = x(d.combLength);
         return 'translate('+ distance +', 0)';});
       
     let rangeRect = innerBars.append('rect').classed('range-rect', true);
-    rangeRect.attr('width', 20).attr('height', (d, i)=> {
+    rangeRect.attr('width', dimensions.rectWidth).attr('height', (d, i)=> {
        
         let y = d.scales.yScale;
         y.range([attributeHeight, 0]);
         let range = d.leaf ? 0 : y(d.values.lowerCI95) - y(d.values.upperCI95);
-        let barHeight = (collapsed === 'true') ? 20 : range;
+        let barHeight = (collapsed === 'true') ? dimensions.collapsedHeight : range;
         return barHeight;
     });
     rangeRect.attr('transform', (d, i)=> {
@@ -343,7 +340,7 @@ export function drawContAtt(predictedAttrGrps, collapsed){
         return d.satScale(d.values.realVal);
     });
     if(collapsed != 'true'){
-        innerBars.append('rect').attr('width', 20).attr('height', 5)
+        innerBars.append('rect').attr('width', dimensions.rectWidth).attr('height', 4)
         .attr('transform', (d, i)=> {
             let y = d.scales.yScale;
             y.range([attributeHeight, 0]);
@@ -934,7 +931,7 @@ export function drawGroups(stateBins, scales){
      });
 
      let MeanRect = branchGrpCon.append('rect');
-     MeanRect.attr('width', 10).attr('height', 3);
+     MeanRect.attr('width', dimensions.rectWidth).attr('height', 3);
      MeanRect.attr('y', (d, i) => {
          let scale = scales.filter(s=> s.field === d.label)[0];
          let y = d3.scaleLinear().domain([scale.min, scale.max]).range([height, 0])
@@ -942,7 +939,7 @@ export function drawGroups(stateBins, scales){
      });
 
      let confiBars = branchGrpCon.filter(f=> f.leaf != true).append('rect');
-     confiBars.attr('width', 10).attr('height', (d, i)=> {
+     confiBars.attr('width', dimensions.rectWidth).attr('height', (d, i)=> {
          let scale = scales.filter(s=> s.field === d.label)[0];
          let y = d3.scaleLinear().domain([scale.min, scale.max]).range([height, 0]);
          return y(d.lowerCI95) - y(d.upperCI95);
@@ -1238,7 +1235,7 @@ export function drawGroups(stateBins, scales){
      });
 
      let MeanRect = branchGrpCon.append('rect');
-     MeanRect.attr('width', 10).attr('height', 3);
+     MeanRect.attr('width', dimensions.rectWidth).attr('height', 3);
      MeanRect.attr('y', (d, i) => {
          let scale = scales.filter(s=> s.field === d.label)[0];
          let y = d3.scaleLinear().domain([scale.min, scale.max]).range([height, 0])
@@ -1246,7 +1243,7 @@ export function drawGroups(stateBins, scales){
      });
 
      let confiBars = branchGrpCon.filter(f=> f.leaf != true).append('rect');
-     confiBars.attr('width', 10).attr('height', (d, i)=> {
+     confiBars.attr('width', dimensions.rectWidth).attr('height', (d, i)=> {
          let scale = scales.filter(s=> s.field === d.label)[0];
          let y = d3.scaleLinear().domain([scale.min, scale.max]).range([height, 0]);
          return y(d.lowerCI95) - y(d.upperCI95);
@@ -1346,7 +1343,7 @@ export function drawDiscreteAtt(predictedAttrGrps, collapsed, bars){
         }
     });
 
-    attributeNodesDisc.append('rect').attr('width', 20).attr('height', attributeHeight).attr('opacity', 0);
+    attributeNodesDisc.append('rect').attr('width', dimensions.rectWidth).attr('height', attributeHeight).attr('opacity', 0);
 
     attributeNodesDisc.append('line').attr('x1', 10).attr('x2', 10).attr('y1', 0).attr('y2', attributeHeight);
 
@@ -1432,12 +1429,12 @@ export function drawDiscreteAtt(predictedAttrGrps, collapsed, bars){
 
     }else{
         attributeNodesDisc.filter((att, i)=> {
-            return att[0] != undefined;}).append('rect').attr('height', attributeHeight).attr('width', 20).attr('fill', '#fff')
+            return att[0] != undefined;}).append('rect').attr('height', attributeHeight).attr('width', dimensions.rectWidth).attr('fill', '#fff')
         let stateBars = attributeNodesDisc.filter((att, i)=> att[0] != undefined).selectAll('.dis-rect').data(d=> {
             return d;
         }).join('rect').classed('dis-rect', true);
 
-        stateBars.attr('width', 20).attr('height', (d, i)=> {
+        stateBars.attr('width', dimensions.rectWidth).attr('height', (d, i)=> {
          
             let y = d3.scaleLinear().domain([0, 1]).range([0, attributeHeight]);
             return y(d.realVal);

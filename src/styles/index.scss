@@ -74,8 +74,9 @@ svg{
 }
 .dropdown-content a {
   color: black;
-  padding: 12px 16px;
+  padding: 5px 10px;
   text-decoration: none;
+  font-size: 12px;
   display: block;
 }
 .dropdown-content a:hover {background-color: #ddd}
@@ -260,14 +261,13 @@ rect.attribute-rect-sum,
   fill: #fff;
   stroke: gray;
   stroke-width: 0.5;
-  width:20px;
+  //width:20px;
 }
 
 .attribute-inner-bar{
   fill:none;
   stroke: gray;
   stroke-width: 0.5;
-  width:20px;
 }
 
 g.range rect{
@@ -337,7 +337,7 @@ line.half{
 }
 
 .range-rect{
-  width:20px;
+  // width:20px;
   fill:#32C1FE;
   //opacity:0.4;
 }
@@ -373,8 +373,10 @@ line.half{
 }
 
 .selected-branch circle{
-  r: 8px !important;
-  fill:orange !important;
+  //r: 8px !important;
+  //fill:orange !important;
+  stroke: gray;
+  stroke-width:2px;
 }
 
 .inner-node-wrap{

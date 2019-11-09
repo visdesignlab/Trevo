@@ -528,8 +528,8 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
     })
     .y1((d, i, n)=> {
         let dat = Object.keys(d).length - 1
-     
-        let x = d3.scaleLinear().domain([0, 50]).range([0, (dimensions.predictedWidth/n.count)-10]).clamp(true);
+        console.log()
+        let x = d3.scaleLinear().domain([0, 50]).range([0, ((dimensions.predictedWidth/n.count)*.7)]).clamp(true);
         return x(dat); 
     });
 

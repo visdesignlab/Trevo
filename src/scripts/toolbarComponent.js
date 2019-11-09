@@ -32,6 +32,7 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pat
     let discreteViewButton = toolbar.append('button').attr('id', 'discrete-view');
     discreteViewButton.attr('class', 'btn btn-outline-secondary').text('Switch to Discrete Bars');
     discreteViewButton.attr('value', false);
+    
     discreteViewButton.on('click', ()=> {
         let discretePredictedGroups = d3.selectAll('.predicated-attr-groups');
         if(discreteViewButton.text() === 'Switch to Discrete Bars'){
