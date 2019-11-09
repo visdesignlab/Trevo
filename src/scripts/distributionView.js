@@ -14,8 +14,12 @@ const dimensions = {
 }
 
 const brushColors = [
-    ['#E64A19', '#FFAB91']
+    ['#E64A19', '#FFAB91'],
+    ['#1976D2', '#90CAF9'],
 ]
+
+let colorBool = 0;
+
 
 export function drawBranchPointDistribution(data, svg){
 
@@ -318,8 +322,7 @@ export function binGroups(pathData, groupLabel, scales, label){
                         'branches': [...mapNorm], 
                         'type': scale.type, 
                         'leafData': leafData, 
-                         'rootData': rootNodes.map(m=> m.attributes[key])[0],
-                        //'rootData': rootNodes,
+                        'rootData': rootNodes.map(m=> m.attributes[key])[0],
                         'stateKeys': stateKeys,
                         'maxCount': d3.max(mapNorm.map(n=> n.data.length))
                     }
@@ -490,6 +493,7 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
             .style("left", (d3.event.pageX - 40) + "px")
             .style("top", (d3.event.pageY - 28) + "px");
         tool.style('height', 'auto');
+
     }).on('mouseout', ()=>{
         let tool = d3.select('#tooltip');
         tool.transition()
@@ -676,25 +680,51 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
             let nodeNames = nodes.map(m=> m.node);
             let timeNodes = d3.extent(nodes.map(m=> m.combLength));
 
-            let doesItExist = d3.select('#toolbar').selectAll('.brush-span').filter((f, i, n)=> {
-                return d3.select(n[i]).attr('value') == `${data.bins.groupLabel}-${data.key}`;
-            });
+            let index = d3.select('#toolbar').selectAll('.brush-span').size();
 
-            if(doesItExist.size() === 0){
+            if(index < 2){
 
-                d3.select('#toolbar')
-                .append('span')
-                .classed('brush-span', true)
-                .classed('badge badge-secondary', true)
-                .style('background', '#E64A19')
-                .attr('value', `${data.bins.groupLabel}-${data.key}`)
-                .text(`${data.bins.groupLabel}, ${data.key}: ${zero(brushedVal[0])} - ${zero(brushedVal[1])}`);
+                let doesItExist = d3.select('#toolbar').selectAll('.brush-span').filter((f, i, n)=> {
+                    return d3.select(n[i]).attr('value') == `${data.bins.groupLabel}-${data.key}`;
+                });
+    
+                if(doesItExist.size() === 0){
+    
+                    d3.select('#toolbar')
+                    .append('span')
+                    .attr('class', index === 0 ? 'one' : 'two')
+                    .classed('brush-span', true)
+                    .classed('badge badge-secondary', true)
+                    .style('background', brushColors[index][0])
+                    .attr('value', `${data.bins.groupLabel}-${data.key}`)
+                    .text(`${data.bins.groupLabel}, ${data.key}: ${zero(brushedVal[0])} - ${zero(brushedVal[1])}`);
+    
+                }else{
+    
+                    doesItExist.text(`${data.bins.groupLabel}, ${data.key}: ${zero(brushedVal[0])} - ${zero(brushedVal[1])}`);
+    
+                }
 
             }else{
 
-                doesItExist.text(`${data.bins.groupLabel}, ${data.key}: ${zero(brushedVal[0])} - ${zero(brushedVal[1])}`);
+                d3.select('#toolbar').selectAll('.brush-span').filter((f, i)=> i === 0).remove();
+
+
+
+                d3.select('#toolbar')
+                .append('span')
+                .attr('class', colorBool === 0 ? 'one': 'two')
+                .classed('brush-span', true)
+                .classed('badge badge-secondary', true)
+                .style('background', brushColors[colorBool][0])
+                .attr('value', `${data.bins.groupLabel}-${data.key}`)
+                .text(`${data.bins.groupLabel}, ${data.key}: ${zero(brushedVal[0])} - ${zero(brushedVal[1])}`);
+
+                colorBool === 0 ? colorBool = 1 : colorBool = 0;
 
             }
+
+           
     
              let treeNode  = d3.select('#sidebar').selectAll('.node');
 

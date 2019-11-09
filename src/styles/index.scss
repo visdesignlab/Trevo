@@ -379,14 +379,24 @@ line.half{
 
 
 
-.brushed-second circle{
+.brushed-second.one circle{
   r: 4px !important;
   fill:#FFAB91 !important;
 }
 
-.brushed-branch circle{
+.brushed-second.two circle{
+  r: 4px !important;
+  fill:#90CAF9 !important;
+}
+
+.brushed-branch.one circle{
   r: 4px !important;
   fill:#E64A19 !important;
+}
+
+.brushed-branch.two circle{
+  r: 4px !important;
+  fill:#1976D2 !important;
 }
 
 .inner-node-wrap{
