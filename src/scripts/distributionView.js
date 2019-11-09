@@ -639,12 +639,24 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
 
      //////START BRANCH EXPERIMENT
      let brush = d3.brushY().extent([[0, 0], [20, dimensions.height]])
-     continDist.append("g")//.attr('transform', 'translate(-20, 0)')
+     brush.on('end', brushed);
+
+     continDist.append("g").classed('continuous-branch-brush', true)//.attr('transform', 'translate(-20, 0)')
      .attr("class", "brush")
-     .call(brush.on("brush", brushed));
+     .call(brush);
  
-     let brushed = function(d){
-         console.log(d);
+    function brushed(){
+        let data = d3.select(this.parentNode).data()[0]
+       
+        var s = d3.event.selection;
+        let y = d3.scaleLinear().domain([data.domain[0], data.domain[1]]).range([0, dimensions.height])
+        let attribute = data.key;
+        let brushedVal = [y.invert(s[1]), y.invert(s[0])];
+        let time = d3.extent(data.data.map(d=> d.combLength))
+        let nodes = data.data.filter(f=> {
+            return (f.values.realVal > brushedVal[0]) && (f.values.realVal < brushedVal[1])
+        });
+         console.log('is this on', data, nodes)
      }
 
 
