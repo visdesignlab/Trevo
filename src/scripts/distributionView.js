@@ -190,7 +190,7 @@ export function binGroups(pathData, groupLabel, scales){
 
     normBins.map((n, i)=> {
         let edges = internalNodes.flatMap(path => path.filter(node=> {
-                return node.combLength > n.base && node.combLength <= (n.top+0.2) ;
+                return node.combLength > n.base && node.combLength <= n.top;
         } ));
         n.data = edges;
         return n;
@@ -545,6 +545,9 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
     //CONTIN PREDICTED
     let continDist = branchGroup.filter(f=> f.type === 'continuous');
 
+
+   
+
     continDist.on('mouseover', (d, i, node)=> {
         let list = d.data.map(m=> m.node);
         let selected = pointGroups.filter(p=> {
@@ -631,6 +634,20 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
             return 'translate(0,0)';
         }
     }).attr('fill', '#004573');
+
+
+
+     //////START BRANCH EXPERIMENT
+     let brush = d3.brushY().extent([[0, 0], [20, dimensions.height]])
+     continDist.append("g")//.attr('transform', 'translate(-20, 0)')
+     .attr("class", "brush")
+     .call(brush.on("brush", brushed));
+ 
+     let brushed = function(d){
+         console.log(d);
+     }
+
+
 
     ////OBSERVED CONTIUOUS/////
     let observedWrap = binnedWrap.append('g').classed('observed', true);
