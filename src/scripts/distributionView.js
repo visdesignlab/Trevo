@@ -545,15 +545,12 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
     //CONTIN PREDICTED
     let continDist = branchGroup.filter(f=> f.type === 'continuous');
 
-
-   
-
     continDist.on('mouseover', (d, i, node)=> {
         let list = d.data.map(m=> m.node);
         let selected = pointGroups.filter(p=> {
             return list.indexOf(p.node) > -1}).classed('selected', true);
         let treeNode  = d3.select('#sidebar').selectAll('.node');
-        let selectedBranch = treeNode.filter(f=> list.indexOf(f.data.node) > 0).classed('selected-branch', true);
+        let selectedBranch = treeNode.filter(f=> list.indexOf(f.data.node) > -1).classed('selected-branch', true);
         let y = d3.scaleLinear().domain(d.domain).range([0, dimensions.height])
         let axis = d3.select(node[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(5));
     }).on('mouseout', (d, i, node)=> {
@@ -578,7 +575,11 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
     });
 
     continDist.each((d, i, nodes)=> {
-        let distrib = d3.select(nodes[i]).selectAll('g').data([d.bins]).join('g').classed('distribution', true);
+        let distrib = d3.select(nodes[i])
+            .selectAll('g')
+            .data([d.bins])
+            .join('g')
+            .classed('distribution', true);
         distrib.attr('transform', 'translate(11, '+dimensions.height+') rotate(-90)');
         let path = distrib.append('path').attr('d', lineGen);
         path.attr("fill", "rgba(133, 193, 233, .4)")
@@ -649,14 +650,45 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
         let data = d3.select(this.parentNode).data()[0]
        
         var s = d3.event.selection;
-        let y = d3.scaleLinear().domain([data.domain[0], data.domain[1]]).range([0, dimensions.height])
-        let attribute = data.key;
-        let brushedVal = [y.invert(s[1]), y.invert(s[0])];
-        let time = d3.extent(data.data.map(d=> d.combLength))
-        let nodes = data.data.filter(f=> {
-            return (f.values.realVal > brushedVal[0]) && (f.values.realVal < brushedVal[1])
-        });
-         console.log('is this on', data, nodes)
+
+        if(s != null){
+
+            let y = d3.scaleLinear().domain([data.domain[0], data.domain[1]]).range([0, dimensions.height])
+            let attribute = data.key;
+            let brushedVal = [y.invert(s[1]), y.invert(s[0])];
+            let time = d3.extent(data.data.map(d=> d.combLength))
+            let nodes = data.data.filter(f=> {
+                return (f.values.realVal > brushedVal[0]) && (f.values.realVal < brushedVal[1]);
+            })
+            let nodeNames = nodes.map(m=> m.node);
+            let timeNodes = d3.extent(nodes.map(m=> m.combLength))
+    
+             let treeNode  = d3.select('#sidebar').selectAll('.node');
+            
+            treeNode.filter(f=> {
+                return f.data.combLength > timeNodes[0];
+            }).filter(f=> {
+                //console.log(f.data.attributes[data.key].values.realVal);
+                return f.data.attributes[data.key].values.realVal > brushedVal[0] && f.data.attributes[data.key].values.realVal < brushedVal[1]
+            }).classed('brushed-second', true).classed(`${data.key}`, true);
+
+            let selectedBranch = treeNode.filter(f=> {
+                return nodeNames.indexOf(f.data.node) > -1;
+            }).classed('brushed-branch', true);
+
+            selectedBranch.classed(`${data.key}`, true);
+
+           // timeNodes.filter()
+            
+
+        }else{
+
+            d3.selectAll(`.${data.key}.brushed-branch`).classed('brushed-branch', false);
+            d3.selectAll(`.${data.key}.brushed-second`).classed('brushed-second', false);
+
+
+        }
+       
      }
 
 

@@ -76,8 +76,8 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pat
     });
 
     let brushButton = toolbar.append('button').attr('id', 'brush-control');
-    filterButton.attr('class', 'btn btn-outline-secondary').text('Highlight Brush');
-    filterButton.on('click', ()=> toggleFilters(filterButton, main, calculatedScales));
+    brushButton.attr('class', 'btn btn-outline-secondary').text('Highlight Brush');
+    brushButton.on('click', ()=> toggleFilters(filterButton, main, calculatedScales));
 }
 
 ////COLLAPSES THE NODES DOWN

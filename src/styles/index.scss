@@ -377,6 +377,16 @@ line.half{
   fill:red !important;
 }
 
+.brushed-branch circle{
+  r: 4px !important;
+  fill:red !important;
+}
+
+.brushed-second circle{
+  r: 4px !important;
+  fill:orange !important;
+}
+
 .inner-node-wrap{
   stroke: gray;
   stroke-width: 1px;
