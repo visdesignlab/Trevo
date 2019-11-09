@@ -13,6 +13,10 @@ const dimensions = {
     timeRange: 795
 }
 
+const brushColors = [
+    ['#E64A19', '#FFAB91']
+]
+
 export function drawBranchPointDistribution(data, svg){
 
     let branchBar = svg.append('g').classed('branch-bar', true);
@@ -140,13 +144,14 @@ export function groupDistributions(pathData, mainDiv, scales, groupAttr){
         let paths = pathData.filter(path => {
             return group.includes(path[path.length - 1].attributes[groupAttr].values[groupAttr]);
         });
-        let groupBins = binGroups(paths, group, scales);
+        let groupBins = binGroups(paths, group, scales, group);
         return {'label': group, 'paths': paths, 'groupBins': groupBins}
     });
 
     let groupDivs = mainDiv.selectAll('.group-div').data(pathGroups).join('div').classed('group-div', true);
 
     groupDivs.each((d, i, n)=> {
+
         let group = d3.select(n[i]);
         group.style('text-align', 'center');
         group.append('text').text(d.label);
@@ -164,7 +169,8 @@ export function groupDistributions(pathData, mainDiv, scales, groupAttr){
     });
 }
 
-export function binGroups(pathData, groupLabel, scales){
+export function binGroups(pathData, groupLabel, scales, label){
+
     let attrHide = filterMaster.filter(f=> f.type === 'hide-attribute').map(m=> m.attribute);
     
     let keys = scales.map(s=> s.field).filter(f=> attrHide.indexOf(f) === -1);
@@ -227,12 +233,14 @@ export function binGroups(pathData, groupLabel, scales){
                 n.bins = histogram(n.data);
                 n.domain = [scale.max, scale.min];
                 n.bins.count = branchCount;
+                n.bins.groupLabel = label;
 
                 if(d3.mean(n.bins.map(m=> m.length)) === 0){
                     if(i === 0){
                          n.bins = histogram(rootNodes.map(m=> m.attributes[key]));
                          n.data = rootNodes.map(m=> m.attributes[key]);
                          n.bins.count = branchCount;
+
                     }else{
                         n.bins = nodeArray[i-1].bins;
                         n.data = nodeArray[i-1].data;
@@ -649,8 +657,12 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
  
     function brushed(){
         let data = d3.select(this.parentNode).data()[0]
+
+        console.log('dataa',data.bins.groupLabel)
        
         var s = d3.event.selection;
+
+        var zero = d3.format(".3n");
 
         if(s != null){
 
@@ -662,24 +674,33 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
                 return (f.values.realVal > brushedVal[0]) && (f.values.realVal < brushedVal[1]);
             })
             let nodeNames = nodes.map(m=> m.node);
-            let timeNodes = d3.extent(nodes.map(m=> m.combLength))
+            let timeNodes = d3.extent(nodes.map(m=> m.combLength));
+
+            let doesItExist = d3.select('#toolbar').selectAll('.brush-span').filter((f, i, n)=> {
+                return d3.select(n[i]).attr('value') == `${data.bins.groupLabel}-${data.key}`;
+            });
+
+            if(doesItExist.size() === 0){
+
+                d3.select('#toolbar')
+                .append('span')
+                .classed('brush-span', true)
+                .classed('badge badge-secondary', true)
+                .style('background', '#E64A19')
+                .attr('value', `${data.bins.groupLabel}-${data.key}`)
+                .text(`${data.bins.groupLabel}, ${data.key}: ${zero(brushedVal[0])} - ${zero(brushedVal[1])}`);
+
+            }else{
+
+                doesItExist.text(`${data.bins.groupLabel}, ${data.key}: ${zero(brushedVal[0])} - ${zero(brushedVal[1])}`);
+
+            }
     
              let treeNode  = d3.select('#sidebar').selectAll('.node');
-            
-            // treeNode.filter(f=> {
-            //     return f.data.combLength > timeNodes[0];
-            // }).filter(f=> {
-            //     console.log('d',f)
-            //     return f.data.attributes[data.key].values.realVal >= brushedVal[0] 
-            //     && f.data.attributes[data.key].values.realVal <= brushedVal[1];
-            // }).classed('brushed-second', true).classed(`${data.key}`, true);
 
             let selectedBranch = treeNode.filter(f=> {
                 return nodeNames.indexOf(f.data.node) > -1;
             }).classed('brushed-branch', true);
-            
-
-            console.log('selected',selectedBranch.data())
 
            // pullPath(pathArray, selectedBranch, arrayOfArray, nameArray, depth)
             let test = pullPath([], selectedBranch.data(), [], [], 0);
@@ -689,16 +710,15 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
             
             treeNode.filter(f=> testtest.indexOf(f.data.node) > -1).classed('brushed-second', true).classed(`${data.key}`, true);
             selectedBranch.classed(`${data.key}`, true);
+
             
-            d3.select('#toolbar').append('span').classed('badge badge-secondary', true).style('background', '#E64A19').text('test');
-            
+           
         }else{
             d3.selectAll(`.${data.key}.brushed-branch`).classed('brushed-branch', false);
             d3.selectAll(`.${data.key}.brushed-second`).classed('brushed-second', false);
         }
      }
 
-    
 
     ////OBSERVED CONTIUOUS/////
     let observedWrap = binnedWrap.append('g').classed('observed', true);
