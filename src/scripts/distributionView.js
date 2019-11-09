@@ -505,8 +505,11 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
     let continDist = branchGroup.filter(f=> f.type === 'continuous');
 
     continDist.on('mouseover', (d, i, node)=> {
-        let list = d.data.map(m=> m.nodeLabels);
-        let selected = pointGroups.filter(p=> list.indexOf(p.node) > -1).classed('selected', true);
+        
+        let list = d.data.map(m=> m.node);
+       
+        let selected = pointGroups.filter(p=> {
+            return list.indexOf(p.node) > -1}).classed('selected', true);
         let treeNode  = d3.select('#sidebar').selectAll('.node');
         let selectedBranch = treeNode.filter(f=> list.indexOf(f.data.node) > 0).classed('selected-branch', true);
         let y = d3.scaleLinear().domain(d.domain).range([0, dimensions.height])
@@ -528,7 +531,6 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
     })
     .y1((d, i, n)=> {
         let dat = Object.keys(d).length - 1
-        console.log()
         let x = d3.scaleLinear().domain([0, 50]).range([0, ((dimensions.predictedWidth/n.count)*.7)]).clamp(true);
         return x(dat); 
     });
