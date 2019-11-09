@@ -91,15 +91,16 @@ export function getPath(edgeArray, leaf, pathKeeper, source, target){
  * @param {*} depth 
  */
 export function pullPath(pathArray, nodes, arrayOfArray, nameArray, depth){
+
     nodes.forEach((node, i)=> {
         node.depth = depth;
         node.id = depth + '.' + i;
-        node.edgeLength = node.edge_data.weight;
+       // node.edgeLength = node.edge_data.weight;
         if(notEmpty(node.children)){
             pathArray.push(Object.assign({}, node));
             pullPath([...pathArray], [...node.children], arrayOfArray, nameArray, depth+1);
         }else{
-            nameArray.push(node.node_data['node name']);
+            nameArray.push(node.data.node);
             node.flag = true;
             arrayOfArray.push([...pathArray, Object.assign({},node)]);
         }

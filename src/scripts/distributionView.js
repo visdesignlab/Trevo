@@ -2,6 +2,7 @@ import '../styles/index.scss';
 import {formatAttributeData, maxTimeKeeper} from './dataFormat';
 import * as d3 from "d3";
 import {filterMaster} from './filterComponent';
+import { pullPath } from './pathCalc';
 
 const dimensions = {
     height: 80,
@@ -665,33 +666,39 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
     
              let treeNode  = d3.select('#sidebar').selectAll('.node');
             
-            treeNode.filter(f=> {
-                return f.data.combLength > timeNodes[0];
-            }).filter(f=> {
-                //console.log(f.data.attributes[data.key].values.realVal);
-                return f.data.attributes[data.key].values.realVal > brushedVal[0] && f.data.attributes[data.key].values.realVal < brushedVal[1]
-            }).classed('brushed-second', true).classed(`${data.key}`, true);
+            // treeNode.filter(f=> {
+            //     return f.data.combLength > timeNodes[0];
+            // }).filter(f=> {
+            //     console.log('d',f)
+            //     return f.data.attributes[data.key].values.realVal >= brushedVal[0] 
+            //     && f.data.attributes[data.key].values.realVal <= brushedVal[1];
+            // }).classed('brushed-second', true).classed(`${data.key}`, true);
 
             let selectedBranch = treeNode.filter(f=> {
                 return nodeNames.indexOf(f.data.node) > -1;
             }).classed('brushed-branch', true);
-
-            selectedBranch.classed(`${data.key}`, true);
-
-           // timeNodes.filter()
             
 
-        }else{
+            console.log('selected',selectedBranch.data())
 
+           // pullPath(pathArray, selectedBranch, arrayOfArray, nameArray, depth)
+            let test = pullPath([], selectedBranch.data(), [], [], 0);
+            let testtest = test.flatMap(t=> t).filter(f=>{
+                return f.data.attributes[data.key].values.realVal >= brushedVal[0] && f.data.attributes[data.key].values.realVal <= brushedVal[1];
+            }).map(m=> m.data.node);
+            
+            treeNode.filter(f=> testtest.indexOf(f.data.node) > -1).classed('brushed-second', true).classed(`${data.key}`, true);
+            selectedBranch.classed(`${data.key}`, true);
+            
+            d3.select('#toolbar').append('span').classed('badge badge-secondary', true).style('background', '#E64A19').text('test');
+            
+        }else{
             d3.selectAll(`.${data.key}.brushed-branch`).classed('brushed-branch', false);
             d3.selectAll(`.${data.key}.brushed-second`).classed('brushed-second', false);
-
-
         }
-       
      }
 
-
+    
 
     ////OBSERVED CONTIUOUS/////
     let observedWrap = binnedWrap.append('g').classed('observed', true);
@@ -713,17 +720,35 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
 
     contBars.attr('transform', (d, i, n)=> {
         let movex = dimensions.observedWidth / n.length;
-        let y = d3.scaleLinear().domain([0, Object.keys(d).length]).range([(dimensions.height - dimensions.margin), 0])
+        let y = d3.scaleLinear()
+            .domain([0, Object.keys(d).length])
+            .range([(dimensions.height - dimensions.margin), 0]);
+
         let movey = dimensions.height - y(Object.keys(d).length - 2);
         return 'translate('+(movex * i)+', '+movey+')'});
 
     contOb.each((d, i, nodes)=> {
+
         let xvalues = d.leafData.data.map(m=> {
             return +m.values.realVal});
-        let x = d3.scaleLinear().domain([d3.min(xvalues), d3.max(xvalues)]).range([0, dimensions.observedWidth])
-        let y = d3.scaleLinear().domain([0, d3.max(d.leafData.bins.map(b=> Object.keys(b).length)) - 2]).range([(dimensions.height - dimensions.margin), 0]);
-        d3.select(nodes[i]).append('g').classed('x-axis', true).call(d3.axisBottom(x)).attr('transform', 'translate(0, '+dimensions.height+')');
-        d3.select(nodes[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(4)).attr('transform', 'translate(0, '+dimensions.margin+')');
+        let x = d3.scaleLinear()
+            .domain([d3.min(xvalues), d3.max(xvalues)])
+            .range([0, dimensions.observedWidth]);
+
+        let y = d3.scaleLinear()
+            .domain([0, d3.max(d.leafData.bins.map(b=> Object.keys(b).length)) - 2])
+            .range([(dimensions.height - dimensions.margin), 0]);
+        
+        d3.select(nodes[i])
+            .append('g')
+            .classed('x-axis', true)
+            .call(d3.axisBottom(x))
+            .attr('transform', 'translate(0, '+dimensions.height+')');
+
+        d3.select(nodes[i]).append('g')
+            .classed('y-axis', true)
+            .call(d3.axisLeft(y).ticks(4))
+            .attr('transform', 'translate(0, '+dimensions.margin+')');
     });
     
 ////Observed Discrete////
@@ -760,7 +785,7 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
     }).on('mouseout', (d, i, n)=> {
         d3.select(n[i]).attr('opacity', 0.3);
         let state = d3.select('g.'+d[0].label).selectAll('g.state').attr('opacity', 0.6);
-    })
+    });
 
     discOb.each((d, i, nodes)=> {
             let labels = d.leafData.bins.map(b=> {
