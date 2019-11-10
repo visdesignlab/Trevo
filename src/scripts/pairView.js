@@ -206,18 +206,16 @@ function drawSorted(pairs, field){
         xAxisG.call(d3.axisBottom(xScale).ticks(10));
         xAxisG.attr('transform', `translate(0, ${height})`)
 
-    pairWraps.on('mouseover', (d, i)=> {
+    pairWraps.on('mouseover', (d, i, n)=> {
         //let species = [...d.p1.map(n=> n.node)].concat(d.p2.map(n=> n.node));
         let species1 = d.p1.map(n=> n.node);
         let species2 = d.p2.map(n=> n.node);
         let labels = [...d.p1.filter(n=> n.leaf === true).map(m=> m.node)].concat(d.p2.filter(n=> n.leaf === true).map(m=> m.node));
         let neighbors = labels.flatMap(m=> {
-          
             let start = speciesTest[0].indexOf(m);
             let ne = speciesTest[0].filter((f, j)=> (j < (+start + 2)) && (j > (+start - 2)));
             return ne;
         });
-        console.log(neighbors)
         
         let neighNodes = dataMaster[0].filter(f=> neighbors.indexOf(f[f.length -1].node) > -1).flatMap(m=> m.map(f=> f.node))
        
@@ -231,7 +229,6 @@ function drawSorted(pairs, field){
           return species2.indexOf(f.data.node) > -1;
       }).classed('hover two', true);
 
-     
         treeLinks.filter(f=> species1.indexOf(f.data.node) > -1).classed('hover one', true);
         treeLinks.filter(f=> species2.indexOf(f.data.node) > -1).classed('hover two', true);
         treeNode.filter(f=> neighNodes.indexOf(f.data.node) > -1).classed('hover-neighbor', true);
@@ -245,27 +242,47 @@ function drawSorted(pairs, field){
         let speciesNames = [species1[species1.length-1], species2[species2.length-1]]
         ////EXPERIMENTING WITH NODES////
         let neighPaths = dataMaster[0].filter(f=> (neighbors.indexOf(f[f.length - 1].node)) > -1 && (speciesNames.indexOf(f[f.length - 1].node) === -1));
-        //let chosenPaths = dataMaster[0].filter()
-console.log( neighPaths, )
-        let spec1N = neighPaths.map(m => m.filter(f=> species1.indexOf(f.node) > -1));
-        let spec2N = neighPaths.map(m => m.filter(f=> species2.indexOf(f.node) > -1));
+      
+        let labeledN = [...neighPaths].map(path=> {
+          let name = path[path.length - 1].node;
+          return path.map(p=> {
+            p.name = name;
+            return p
+          })
+        });
+
+        let spec1N = labeledN.map(m => m.filter(f=> species1.indexOf(f.node) > -1));
+        let spec2N = labeledN.map(m => m.filter(f=> species2.indexOf(f.node) > -1));
 
         let closest1 = spec1N.filter((f, i, n)=> {
-          console.log(f)
           let max = d3.max(n.map(d=> d.length));
           return f.length === max;
-        });
+        })[0];
 
         let closest2 = spec2N.filter((f, i, n)=> {
           let max = d3.max(n.map(d=> d.length));
           return f.length === max;
-        });
+        })[0];
 
-        console.log(closest1, closest2)
+        let wholeClosest1 = labeledN.filter(f=> f[f.length-1].node === closest1[closest1.length - 1].name)[0];
+        let wholeClosest2 = labeledN.filter(f=> f[f.length-1].node === closest2[closest2.length - 1].name)[0];
 
-       
+        let pathTest = d3.select(n[i]).selectAll('.pair-neighbor');
 
+        if(pathTest.empty()){
 
+          let pairGroupN = d3.select(n[i]).selectAll('g.pair-neighbor')
+            .data([wholeClosest1, wholeClosest2])
+            .join('g').classed('pair-neightbor', true);
+
+          let innerPaths = pairGroupN.append('path')
+          .attr("d", lineGen)
+          .attr("class", "inner-line")
+          .style('stroke', 'gray')
+          .attr('opacity', 0.5);
+
+        }
+        
         return d3.select(this).classed('hover', true);
     })
     .on('mouseleave', function(){
