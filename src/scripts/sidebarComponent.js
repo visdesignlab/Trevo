@@ -108,7 +108,7 @@ export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
             d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Colored by ${d.field}`)
         }else{
             renderTree(sidebar, null, false);
-            d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Color By Value`)
+            d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Color By Value`);
         }
        sidebar.select('#show-drop-div-sidebar').classed('show', false);
     });
@@ -121,6 +121,7 @@ export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
             if(d3.select('.attr-drop.dropdown').select('button').empty()){
                 let drop = dropDown(d3.select('#toolbar'), optionArray, `Trait: ${optionArray[1].field}`, 'attr-drop');
                 d3.select('.attr-drop.dropdown').select('button').attr('value', optionArray[1].field);
+                d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Color By Value`);
                 drop.on('click', (d, i, n)=> {
                     if(d3.select('.dropdown.change-view').select('button').node().value === "View Pairs"){
                         updateRanking(pairPaths(normedPaths), d.field);

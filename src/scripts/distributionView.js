@@ -3,6 +3,7 @@ import {formatAttributeData, maxTimeKeeper} from './dataFormat';
 import * as d3 from "d3";
 import {filterMaster} from './filterComponent';
 import { pullPath } from './pathCalc';
+import { renderTree } from './sidebarComponent';
 
 const dimensions = {
     height: 80,
@@ -650,7 +651,6 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
     }).attr('fill', '#004573');
 
 
-
      //////START BRANCH EXPERIMENT
      let brush = d3.brushY().extent([[0, 0], [20, dimensions.height]])
      brush.on('end', brushed);
@@ -667,6 +667,8 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
         var zero = d3.format(".3n");
 
         if(s != null){
+
+            renderTree(d3.select('#sidebar'), null, true);
 
             let y = d3.scaleLinear().domain([data.domain[0], data.domain[1]]).range([0, dimensions.height])
             let attribute = data.key;
@@ -705,14 +707,30 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
 
                     let classLabel = index === 0 ? 'one' : 'two';
     
-                    d3.select('#toolbar')
+                    let badge = d3.select('#toolbar')
                     .append('span')
                     .attr('class', classLabel)
                     .classed('brush-span', true)
+                    .classed(`${data.bins.groupLabel}`, true)
                     .classed('badge badge-secondary', true)
                     .style('background', brushColors[index][0])
                     .attr('value', `${data.bins.groupLabel}-${data.key}`)
                     .text(`${data.bins.groupLabel}, ${data.key}: ${zero(brushedVal[0])} - ${zero(brushedVal[1])}`);
+
+                    let xOut = badge.append('i').classed('close fas fa-times', true).style('padding-left', '10px');
+
+                    xOut.on('click', (d, i)=> {
+                        let filteredComp = comparisonKeeper.filter(f=> f.groupColor != d.groupColor);
+                        comparisonKeeper = filteredComp;
+                        if(comparisonKeeper.length > 0){
+                            renderComparison(null, otherPaths, selectedDiv, scales);
+                        }else{
+                            selectedDiv.selectAll('*').remove();
+                            selectedDiv.style('height', '0px');
+                            main.style('padding-top', '0px');
+                        }}
+                    );
+                
 
                     secondGrp.classed(classLabel, true);
                     selectedBranch.classed(classLabel, true);
@@ -725,6 +743,7 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
                     .selectAll('.second-branch'))
 
                     treeNode.selectAll(`.${data.key}`)
+                        .selectAll(`${data.bins.groupLabel}`)
                         .selectAll('.second-branch')
                         .classed('second-branch', false)
                         .classed('one', false)
@@ -763,10 +782,6 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
 
             }
 
-           
-    
-           
-            
            
         }else{
 
