@@ -215,7 +215,7 @@ let matchedLeaves = leaves.map((leaf, i)=>{
 
     dataMaster.push(normedPaths);
 
-    speciesTest.push(normedPaths.flatMap(m=> m.filter(f=> f.leaf === true)).map(l=> l.label));
+    speciesTest.push(normedPaths.flatMap(m=> m.filter(f=> f.leaf === true)).map(l=> l.node));
    
      toolbarControl(toolbarDiv, normedPaths, main, calculatedScales, 'paths');
     

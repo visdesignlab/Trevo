@@ -184,6 +184,8 @@ function drawSorted(pairs, field){
     .style('stroke', (d, i)=> pairColor[i])
    // .style('stroke', 'rgb(165, 185, 198)');
 
+
+
     let branches = pairGroup.selectAll('g.branch').data(d=> d).join('g').classed('branch', true);
     branches.attr('transform', (d, i)=> `translate(${xScale(d.combLength)}, 0)`);
     branches.filter(f=> f.leaf != true).append('rect').attr('width', 10).attr('height', (d)=> {
@@ -214,10 +216,13 @@ function drawSorted(pairs, field){
         let species2 = d.p2.map(n=> n.node);
         let labels = [...d.p1.filter(n=> n.leaf === true).map(m=> m.node)].concat(d.p2.filter(n=> n.leaf === true).map(m=> m.node));
         let neighbors = labels.flatMap(m=> {
+            console.log(m);
+            console.log(speciesTest)
             let start = speciesTest[0].indexOf(m);
             let ne = speciesTest[0].filter((f, j)=> (j < (+start + 4)) && (j > (+start - 4)));
             return ne;
         });
+        console.log(neighbors)
         
         let neighNodes = dataMaster[0].filter(f=> neighbors.indexOf(f[f.length -1].node) > -1).flatMap(m=> m.map(f=> f.node))
        
@@ -243,11 +248,15 @@ function drawSorted(pairs, field){
         treeLinks.filter(f=> neighNodes.indexOf(f.data.node) > -1).classed('hover-neighbor', true);
         //Hiding Others
         treeLinks.filter(f=> (neighNodes.indexOf(f.data.node) === -1) && (species1.concat(species2).indexOf(f.data.node) === -1)).classed('hover-not', true);
+        
+        ////EXPERIMENTING WITH NODES////
+
+
+
 
         return d3.select(this).classed('hover', true);
     })
     .on('mouseleave', function(){
-    
         let treeNode  = d3.select('#sidebar').selectAll('.node')
         .classed('hover', false)
         .classed('hover-neighbor', false)
@@ -321,6 +330,8 @@ mouseG.append('svg:rect') // append a rect to catch mouse movements on canvas
           .style("opacity", "1");
           d3.select(n[i].parentNode).selectAll(".mouse-per-line text")
           .style("opacity", "1");
+
+          console.log('d',d)
       })
       .on('mousemove', (dat, i, n)=> { // mouse moving over canvas
         var mouse = d3.mouse(n[i]);
@@ -374,5 +385,12 @@ mouseG.append('svg:rect') // append a rect to catch mouse movements on canvas
             return "translate(" + mouse[0] + "," + pos.y +")";
           });
       });
+
+      // innerPaths.raise()
+
+      // innerPaths.on('mouseover', (d, i, n)=> {
+      //   console.log('in mouseover!', d);
+   
+      // });
    
 }
