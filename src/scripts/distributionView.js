@@ -661,8 +661,6 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
  
     function brushed(){
         let data = d3.select(this.parentNode).data()[0]
-
-        console.log('dataa',data.bins.groupLabel)
        
         var s = d3.event.selection;
 
@@ -697,7 +695,6 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
             let secondGrp = treeNode.filter(f=> testtest.indexOf(f.data.node) > -1).classed('brushed-second', true).classed(`${data.key}`, true);
             selectedBranch.classed(`${data.key}`, true);
 
-
             if(index < 2){
 
                 let doesItExist = d3.select('#toolbar').selectAll('.brush-span').filter((f, i, n)=> {
@@ -723,7 +720,25 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
                 }else{
     
                     doesItExist.text(`${data.bins.groupLabel}, ${data.key}: ${zero(brushedVal[0])} - ${zero(brushedVal[1])}`);
-    
+
+                    console.log(treeNode.selectAll(`.${data.key}`)
+                    .selectAll('.second-branch'))
+
+                    treeNode.selectAll(`.${data.key}`)
+                        .selectAll('.second-branch')
+                        .classed('second-branch', false)
+                        .classed('one', false)
+                        .classed('two', false)
+                        .classed(`${data.key}`, false);
+
+                    treeNode.selectAll(`.${data.key}`)
+                        .selectAll('.selected-branch')
+                        .classed('selected-branch', false)
+                        .classed('one', false)
+                        .classed('two', false)
+                        .classed(`${data.key}`, false);
+
+                    
                 }
 
             }else{
@@ -754,6 +769,8 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
             
            
         }else{
+
+            console.log('brush',d3.selectAll('.brush-span'))
             d3.selectAll(`.${data.key}.brushed-branch`).classed('brushed-branch', false);
             d3.selectAll(`.${data.key}.brushed-second`).classed('brushed-second', false);
         }
