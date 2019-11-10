@@ -58,8 +58,6 @@ export function rankingControl(data){
         .attr('transform', `translate(${300+(200 * i)}, 20)`)
         .call(slider);
     });
-    
-  
 }
 export function generatePairs(data){
 
@@ -184,8 +182,6 @@ function drawSorted(pairs, field){
     .style('stroke', (d, i)=> pairColor[i])
    // .style('stroke', 'rgb(165, 185, 198)');
 
-
-
     let branches = pairGroup.selectAll('g.branch').data(d=> d).join('g').classed('branch', true);
     branches.attr('transform', (d, i)=> `translate(${xScale(d.combLength)}, 0)`);
     branches.filter(f=> f.leaf != true).append('rect').attr('width', 10).attr('height', (d)=> {
@@ -216,10 +212,9 @@ function drawSorted(pairs, field){
         let species2 = d.p2.map(n=> n.node);
         let labels = [...d.p1.filter(n=> n.leaf === true).map(m=> m.node)].concat(d.p2.filter(n=> n.leaf === true).map(m=> m.node));
         let neighbors = labels.flatMap(m=> {
-            console.log(m);
-            console.log(speciesTest)
+          
             let start = speciesTest[0].indexOf(m);
-            let ne = speciesTest[0].filter((f, j)=> (j < (+start + 4)) && (j > (+start - 4)));
+            let ne = speciesTest[0].filter((f, j)=> (j < (+start + 2)) && (j > (+start - 2)));
             return ne;
         });
         console.log(neighbors)
@@ -239,19 +234,36 @@ function drawSorted(pairs, field){
      
         treeLinks.filter(f=> species1.indexOf(f.data.node) > -1).classed('hover one', true);
         treeLinks.filter(f=> species2.indexOf(f.data.node) > -1).classed('hover two', true);
-        
         treeNode.filter(f=> neighNodes.indexOf(f.data.node) > -1).classed('hover-neighbor', true);
         //Hiding Others
         treeNode.filter(f=> (neighNodes.indexOf(f.data.node) === -1) && (species1.concat(species2).indexOf(f.data.node) === -1)).classed('hover-not', true);
-        
         //Coloring Niehgbors
         treeLinks.filter(f=> neighNodes.indexOf(f.data.node) > -1).classed('hover-neighbor', true);
         //Hiding Others
         treeLinks.filter(f=> (neighNodes.indexOf(f.data.node) === -1) && (species1.concat(species2).indexOf(f.data.node) === -1)).classed('hover-not', true);
         
+        let speciesNames = [species1[species1.length-1], species2[species2.length-1]]
         ////EXPERIMENTING WITH NODES////
+        let neighPaths = dataMaster[0].filter(f=> (neighbors.indexOf(f[f.length - 1].node)) > -1 && (speciesNames.indexOf(f[f.length - 1].node) === -1));
+        //let chosenPaths = dataMaster[0].filter()
+console.log( neighPaths, )
+        let spec1N = neighPaths.map(m => m.filter(f=> species1.indexOf(f.node) > -1));
+        let spec2N = neighPaths.map(m => m.filter(f=> species2.indexOf(f.node) > -1));
 
+        let closest1 = spec1N.filter((f, i, n)=> {
+          console.log(f)
+          let max = d3.max(n.map(d=> d.length));
+          return f.length === max;
+        });
 
+        let closest2 = spec2N.filter((f, i, n)=> {
+          let max = d3.max(n.map(d=> d.length));
+          return f.length === max;
+        });
+
+        console.log(closest1, closest2)
+
+       
 
 
         return d3.select(this).classed('hover', true);
