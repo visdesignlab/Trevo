@@ -73,6 +73,8 @@ export function generatePairs(data){
         
         let drop = d3.select('.attr-drop.dropdown')
           .selectAll('a').empty() ? dropDown(d3.select('#toolbar'), attKeys, `Trait: ${attKeys[0].field}`, 'attr-drop') : d3.select('.attr-drop.dropdown').selectAll('a');
+        
+        d3.select('.attr-drop.dropdown').select('button').attr('value', attKeys[0].field);
 
         drop.on('click', (d, i, n)=> {
             updateRanking(pairPaths(data), d.field, weights);

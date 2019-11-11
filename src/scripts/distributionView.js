@@ -815,12 +815,9 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
                 .style('background', brushColors[colorBool][0])
                 .attr('value', `${data.bins.groupLabel}-${data.key}`)
                 .text(`${data.bins.groupLabel}, ${data.key}: ${zero(brushedVal[0])} - ${zero(brushedVal[1])}`);
-
                 colorBool === 0 ? colorBool = 1 : colorBool = 0;
-
                 secondGrp.classed(classLabel, true);
                 selectedBranch.classed(classLabel, true);
-
             }
 
         }else{
