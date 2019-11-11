@@ -478,7 +478,7 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
                 return histogram(m.state);
             })
 
-            console.log(test)
+          
            
             return d.bins}).join('g')
         .classed('histo-state', true);

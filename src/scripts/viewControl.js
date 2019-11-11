@@ -20,7 +20,8 @@ export function updateMainView(scales, d){
         document.getElementById("scrunch").disabled = false;
     }else if(d === 'Summary View'){
         d3.select('#pair-rank').classed('hidden', true);
-        renderDistibutions(data, main, scales, moveMetric);
+        //renderDistibutions(data, main, scales, moveMetric);
+        groupDistributions(data, main, scales, 'Clade');
         document.getElementById("scrunch").disabled = true;
     }else if(d === 'Pair View'){
         rankingControl(data);

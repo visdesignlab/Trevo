@@ -362,7 +362,7 @@ function drawSorted(pairs, field){
 
    var mousePerLine = mouseG.selectAll('.mouse-per-line')
    .data((d, i)=> {
-      // console.log(d)
+
     return [d.p1, d.p2]})
    .join("g")
    .attr("class", "mouse-per-line");
@@ -458,11 +458,6 @@ mouseG.append('svg:rect') // append a rect to catch mouse movements on canvas
           });
       });
 
-      // innerPaths.raise()
 
-      // innerPaths.on('mouseover', (d, i, n)=> {
-      //   console.log('in mouseover!', d);
-   
-      // });
    
 }

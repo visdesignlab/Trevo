@@ -137,7 +137,7 @@ export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
               
                 renderTree(d3.select('#sidebar'), null, true, d3.select('.attr-drop.dropdown').select('button').attr('value'))
               }else{
-    console.log(d3.select('.attr-drop.dropdown').select('button').attr('value'))
+    
                 renderTree(d3.select('#sidebar'), null, true, d3.select('.attr-drop.dropdown').select('button').attr('value'))
               }
               phenogramButton.text('View Phylogeny');
