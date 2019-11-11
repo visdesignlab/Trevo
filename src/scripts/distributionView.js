@@ -878,10 +878,6 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
             .classed('x-axis', true)
             .call(d3.axisBottom(x))
             .attr('transform', 'translate(0, '+dimensions.height+')')
-            
-        
-
-       console.log(d3.select(nodes[i]).select('.x-axis').selectAll('text'))
 
         d3.select(nodes[i]).append('g')
             .classed('y-axis', true)
@@ -902,6 +898,8 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
     
     ////Observed Discrete////
     let discOb =  observedWrap.filter(f=> f.type === 'discrete');
+
+    discOb.attr('transform', `translate(${dimensions.predictedWidth + 160}, 5)`)
     let discBars = discOb.selectAll('g.ob-bars').data(d=> {
         return d.stateKeys.map((key, i)=>{
             return {state: key, data: d.leafData.bins[i], max: d3.sum(d.leafData.bins.map(b=> b.length))}
@@ -943,8 +941,11 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
             let xPoint = d3.scalePoint().domain(d.stateKeys).range([0, dimensions.observedWidth]).padding(.6)
             let height = d.stateKeys ? (d.stateKeys.length * dimensions.squareDim - 10) : 0;
             let y = d3.scaleLinear().domain([0, d.leafData.data.length]).range([(height), 0]);
-            d3.select(nodes[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(4)).attr('transform', 'translate(0, '+height+')');
+            d3.select(nodes[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(4))//.attr('transform', 'translate(0, '+height+')');
             d3.select(nodes[i]).append('g').classed('x-axis', true).call(d3.axisBottom(xPoint)).attr('transform', 'translate(0, '+height+')');
+
+            d3.select(nodes[i]).select('.x-axis').selectAll('text').style('font-size', '8px');
+            d3.select(nodes[i]).select('.y-axis').selectAll('text').style('font-size', '8px');
     });
 
 }
