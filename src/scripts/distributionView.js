@@ -459,29 +459,49 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
 
     let discreteDist = branchGroup.filter(f=> f.type === 'discrete');
 
+  /////////EXPERIMENT////////
     let bars = discreteDist.append('g').attr('class', 'histo-state-wrap')
     .attr('transform', (d, i)=> `translate(${dimensions.squareDim}, 0)`);
 
     let stateHisto = bars.selectAll('g.histo-state')
-        .data(d=> d.bins).join('g')
+        .data(d=> {
+
+
+            let histogram = d3.histogram()
+            .value(function(d) { return d.value; })  
+            .domain([0, 1])  
+            .thresholds(d3.scaleLinear().domain([0, 1])); 
+
+          
+            let test = d.bins.map(m => {
+                
+                return histogram(m.state);
+            })
+
+            console.log(test)
+           
+            return d.bins}).join('g')
         .classed('histo-state', true);
 
-    stateHisto.attr('transform', (d, i)=> `translate(0, ${3.5+(i*(dimensions.squareDim+2))})`);
+    // let stateHisto = bars.selectAll('g.histo-state')
+    //     .data(d=> d.bins).join('g')
+    //     .classed('histo-state', true);
 
-    stateHisto.append('rect')
-    .attr('height', dimensions.squareDim)
-    .attr('width', (d, i, n)=> {
-        let x = d3.scaleLinear().domain([0, d3.max(d3.selectAll(n).data().map(m=> m.state.length))]).range([0, 100]);
-        let sum = d3.sum(d.state.map(m=> m.value))
-        let av = sum / d.state.length;
-        let st = d3.deviation(d.state.map(m=> m.value));
-        let avRange = [(av - st), (av + st)]
-        console.log(av, st, d.state.filter(f=> f.value >= avRange[0] && f.value <= avRange[1]).length)
+    // stateHisto.attr('transform', (d, i)=> `translate(0, ${3.5+(i*(dimensions.squareDim+2))})`);
+
+    // stateHisto.append('rect')
+    // .attr('height', dimensions.squareDim)
+    // .attr('width', (d, i, n)=> {
+    //     let x = d3.scaleLinear().domain([0, d3.max(d3.selectAll(n).data().map(m=> m.state.length))]).range([0, 50]);
+    //     let sum = d3.sum(d.state.map(m=> m.value))
+    //     let av = sum / d.state.length;
+    //     let st = d3.deviation(d.state.map(m=> m.value));
+    //     let avRange = [(av - st), (av + st)];
         
-        let scale = d3.scaleLinear().domain([0, 1]).range([0, 1]);
+    //     let scale = d3.scaleLinear().domain([0, 1]).range([0, 1]);
 
-        return x(d.state.filter(f=> f.value >= avRange[0] && f.value <= avRange[1]).length)
-    });
+    //     return x(d.state.filter(f=> f.value >= avRange[0] && f.value <= avRange[1]).length);
+    // });
 
     /////////END XPERIMENT////////
 
@@ -765,9 +785,6 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
     
                     doesItExist.text(`${data.bins.groupLabel}, ${data.key}: ${zero(brushedVal[0])} - ${zero(brushedVal[1])}`);
 
-                    console.log(treeNode.selectAll(`.${data.key}`)
-                    .selectAll('.second-branch'))
-
                     treeNode.selectAll(`.${data.key}`)
                         .selectAll(`${data.bins.groupLabel}`)
                         .selectAll('.second-branch')
@@ -807,20 +824,22 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
             }
 
         }else{
-
-            console.log('brush',d3.selectAll('.brush-span'))
             d3.selectAll(`.${data.key}.brushed-branch`).classed('brushed-branch', false);
             d3.selectAll(`.${data.key}.brushed-second`).classed('brushed-second', false);
         }
      }
 
+     ///OBSERVED/////
+
+     let observedWrap = binnedWrap.append('g').classed('observed', true);
+     observedWrap.attr('transform', (d, i, n)=> {
+         return 'translate('+ (dimensions.predictedWidth + 150) +', 0)'})
+
 
     ////OBSERVED CONTIUOUS/////
-    let observedWrap = binnedWrap.append('g').classed('observed', true);
-    observedWrap.attr('transform', (d, i, n)=> {
-        return 'translate('+ (dimensions.predictedWidth + 150) +', -5)'})
 
     let contOb = observedWrap.filter(f=> f.type === 'continuous');
+    contOb.attr('transform', `translate(${dimensions.predictedWidth + 160}, -15)`)
 
     let contBars = contOb.selectAll('g.ob-bars').data(d=> {
         return d.leafData.bins}).join('g').classed('ob-bars', true);
@@ -858,15 +877,30 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
             .append('g')
             .classed('x-axis', true)
             .call(d3.axisBottom(x))
-            .attr('transform', 'translate(0, '+dimensions.height+')');
+            .attr('transform', 'translate(0, '+dimensions.height+')')
+            
+        
+
+       console.log(d3.select(nodes[i]).select('.x-axis').selectAll('text'))
 
         d3.select(nodes[i]).append('g')
             .classed('y-axis', true)
             .call(d3.axisLeft(y).ticks(4))
             .attr('transform', 'translate(0, '+dimensions.margin+')');
+
+            d3.select(nodes[i]).select('.x-axis').selectAll('text').style('font-size', '8px');
+            d3.select(nodes[i]).select('.y-axis').selectAll('text').style('font-size', '8px');
+
+            d3.select(nodes[i])
+            .append('g')
+            .classed('x-axis-label', true)
+            .append('text').text('Frequency')
+            .attr('transform', `translate(-20, ${dimensions.height- 10}) rotate(-90)`)
+            .style('font-size', '10px');
+
     });
     
-////Observed Discrete////
+    ////Observed Discrete////
     let discOb =  observedWrap.filter(f=> f.type === 'discrete');
     let discBars = discOb.selectAll('g.ob-bars').data(d=> {
         return d.stateKeys.map((key, i)=>{
