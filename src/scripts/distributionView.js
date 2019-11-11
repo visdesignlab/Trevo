@@ -458,6 +458,33 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
             return 'translate('+(100 + (branchScale(i)) + x(step)) +', 0)'});
 
     let discreteDist = branchGroup.filter(f=> f.type === 'discrete');
+
+    let bars = discreteDist.append('g').attr('class', 'histo-state-wrap')
+    .attr('transform', (d, i)=> `translate(${dimensions.squareDim}, 0)`);
+
+    let stateHisto = bars.selectAll('g.histo-state')
+        .data(d=> d.bins).join('g')
+        .classed('histo-state', true);
+
+    stateHisto.attr('transform', (d, i)=> `translate(0, ${3.5+(i*(dimensions.squareDim+2))})`);
+
+    stateHisto.append('rect')
+    .attr('height', dimensions.squareDim)
+    .attr('width', (d, i, n)=> {
+        let x = d3.scaleLinear().domain([0, d3.max(d3.selectAll(n).data().map(m=> m.state.length))]).range([0, 100]);
+        let sum = d3.sum(d.state.map(m=> m.value))
+        let av = sum / d.state.length;
+        let st = d3.deviation(d.state.map(m=> m.value));
+        let avRange = [(av - st), (av + st)]
+        console.log(av, st, d.state.filter(f=> f.value >= avRange[0] && f.value <= avRange[1]).length)
+        
+        let scale = d3.scaleLinear().domain([0, 1]).range([0, 1]);
+
+        return x(d.state.filter(f=> f.value >= avRange[0] && f.value <= avRange[1]).length)
+    });
+
+    /////////END XPERIMENT////////
+
     let stateBinsPredicted = discreteDist.selectAll('g.state-bins')
         .data(d=> d.bins).join('g')
         .classed('state-bins', true);
@@ -623,7 +650,6 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
             return 0;
         }
     }).attr('transform', (d, i) => {
-        
         let newy = d.scales.yScale;
         newy.range([80, 0]);
         return 'translate(0,'+newy(d.values.upperCI95)+')'
@@ -756,8 +782,6 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
                         .classed('one', false)
                         .classed('two', false)
                         .classed(`${data.key}`, false);
-
-                    
                 }
 
             }else{
@@ -782,7 +806,6 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
 
             }
 
-           
         }else{
 
             console.log('brush',d3.selectAll('.brush-span'))

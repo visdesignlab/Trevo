@@ -105,7 +105,7 @@ export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
             d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Colored by ${d.field}`)
         }else if(d.type === 'continuous'){
             renderTree(sidebar, d, true);
-            d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Colored by ${d.field}`)
+            d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Colored by ${d.field}`);
         }else{
             renderTree(sidebar, null, false);
             d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Color By Value`);
