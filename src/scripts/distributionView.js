@@ -784,9 +784,9 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
     
                     doesItExist.text(`${data.bins.groupLabel}, ${data.key}: ${zero(brushedVal[0])} - ${zero(brushedVal[1])}`);
                     //doesItExist.value(`${data.bins.groupLabel}, ${data.key}: ${zero(brushedVal[0])} - ${zero(brushedVal[1])}`);
-                    console.log('console.log', doesItExist.attr('value'), this)
-                    console.log(doesItExist.datum())
+                   
                     d3.select(doesItExist.datum()).call(brush.move, null);
+                    doesItExist.datum(this)
 
                     treeNode.selectAll(`.${data.key}`)
                         .selectAll(`${data.bins.groupLabel}`)
