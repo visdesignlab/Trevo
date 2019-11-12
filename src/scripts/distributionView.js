@@ -990,8 +990,10 @@ function brushedNodes(data, brushedVal){
     selectedBranch.classed(`${data.key}`, true);
    
     let notNodeSecondGrp = treeNode.filter(f=> notTestTest.indexOf(f.data.node) > -1).classed('anti-brushed-second', true).classed(`${data.key}`, true);
-    let secondAntiLinks = d3.select('#sidebar').selectAll('.link').filter(f=> notTestTest.indexOf(f.data.node) > -1).classed('brushed-second', true).classed(`${data.key}`, true);
-
+    let secondAntiLinks = d3.select('#sidebar').selectAll('.link')
+            .filter((f, j)=> (notNodeNames.indexOf(f.data.node) === -1)&&(notTestTest.indexOf(f.data.node) > -1));
+    secondAntiLinks.classed('anti-brushed-second', true).classed(`${data.key}`, true);
+    console.log(secondAntiLinks)
     notNodeSelectedBranch.classed('anti-brushed', true);
 
 
