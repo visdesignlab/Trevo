@@ -710,12 +710,11 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
 
             let treeTest = d3.select('#sidebar').selectAll('.node').filter(f=> {
                 return f.data.leaf === true});
-                
+
             if(treeTest.empty()){
                 renderTree(d3.select('#sidebar'), null, true);
             }
             
-
             let y = d3.scaleLinear().domain([data.domain[0], data.domain[1]]).range([0, dimensions.height])
             let attribute = data.key;
             let brushedVal = [y.invert(s[1]), y.invert(s[0])];
@@ -744,7 +743,6 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
             selectedBranch.classed(`${data.key}`, true);
 
             if(index < 2){
-
                 let doesItExist = d3.select('#toolbar').selectAll('.brush-span').filter((f, i, n)=> {
                     return d3.select(n[i]).attr('value') == `${data.bins.groupLabel}-${data.key}`;
                 });
@@ -761,6 +759,7 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
                     .classed('badge badge-secondary', true)
                     .style('background', brushColors[index][0])
                     .attr('value', `${data.bins.groupLabel}-${data.key}`)
+                    .datum(this)
                     .text(`${data.bins.groupLabel}, ${data.key}: ${zero(brushedVal[0])} - ${zero(brushedVal[1])}`);
 
                     let xOut = badge.append('i').classed('close fas fa-times', true).style('padding-left', '10px');
@@ -784,6 +783,10 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
                 }else{
     
                     doesItExist.text(`${data.bins.groupLabel}, ${data.key}: ${zero(brushedVal[0])} - ${zero(brushedVal[1])}`);
+                    //doesItExist.value(`${data.bins.groupLabel}, ${data.key}: ${zero(brushedVal[0])} - ${zero(brushedVal[1])}`);
+                    console.log('console.log', doesItExist.attr('value'), this)
+                    console.log(doesItExist.datum())
+                    d3.select(doesItExist.datum()).call(brush.move, null);
 
                     treeNode.selectAll(`.${data.key}`)
                         .selectAll(`${data.bins.groupLabel}`)
