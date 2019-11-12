@@ -802,6 +802,20 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
                         .classed('one', false)
                         .classed('two', false)
                         .classed(`${data.key}`, false);
+
+
+                        let selectedBranch = treeNode.filter(f=> {
+                            return nodeNames.indexOf(f.data.node) > -1;
+                        }).classed('brushed-branch', true);
+            
+                       // pullPath(pathArray, selectedBranch, arrayOfArray, nameArray, depth)
+                        let test = pullPath([], selectedBranch.data(), [], [], 0);
+                        let testtest = test.flatMap(t=> t).filter(f=>{
+                            return f.data.attributes[data.key].values.realVal >= brushedVal[0] && f.data.attributes[data.key].values.realVal <= brushedVal[1];
+                        }).map(m=> m.data.node);
+                        
+                        let secondGrp = treeNode.filter(f=> testtest.indexOf(f.data.node) > -1).classed('brushed-second', true).classed(`${data.key}`, true);
+                        selectedBranch.classed(`${data.key}`, true);
                 }
 
             }else{
