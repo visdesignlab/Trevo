@@ -733,7 +733,7 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
 
             let treeNode  = d3.select('#sidebar').selectAll('.node');
 
-            let selectedNodes = brushedNodes(data, brushedVal);
+            let selectedNodes = brushedNodes(data, brushedVal, classLabel);
             let selectedBranch = selectedNodes[0];
             let secondGrp = selectedNodes[1];
             let antiSelected = selectedNodes[2];
@@ -765,10 +765,10 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
                         d3.select(n[i].parentNode).remove();
                     });
                 
-                    secondGrp.classed(classLabel, true);
-                    selectedBranch.classed(classLabel, true);
-                    antiSecond.classed(classLabel, true);
-                    antiSelected.classed(classLabel, true);
+                    // secondGrp.classed(classLabel, true);
+                    // selectedBranch.classed(classLabel, true);
+                    // antiSecond.classed(classLabel, true);
+                    // antiSelected.classed(classLabel, true);
     
                 }else{
     
@@ -950,7 +950,7 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
 
 }
 
-function brushedNodes(data, brushedVal){
+function brushedNodes(data, brushedVal, classLabel){
     let time = d3.extent(data.data.map(d=> d.combLength))
     let nodes = data.data.filter(f=> {
         return (f.values.realVal >= brushedVal[0]) && (f.values.realVal <= brushedVal[1]);
@@ -982,22 +982,29 @@ function brushedNodes(data, brushedVal){
         return f.data.attributes[data.key].values.realVal < brushedVal[0] || f.data.attributes[data.key].values.realVal > brushedVal[1];
     }).map(m=> m.data.node);
     
-    let secondGrp = treeNode.filter(f=> testtest.indexOf(f.data.node) > -1).classed('brushed-second', true).classed(`${data.key}`, true);
+    let secondGrp = treeNode.filter(f=> (nodeNames.indexOf(f.data.node) === -1)&&(testtest.indexOf(f.data.node) > -1))
+        .classed('brushed-second', true)
+        .classed(`${data.key}`, true)
+        .classed(classLabel, true);
     let secondLinks = d3.select('#sidebar').selectAll('.link')
         .filter(f=> (nodeNames.indexOf(f.data.node) === -1)&&(testtest.indexOf(f.data.node) > -1))
         .classed('brushed-second', true)
-        .classed(`${data.key}`, true);
+        .classed(`${data.key}`, true)
+        .classed(classLabel, true);
     
-    console.log(secondLinks)
-
-    selectedBranch.classed(`${data.key}`, true);
+    selectedBranch.classed(`${data.key}`, true).classed(classLabel, true).classed('brushed-branch', true);
    
-    let notNodeSecondGrp = treeNode.filter(f=> notTestTest.indexOf(f.data.node) > -1).classed('anti-brushed-second', true).classed(`${data.key}`, true);
+    let notNodeSecondGrp = treeNode
+        .filter(f=> (notNodeNames.indexOf(f.data.node) === -1 )&& (notTestTest.indexOf(f.data.node) > -1))
+        .classed('anti-brushed-second', true)
+        .classed(`${data.key}`, true)
+        .classed(classLabel, true);
+
     let secondAntiLinks = d3.select('#sidebar').selectAll('.link')
             .filter((f, j)=> (notNodeNames.indexOf(f.data.node) === -1)&&(notTestTest.indexOf(f.data.node) > -1));
-    secondAntiLinks.classed('anti-brushed-second', true).classed(`${data.key}`, true);
-    console.log(secondAntiLinks)
-    notNodeSelectedBranch.classed('anti-brushed', true);
+    secondAntiLinks.classed('anti-brushed-second', true).classed(`${data.key}`, true).classed(classLabel, true);
+ 
+    notNodeSelectedBranch.classed('anti-brushed', true).classed(classLabel, true).classed(classLabel, true);
 
 
     return [selectedBranch, secondGrp, notNodeSelectedBranch, notNodeSecondGrp];

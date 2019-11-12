@@ -383,7 +383,12 @@ line.half{
   fill:red !important;
 }
 
-
+.brushed-branch.one circle{
+  r: 4px !important;
+  fill:#0D47A1 !important;
+  stroke-width: 1px;
+  stroke: gainsboro;
+}
 
 .brushed-second.one circle{
   r: 4px !important;
@@ -392,7 +397,7 @@ line.half{
   stroke: gainsboro;
 }
 
-path.link.brushed-second {
+path.link.brushed-second.one {
   fill: none;
   stroke: #64B5F6 !important;
   opacity: 0.8 !important;
@@ -403,17 +408,36 @@ path.link.brushed-second {
   r: 4px !important;
   fill:#6A1B9A !important;
 }
-
-.brushed-branch.one circle{
-  r: 4px !important;
-  fill:#0D47A1 !important;
+path.link.brushed-second.two {
+  fill: none;
+  stroke: #A08DB8 !important;
+  opacity: 0.8 !important;
+  stroke-width: 2px;
 }
-
 .brushed-branch.two circle{
   r: 4px !important;
   fill:#6A1B9A !important;
   stroke-width: 1px;
   stroke: gainsboro;
+}
+.anti-brushed-branch.two circle{
+  r: 4px !important;
+  fill:#F9A825 !important;
+  stroke-width: 1px;
+  stroke: gainsboro;
+}
+.node.anti-brushed-second.two circle{
+  fill: #FDD835 !important;
+  opacity: 1 !important;
+  r: 4px;
+  stroke-width: 1px;
+  stroke: gainsboro;
+}
+path.link.anti-brushed-second.two {
+  fill: none;
+  stroke: #FDD835 !important;
+  opacity: 0.8 !important;
+  stroke-width: 2px;
 }
 
 .inner-node-wrap{
@@ -485,7 +509,7 @@ g.node.low circle{
   stroke: gainsboro;
 }
 
-path.link.anti-brushed-second {
+path.link.anti-brushed-second.one {
   fill: none;
   stroke: #FFB74D !important;
   opacity: 0.8 !important;
@@ -500,20 +524,13 @@ path.link.anti-brushed-second {
   stroke: gainsboro;
 }
 
-path.link.anti-brushed-second.two {
-  fill: none;
-  stroke: #FFB74D !important;
-  opacity: 0.8 !important;
-  stroke-width: 2px;
-}
-
-.node.anti-brushed.two circle{
-  fill: #F4511E  !important;
-  opacity: 1 !important;
-  r: 4px;
-  stroke-width: 1px;
-  stroke: gainsboro;
-}
+// .node.anti-brushed.two circle{
+//   fill: #F4511E  !important;
+//   opacity: 1 !important;
+//   r: 4px;
+//   stroke-width: 1px;
+//   stroke: gainsboro;
+// }
 
 .node.hover.two circle {
   //fill: #fff;
