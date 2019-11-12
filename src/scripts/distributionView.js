@@ -21,6 +21,8 @@ const brushColors = [
 
 let colorBool = 0;
 
+let selectedClades = [];
+
 
 export function drawBranchPointDistribution(data, svg){
 
@@ -130,12 +132,18 @@ export function drawGroupLabels(pathData, svg, groupLabel){
             }
         }).classed('hover clade', true);
         let species = d.paths.map(m=> m[m.length - 1].label);
-    }).on('mouseout', (d, i)=> {
-        let treeNode  = d3.select('#sidebar').selectAll('.node');
-        let treeLinks  = d3.select('#sidebar').selectAll('.link');
-        treeNode.classed('hover clade', false);
-        treeLinks.classed('hover clade', false);
-    });
+        }).on('mouseout', (d, i)=> {
+            let treeNode  = d3.select('#sidebar').selectAll('.node');
+            let treeLinks  = d3.select('#sidebar').selectAll('.link');
+            treeNode.classed('hover clade', false);
+            treeLinks.classed('hover clade', false);
+        }).on('click', (d, i, n)=> {
+            console.log(d, i, n);
+            selectedClades.push(d);
+            selectedClades.map((e, j)=> {
+                d3.select(`.group-div.${e.label}-svg`).attr('transform', 'translate(0, 0)')
+            })
+        })
 
     cladeLabel.append('text').text(d=> d.label)
     .style('text-anchor', 'middle')
@@ -368,7 +376,7 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
                 d.sum = sum;
                 return `translate(0, ${sum})`;
             }
-        });
+    });
     
     let label = binnedWrap.append('text').text(d=> d.key)
     .attr('y', 40)
@@ -442,7 +450,7 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
             return f.color.state === d3.selectAll(n).data().filter(m=> m.state[0].value === maxVal)[0].color.state;
         }).classed('win', true);
 
-    winStateRoot.select('rect.color-rect').attr('fill', (c)=> {
+    winStateRoot.select('rect.color-rect').attr('fill', (c, i)=> {
             return c.color.color;
         }).attr('opacity', (c)=>{
             let sum = d3.sum(c.state.flatMap(s=> s.value));
@@ -786,7 +794,7 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
                         d3.select(d).call(brush.move, null);
                         d3.select(n[i].parentNode).remove();
                     });
-                    //doesItExist.value(`${data.bins.groupLabel}, ${data.key}: ${zero(brushedVal[0])} - ${zero(brushedVal[1])}`);
+                   
                    
                     d3.select(doesItExist.datum()).call(brush.move, null);
                     doesItExist.datum(this)
