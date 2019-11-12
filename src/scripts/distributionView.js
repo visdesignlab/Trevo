@@ -718,29 +718,33 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
             let y = d3.scaleLinear().domain([data.domain[0], data.domain[1]]).range([0, dimensions.height])
             let attribute = data.key;
             let brushedVal = [y.invert(s[1]), y.invert(s[0])];
-            let time = d3.extent(data.data.map(d=> d.combLength))
-            let nodes = data.data.filter(f=> {
-                return (f.values.realVal > brushedVal[0]) && (f.values.realVal < brushedVal[1]);
-            })
-            let nodeNames = nodes.map(m=> m.node);
-            let timeNodes = d3.extent(nodes.map(m=> m.combLength));
+            // let time = d3.extent(data.data.map(d=> d.combLength))
+            // let nodes = data.data.filter(f=> {
+            //     return (f.values.realVal > brushedVal[0]) && (f.values.realVal < brushedVal[1]);
+            // })
+            // let nodeNames = nodes.map(m=> m.node);
+            // let timeNodes = d3.extent(nodes.map(m=> m.combLength));
 
             let index = d3.select('#toolbar').selectAll('.brush-span').size();
 
             let treeNode  = d3.select('#sidebar').selectAll('.node');
 
-            let selectedBranch = treeNode.filter(f=> {
-                return nodeNames.indexOf(f.data.node) > -1;
-            }).classed('brushed-branch', true);
+            let selectedNodes = brushedNodes(data, brushedVal);
+            let selectedBranch = selectedNodes[0];
+            let secondGrp = selectedNodes[1];
 
-           // pullPath(pathArray, selectedBranch, arrayOfArray, nameArray, depth)
-            let test = pullPath([], selectedBranch.data(), [], [], 0);
-            let testtest = test.flatMap(t=> t).filter(f=>{
-                return f.data.attributes[data.key].values.realVal >= brushedVal[0] && f.data.attributes[data.key].values.realVal <= brushedVal[1];
-            }).map(m=> m.data.node);
+        //     let selectedBranch = treeNode.filter(f=> {
+        //         return nodeNames.indexOf(f.data.node) > -1;
+        //     }).classed('brushed-branch', true);
+
+        //    // pullPath(pathArray, selectedBranch, arrayOfArray, nameArray, depth)
+        //     let test = pullPath([], selectedBranch.data(), [], [], 0);
+        //     let testtest = test.flatMap(t=> t).filter(f=>{
+        //         return f.data.attributes[data.key].values.realVal >= brushedVal[0] && f.data.attributes[data.key].values.realVal <= brushedVal[1];
+        //     }).map(m=> m.data.node);
             
-            let secondGrp = treeNode.filter(f=> testtest.indexOf(f.data.node) > -1).classed('brushed-second', true).classed(`${data.key}`, true);
-            selectedBranch.classed(`${data.key}`, true);
+        //     let secondGrp = treeNode.filter(f=> testtest.indexOf(f.data.node) > -1).classed('brushed-second', true).classed(`${data.key}`, true);
+        //     selectedBranch.classed(`${data.key}`, true);
 
             if(index < 2){
                 let doesItExist = d3.select('#toolbar').selectAll('.brush-span').filter((f, i, n)=> {
@@ -764,17 +768,10 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
 
                     let xOut = badge.append('i').classed('close fas fa-times', true).style('padding-left', '10px');
 
-                    xOut.on('click', (d, i)=> {
-                        let filteredComp = comparisonKeeper.filter(f=> f.groupColor != d.groupColor);
-                        comparisonKeeper = filteredComp;
-                        if(comparisonKeeper.length > 0){
-                            renderComparison(null, otherPaths, selectedDiv, scales);
-                        }else{
-                            selectedDiv.selectAll('*').remove();
-                            selectedDiv.style('height', '0px');
-                            main.style('padding-top', '0px');
-                        }}
-                    );
+                    xOut.on('click', (d, i, n)=> {
+                        d3.select(d).call(brush.move, null);
+                        d3.select(n[i].parentNode).remove();
+                    });
                 
 
                     secondGrp.classed(classLabel, true);
@@ -783,6 +780,12 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
                 }else{
     
                     doesItExist.text(`${data.bins.groupLabel}, ${data.key}: ${zero(brushedVal[0])} - ${zero(brushedVal[1])}`);
+                    let xOut = doesItExist.append('i').classed('close fas fa-times', true).style('padding-left', '10px');
+
+                    xOut.on('click', (d, i, n)=> {
+                        d3.select(d).call(brush.move, null);
+                        d3.select(n[i].parentNode).remove();
+                    });
                     //doesItExist.value(`${data.bins.groupLabel}, ${data.key}: ${zero(brushedVal[0])} - ${zero(brushedVal[1])}`);
                    
                     d3.select(doesItExist.datum()).call(brush.move, null);
@@ -803,19 +806,9 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
                         .classed('two', false)
                         .classed(`${data.key}`, false);
 
-
-                        let selectedBranch = treeNode.filter(f=> {
-                            return nodeNames.indexOf(f.data.node) > -1;
-                        }).classed('brushed-branch', true);
-            
-                       // pullPath(pathArray, selectedBranch, arrayOfArray, nameArray, depth)
-                        let test = pullPath([], selectedBranch.data(), [], [], 0);
-                        let testtest = test.flatMap(t=> t).filter(f=>{
-                            return f.data.attributes[data.key].values.realVal >= brushedVal[0] && f.data.attributes[data.key].values.realVal <= brushedVal[1];
-                        }).map(m=> m.data.node);
-                        
-                        let secondGrp = treeNode.filter(f=> testtest.indexOf(f.data.node) > -1).classed('brushed-second', true).classed(`${data.key}`, true);
-                        selectedBranch.classed(`${data.key}`, true);
+                      let selectedNodes = brushedNodes(data, brushedVal);
+                      let selectedBranch = selectedNodes[0];
+                      let secondGrp = selectedNodes[1];
                 }
 
             }else{
@@ -962,4 +955,27 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
             d3.select(nodes[i]).select('.y-axis').selectAll('text').style('font-size', '8px');
     });
 
+}
+
+function brushedNodes(data, brushedVal){
+    let time = d3.extent(data.data.map(d=> d.combLength))
+    let nodes = data.data.filter(f=> {
+        return (f.values.realVal > brushedVal[0]) && (f.values.realVal < brushedVal[1]);
+    })
+    let nodeNames = nodes.map(m=> m.node);
+    let timeNodes = d3.extent(nodes.map(m=> m.combLength));
+    let treeNode = d3.select('#sidebar').selectAll('.node');
+    let selectedBranch = treeNode.filter(f=> {
+        return nodeNames.indexOf(f.data.node) > -1;
+    }).classed('brushed-branch', true);
+
+    let test = pullPath([], selectedBranch.data(), [], [], 0);
+    let testtest = test.flatMap(t=> t).filter(f=>{
+        return f.data.attributes[data.key].values.realVal >= brushedVal[0] && f.data.attributes[data.key].values.realVal <= brushedVal[1];
+    }).map(m=> m.data.node);
+    
+    let secondGrp = treeNode.filter(f=> testtest.indexOf(f.data.node) > -1).classed('brushed-second', true).classed(`${data.key}`, true);
+    selectedBranch.classed(`${data.key}`, true);
+
+    return [selectedBranch, secondGrp];
 }
