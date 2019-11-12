@@ -148,11 +148,8 @@ export function drawGroupLabels(pathData, svg, groupLabel){
 
 export function groupDistributions(pathData, mainDiv, scales, groupAttr){
     let groupKeys = scales.filter(f=> f.field === groupAttr)[0].scales.map(s=> s.scaleName);
-
-    console.log('pathData', Math.round(d3.mean(pathData.map(m=> m.length))), d3.median(pathData.map(m=> m.length)))
     let branchBinCount = d3.median(pathData.map(m=> m.length)) - d3.min(pathData.map(m=> m.length))
-    console.log(branchBinCount)
- 
+   
     let pathGroups = groupKeys.map(group => {
         let paths = pathData.filter(path => {
             return group.includes(path[path.length - 1].attributes[groupAttr].values[groupAttr]);
@@ -195,7 +192,7 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
     formatAttributeData(newNormed, scales, keysToHide);
 
     let maxBranch = d3.max(newNormed.map(p=> p.length)) - 1;
-   // let branchCount = d3.median(newNormed.map(p=> p.length));
+  
     let max = maxTimeKeeper[0]
 
     let normBins = new Array(branchCount).fill().map((m, i)=> {
@@ -715,7 +712,6 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
         var zero = d3.format(".3n");
 
         if(s != null){
-
             let treeTest = d3.select('#sidebar').selectAll('.node').filter(f=> {
                 return f.data.leaf === true});
 
@@ -726,12 +722,6 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
             let y = d3.scaleLinear().domain([data.domain[0], data.domain[1]]).range([0, dimensions.height])
             let attribute = data.key;
             let brushedVal = [y.invert(s[1]), y.invert(s[0])];
-            // let time = d3.extent(data.data.map(d=> d.combLength))
-            // let nodes = data.data.filter(f=> {
-            //     return (f.values.realVal > brushedVal[0]) && (f.values.realVal < brushedVal[1]);
-            // })
-            // let nodeNames = nodes.map(m=> m.node);
-            // let timeNodes = d3.extent(nodes.map(m=> m.combLength));
 
             let index = d3.select('#toolbar').selectAll('.brush-span').size();
 
@@ -740,19 +730,6 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
             let selectedNodes = brushedNodes(data, brushedVal);
             let selectedBranch = selectedNodes[0];
             let secondGrp = selectedNodes[1];
-
-        //     let selectedBranch = treeNode.filter(f=> {
-        //         return nodeNames.indexOf(f.data.node) > -1;
-        //     }).classed('brushed-branch', true);
-
-        //    // pullPath(pathArray, selectedBranch, arrayOfArray, nameArray, depth)
-        //     let test = pullPath([], selectedBranch.data(), [], [], 0);
-        //     let testtest = test.flatMap(t=> t).filter(f=>{
-        //         return f.data.attributes[data.key].values.realVal >= brushedVal[0] && f.data.attributes[data.key].values.realVal <= brushedVal[1];
-        //     }).map(m=> m.data.node);
-            
-        //     let secondGrp = treeNode.filter(f=> testtest.indexOf(f.data.node) > -1).classed('brushed-second', true).classed(`${data.key}`, true);
-        //     selectedBranch.classed(`${data.key}`, true);
 
             if(index < 2){
                 let doesItExist = d3.select('#toolbar').selectAll('.brush-span').filter((f, i, n)=> {
