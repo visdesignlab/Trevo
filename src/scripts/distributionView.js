@@ -983,7 +983,10 @@ function brushedNodes(data, brushedVal){
     }).map(m=> m.data.node);
     
     let secondGrp = treeNode.filter(f=> testtest.indexOf(f.data.node) > -1).classed('brushed-second', true).classed(`${data.key}`, true);
-    let secondLinks = d3.select('#sidebar').selectAll('.link').filter(f=> testtest.indexOf(f.data.node) > -1).classed('brushed-second', true).classed(`${data.key}`, true);
+    let secondLinks = d3.select('#sidebar').selectAll('.link')
+        .filter(f=> (nodeNames.indexOf(f.data.node) === -1)&&(testtest.indexOf(f.data.node) > -1))
+        .classed('brushed-second', true)
+        .classed(`${data.key}`, true);
     
     console.log(secondLinks)
 

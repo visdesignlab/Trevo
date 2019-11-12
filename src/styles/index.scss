@@ -392,6 +392,13 @@ line.half{
   stroke: gainsboro;
 }
 
+path.link.brushed-second {
+  fill: none;
+  stroke: #64B5F6 !important;
+  opacity: 0.8 !important;
+  stroke-width: 2px;
+}
+
 .brushed-second.two circle{
   r: 4px !important;
   fill:#6A1B9A !important;
