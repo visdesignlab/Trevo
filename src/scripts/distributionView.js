@@ -709,6 +709,8 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
         let data = d3.select(this.parentNode).data()[0]
         var s = d3.event.selection;
 
+       // console.log(this, data, d3.brushSelection())
+
         var zero = d3.format(".3n");
 
         if(s != null){
@@ -945,22 +947,41 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
 function brushedNodes(data, brushedVal){
     let time = d3.extent(data.data.map(d=> d.combLength))
     let nodes = data.data.filter(f=> {
-        return (f.values.realVal > brushedVal[0]) && (f.values.realVal < brushedVal[1]);
+        return (f.values.realVal >= brushedVal[0]) && (f.values.realVal <= brushedVal[1]);
     })
+    let notNodes = data.data.filter(f=> {
+        return (f.values.realVal < brushedVal[0]) || (f.values.realVal > brushedVal[1]);
+    });
+   
     let nodeNames = nodes.map(m=> m.node);
+    let notNodeNames = notNodes.map(m=> m.node);
+
     let timeNodes = d3.extent(nodes.map(m=> m.combLength));
     let treeNode = d3.select('#sidebar').selectAll('.node');
+
     let selectedBranch = treeNode.filter(f=> {
         return nodeNames.indexOf(f.data.node) > -1;
     }).classed('brushed-branch', true);
 
+    let notNodeSelectedBranch = treeNode.filter(f=> notNodeNames.indexOf(f.data.node) > -1).classed('anti-brushed', true);
+
     let test = pullPath([], selectedBranch.data(), [], [], 0);
+    let notTest = pullPath([], notNodeSelectedBranch.data(), [], [], 0);
+
     let testtest = test.flatMap(t=> t).filter(f=>{
         return f.data.attributes[data.key].values.realVal >= brushedVal[0] && f.data.attributes[data.key].values.realVal <= brushedVal[1];
+    }).map(m=> m.data.node);
+
+    let notTestTest = notTest.flatMap(t=> t).filter(f=>{
+        return f.data.attributes[data.key].values.realVal < brushedVal[0] || f.data.attributes[data.key].values.realVal > brushedVal[1];
     }).map(m=> m.data.node);
     
     let secondGrp = treeNode.filter(f=> testtest.indexOf(f.data.node) > -1).classed('brushed-second', true).classed(`${data.key}`, true);
     selectedBranch.classed(`${data.key}`, true);
+   
+    let notNodeSecondGrp = treeNode.filter(f=> notTestTest.indexOf(f.data.node) > -1).classed('anti-brushed-second', true).classed(`${data.key}`, true);
+    notNodeSelectedBranch.classed('anti-brushed', true);
+  //  console.log(notNodeGroup)
 
     return [selectedBranch, secondGrp];
 }

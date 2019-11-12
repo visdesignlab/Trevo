@@ -442,11 +442,6 @@ g.node.low circle{
   cursor: pointer;
 }
 
-.node circle {
- // fill: gray;
-
-}
-
 .node.hover.clade circle {
   //fill: #fff;
   fill: #FF5733 !important;
@@ -459,6 +454,22 @@ g.node.low circle{
 .node.hover.one circle {
   //fill: #fff;
   fill: #FF5733 !important;
+  opacity: 1 !important;
+  r: 4px;
+  stroke-width: 1px;
+  stroke: gainsboro;
+}
+
+.node.anti-brushed-second circle{
+  fill: #A08DB8 !important;
+  opacity: 1 !important;
+  r: 4px;
+  stroke-width: 1px;
+  stroke: gainsboro;
+}
+
+.node.anti-brushed circle{
+  fill: purple !important;
   opacity: 1 !important;
   r: 4px;
   stroke-width: 1px;
