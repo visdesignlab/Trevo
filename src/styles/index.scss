@@ -145,6 +145,12 @@ svg{
   fill: #FFE082;
 }
 
+.link {
+  fill: none;
+  stroke: gray;
+  stroke-width: 2px;
+}
+
 .attr-toggle-svg{
   width: inherit;
   height:180px;
@@ -381,22 +387,26 @@ line.half{
 
 .brushed-second.one circle{
   r: 4px !important;
-  fill:#FFAB91 !important;
+  fill:#64B5F6 !important;
+  stroke-width: 1px;
+  stroke: gainsboro;
 }
 
 .brushed-second.two circle{
   r: 4px !important;
-  fill:#90CAF9 !important;
+  fill:#6A1B9A !important;
 }
 
 .brushed-branch.one circle{
   r: 4px !important;
-  fill:#E64A19 !important;
+  fill:#0D47A1 !important;
 }
 
 .brushed-branch.two circle{
   r: 4px !important;
-  fill:#1976D2 !important;
+  fill:#6A1B9A !important;
+  stroke-width: 1px;
+  stroke: gainsboro;
 }
 
 .inner-node-wrap{
@@ -453,23 +463,45 @@ g.node.low circle{
 
 .node.hover.one circle {
   //fill: #fff;
-  fill: #FF5733 !important;
+  fill: #0D47A1 !important;
   opacity: 1 !important;
   r: 4px;
   stroke-width: 1px;
   stroke: gainsboro;
 }
 
-.node.anti-brushed-second circle{
-  fill: #A08DB8 !important;
+.node.anti-brushed-second.one circle{
+  fill: #FFB74D !important;
   opacity: 1 !important;
   r: 4px;
   stroke-width: 1px;
   stroke: gainsboro;
 }
 
-.node.anti-brushed circle{
-  fill: purple !important;
+path.link.anti-brushed-second.one {
+  fill: none;
+  stroke: #FFB74D !important;
+  opacity: 0.8 !important;
+  stroke-width: 2px;
+}
+
+.node.anti-brushed.one circle{
+  fill: #F4511E  !important;
+  opacity: 1 !important;
+  r: 4px;
+  stroke-width: 1px;
+  stroke: gainsboro;
+}
+
+path.link.anti-brushed-second.two {
+  fill: none;
+  stroke: #FFB74D !important;
+  opacity: 0.8 !important;
+  stroke-width: 2px;
+}
+
+.node.anti-brushed.two circle{
+  fill: #F4511E  !important;
   opacity: 1 !important;
   r: 4px;
   stroke-width: 1px;
@@ -507,11 +539,7 @@ g.node.low circle{
   text-shadow: 0 1px 0 #fff, 0 -1px 0 #fff, 1px 0 0 #fff, -1px 0 0 #fff;
 }
 
-.link {
-  fill: none;
-  stroke: gray;
-  stroke-width: 2px;
-}
+
 
 .link-not-there{
   fill: none;

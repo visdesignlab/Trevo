@@ -128,9 +128,7 @@ export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
                     }
                     renderTree(d3.select('#sidebar'), null, true, d.field);
                     d3.select('.attr-drop.dropdown').select('button').text(`Trait: ${d.field}`);
-
                     d3.select('.attr-drop.dropdown').select('button').attr('value')
-                    
                     d3.select('.attr-drop.dropdown').select('button').attr('value', d.field);
                     d3.select('#attr-drop').classed('show', false);
                 });
