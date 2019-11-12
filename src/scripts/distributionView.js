@@ -109,7 +109,7 @@ export function drawGroupLabels(pathData, svg, groupLabel){
                     let test = d3.entries(f.data.attributes).filter(f=> groupLabel.includes(f.key))[0].value;
                     return groupLabel.includes(test.states.state);
                 }else{
-                    let test = d3.entries(f.data.attributes).filter(f=> groupLabel.includes(f.key))[0]
+                    let test = d3.entries(f.data.attributes).filter(f=> groupLabel.includes(f.key))[0];
                     let testest = d3.entries(test.value.values).filter((f, i, n)=> {
                         let max = d3.max(n.map(m=> m.value));
                         return f.value === max;
@@ -137,27 +137,28 @@ export function drawGroupLabels(pathData, svg, groupLabel){
             let treeLinks  = d3.select('#sidebar').selectAll('.link');
             treeNode.classed('hover clade', false);
             treeLinks.classed('hover clade', false);
-        }).on('click', (d, i, n)=> {
-            console.log(d, i, n);
-            selectedClades.push(d);
-            selectedClades.map((e, j)=> {
-                d3.select(`.group-div.${e.label}-svg`).attr('transform', 'translate(0, 0)')
-            })
-        })
+        });
 
     cladeLabel.append('text').text(d=> d.label)
     .style('text-anchor', 'middle')
     .attr('transform', `translate(23, ${(pathData.keys.length * (dimensions.height+ 15)/2)}), rotate(-90)`);
+
+    return cladeLabel;
 }
 
 export function groupDistributions(pathData, mainDiv, scales, groupAttr){
     let groupKeys = scales.filter(f=> f.field === groupAttr)[0].scales.map(s=> s.scaleName);
+
+    console.log('pathData', Math.round(d3.mean(pathData.map(m=> m.length))), d3.median(pathData.map(m=> m.length)))
+    let branchBinCount = d3.median(pathData.map(m=> m.length)) - d3.min(pathData.map(m=> m.length))
+    console.log(branchBinCount)
  
     let pathGroups = groupKeys.map(group => {
         let paths = pathData.filter(path => {
             return group.includes(path[path.length - 1].attributes[groupAttr].values[groupAttr]);
         });
-        let groupBins = binGroups(paths, group, scales, group);
+
+        let groupBins = binGroups(paths, group, scales, branchBinCount);
         return {'label': group, 'paths': paths, 'groupBins': groupBins}
     });
 
@@ -182,7 +183,7 @@ export function groupDistributions(pathData, mainDiv, scales, groupAttr){
     });
 }
 
-export function binGroups(pathData, groupLabel, scales, label){
+export function binGroups(pathData, groupLabel, scales, branchCount){
 
     let attrHide = filterMaster.filter(f=> f.type === 'hide-attribute').map(m=> m.attribute);
     
@@ -194,7 +195,7 @@ export function binGroups(pathData, groupLabel, scales, label){
     formatAttributeData(newNormed, scales, keysToHide);
 
     let maxBranch = d3.max(newNormed.map(p=> p.length)) - 1;
-    let branchCount = d3.median(newNormed.map(p=> p.length));
+   // let branchCount = d3.median(newNormed.map(p=> p.length));
     let max = maxTimeKeeper[0]
 
     let normBins = new Array(branchCount).fill().map((m, i)=> {
@@ -246,7 +247,7 @@ export function binGroups(pathData, groupLabel, scales, label){
                 n.bins = histogram(n.data);
                 n.domain = [scale.max, scale.min];
                 n.bins.count = branchCount;
-                n.bins.groupLabel = label;
+                n.bins.groupLabel = groupLabel;
 
                 if(d3.mean(n.bins.map(m=> m.length)) === 0){
                     if(i === 0){
@@ -285,7 +286,6 @@ export function binGroups(pathData, groupLabel, scales, label){
 
         }else{
             //HANDLING DISCRETE//
-            // let states = leafAttr[0].states;
             let states = leafAttr[0].scales.scales;
            
             let stateKeys = states[0].state? states.map(s=> s.state) : states.map(s=> s.scaleName)
@@ -384,7 +384,7 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
     .style('text-anchor', 'end')
     .style('font-size', 11);
 
-    drawGroupLabels(pathData, svg, groupLabel);
+    let groupLabelBars = drawGroupLabels(pathData, svg, groupLabel);
 
     let predictedWrap = binnedWrap.append('g').classed('predicted', true);
     predictedWrap.attr('transform', 'translate(25, 0)');
