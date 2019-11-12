@@ -466,20 +466,15 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
     let stateHisto = bars.selectAll('g.histo-state')
         .data(d=> {
 
-
             let histogram = d3.histogram()
             .value(function(d) { return d.value; })  
             .domain([0, 1])  
             .thresholds(d3.scaleLinear().domain([0, 1])); 
 
-          
             let test = d.bins.map(m => {
-                
                 return histogram(m.state);
             })
 
-          
-           
             return d.bins}).join('g')
         .classed('histo-state', true);
 
