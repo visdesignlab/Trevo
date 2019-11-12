@@ -16,7 +16,7 @@ const dimensions = {
 }
 
 const brushColors = [
-    ['#0D47A1', '#FFAB91'],
+    ['#0D47A1', '#FFB74D'],
     ['#6A1B9A', '#90CAF9'],
 ]
 
@@ -702,7 +702,8 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
      let brush = d3.brushY().extent([[0, 0], [20, dimensions.height]])
      brush.on('end', brushed);
 
-     continDist.append("g").classed('continuous-branch-brush', true)//.attr('transform', 'translate(-20, 0)')
+     continDist.append("g")
+     .classed('continuous-branch-brush', true)//.attr('transform', 'translate(-20, 0)')
      .attr("class", "brush")
      .call(brush);
  
@@ -715,7 +716,13 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
         let index = d3.select('#toolbar').selectAll('.brush-span').size();
         let classLabel = index === 0 ? 'one' : 'two';
 
-        d3.select(this).select('.selection').attr('fill', colorKeeper[index][0])
+        d3.select(this).select('.selection')
+            .style('fill', `${brushColors[index][0]}`)
+            .attr('stroke', `${brushColors[index][0]}`)
+            .attr('stroke-width', 2);
+        d3.select(this).select('.overlay')
+        .attr('stroke', brushColors[index][1])
+        .attr('stroke-width', 2)
 
         if(s != null){
             let treeTest = d3.select('#sidebar').selectAll('.node').filter(f=> {
@@ -728,8 +735,6 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
             let y = d3.scaleLinear().domain([data.domain[0], data.domain[1]]).range([0, dimensions.height])
             let attribute = data.key;
             let brushedVal = [y.invert(s[1]), y.invert(s[0])];
-
-           
 
             let treeNode  = d3.select('#sidebar').selectAll('.node');
 
