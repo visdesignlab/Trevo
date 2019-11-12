@@ -702,14 +702,19 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
  
     function brushed(){
         let data = d3.select(this.parentNode).data()[0]
-       
         var s = d3.event.selection;
 
         var zero = d3.format(".3n");
 
         if(s != null){
 
-            renderTree(d3.select('#sidebar'), null, true);
+            let treeTest = d3.select('#sidebar').selectAll('.node').filter(f=> {
+                return f.data.leaf === true});
+                
+            if(treeTest.empty()){
+                renderTree(d3.select('#sidebar'), null, true);
+            }
+            
 
             let y = d3.scaleLinear().domain([data.domain[0], data.domain[1]]).range([0, dimensions.height])
             let attribute = data.key;
