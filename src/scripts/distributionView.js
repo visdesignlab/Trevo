@@ -291,7 +291,7 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
             let rootNode = rootNodes[0].attributes[key]
             rootNode.bins = d3.entries(rootNodes[0].attributes[key].values).map(m=> {       
                 let states = [{'state': m.key, 'value':m.value}];
-                return {state: states, color : scale.stateColors.filter(f=> f.state === m.key)[0], max:80};
+                return {state: states, branchCount:branchCount, color : scale.stateColors.filter(f=> f.state === m.key)[0], max:80};
                });
             
             mapNorm.bins = null
@@ -316,7 +316,7 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
                         return {'state': m[0], 'value':m[1]}
                     });
                     
-                    return {state: test, histogram: histogram(test), color : colors.filter(f=> f.state === state)[0], max:80};
+                    return {state: test, branchCount:branchCount, histogram: histogram(test), color : colors.filter(f=> f.state === state)[0], max:80};
                 });
                 //IF WE DONT HAVE ANY BRANCHES< WE ASSUME THAT THEY ARE THE SAME AS THE PREVIOUS
                 if(n.bins[0].state.length === 0){
@@ -329,7 +329,7 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
                                 return h;
                              });
                              let states = [{'state': m.key, 'value':m.value}];
-                             return {state: states, histogram: histo, color : colors.filter(f=> f.state === m.key)[0], max:80};
+                             return {state: states, branchCount:branchCount, histogram: histo, color : colors.filter(f=> f.state === m.key)[0], max:80};
                             });
                         
                     }else{
