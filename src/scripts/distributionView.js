@@ -464,45 +464,22 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
             return 'translate('+(100 + (branchScale(i)) + x(step)) +', 0)'});
 
     let discreteDist = branchGroup.filter(f=> f.type === 'discrete');
+ /////////EXPERIMENT////////
+    let stateBarsPredicted = discreteDist.selectAll('g.histo-bars')
+    .data(d=> d.bins).join('g')
+    .classed('histo-bars', true);
+  
+    stateBarsPredicted.attr('transform', (d, i)=> `translate(${dimensions.squareDim}, ${3.5+(i*(dimensions.squareDim+2))})`);
+  
+    let bars = stateBarsPredicted.append('rect')
+              .attr('height', dimensions.squareDim)
+              .attr('width', (d, i, n)=> {
+                console.log(d3.mean(d.state.map(m=> m.value)))
+                let x = d3.scaleLinear().domain([0, 1]).range([0, 40]);
+                return x(d3.mean(d.state.map(m=> m.value)))
+              });
 
-  /////////EXPERIMENT////////
-    let bars = discreteDist.append('g').attr('class', 'histo-state-wrap')
-    .attr('transform', (d, i)=> `translate(${dimensions.squareDim}, 0)`);
-
-    let stateHisto = bars.selectAll('g.histo-state')
-        .data(d=> {
-
-            let histogram = d3.histogram()
-            .value(function(d) { return d.value; })  
-            .domain([0, 1])  
-            .thresholds(d3.scaleLinear().domain([0, 1])); 
-
-            let test = d.bins.map(m => {
-                return histogram(m.state);
-            })
-
-            return d.bins}).join('g')
-        .classed('histo-state', true);
-
-    // let stateHisto = bars.selectAll('g.histo-state')
-    //     .data(d=> d.bins).join('g')
-    //     .classed('histo-state', true);
-
-    // stateHisto.attr('transform', (d, i)=> `translate(0, ${3.5+(i*(dimensions.squareDim+2))})`);
-
-    // stateHisto.append('rect')
-    // .attr('height', dimensions.squareDim)
-    // .attr('width', (d, i, n)=> {
-    //     let x = d3.scaleLinear().domain([0, d3.max(d3.selectAll(n).data().map(m=> m.state.length))]).range([0, 50]);
-    //     let sum = d3.sum(d.state.map(m=> m.value))
-    //     let av = sum / d.state.length;
-    //     let st = d3.deviation(d.state.map(m=> m.value));
-    //     let avRange = [(av - st), (av + st)];
-        
-    //     let scale = d3.scaleLinear().domain([0, 1]).range([0, 1]);
-
-    //     return x(d.state.filter(f=> f.value >= avRange[0] && f.value <= avRange[1]).length);
-    // });
+ 
 
     /////////END XPERIMENT////////
 
