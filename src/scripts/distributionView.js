@@ -299,6 +299,13 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
                 return leafAttr.filter(f=> s.scaleName.includes(f.states.state))});
    
             let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, dimensions.height]);
+            let y = d3.scaleLinear().domain([0, 1]).range([0, 40]);
+
+            let histogram = d3.histogram()
+            .value(function(d) { return d.value; })  
+            .domain(y.domain())  
+            .thresholds(y.ticks(20)); 
+  
            
             mapNorm.map((n, i, nodeArray)=> {
                 
@@ -308,7 +315,8 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
                     .map(m=> {
                         return {'state': m[0], 'value':m[1]}
                     });
-                    return {state: test, color : colors.filter(f=> f.state === state)[0], max:80};
+                    
+                    return {state: test, histogram: histogram(test), color : colors.filter(f=> f.state === state)[0], max:80};
                 });
                 //IF WE DONT HAVE ANY BRANCHES< WE ASSUME THAT THEY ARE THE SAME AS THE PREVIOUS
                 if(n.bins[0].state.length === 0){
@@ -465,44 +473,43 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
 
     let discreteDist = branchGroup.filter(f=> f.type === 'discrete');
 
+    var lineGenStates = d3.area()
+    .curve(d3.curveCardinal)
+    .x((d, i, n)=> {
+        console.log(n.length - 1)
+        let y = d3.scaleLinear().domain([0, n.length - 1]).range([0, dimensions.height]).clamp(true);
+        return y(i); 
+    })
+    .y0(d=> {
+        return 0;
+    })
+    .y1((d, i, n)=> {
+        console.log(n.count)
+        let dat = d.length;
+        let x = d3.scaleLinear().domain([0, 50]).range([0, 40]).clamp(true);
+        return x(dat); 
+    });
+
   /////////EXPERIMENT////////
     let bars = discreteDist.append('g').attr('class', 'histo-state-wrap')
     .attr('transform', (d, i)=> `translate(${dimensions.squareDim}, 0)`);
 
-    let stateHisto = bars.selectAll('g.histo-state')
+    let stateHisto = bars.selectAll('g.histo-wrap')
         .data(d=> {
-
-            let histogram = d3.histogram()
-            .value(function(d) { return d.value; })  
-            .domain([0, 1])  
-            .thresholds(d3.scaleLinear().domain([0, 1])); 
-
-            let test = d.bins.map(m => {
-                return histogram(m.state);
-            })
-
+            //console.log('s',d)
             return d.bins}).join('g')
-        .classed('histo-state', true);
+        .classed('histo-wrap', true);
 
-    // let stateHisto = bars.selectAll('g.histo-state')
-    //     .data(d=> d.bins).join('g')
-    //     .classed('histo-state', true);
+     stateHisto.attr('transform', (d, i)=> `translate(0, ${3.5+(i*(dimensions.squareDim+2))})`);
 
-    // stateHisto.attr('transform', (d, i)=> `translate(0, ${3.5+(i*(dimensions.squareDim+2))})`);
+    let statesofHisto = stateHisto.selectAll('.probs').data(d=> {
+        return [d.histogram]}).join('g').classed('probs', true);
 
-    // stateHisto.append('rect')
-    // .attr('height', dimensions.squareDim)
-    // .attr('width', (d, i, n)=> {
-    //     let x = d3.scaleLinear().domain([0, d3.max(d3.selectAll(n).data().map(m=> m.state.length))]).range([0, 50]);
-    //     let sum = d3.sum(d.state.map(m=> m.value))
-    //     let av = sum / d.state.length;
-    //     let st = d3.deviation(d.state.map(m=> m.value));
-    //     let avRange = [(av - st), (av + st)];
-        
-    //     let scale = d3.scaleLinear().domain([0, 1]).range([0, 1]);
+    statesofHisto.append('path').attr('d', lineGenStates)
+    .attr('stroke-width', 1)
+    .attr('transform', 'translate(11, '+dimensions.height+') rotate(-90)');
 
-    //     return x(d.state.filter(f=> f.value >= avRange[0] && f.value <= avRange[1]).length);
-    // });
+
 
     /////////END XPERIMENT////////
 
