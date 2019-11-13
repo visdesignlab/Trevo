@@ -304,7 +304,7 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
             let histogram = d3.histogram()
             .value(function(d) { return d.value; })  
             .domain(y.domain())  
-            .thresholds(y.ticks(20)); 
+            .thresholds(y.ticks(10)); 
   
            
             mapNorm.map((n, i, nodeArray)=> {
@@ -322,13 +322,22 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
                 if(n.bins[0].state.length === 0){
                     if(i === 0){
                         n.bins = d3.entries(rootNode.values).map(m=> {
+                            let histo = histogram([+m.value]).map(h=>{
+                                if(m.value <= h.x1 && m.value >= h.x0){
+                                    h.push(+m.value);
+                                }
+                                return h;
+                             });
                              let states = [{'state': m.key, 'value':m.value}];
-                             return {state: states, color : colors.filter(f=> f.state === m.key)[0], max:80};
+                             return {state: states, histogram: histo, color : colors.filter(f=> f.state === m.key)[0], max:80};
                             });
+                        
                     }else{
+                      
                         n.bins = nodeArray[i-1].bins;
                     }
                 }
+
                 n.type = scale.type;
                 return n;
             });
@@ -407,7 +416,7 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
         .attr('width', 12)
         .attr('fill', '#fff')
         .style('stroke-width', '0.5px')
-        .style('stroke', 'black')//.attr('x', 70);
+        .style('stroke', 'black')
 
     let rootRange = contRoot.append('rect')
         .attr('width', 12)
@@ -476,17 +485,15 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
     var lineGenStates = d3.area()
     .curve(d3.curveCardinal)
     .x((d, i, n)=> {
-        console.log(n.length - 1)
-        let y = d3.scaleLinear().domain([0, n.length - 1]).range([0, dimensions.height]).clamp(true);
-        return y(i); 
+        let y = d3.scaleLinear().domain([0, 1]).range([0, (dimensions.squareDim*d.count)]).clamp(true);
+        return y(d.x0); 
     })
     .y0(d=> {
         return 0;
     })
     .y1((d, i, n)=> {
-        console.log(n.count)
         let dat = d.length;
-        let x = d3.scaleLinear().domain([0, 50]).range([0, 40]).clamp(true);
+        let x = d3.scaleLinear().domain([0, 50]).range([1, 40]).clamp(true);
         return x(dat); 
     });
 
@@ -496,20 +503,33 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
 
     let stateHisto = bars.selectAll('g.histo-wrap')
         .data(d=> {
-            //console.log('s',d)
-            return d.bins}).join('g')
+            let bins = d.bins.map(b=> {
+                b.count = d.bins ? d.bins.length : 0;
+                return b;
+            })
+            return bins}).join('g')
         .classed('histo-wrap', true);
 
-     stateHisto.attr('transform', (d, i)=> `translate(0, ${3.5+(i*(dimensions.squareDim+2))})`);
-
     let statesofHisto = stateHisto.selectAll('.probs').data(d=> {
-        return [d.histogram]}).join('g').classed('probs', true);
+        if(d.histogram){
+            let histo = d.histogram.map(h=> {
+                h.count = d.count
+                h.color = d.color.color;
+                return h});
+            return [histo]
+        }else{
+            return null;
+        }
+    }).join('g').classed('probs', true);
 
     statesofHisto.append('path').attr('d', lineGenStates)
     .attr('stroke-width', 1)
-    .attr('transform', 'translate(11, '+dimensions.height+') rotate(-90)');
-
-
+    .attr('transform', (d, i, n)=> {
+        console.log((d[0].count/2)*dimensions.squareDim)
+        return `translate(0, ${((d[0].count)*dimensions.squareDim + 5) }) rotate(-90)`})
+    .attr('fill', (d, i, n)=> {
+        return d[0].color;
+    }).attr('opacity', .3)
 
     /////////END XPERIMENT////////
 
@@ -638,7 +658,9 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
         return 0;
     })
     .y1((d, i, n)=> {
-        let dat = Object.keys(d).length - 1
+       
+       // let dat = Object.keys(d).length - 1
+        let dat = d.length;
         let x = d3.scaleLinear().domain([0, 50]).range([0, ((dimensions.predictedWidth/n.count)*.7)]).clamp(true);
         return x(dat); 
     });
