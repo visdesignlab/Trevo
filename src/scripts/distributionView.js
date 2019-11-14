@@ -410,6 +410,7 @@ function renderDistStructure(mainDiv, pathGroups){
         let groupLabelBars = drawGroupLabels(d.groupBins, svg, d.label);
     
         groupLabelBars.on('click', (d, i, n)=> {
+            d3.select(n[i]).select('rect').attr('fill', '#F5B041');
             comparisonKeeper.push(Object.assign({},d));
             if(comparisonKeeper.length > 1){
 
@@ -419,7 +420,8 @@ function renderDistStructure(mainDiv, pathGroups){
                 //renderDistStructure(mainDiv, pathGroups.filter(p=> p.label != d.label))
 
             }else{
-                d3.select(n[i]).attr('fill', 'red');
+              
+                
             }
            
         });
@@ -443,18 +445,27 @@ function renderDistributionComparison(div, data, branchScale){
            // d.branches = {[data[0].label]: d.branches, [data[1].label]: data[1].groupBins[i].branches }
             d.branches = [...d.branches].map((b, j)=> {
                 
-                b.bins = { [data[0].label]: b.bins, [data[1].label]: data[1].groupBins[i].branches[j].bins }
+                b.bins = [{key:data[0].label, value: b.bins, index:0},
+                          {key:data[1].label, value: data[1].groupBins[i].branches[j].bins, index:1}
+                         ];
               //  b.histogram = { [data[0].label]: b.histogram, [data[1].label]: data[1].groupBins[i].branches[j].histogram }
-                b.data = { [data[0].label]: b.data.map(m=>{
-                    m.index = 0;
-                    return m;
-                }), 
-                [data[1].label]: data[1].groupBins[i].branches[j].data.map(m=> {
-                    m.index = 1;
-                    return m;
-                }) }
+                b.data = [{key: data[0].label, 
+                            value: b.data.map(m=>{
+                                    m.index = 0;
+                                    return m;
+                                    }), 
+                            index: 0},
+                    
+                   
+                       { key: data[1].label, 
+                         value : data[1].groupBins[i].branches[j].data.map(m=> {
+                           m.index = 1;
+                          return m;
+                         }), 
+                         index: 1 }];
+
                 return b;
-            })
+            });
 
     // console.log(d, d.branches)
             return d;
@@ -583,22 +594,29 @@ function renderDistributionComparison(div, data, branchScale){
         let discreteDist = branchGroup.filter(f=> f.type === 'discrete');
 
         let discreteBinGroups = discreteDist.selectAll('g.group').data(d=> {
-            return d3.entries(d.bins);
+           
+            return d.bins;
         }).join('g').classed('group', true);
 
         let stateBarsPredicted = discreteBinGroups.selectAll('g.histo-bars')
         .data(d=> {
-            return d.value}).join('g')
+            let binvalue = d.value.map(v=> {
+                v.index = d.index;
+                return v;
+            })
+            return binvalue}).join('g')
         .classed('histo-bars', true);
 
-        stateBarsPredicted.attr('transform', (d, i)=> `translate(${dimensions.squareDim}, ${3.5+(i*(dimensions.squareDim+2))})`);
+        stateBarsPredicted.attr('transform', (d, i)=> {
+            let xMove = d.index === 0 ? -40 : 0;
+            return `translate(${xMove}, ${3.5+(i*(dimensions.squareDim+2))})`});
 
         let bars = stateBarsPredicted.append('rect')
         .attr('height', dimensions.squareDim)
         .attr('width', (d, i, n)=> {
           let dev = d3.deviation(d.state.map(m=> m.value));
           let mean = d3.mean(d.state.map(m=> m.value));
-          let x = d3.scaleLinear().domain([0, 1]).range([0, 40]);
+          let x = d3.scaleLinear().domain([0, 1]).range([0, 40]).clamp(true);
           return x(mean)
         })
         .attr('fill', d=> d.color.color)
@@ -611,8 +629,8 @@ function renderDistributionComparison(div, data, branchScale){
         let continDist = branchGroup.filter(f=> f.type === 'continuous');
 
         continDist.on('mouseover', (d, i, node)=> {
-           // console.log('mousover',d3.entries(d.data)[0])
-            let newData = d3.entries(d.data);
+          
+            let newData = d.data;
             let list = newData[0].value.concat(newData[1].value).map(m=> m.node);
             // let selected = pointGroups.filter(p=> {
             //     return list.indexOf(p.node) > -1}).classed('selected', true);
@@ -643,11 +661,10 @@ function renderDistributionComparison(div, data, branchScale){
         });
 
         let continBinGroups = continDist.selectAll('g.group').data(d=> {
-            return d3.entries(d.bins);
+            return d.bins;
         }).join('g').classed('group', true);
 
         continBinGroups.each((d, i, nodes)=> {
-            
             let distrib = d3.select(nodes[i])
                 .selectAll('g')
                 .data([d.value])
@@ -655,23 +672,24 @@ function renderDistributionComparison(div, data, branchScale){
                 .classed('distribution', true);
             distrib.attr('transform', 'translate(11, '+dimensions.height+') rotate(-90)');
             let path = distrib.append('path').attr('d', lineGen);
-            path.attr("fill", brushColors[0][i])
+            path.attr("fill", (v, i, n)=> {
+                return brushColors[0][d.index]})
             .attr('opacity', 0.4)
-            .style('stroke', "rgba(133, 193, 233, .9)");
+            .style('stroke', brushColors[0][d.index]);
         });
 
         let contRect = continBinGroups.append('rect')
         .attr('height', dimensions.height)
         .attr('width', 10)
-        .style('fill', 'none')
+        .style('fill', '#fff')
         .style('stroke', 'gray');
 
     let rangeRectWrap = continDist.selectAll('g.range-wrap').data(d=> {
-        return d3.entries(d.data)
+        return d.data;
     }).join('g').classed('range-wrap', true)
     
     let rangeRect = rangeRectWrap.selectAll('rect.range').data((d,i)=> {
-        console.log('dddd',d)
+       
         let newData = d.value.map(m=> {
             m.range = d.range;
             m.gindex = i;
@@ -681,30 +699,31 @@ function renderDistributionComparison(div, data, branchScale){
        // return d;
     }).join('rect').classed('range', true);
 
-        rangeRect.attr('width', 10);
-        rangeRect.attr('height', (d, i)=> {
-            if(d.scales.yScale != undefined){
-                let newy = d.scales.yScale;
-                newy.range([80, 0]);
-                return newy(d.values.lowerCI95) - newy(d.values.upperCI95)
-            }else{
-                return 0;
-            }
-        }).attr('transform', (d, i) => {
-            let newy = d.scales.yScale;
-            newy.range([80, 0]);
-            return 'translate(0,'+newy(d.values.upperCI95)+')'
-        });
+        // rangeRect.attr('width', 10);
+        // rangeRect.attr('height', (d, i)=> {
+        //     if(d.scales.yScale != undefined){
+        //         let newy = d.scales.yScale;
+        //         newy.range([80, 0]);
+        //         return newy(d.values.lowerCI95) - newy(d.values.upperCI95)
+        //     }else{
+        //         return 0;
+        //     }
+        // }).attr('transform', (d, i) => {
+        //     let newy = d.scales.yScale;
+        //     newy.range([80, 0]);
+        //     return 'translate(0,'+newy(d.values.upperCI95)+')'
+        // });
     
-        rangeRect.attr('fill', d=> {
-           // console.log(d)
-           // return "rgba(133, 193, 233, .05)"});
-            return brushColors[0][d.index]})
-            .attr('opacity', .1)
+        // rangeRect.attr('fill', d=> {
+        //    // console.log(d)
+        //    // return "rgba(133, 193, 233, .05)"});
+        //     return brushColors[0][d.index]})
+        //     .attr('opacity', .1)
     
     
-        let avRect = continDist.append('rect').attr('width', 10).attr('height', (d, i)=> {
-            if(d3.entries(d.data)[0].value != undefined){
+        let avRect = continDist.selectAll('rect.av-rect').data(d=> d.data)
+            .join('rect').classed('av-rect', true).attr('width', 10).attr('height', (d, i)=> {
+            if(d.value != undefined){
                 return 3;
             }else{
                 return 0;
@@ -712,15 +731,15 @@ function renderDistributionComparison(div, data, branchScale){
         });
     
         avRect.attr('transform', (d, i) => {
-            if(d.data[0] != undefined){
-                let newy = d.data[0].scales.yScale;
+            if(d.value != undefined){
+                let newy = d.value[0].scales.yScale;
                 newy.range([dimensions.height, 0]);
-                let mean = d3.mean(d.data.map(m=> +m.values.realVal));
+                let mean = d3.mean(d.value.map(m=> +m.values.realVal));
                 return 'translate(0,'+newy(mean)+')';
             }else{
                 return 'translate(0,0)';
             }
-        }).attr('fill', '#004573');
+        }).attr('fill', (d)=>brushColors[0][d.index]);
 
 
     
@@ -831,11 +850,19 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
 
     /////////EXPERIMENT////////
     let stateBarsPredicted = discreteDist.selectAll('g.histo-bars')
-        .data(d=> d.bins).join('g')
+        .data(d=> {
+            let bins = d.bins.map(m=> {
+                m.index = d.index;
+                return m
+            });
+            return bins}).join('g')
         .classed('histo-bars', true);
   
-    stateBarsPredicted.attr('transform', (d, i)=> `translate(${dimensions.squareDim}, ${3.5+(i*(dimensions.squareDim+2))})`);
-  
+//stateBarsPredicted.attr('transform', (d, i)=> `translate(${dimensions.squareDim}, ${3.5+(i*(dimensions.squareDim+2))})`);
+    stateBarsPredicted.attr('transform', (d, i, n)=> {
+        console.log('d for states',d, i, n)
+        return `translate(0, ${3.5+(i*(dimensions.squareDim+2))})`});
+
     let bars = stateBarsPredicted.append('rect')
               .attr('height', dimensions.squareDim)
               .attr('width', (d, i, n)=> {
