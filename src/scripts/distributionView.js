@@ -593,12 +593,31 @@ function renderDistributionComparison(div, data, branchScale){
 
         let discreteDist = branchGroup.filter(f=> f.type === 'discrete');
 
+        let discreteMiddleGroups = discreteDist.selectAll('g.middle-group')
+            .data(d=> d.bins)
+            .join('g')
+            .classed('middle-group', true)
+            .attr('transform', (d, i)=> { 
+                let move = d.index === 0 ? -(dimensions.squareDim/4) : (dimensions.squareDim/4) ;
+                return `translate(${move}, 0)`});
+
+        let stateRects = discreteMiddleGroups.append('rect')
+        .classed('state-rect', true)
+        .attr('height', dimensions.squareDim)
+        .attr('width', dimensions.squareDim/2);
+    // stateRects.attr('fill', (d, i, n)=> {
+    //     let sum = d3.sum(d.state.map(m=> m.value))
+    //     let av = sum / d.state.length;
+    //     let scale = d3.scaleLinear().domain([0, 1]).range([0, 1]);
+    //     return `rgba(89, 91, 101, ${scale(av)})`;
+    // }).attr('stroke-width', 0.5).attr('stroke', `rgba(200, 203, 219, .9)`);
+
         let discreteBinGroups = discreteDist.selectAll('g.group')
                 .data(d=> d.bins)
                 .join('g')
                 .classed('group', true)
                 .attr('transform', (d, i)=> { 
-                    let move = d.index === 0 ? (-40 - (dimensions.squareDim/2)) : (dimensions.squareDim/2)
+                    let move = d.index === 0 ? (-40 - (dimensions.squareDim/4)) : (dimensions.squareDim)
                     return `translate(${move}, 0)`})
 
         let stateBarsPredicted = discreteBinGroups.selectAll('g.histo-bars')
@@ -637,7 +656,6 @@ function renderDistributionComparison(div, data, branchScale){
         let continDist = branchGroup.filter(f=> f.type === 'continuous');
 
         continDist.on('mouseover', (d, i, node)=> {
-          
             let newData = d.data;
             let list = newData[0].value.concat(newData[1].value).map(m=> m.node);
             // let selected = pointGroups.filter(p=> {
@@ -697,7 +715,6 @@ function renderDistributionComparison(div, data, branchScale){
     }).join('g').classed('range-wrap', true)
     
     let rangeRect = rangeRectWrap.selectAll('rect.range').data((d,i)=> {
-       
         let newData = d.value.map(m=> {
             m.range = d.range;
             m.gindex = i;
