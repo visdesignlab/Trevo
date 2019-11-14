@@ -21,6 +21,8 @@ const brushColors = [
     ['#6A1B9A', '#FDD835'],
 ]
 
+
+
 let colorBool = 0;
 
 let selectedClades = [];
@@ -408,11 +410,18 @@ function renderDistStructure(mainDiv, pathGroups){
         let groupLabelBars = drawGroupLabels(d.groupBins, svg, d.label);
     
         groupLabelBars.on('click', (d, i, n)=> {
-            comparisonKeeper.push(d);
-            mainDiv.selectAll('*').remove();
-            mainDiv.select('#compare-wrap').remove();
-            renderDistributionComparison(mainDiv, comparisonKeeper, branchScale);
-            renderDistStructure(mainDiv, pathGroups.filter(p=> p.label != d.label))
+            comparisonKeeper.push(Object.assign({},d));
+            if(comparisonKeeper.length > 1){
+
+                mainDiv.selectAll('*').remove();
+                mainDiv.select('#compare-wrap').remove();
+                renderDistributionComparison(mainDiv, comparisonKeeper, branchScale);
+                //renderDistStructure(mainDiv, pathGroups.filter(p=> p.label != d.label))
+
+            }else{
+                d3.select(n[i]).attr('fill', 'red');
+            }
+           
         });
         renderDistibutions(binnedWrap, branchScale, pointGroups);
     });
@@ -432,7 +441,7 @@ function renderDistributionComparison(div, data, branchScale){
     if(data.length > 1){
         let combined = data[0].groupBins.map((d, i, n)=> {
            // d.branches = {[data[0].label]: d.branches, [data[1].label]: data[1].groupBins[i].branches }
-            d.branches = d.branches.map((b, j)=> {
+            d.branches = [...d.branches].map((b, j)=> {
                 
                 b.bins = { [data[0].label]: b.bins, [data[1].label]: data[1].groupBins[i].branches[j].bins }
               //  b.histogram = { [data[0].label]: b.histogram, [data[1].label]: data[1].groupBins[i].branches[j].histogram }
@@ -595,9 +604,11 @@ function renderDistributionComparison(div, data, branchScale){
         let continDist = branchGroup.filter(f=> f.type === 'continuous');
 
         continDist.on('mouseover', (d, i, node)=> {
-            let list = d.data.map(m=> m.node);
-            let selected = pointGroups.filter(p=> {
-                return list.indexOf(p.node) > -1}).classed('selected', true);
+           // console.log('mousover',d3.entries(d.data)[0])
+            let newData = d3.entries(d.data);
+            let list = newData[0].value.concat(newData[1].value).map(m=> m.node);
+            // let selected = pointGroups.filter(p=> {
+            //     return list.indexOf(p.node) > -1}).classed('selected', true);
             let treeNode  = d3.select('#sidebar').selectAll('.node');
             let selectedBranch = treeNode.filter(f=> list.indexOf(f.data.node) > -1).classed('selected-branch', true);
             let y = d3.scaleLinear().domain(d.domain).range([0, dimensions.height])
@@ -629,6 +640,7 @@ function renderDistributionComparison(div, data, branchScale){
         }).join('g').classed('group', true);
 
         continBinGroups.each((d, i, nodes)=> {
+            
             let distrib = d3.select(nodes[i])
                 .selectAll('g')
                 .data([d.value])
@@ -636,12 +648,64 @@ function renderDistributionComparison(div, data, branchScale){
                 .classed('distribution', true);
             distrib.attr('transform', 'translate(11, '+dimensions.height+') rotate(-90)');
             let path = distrib.append('path').attr('d', lineGen);
-            path.attr("fill", "rgba(133, 193, 233, .4)")
+            path.attr("fill", brushColors[0][i])
+            .attr('opacity', 0.4)
             .style('stroke', "rgba(133, 193, 233, .9)");
         });
 
+        let contRect = continBinGroups.append('rect')
+        .attr('height', dimensions.height)
+        .attr('width', 10)
+        .style('fill', 'none')
+        .style('stroke', 'gray');
 
-        
+    let rangeRectWrap = continDist.selectAll('g.range-wrap').data(d=> {
+        return d3.entries(d.data)
+    })
+    
+    let rangeRect = rangeRectWrap.selectAll('rect.range').data(d=> {
+        console.log('dddd',d)
+        let newData = d.value.map(m=> {
+            // m.range = d.range;
+            // return m;
+        })
+        return newData}).join('rect').classed('range', true);
+
+        rangeRect.attr('width', 10);
+        rangeRect.attr('height', (d, i)=> {
+            if(d.scales.yScale != undefined){
+                let newy = d.scales.yScale;
+                newy.range([80, 0]);
+                return newy(d.values.lowerCI95) - newy(d.values.upperCI95)
+            }else{
+                return 0;
+            }
+        }).attr('transform', (d, i) => {
+            let newy = d.scales.yScale;
+            newy.range([80, 0]);
+            return 'translate(0,'+newy(d.values.upperCI95)+')'
+        });
+    
+        rangeRect.attr('fill', "rgba(133, 193, 233, .05)");
+    
+        let avRect = continDist.append('rect').attr('width', 10).attr('height', (d, i)=> {
+            if(d.data[0] != undefined){
+                return 3;
+            }else{
+                return 0;
+            }
+        });
+    
+        avRect.attr('transform', (d, i) => {
+            if(d.data[0] != undefined){
+                let newy = d.data[0].scales.yScale;
+                newy.range([dimensions.height, 0]);
+                let mean = d3.mean(d.data.map(m=> +m.values.realVal));
+                return 'translate(0,'+newy(mean)+')';
+            }else{
+                return 'translate(0,0)';
+            }
+        }).attr('fill', '#004573');
 
 
     
