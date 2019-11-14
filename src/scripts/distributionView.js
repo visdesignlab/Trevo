@@ -591,33 +591,47 @@ function renderDistributionComparison(div, data, branchScale){
             let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, dimensions.timeRange])
                 return 'translate('+(100 + (branchScale(i)) + x(step)) +', 0)'});
 
-        let discreteDist = branchGroup.filter(f=> f.type === 'discrete');
+        let discreteDist = branchGroup.filter(f=> f.type === 'discrete').append('g');
+
+        discreteDist.attr('transform', 'translate(5, 0)');
+       
 
         let discreteMiddleGroups = discreteDist.selectAll('g.middle-group')
             .data(d=> d.bins)
             .join('g')
             .classed('middle-group', true)
             .attr('transform', (d, i)=> { 
-                let move = d.index === 0 ? -(dimensions.squareDim/4) : (dimensions.squareDim/4) ;
+                let move = d.index === 0 ? -(dimensions.squareDim/2) : 0 ;
                 return `translate(${move}, 0)`});
 
-        let stateRects = discreteMiddleGroups.append('rect')
+        let stateRects = discreteMiddleGroups
+        .selectAll('rect.state-rect')
+        .data(d=> {
+           
+            return d.value})
+        .join('rect')
         .classed('state-rect', true)
         .attr('height', dimensions.squareDim)
         .attr('width', dimensions.squareDim/2);
-    // stateRects.attr('fill', (d, i, n)=> {
-    //     let sum = d3.sum(d.state.map(m=> m.value))
-    //     let av = sum / d.state.length;
-    //     let scale = d3.scaleLinear().domain([0, 1]).range([0, 1]);
-    //     return `rgba(89, 91, 101, ${scale(av)})`;
-    // }).attr('stroke-width', 0.5).attr('stroke', `rgba(200, 203, 219, .9)`);
+
+    stateRects.attr('fill', (d, i, n)=> {
+        let sum = d3.sum(d.state.map(m=> m.value))
+        let av = sum / d.state.length;
+        let scale = d3.scaleLinear().domain([0, 1]).range([0, 1]);
+        return `rgba(89, 91, 101, ${scale(av)})`;
+    }).attr('stroke-width', 0.5).attr('stroke', `rgba(200, 203, 219, .9)`);
+
+        stateRects.attr('transform', (d, i)=> {
+            console.log(d, i)
+            return `translate(0, ${(3.5+(i*(dimensions.squareDim+2)))})`
+        })
 
         let discreteBinGroups = discreteDist.selectAll('g.group')
                 .data(d=> d.bins)
                 .join('g')
                 .classed('group', true)
                 .attr('transform', (d, i)=> { 
-                    let move = d.index === 0 ? (-40 - (dimensions.squareDim/4)) : (dimensions.squareDim)
+                    let move = d.index === 0 ? (-40 - (dimensions.squareDim/2)) : (dimensions.squareDim/2)
                     return `translate(${move}, 0)`})
 
         let stateBarsPredicted = discreteBinGroups.selectAll('g.histo-bars')
