@@ -342,7 +342,11 @@ export function drawGroupLabels(pathData, svg, groupLabel){
 
     return cladeLabel;
 }
-
+/**
+ * 
+ * @param {*} mainDiv 
+ * @param {*} pathGroups 
+ */
 function renderDistStructure(mainDiv, pathGroups){
     let groupDivs = mainDiv.selectAll('.group-div').data(pathGroups).join('div').classed('group-div', true);
 
@@ -361,7 +365,7 @@ function renderDistStructure(mainDiv, pathGroups){
         svg.attr('height', (d.groupBins.keys.length * (dimensions.height + 5)));
     
         let branchBar = drawBranchPointDistribution(d, svg);
-        branchBar.attr('transform', 'translate(40, 10)');
+        branchBar.attr('transform', 'translate(55, 10)');
 
         group.classed(d.label, true);
     
@@ -369,7 +373,7 @@ function renderDistStructure(mainDiv, pathGroups){
         let pointGroups = branchBar.selectAll('g.branch-points');
       
         let wrap = svg.append('g').classed('summary-wrapper', true);
-        wrap.attr('transform', 'translate(50, 50)');
+        wrap.attr('transform', 'translate(70, 50)');
     
         let binnedWrap = wrap.selectAll('.attr-wrap').data(d.groupBins).join('g').attr('class', d=> d.key + ' attr-wrap');
     
@@ -384,11 +388,21 @@ function renderDistStructure(mainDiv, pathGroups){
                 }
         });
 
-        let label = binnedWrap.append('text').text(d=> d.key)
+        let label = binnedWrap.append('text')
+        .text(d=> d.key);
+
+        label.filter(f=> f.type === 'continuous')
         .attr('y', 40)
         .attr('x', 80)
         .style('text-anchor', 'end')
         .style('font-size', 11);
+
+        label.filter(f=> f.type === 'discrete')
+        .attr('y', (d, i)=> 3)
+        .attr('x', d=> -((d.stateKeys.length)*(dimensions.squareDim)/2))
+        .style('text-anchor', 'middle')
+        .style('font-size', 11)
+        .attr('transform', 'rotate(-90)')
     
         let groupLabelBars = drawGroupLabels(d.groupBins, svg, d.label);
     
@@ -400,15 +414,13 @@ function renderDistStructure(mainDiv, pathGroups){
 
         renderDistibutions(binnedWrap, branchScale, pointGroups);
     });
-
 }
 
 /**
  * 
- * @param {*} pathData 
- * @param {*} groupLabel 
- * @param {*} mainDiv 
- * @param {*} scales 
+ * @param {*} binnedWrap 
+ * @param {*} branchScale 
+ * @param {*} pointGroups 
  */
 
 export function renderDistibutions(binnedWrap, branchScale, pointGroups){
@@ -442,19 +454,26 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
             return 'translate(0,'+newy(+d.values.upperCI95)+')'
         }).style('opacity', 0.5).attr('fill', "rgba(133, 193, 233)");
 
-        let rootAv = contRoot.append('rect').attr('width', 12).attr('height', 3);
+    let rootAv = contRoot.append('rect').attr('width', 12).attr('height', 3);
     
         rootAv.attr('transform', (d, i) => {
                 let newy = d.scales.yScale;
                 newy.range([dimensions.height, 0]);
                 let mean = +d.values.realVal;
                 return 'translate(0,'+newy(mean)+')';
-        }).attr('fill', '#004573');
+            }).attr('fill', '#004573');
 
        // Discrete Root
     let disRoot = root.filter(f=> f.type === "discrete");
     let rootStateGroups = disRoot.selectAll('g.root-state-groups').data(d=> {
         return d.bins}).join('g').classed('root-state-groups', true);
+
+    rootStateGroups.append('text')
+        .text((d, i)=> d.color.state)
+        .attr('y', 10)
+        .attr('x', -3)
+        .style('font-size', 10)
+        .style('text-anchor', 'end');
 
     rootStateGroups.attr('transform', (d, i)=> `translate(0, ${3.5+(i*(dimensions.squareDim+2))})`);
     rootStateGroups.append('rect')
@@ -583,12 +602,12 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
           .style("opacity", 0);
     });
 
-    let lastBranch = discreteDist.filter((d, i, n)=>{
-        return i === n.length - 1
-    }).selectAll('g.state-bins').append('text').text((d, i)=> {
-        return d.color.state;
-    });
-    lastBranch.attr('y', 10).attr('x', dimensions.squareDim+4).style('font-size', 10);
+    // let lastBranch = discreteDist.filter((d, i, n)=>{
+    //     return i === n.length - 1
+    // }).selectAll('g.state-bins').append('text').text((d, i)=> {
+    //     return d.color.state;
+    // });
+    // lastBranch.attr('y', 10).attr('x', dimensions.squareDim+4).style('font-size', 10);
 
     discreteDist.each((d, i, node)=>{
         let maxBin = 0;
@@ -635,7 +654,7 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
         .attr('fill', 'none')
         .attr('stroke', `rgba(200, 203, 219, .9)`)
         .attr('stoke-width', 1)
-    })
+    });
 
     //CONTIN PREDICTED
     let continDist = branchGroup.filter(f=> f.type === 'continuous');
@@ -664,7 +683,6 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
         return 0;
     })
     .y1((d, i, n)=> {
-       
        // let dat = Object.keys(d).length - 1
         let dat = d.length;
         let x = d3.scaleLinear().domain([0, 50]).range([0, ((dimensions.predictedWidth/n.count)*.7)]).clamp(true);
@@ -732,7 +750,6 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
         }
     }).attr('fill', '#004573');
 
-
      //////START BRANCH EXPERIMENT
      let brush = d3.brushY().extent([[0, 0], [20, dimensions.height]])
      brush.on('end', brushed);
@@ -745,11 +762,9 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
     function brushed(){
         let data = d3.select(this.parentNode).data()[0]
         var s = d3.event.selection;
-
         var zero = d3.format(".3n");
 
         let index = d3.select('#toolbar').selectAll('.brush-span').size();
-      
         let classLabel = index === 0 ? 'one' : 'two';
 
         if(s != null){
@@ -902,13 +917,12 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
 
      let observedWrap = binnedWrap.append('g').classed('observed', true);
      observedWrap.attr('transform', (d, i, n)=> {
-         return 'translate('+ (dimensions.predictedWidth + 150) +', 0)'})
-
+         return 'translate('+ (dimensions.predictedWidth + 150) +', 0)'});
 
     ////OBSERVED CONTIUOUS/////
 
     let contOb = observedWrap.filter(f=> f.type === 'continuous');
-    contOb.attr('transform', `translate(${dimensions.predictedWidth + 160}, -15)`)
+    contOb.attr('transform', `translate(${dimensions.predictedWidth + 160}, -15)`);
 
     let contBars = contOb.selectAll('g.ob-bars').data(d=> {
         return d.leafData.bins}).join('g').classed('ob-bars', true);
@@ -962,7 +976,6 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
             .append('text').text('Frequency')
             .attr('transform', `translate(-20, ${dimensions.height- 10}) rotate(-90)`)
             .style('font-size', '10px');
-
     });
     
     ////Observed Discrete////
@@ -1004,9 +1017,7 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
     });
 
     discOb.each((d, i, nodes)=> {
-            let labels = d.leafData.bins.map(b=> {
-                return b[0] != undefined ? b[0].winState : '';
-                })
+           
             let xPoint = d3.scalePoint().domain(d.stateKeys).range([0, dimensions.observedWidth]).padding(.6)
             let height = d.stateKeys ? (d.stateKeys.length * dimensions.squareDim - 10) : 0;
             let y = d3.scaleLinear().domain([0, d.leafData.data.length]).range([(height), 0]);
@@ -1072,9 +1083,7 @@ function brushedNodes(data, brushedVal, classLabel){
     let secondAntiLinks = d3.select('#sidebar').selectAll('.link')
             .filter((f, j)=> (notNodeNames.indexOf(f.data.node) === -1)&&(notTestTest.indexOf(f.data.node) > -1));
     secondAntiLinks.classed('anti-brushed-second', true).classed(`${data.key}`, true).classed(classLabel, true);
- 
     notNodeSelectedBranch.classed('anti-brushed', true).classed(classLabel, true).classed(classLabel, true);
-
 
     return [selectedBranch, secondGrp, notNodeSelectedBranch, notNodeSecondGrp];
 }
