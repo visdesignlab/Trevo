@@ -593,10 +593,13 @@ function renderDistributionComparison(div, data, branchScale){
 
         let discreteDist = branchGroup.filter(f=> f.type === 'discrete');
 
-        let discreteBinGroups = discreteDist.selectAll('g.group').data(d=> {
-           
-            return d.bins;
-        }).join('g').classed('group', true);
+        let discreteBinGroups = discreteDist.selectAll('g.group')
+                .data(d=> d.bins)
+                .join('g')
+                .classed('group', true)
+                .attr('transform', (d, i)=> { 
+                    let move = d.index === 0 ? (-40 - (dimensions.squareDim/2)) : (dimensions.squareDim/2)
+                    return `translate(${move}, 0)`})
 
         let stateBarsPredicted = discreteBinGroups.selectAll('g.histo-bars')
         .data(d=> {
@@ -608,7 +611,12 @@ function renderDistributionComparison(div, data, branchScale){
         .classed('histo-bars', true);
 
         stateBarsPredicted.attr('transform', (d, i)=> {
-            let xMove = d.index === 0 ? -40 : 0;
+            //console.log('d for state move',d)
+            let dev = d3.deviation(d.state.map(m=> m.value));
+            let mean = d3.mean(d.state.map(m=> m.value));
+            let x = d3.scaleLinear().domain([0, 1]).range([0, 40]).clamp(true);
+             
+            let xMove = d.index === 0 ? (40 - x(mean)) : 0;
             return `translate(${xMove}, ${3.5+(i*(dimensions.squareDim+2))})`});
 
         let bars = stateBarsPredicted.append('rect')
@@ -860,8 +868,7 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
   
 //stateBarsPredicted.attr('transform', (d, i)=> `translate(${dimensions.squareDim}, ${3.5+(i*(dimensions.squareDim+2))})`);
     stateBarsPredicted.attr('transform', (d, i, n)=> {
-        console.log('d for states',d, i, n)
-        return `translate(0, ${3.5+(i*(dimensions.squareDim+2))})`});
+        return `translate(${dimensions.squareDim}, ${3.5+(i*(dimensions.squareDim+2))})`});
 
     let bars = stateBarsPredicted.append('rect')
               .attr('height', dimensions.squareDim)
