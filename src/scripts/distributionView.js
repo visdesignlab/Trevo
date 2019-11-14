@@ -445,7 +445,14 @@ function renderDistributionComparison(div, data, branchScale){
                 
                 b.bins = { [data[0].label]: b.bins, [data[1].label]: data[1].groupBins[i].branches[j].bins }
               //  b.histogram = { [data[0].label]: b.histogram, [data[1].label]: data[1].groupBins[i].branches[j].histogram }
-                b.data = { [data[0].label]: b.data, [data[1].label]: data[1].groupBins[i].branches[j].data }
+                b.data = { [data[0].label]: b.data.map(m=>{
+                    m.index = 0;
+                    return m;
+                }), 
+                [data[1].label]: data[1].groupBins[i].branches[j].data.map(m=> {
+                    m.index = 1;
+                    return m;
+                }) }
                 return b;
             })
 
@@ -661,15 +668,18 @@ function renderDistributionComparison(div, data, branchScale){
 
     let rangeRectWrap = continDist.selectAll('g.range-wrap').data(d=> {
         return d3.entries(d.data)
-    })
+    }).join('g').classed('range-wrap', true)
     
-    let rangeRect = rangeRectWrap.selectAll('rect.range').data(d=> {
+    let rangeRect = rangeRectWrap.selectAll('rect.range').data((d,i)=> {
         console.log('dddd',d)
         let newData = d.value.map(m=> {
-            // m.range = d.range;
-            // return m;
+            m.range = d.range;
+            m.gindex = i;
+            return m;
         })
-        return newData}).join('rect').classed('range', true);
+        return newData
+       // return d;
+    }).join('rect').classed('range', true);
 
         rangeRect.attr('width', 10);
         rangeRect.attr('height', (d, i)=> {
@@ -686,10 +696,15 @@ function renderDistributionComparison(div, data, branchScale){
             return 'translate(0,'+newy(d.values.upperCI95)+')'
         });
     
-        rangeRect.attr('fill', "rgba(133, 193, 233, .05)");
+        rangeRect.attr('fill', d=> {
+           // console.log(d)
+           // return "rgba(133, 193, 233, .05)"});
+            return brushColors[0][d.index]})
+            .attr('opacity', .1)
+    
     
         let avRect = continDist.append('rect').attr('width', 10).attr('height', (d, i)=> {
-            if(d.data[0] != undefined){
+            if(d3.entries(d.data)[0].value != undefined){
                 return 3;
             }else{
                 return 0;
