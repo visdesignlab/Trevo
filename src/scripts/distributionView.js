@@ -5,6 +5,7 @@ import {filterMaster} from './filterComponent';
 import { pullPath } from './pathCalc';
 import { renderTree } from './sidebarComponent';
 import { colorKeeper } from '.';
+import { comparisonKeeper } from './selectedPaths';
 
 const dimensions = {
     height: 80,
@@ -24,130 +25,8 @@ let colorBool = 0;
 
 let selectedClades = [];
 
-
-export function drawBranchPointDistribution(data, svg){
-
-    let branchBar = svg.append('g').classed('branch-bar', true);
-    branchBar.append('rect').classed('point-dis-rect', true)
-        .attr('height', 25)
-        .attr('x', -10)
-        .attr('y', -10)
-        .attr('fill', '#fff');
-
-    let binWrap = branchBar.append('g').attr('transform', 'translate(102, -10)');
-
-    branchBar.append('line')
-        .attr('y1', 2)
-        .attr('y2', 2)
-        .attr('x1', '100')
-        .attr('x2', 890)
-        .attr('stroke', 'gray')
-        .attr('stroke-width', .25);
-
-    branchBar.append('text').text('Root').attr('transform', 'translate(70, 7)');
-    let leafLabel = branchBar.append('g').classed('leaf-label', true).attr('transform', 'translate(950, 7)');
-    leafLabel.append('text').text('Leaves');
-
-    let nodeLengthArray = [];
-    let nodeDuplicateCheck = []
-
-    data.paths.map(path=> {
-        path.filter(n=> n.leaf != true).map(node=> {
-            if(nodeDuplicateCheck.indexOf(node.node) == -1){
-                nodeDuplicateCheck.push(node.node);
-                nodeLengthArray.push({'node': node.node, 'eMove': node.combLength });
-            }
-        })
-    });
-
-    let bPointScale = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, 795]);
-    let pointGroups = branchBar.selectAll('g.branch-points').data(nodeLengthArray)
-        .join('g').attr('class', (d, i)=> d.node).classed('branch-points', true);
-
-    pointGroups.attr('transform', (d, i) => {
-        return `translate(${(105 + bPointScale(d.eMove))}, 0)`});
-    pointGroups.append('circle').attr('r', 5).attr('fill', '#fff').attr('opacity', 0.5)//.attr('fill', "rgba(123, 141, 153, 0.5)");
-
-    let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, 795]);
-    
-    let binsRects = binWrap
-        .selectAll('rect.bin')
-        .data(data.groupBins[0].branches.map(m=> m.range))
-        .join('rect')
-        .classed('bin', true);
-
-    binsRects.attr('width', (d, i, n)=> {
-        return x(d[1]) - x(d[0]);
-    }).attr('height', 20);
-
-    binsRects.attr('transform', (d, i, n)=> {
-        let step = x(d[1]) - x(d[0]);
-        return `translate(${step*i},0)`});
-
-    binsRects.attr('fill', 'gray').attr('stroke-width', 2).attr('stroke', 'white');
-
-    let axis = d3.axisBottom(x);
-    let axGroup = branchBar.append('g').call(axis)
-    axGroup.attr('transform', 'translate(103, 10)');
-    axGroup.select('path').attr('stroke-width', 0);
-
-    return branchBar;
-}
-
-export function drawGroupLabels(pathData, svg, groupLabel){
-
-    let cladeLabel = svg.append('g').classed('clade-label', true).attr('transform', 'translate(10, 0)');
-    cladeLabel.append('rect')
-        .attr('width', 50)
-        .attr('height', (pathData.keys.length * (dimensions.height+ 15)))
-        .attr('fill', 'gray')
-        .style('opacity', 0.2)
-        .on('mouseover', (d, i)=>{
-            let treeNode  = d3.select('#sidebar').selectAll('.node');
-            let treeLinks  = d3.select('#sidebar').selectAll('.link');
-            treeNode.filter(f=> {
-                if(f.data.leaf){
-                    let test = d3.entries(f.data.attributes).filter(f=> groupLabel.includes(f.key))[0].value;
-                    return groupLabel.includes(test.states.state);
-                }else{
-                    let test = d3.entries(f.data.attributes).filter(f=> groupLabel.includes(f.key))[0];
-                    let testest = d3.entries(test.value.values).filter((f, i, n)=> {
-                        let max = d3.max(n.map(m=> m.value));
-                        return f.value === max;
-                    })[0];
-                    return groupLabel == testest.key;
-                }
-            }).classed('hover clade', true);
-        
-        treeLinks.filter(f=> {
-            if(f.data.leaf){
-                let test = d3.entries(f.data.attributes).filter(f=> groupLabel.includes(f.key))[0].value;
-                return groupLabel.includes(test.states.state);
-            }else{
-                let test = d3.entries(f.data.attributes).filter(f=> groupLabel.includes(f.key))[0]
-                let testest = d3.entries(test.value.values).filter((f, i, n)=> {
-                    let max = d3.max(n.map(m=> m.value));
-                    return f.value === max;
-                })[0];
-                return groupLabel == testest.key;
-            }
-        }).classed('hover clade', true);
-        let species = d.paths.map(m=> m[m.length - 1].label);
-        }).on('mouseout', (d, i)=> {
-            let treeNode  = d3.select('#sidebar').selectAll('.node');
-            let treeLinks  = d3.select('#sidebar').selectAll('.link');
-            treeNode.classed('hover clade', false);
-            treeLinks.classed('hover clade', false);
-        });
-
-    cladeLabel.append('text').text(d=> d.label)
-    .style('text-anchor', 'middle')
-    .attr('transform', `translate(23, ${(pathData.keys.length * (dimensions.height+ 15)/2)}), rotate(-90)`);
-
-    return cladeLabel;
-}
-
 export function groupDistributions(pathData, mainDiv, scales, groupAttr){
+
     let groupKeys = scales.filter(f=> f.field === groupAttr)[0].scales.map(s=> s.scaleName);
     let branchBinCount = d3.median(pathData.map(m=> m.length)) - d3.min(pathData.map(m=> m.length))
    
@@ -160,25 +39,7 @@ export function groupDistributions(pathData, mainDiv, scales, groupAttr){
         return {'label': group, 'paths': paths, 'groupBins': groupBins}
     });
 
-    let groupDivs = mainDiv.selectAll('.group-div').data(pathGroups).join('div').classed('group-div', true);
-
-    groupDivs.each((d, i, n)=> {
-
-        let group = d3.select(n[i]);
-        group.style('text-align', 'center');
-        group.append('text').text(d.label);
-        group.append('text').text(` : ${d.paths.length} Paths` );
-      
-        let svg = group.append('svg');
-        svg.attr('class', 'main-summary-view');
-        svg.attr('id', `${d.label}-svg`);
-        svg.attr('height', (d.groupBins.keys.length * (dimensions.height + 5)));
-    
-        let branchBar = drawBranchPointDistribution(d, svg);
-        branchBar.attr('transform', 'translate(40, 10)')
-
-        renderDistibutions(d.groupBins, d.label, group, branchBar, scales);
-    });
+    renderDistStructure(mainDiv, pathGroups);
 }
 
 export function binGroups(pathData, groupLabel, scales, branchCount){
@@ -359,6 +220,189 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
     sortedBins.keys = keys;
     return sortedBins;
 }
+
+export function drawBranchPointDistribution(data, svg){
+
+    let branchBar = svg.append('g').classed('branch-bar', true);
+    branchBar.append('rect').classed('point-dis-rect', true)
+        .attr('height', 25)
+        .attr('x', -10)
+        .attr('y', -10)
+        .attr('fill', '#fff');
+
+    let binWrap = branchBar.append('g').attr('transform', 'translate(102, -10)');
+
+    branchBar.append('line')
+        .attr('y1', 2)
+        .attr('y2', 2)
+        .attr('x1', '100')
+        .attr('x2', 890)
+        .attr('stroke', 'gray')
+        .attr('stroke-width', .25);
+
+    branchBar.append('text').text('Root').attr('transform', 'translate(70, 7)');
+    let leafLabel = branchBar.append('g').classed('leaf-label', true).attr('transform', 'translate(950, 7)');
+    leafLabel.append('text').text('Leaves');
+
+    let nodeLengthArray = [];
+    let nodeDuplicateCheck = []
+
+    data.paths.map(path=> {
+        path.filter(n=> n.leaf != true).map(node=> {
+            if(nodeDuplicateCheck.indexOf(node.node) == -1){
+                nodeDuplicateCheck.push(node.node);
+                nodeLengthArray.push({'node': node.node, 'eMove': node.combLength });
+            }
+        })
+    });
+
+    let bPointScale = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, 795]);
+    let pointGroups = branchBar.selectAll('g.branch-points').data(nodeLengthArray)
+        .join('g').attr('class', (d, i)=> d.node).classed('branch-points', true);
+
+    pointGroups.attr('transform', (d, i) => {
+        return `translate(${(105 + bPointScale(d.eMove))}, 0)`});
+    pointGroups.append('circle').attr('r', 5).attr('fill', '#fff').attr('opacity', 0.5)//.attr('fill', "rgba(123, 141, 153, 0.5)");
+
+    let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, 795]);
+    
+    let binsRects = binWrap
+        .selectAll('rect.bin')
+        .data(data.groupBins[0].branches.map(m=> m.range))
+        .join('rect')
+        .classed('bin', true);
+
+    binsRects.attr('width', (d, i, n)=> {
+        return x(d[1]) - x(d[0]);
+    }).attr('height', 20);
+
+    binsRects.attr('transform', (d, i, n)=> {
+        let step = x(d[1]) - x(d[0]);
+        return `translate(${step*i},0)`});
+
+    binsRects.attr('fill', 'gray').attr('stroke-width', 2).attr('stroke', 'white');
+
+    let axis = d3.axisBottom(x);
+    let axGroup = branchBar.append('g').call(axis)
+    axGroup.attr('transform', 'translate(103, 10)');
+    axGroup.select('path').attr('stroke-width', 0);
+
+    return branchBar;
+}
+
+export function drawGroupLabels(pathData, svg, groupLabel){
+
+    let cladeLabel = svg.append('g').classed('clade-label', true).attr('transform', 'translate(10, 0)');
+    cladeLabel.append('rect')
+        .attr('width', 50)
+        .attr('height', (pathData.keys.length * (dimensions.height+ 15)))
+        .attr('fill', 'gray')
+        .style('opacity', 0.2)
+        .on('mouseover', (d, i)=>{
+            let treeNode  = d3.select('#sidebar').selectAll('.node');
+            let treeLinks  = d3.select('#sidebar').selectAll('.link');
+            treeNode.filter(f=> {
+                if(f.data.leaf){
+                    let test = d3.entries(f.data.attributes).filter(f=> groupLabel.includes(f.key))[0].value;
+                    return groupLabel.includes(test.states.state);
+                }else{
+                    let test = d3.entries(f.data.attributes).filter(f=> groupLabel.includes(f.key))[0];
+                    let testest = d3.entries(test.value.values).filter((f, i, n)=> {
+                        let max = d3.max(n.map(m=> m.value));
+                        return f.value === max;
+                    })[0];
+                    return groupLabel == testest.key;
+                }
+            }).classed('hover clade', true);
+        
+        treeLinks.filter(f=> {
+            if(f.data.leaf){
+                let test = d3.entries(f.data.attributes).filter(f=> groupLabel.includes(f.key))[0].value;
+                return groupLabel.includes(test.states.state);
+            }else{
+                let test = d3.entries(f.data.attributes).filter(f=> groupLabel.includes(f.key))[0]
+                let testest = d3.entries(test.value.values).filter((f, i, n)=> {
+                    let max = d3.max(n.map(m=> m.value));
+                    return f.value === max;
+                })[0];
+                return groupLabel == testest.key;
+            }
+        }).classed('hover clade', true);
+        let species = d.paths.map(m=> m[m.length - 1].label);
+        }).on('mouseout', (d, i)=> {
+            let treeNode  = d3.select('#sidebar').selectAll('.node');
+            let treeLinks  = d3.select('#sidebar').selectAll('.link');
+            treeNode.classed('hover clade', false);
+            treeLinks.classed('hover clade', false);
+        });
+
+    cladeLabel.append('text').text(d=> d.label)
+    .style('text-anchor', 'middle')
+    .attr('transform', `translate(23, ${(pathData.keys.length * (dimensions.height+ 15)/2)}), rotate(-90)`);
+
+    return cladeLabel;
+}
+
+function renderDistStructure(mainDiv, pathGroups){
+    let groupDivs = mainDiv.selectAll('.group-div').data(pathGroups).join('div').classed('group-div', true);
+
+    groupDivs.each((d, i, node)=> {
+
+        let group = d3.select(node[i]);
+        group.style('text-align', 'center');
+        group.append('text').text(d.label);
+        group.append('text').text(` : ${d.paths.length} Paths` );
+
+        //////Starting something new/////
+      
+        let svg = group.append('svg');
+        svg.attr('class', 'main-summary-view');
+        svg.attr('id', `${d.label}-svg`);
+        svg.attr('height', (d.groupBins.keys.length * (dimensions.height + 5)));
+    
+        let branchBar = drawBranchPointDistribution(d, svg);
+        branchBar.attr('transform', 'translate(40, 10)');
+
+        group.classed(d.label, true);
+    
+        let branchScale = d3.scaleLinear().domain([0, d.groupBins.branchCount]).range([0, dimensions.timeRange]);
+        let pointGroups = branchBar.selectAll('g.branch-points');
+      
+        let wrap = svg.append('g').classed('summary-wrapper', true);
+        wrap.attr('transform', 'translate(50, 50)');
+    
+        let binnedWrap = wrap.selectAll('.attr-wrap').data(d.groupBins).join('g').attr('class', d=> d.key + ' attr-wrap');
+    
+        binnedWrap.attr('transform', (d, i, n)=>  {
+                if(i === 0){
+                    return 'translate(0,0)';
+                }else{
+                    let selected = d3.selectAll(n).filter((f, j)=>j < i).data();
+                    let sum = d3.sum(selected.flatMap(s=> s.type === 'continuous'? dimensions.height+5 : (s.stateKeys.length*(dimensions.squareDim+4))));
+                    d.sum = sum;
+                    return `translate(0, ${sum})`;
+                }
+        });
+
+        let label = binnedWrap.append('text').text(d=> d.key)
+        .attr('y', 40)
+        .attr('x', 80)
+        .style('text-anchor', 'end')
+        .style('font-size', 11);
+    
+        let groupLabelBars = drawGroupLabels(d.groupBins, svg, d.label);
+    
+        groupLabelBars.on('click', (d, i, n)=> {
+            comparisonKeeper.push(d);
+            mainDiv.selectAll('*').remove();
+            renderDistStructure(mainDiv, pathGroups.filter(p=> p.label != d.label))
+        });
+
+        renderDistibutions(binnedWrap, branchScale, pointGroups);
+    });
+
+}
+
 /**
  * 
  * @param {*} pathData 
@@ -367,39 +411,7 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
  * @param {*} scales 
  */
 
-export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, scales){
-
-    mainDiv.classed(groupLabel, true);
-    let svg = mainDiv.select(`#${groupLabel}-svg`);
-
-    //     ///////RENDERING//////////
-    
-    let branchScale = d3.scaleLinear().domain([0, pathData.branchCount]).range([0, dimensions.timeRange]);
-    let pointGroups = branchBar.selectAll('g.branch-points');
-  
-    let wrap = svg.append('g').classed('summary-wrapper', true);
-    wrap.attr('transform', 'translate(50, 50)');
-
-    let binnedWrap = wrap.selectAll('.attr-wrap').data(pathData).join('g').attr('class', d=> d.key + ' attr-wrap');
-
-    binnedWrap.attr('transform', (d, i, n)=>  {
-            if(i === 0){
-                return 'translate(0,0)';
-            }else{
-                let selected = d3.selectAll(n).filter((f, j)=>j < i).data();
-                let sum = d3.sum(selected.flatMap(s=> s.type === 'continuous'? dimensions.height+5 : (s.stateKeys.length*(dimensions.squareDim+4))));
-                d.sum = sum;
-                return `translate(0, ${sum})`;
-            }
-    });
-    
-    let label = binnedWrap.append('text').text(d=> d.key)
-    .attr('y', 40)
-    .attr('x', 80)
-    .style('text-anchor', 'end')
-    .style('font-size', 11);
-
-    let groupLabelBars = drawGroupLabels(pathData, svg, groupLabel);
+export function renderDistibutions(binnedWrap, branchScale, pointGroups){
 
     let predictedWrap = binnedWrap.append('g').classed('predicted', true);
     predictedWrap.attr('transform', 'translate(25, 0)');
@@ -482,54 +494,48 @@ export function renderDistibutions(pathData, groupLabel, mainDiv, branchBar, sca
 
     let discreteDist = branchGroup.filter(f=> f.type === 'discrete');
 
-    var lineGenStates = d3.area()
-    .curve(d3.curveCardinal)
-    .x((d, i, n)=> {
-        let y = d3.scaleLinear().domain([0, 1]).range([0, (dimensions.squareDim*d.count)]).clamp(true);
-        return y(d.x0); 
-    })
-    .y0(d=> {
-        return 0;
-    })
-    .y1((d, i, n)=> {
-        let dat = d.length;
-        let x = d3.scaleLinear().domain([0, 50]).range([1, 40]).clamp(true);
-        return x(dat); 
-    });
+    /////////EXPERIMENT////////
+    let stateBarsPredicted = discreteDist.selectAll('g.histo-bars')
+    .data(d=> d.bins).join('g')
+    .classed('histo-bars', true);
+  
+    stateBarsPredicted.attr('transform', (d, i)=> `translate(${dimensions.squareDim}, ${3.5+(i*(dimensions.squareDim+2))})`);
+  
+    let bars = stateBarsPredicted.append('rect')
+              .attr('height', dimensions.squareDim)
+              .attr('width', (d, i, n)=> {
+                let dev = d3.deviation(d.state.map(m=> m.value));
+                let mean = d3.mean(d.state.map(m=> m.value));
+                let x = d3.scaleLinear().domain([0, 1]).range([0, 40]);
+                return x(mean)
+              })
+              .attr('fill', d=> d.color.color)
+              .attr('opacity', 0.3)
 
-  /////////EXPERIMENT////////
-    let bars = discreteDist.append('g').attr('class', 'histo-state-wrap')
-    .attr('transform', (d, i)=> `translate(${dimensions.squareDim}, 0)`);
+    // let devDotHigh = stateBarsPredicted.append('circle')
+    //           .attr('cy', dimensions.squareDim / 2)
+    //           .attr('cx', (d, i, n)=> {
+    //             let dev = d3.deviation(d.state.map(m=> m.value));
+    //             let mean = d3.mean(d.state.map(m=> m.value));
+    //             let x = d3.scaleLinear().domain([0, 1]).range([0, 40]);
+    //             return x(mean + dev)
+    //           })
+    //           .attr('r', 2)
+    //           .attr('fill', d=> d.color.color)
+    //           .attr('opacity', 1)
 
-    let stateHisto = bars.selectAll('g.histo-wrap')
-        .data(d=> {
-            let bins = d.bins.map(b=> {
-                b.count = d.bins ? d.bins.length : 0;
-                return b;
-            })
-            return bins}).join('g')
-        .classed('histo-wrap', true);
-
-    let statesofHisto = stateHisto.selectAll('.probs').data(d=> {
-        if(d.histogram){
-            let histo = d.histogram.map(h=> {
-                h.count = d.count
-                h.color = d.color.color;
-                return h});
-            return [histo]
-        }else{
-            return null;
-        }
-    }).join('g').classed('probs', true);
-
-    statesofHisto.append('path').attr('d', lineGenStates)
-    .attr('stroke-width', 1)
-    .attr('transform', (d, i, n)=> {
-        console.log((d[0].count/2)*dimensions.squareDim)
-        return `translate(0, ${((d[0].count)*dimensions.squareDim + 5) }) rotate(-90)`})
-    .attr('fill', (d, i, n)=> {
-        return d[0].color;
-    }).attr('opacity', .3)
+    // let devDotLow = stateBarsPredicted.append('circle')
+    //           .attr('cy', dimensions.squareDim / 2)
+    //           .attr('cx', (d, i, n)=> {
+    //             let dev = d3.deviation(d.state.map(m=> m.value));
+                
+    //             let mean = d3.mean(d.state.map(m=> m.value));
+    //             let x = d3.scaleLinear().domain([0, 1]).range([0, 40]);
+    //             return x(mean - dev)
+    //           })
+    //           .attr('r', 2)
+    //           .attr('fill', d=> d.color.color)
+    //           .attr('opacity', 1)
 
     /////////END XPERIMENT////////
 
