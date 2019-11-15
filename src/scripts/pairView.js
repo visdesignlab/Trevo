@@ -269,20 +269,28 @@ function drawSorted(pairs, field){
     .style('stroke', (d, i)=> pairColor[i])
    // .style('stroke', 'rgb(165, 185, 198)');
 
-  // console.log(pairGroup.data(), innerPaths.filter(f=> nodes.map(m=> m.species).indexOf(f[f.length - 1].node) > -1))
+   let brushedPaths = innerPaths.filter(f=> {
+    let nodeTest = f.filter(n=> nodes.map(m=> m.node).indexOf(n.node) > -1)
+    return nodeTest.length > 0}).style('stroke', '#64B5F6').style('stroke-width', '5px');
 
-   let brushedPaths = innerPaths.filter(f=> nodes.map(m=> m.species).indexOf(f[f.length - 1].node) > -1);//.selectAll('path').attr('stroke', 'red').attr('stroke-width', 3);
-
-   console.log('brushed',brushedPaths, nodes.map(m=> m.species))
+   //console.log('brushed',brushedPaths, nodes.map(m=> m.node))
     let branches = pairGroup.selectAll('g.branch').data(d=> d).join('g').classed('branch', true);
     branches.attr('transform', (d, i)=> `translate(${xScale(d.combLength)}, 0)`);
-    branches.filter(f=> f.leaf != true).append('rect').attr('width', 10).attr('height', (d)=> {
+    branches.filter(f=> f.leaf != true).append('rect')
+    .classed('range', true)
+    .attr('width', 10)
+    .attr('height', (d)=> {
         let y = d.attributes[field].scales.yScale;
         return y(d.attributes[field].values.lowerCI95) - y(d.attributes[field].values.upperCI95)
-    }).attr('fill', 'rgba(165, 185, 198, .5)').attr('y', (d, i)=> {
+    }).attr('fill', 'rgba(165, 185, 198, .5)')
+    .attr('y', (d, i)=> {
         let y = d.attributes[field].scales.yScale;
         return y(d.attributes[field].values.upperCI95);
     });
+
+    let chosenNodes = branches.filter(f=> {
+      return nodes.map(m=> m.node).indexOf(f.node) > -1
+    }).selectAll('rect.range').attr('fill', '#64B5F6')
 
     branches.append('rect').attr('width', 10).attr('height', 4).attr('y', (d, i)=> {
         return d.attributes[field].scales.yScale(d.attributes[field].values.realVal) - 2;

@@ -1502,6 +1502,7 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
                         .attr('stroke', brushColors[index][1])
                         .attr('stroke-width', 2);
 
+                        console.log('brush is fucked',data.data)
                         let nodes = data.data.filter(f=> {
                             return (f.values.realVal >= brushedVal[0]) && (f.values.realVal <= brushedVal[1]);
                         });
