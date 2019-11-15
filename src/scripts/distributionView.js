@@ -458,9 +458,19 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
     });
 
  
-   data.length > 1 ? 
-        text.append('text').text(data.reduce((a, b)=> a.label + ' / ' + b.label)) : text.append('text').text(data[0].label);
-    
+//    data.length > 1 ? 
+//         text.append('text').text(data.reduce((a, b)=> a.label + ' / ' + b.label)) : text.append('text').text(data[0].label);
+    if(data.length > 1){
+        data.forEach((d, i)=> {
+            text.append('span')
+            .text(d.label)
+            .classed('badge badge-secondary', true)
+            .style('padding', '5px')
+            .style('margin-bottom', '7px')
+            .style('background', brushColors[0][i])
+        })
+        
+    }
     let svg = divWrap.append('svg').attr('class', 'compare-svg');
 
     ////COMBINEDATA///
