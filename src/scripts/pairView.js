@@ -4,6 +4,7 @@ import * as d3 from "d3";
 import * as slide from 'd3-simple-slider';
 import { renderTree } from "./sidebarComponent";
 import { speciesTest, dataMaster } from ".";
+import { findBrushedNodes } from "./toolbarComponent";
 
 export function rankingControl(data){
     let rankDiv = d3.select('#pair-rank').classed('hidden', false);
@@ -112,6 +113,9 @@ export function updateRanking(pairs, field, weights){
 function drawSorted(pairs, field){
 
   let pairColor = ['#FF5733', '#129BF5'];
+
+  let nodes = findBrushedNodes();
+  //console.log('nodes from brush',nodes.map(m=> m.species))
    
     let width = 600;
     let height = 100;
@@ -265,6 +269,11 @@ function drawSorted(pairs, field){
     .style('stroke', (d, i)=> pairColor[i])
    // .style('stroke', 'rgb(165, 185, 198)');
 
+  // console.log(pairGroup.data(), innerPaths.filter(f=> nodes.map(m=> m.species).indexOf(f[f.length - 1].node) > -1))
+
+   let brushedPaths = innerPaths.filter(f=> nodes.map(m=> m.species).indexOf(f[f.length - 1].node) > -1);//.selectAll('path').attr('stroke', 'red').attr('stroke-width', 3);
+
+   console.log('brushed',brushedPaths, nodes.map(m=> m.species))
     let branches = pairGroup.selectAll('g.branch').data(d=> d).join('g').classed('branch', true);
     branches.attr('transform', (d, i)=> `translate(${xScale(d.combLength)}, 0)`);
     branches.filter(f=> f.leaf != true).append('rect').attr('width', 10).attr('height', (d)=> {

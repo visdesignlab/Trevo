@@ -6,6 +6,15 @@ import { updateMainView } from './viewControl';
 import { collapsed } from '.';
 import { dropDown } from './buttonComponents';
 
+
+export function findBrushedNodes(){
+    let brushes = d3.select('#toolbar').selectAll('.brush-span');
+    let brushData =  [];
+    brushes.each(e => brushData.push(e))
+  
+    let nodes = brushData.flatMap(m=> m.nodes);
+    return nodes;
+}
 export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pathView){
 
     let viewArray = [{'field':'Summary View'},{'field':'Path View'},{'field':'Pair View'}, {'field':'Clade View'}];

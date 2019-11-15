@@ -21,8 +21,6 @@ const brushColors = [
     ['#6A1B9A', '#FDD835'],
 ]
 
-
-
 let colorBool = 0;
 
 let selectedClades = [];
@@ -1433,7 +1431,7 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
                         .classed('badge badge-secondary', true)
                         .style('background', brushColors[index][0])
                         .attr('value', `${data.bins.groupLabel}-${data.key}`)
-                        .datum(this)
+                        .datum({brush:this, nodes: nodes})
                         .text(`${data.bins.groupLabel}, ${data.key}: ${zero(brushedVal[0])} - ${zero(brushedVal[1])}`);
     
                     let xOut = badge.append('i').classed('close fas fa-times', true).style('padding-left', '10px');
@@ -1456,10 +1454,10 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
                         d3.select(n[i].parentNode).remove();
                     });
                    
-                    d3.select(doesItExist.datum()).call(brush.move, null);
-                    d3.select(doesItExist.datum()).select('.overlay').attr('stroke-width', 0)
+                    d3.select(doesItExist.datum().brush).call(brush.move, null);
+                    d3.select(doesItExist.datum().brush).select('.overlay').attr('stroke-width', 0)
     
-                    doesItExist.datum(this)
+                   
     
                     treeNode.selectAll(`.${data.key}`)
                         .selectAll(`${data.bins.groupLabel}`)
@@ -1508,10 +1506,11 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
                             return (f.values.realVal >= brushedVal[0]) && (f.values.realVal <= brushedVal[1]);
                         });
 
-                        console.log('nodes', data.data, nodes.data)
                         let notNodes = data.data.filter(f=> {
                             return (f.values.realVal < brushedVal[0]) || (f.values.realVal > brushedVal[1]);
                         });
+
+                        doesItExist.datum({brush:this, nodes: nodes})
     
                     brushedNodes(nodes, notNodes, data, brushedVal, label);
                     
