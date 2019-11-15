@@ -818,6 +818,7 @@ function renderDistributionComparison(div, data, branchScale){
      .call(brush);
 
      function brushed(){
+
         let data = d3.select(this.parentNode).data()[0]
         var s = d3.event.selection;
         var zero = d3.format(".3n");
@@ -838,8 +839,16 @@ function renderDistributionComparison(div, data, branchScale){
             let brushedVal = [y.invert(s[1]), y.invert(s[0])];
     
             let treeNode  = d3.select('#sidebar').selectAll('.node');
+
+            let nodes = data.data.flatMap(m=> m.value.filter(f=> {
+                return (f.values.realVal >= brushedVal[0]) && (f.values.realVal <= brushedVal[1]);
+            }))
+           
+            let notNodes = data.data.flatMap(m=> m.value.filter(f=> {
+                return (f.values.realVal < brushedVal[0]) || (f.values.realVal > brushedVal[1]);
+            }));
     
-            let selectedNodes = brushedNodes(data, brushedVal, classLabel);
+            let selectedNodes = brushedNodes(nodes, notNodes, data, brushedVal, classLabel);
             let selectedBranch = selectedNodes[0];
             let secondGrp = selectedNodes[1];
             let antiSelected = selectedNodes[2];
@@ -941,8 +950,16 @@ function renderDistributionComparison(div, data, branchScale){
                     d3.select(this).select('.overlay')
                         .attr('stroke', brushColors[index][1])
                         .attr('stroke-width', 2);
+
+                        let nodes = data.data.flatMap(m=> m.value.filter(f=> {
+                            return (f.values.realVal >= brushedVal[0]) && (f.values.realVal <= brushedVal[1]);
+                        }))
+                       
+                        let notNodes = data.data.flatMap(m=> m.value.filter(f=> {
+                            return (f.values.realVal < brushedVal[0]) || (f.values.realVal > brushedVal[1]);
+                        }));
     
-                    brushedNodes(data, brushedVal, label);
+                    brushedNodes(nodes, notNodes, data, brushedVal, label);
                     
                 }
     
@@ -1350,8 +1367,18 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
             let brushedVal = [y.invert(s[1]), y.invert(s[0])];
     
             let treeNode  = d3.select('#sidebar').selectAll('.node');
+
+            let nodes = data.data.filter(f=> {
+                return (f.values.realVal >= brushedVal[0]) && (f.values.realVal <= brushedVal[1]);
+            });
+
+           
+            let notNodes = data.data.filter(f=> {
+                return (f.values.realVal < brushedVal[0]) || (f.values.realVal > brushedVal[1]);
+            });
+
     
-            let selectedNodes = brushedNodes(data, brushedVal, classLabel);
+            let selectedNodes = brushedNodes(nodes, notNodes, data, brushedVal, classLabel);
             let selectedBranch = selectedNodes[0];
             let secondGrp = selectedNodes[1];
             let antiSelected = selectedNodes[2];
@@ -1453,8 +1480,17 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
                     d3.select(this).select('.overlay')
                         .attr('stroke', brushColors[index][1])
                         .attr('stroke-width', 2);
+
+                        let nodes = data.data.filter(f=> {
+                            return (f.values.realVal >= brushedVal[0]) && (f.values.realVal <= brushedVal[1]);
+                        });
+
+                        console.log('nodes', data.data, nodes.data)
+                        let notNodes = data.data.filter(f=> {
+                            return (f.values.realVal < brushedVal[0]) || (f.values.realVal > brushedVal[1]);
+                        });
     
-                    brushedNodes(data, brushedVal, label);
+                    brushedNodes(nodes, notNodes, data, brushedVal, label);
                     
                 }
     
@@ -1600,14 +1636,11 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
 
 }
 
-function brushedNodes(data, brushedVal, classLabel){
-    let time = d3.extent(data.data.map(d=> d.combLength))
-    let nodes = data.data.filter(f=> {
-        return (f.values.realVal >= brushedVal[0]) && (f.values.realVal <= brushedVal[1]);
-    })
-    let notNodes = data.data.filter(f=> {
-        return (f.values.realVal < brushedVal[0]) || (f.values.realVal > brushedVal[1]);
-    });
+function brushedNodes(nodes, notNodes, data, brushedVal, classLabel){
+
+    
+    //let time = d3.extent(data.map(d=> d.combLength))
+    console.log('nodes',nodes)
    
     let nodeNames = nodes.map(m=> m.node);
     let notNodeNames = notNodes.map(m=> m.node);
