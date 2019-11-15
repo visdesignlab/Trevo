@@ -230,7 +230,8 @@ export function drawBranchPointDistribution(data, svg){
         .attr('height', 25)
         .attr('x', -10)
         .attr('y', -10)
-        .attr('fill', '#fff');
+       // .attr('fill', '#fff');
+       .attr('fill', 'none')
 
     let binWrap = branchBar.append('g').attr('transform', 'translate(102, -10)');
 
@@ -430,16 +431,41 @@ function renderDistStructure(mainDiv, pathGroups){
 }
 
 function renderDistributionComparison(div, data, branchScale){
-   // console.log('data',data);
+  
     let divWrap = div.append('div').attr('id', 'compare-wrap');
+
+    let groupHeader = divWrap.append('div').classed('compare-header', true);
+
+    let text = groupHeader.append('div').attr('height', 50)
+    let branchPointSvg  = groupHeader.append('svg');
+
+    let pointData = {paths: data[0].paths.concat(data[1].paths), groupBins: data[0].groupBins}
+    let branchBar = drawBranchPointDistribution(pointData, branchPointSvg);
+    branchBar.attr('transform', 'translate(-30, 10)')
+
+    branchBar.selectAll('rect.bin').attr('stroke', '#DCD4D4').attr('stroke-width', '3px');
+    let pointGroups = branchBar.selectAll('g.branch-points');
+  
+    let xOut = groupHeader.append('div')
+    .style('position', 'absolute')
+    .style('left', '5px')
+    .style('top', '65px')
+    .append('i')
+    .classed('close fas fa-times', true)
+    .style('padding-left', '10px');
+    
+    xOut.on('click', (d, i, n)=> {
+        diveWrap.remove();
+        renderDistStructure(div,  data);
+    });
+
  
-    let groupHeader = data.length > 1 ? 
-        divWrap.append('text').text(data.reduce((a, b)=> a.label + ' / ' + b.label)) : divWrap.append('text').text(data[0].label);
+   data.length > 1 ? 
+        text.append('text').text(data.reduce((a, b)=> a.label + ' / ' + b.label)) : text.append('text').text(data[0].label);
+    
     let svg = divWrap.append('svg').attr('class', 'compare-svg');
 
-
     ////COMBINEDATA///
-
     if(data.length > 1){
         let combined = data[0].groupBins.map((d, i, n)=> {
            // d.branches = {[data[0].label]: d.branches, [data[1].label]: data[1].groupBins[i].branches }
@@ -639,7 +665,6 @@ function renderDistributionComparison(div, data, branchScale){
         .classed('histo-bars', true);
 
         stateBarsPredicted.attr('transform', (d, i)=> {
-           
             let dev = d3.deviation(d.state.map(m=> m.value));
             let mean = d3.mean(d.state.map(m=> m.value));
             let x = d3.scaleLinear().domain([0, 1]).range([0, 40]).clamp(true);
@@ -661,7 +686,6 @@ function renderDistributionComparison(div, data, branchScale){
 
         stateRects.on('mouseover', (d, i, n)=> {
 
-            console.log('mousover',d)
             let sum = d3.sum(d.state.map(m=> m.value))
             let av = sum / d.state.length;
             let tool = d3.select('#tooltip');
@@ -691,7 +715,6 @@ function renderDistributionComparison(div, data, branchScale){
         // lastBranch.attr('y', 10).attr('x', dimensions.squareDim+4).style('font-size', 10);
     
         discreteMiddleGroups.each((d, i, node)=>{
-            console.log('ddd', d);
             let maxBin = 0;
             let maxState = null;
             d.value.map(m=> {
@@ -722,8 +745,8 @@ function renderDistributionComparison(div, data, branchScale){
         continDist.on('mouseover', (d, i, node)=> {
             let newData = d.data;
             let list = newData[0].value.concat(newData[1].value).map(m=> m.node);
-            // let selected = pointGroups.filter(p=> {
-            //     return list.indexOf(p.node) > -1}).classed('selected', true);
+            let selected = pointGroups.filter(p=> {
+                return list.indexOf(p.node) > -1}).classed('selected', true);
             let treeNode  = d3.select('#sidebar').selectAll('.node');
             let selectedBranch = treeNode.filter(f=> list.indexOf(f.data.node) > -1).classed('selected-branch', true);
             let y = d3.scaleLinear().domain(d.domain).range([0, dimensions.height])
