@@ -75,9 +75,9 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pat
         toolbar.select('#show-drop-div-group').classed('show', false);
     });
 
-    let brushButton = toolbar.append('button').attr('id', 'brush-control');
-    brushButton.attr('class', 'btn btn-outline-secondary').text('Highlight Brush');
-    brushButton.on('click', ()=> toggleFilters(filterButton, main, calculatedScales));
+    // let brushButton = toolbar.append('button').attr('id', 'brush-control');
+    // brushButton.attr('class', 'btn btn-outline-secondary').text('Highlight Brush');
+    // brushButton.on('click', ()=> toggleFilters(filterButton, main, calculatedScales));
 }
 
 ////COLLAPSES THE NODES DOWN

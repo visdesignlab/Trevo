@@ -1,7 +1,7 @@
 import '../styles/index.scss';
 import {formatAttributeData, maxTimeKeeper} from './dataFormat';
 import * as d3 from "d3";
-import {filterMaster} from './filterComponent';
+import {filterMaster, getLatestData} from './filterComponent';
 import { pullPath } from './pathCalc';
 import { renderTree } from './sidebarComponent';
 import { colorKeeper } from '.';
@@ -417,7 +417,7 @@ function renderDistStructure(mainDiv, pathGroups){
 
                 mainDiv.selectAll('*').remove();
                 mainDiv.select('#compare-wrap').remove();
-                renderDistributionComparison(mainDiv, comparisonKeeper, branchScale);
+                renderDistributionComparison(mainDiv, comparisonKeeper, branchScale, pathGroups);
                 //renderDistStructure(mainDiv, pathGroups.filter(p=> p.label != d.label))
 
             }else{
@@ -430,7 +430,7 @@ function renderDistStructure(mainDiv, pathGroups){
     });
 }
 
-function renderDistributionComparison(div, data, branchScale){
+function renderDistributionComparison(div, data, branchScale, pathGroups){
   
     let divWrap = div.append('div').attr('id', 'compare-wrap');
 
@@ -455,8 +455,8 @@ function renderDistributionComparison(div, data, branchScale){
     .style('padding-left', '10px');
     
     xOut.on('click', (d, i, n)=> {
-        diveWrap.remove();
-        renderDistStructure(div,  data);
+        divWrap.remove();
+        renderDistStructure(div,  pathGroups);
     });
 
  
