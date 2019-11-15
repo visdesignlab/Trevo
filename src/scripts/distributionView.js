@@ -628,7 +628,12 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
         discreteDist.attr('transform', 'translate(5, 0)');
 
         let discreteMiddleGroups = discreteDist.selectAll('g.middle-group')
-            .data(d=> d.bins)
+            .data(d=> {
+                let bins = d.bins.map(b=> {
+                    b.key = d.key;
+                    return b;
+                })
+                return bins})
             .join('g')
             .classed('middle-group', true)
             .attr('transform', (d, i)=> { 
@@ -638,7 +643,12 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
         let stateRects = discreteMiddleGroups
         .selectAll('rect.state-rect')
         .data(d=> {
-            return d.value})
+            console.log(d);
+            let bins = d.value.map(v=> {
+                v.key = d.key;
+                return v;
+            })
+            return bins})
         .join('rect')
         .classed('state-rect', true)
         .attr('height', dimensions.squareDim)
@@ -693,7 +703,7 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
         .attr('opacity', 0.3);
 
         stateRects.on('mouseover', (d, i, n)=> {
-
+            console.log('d fir moose',d)
             let sum = d3.sum(d.state.map(m=> m.value))
             let av = sum / d.state.length;
             let tool = d3.select('#tooltip');
@@ -703,7 +713,7 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
             
             let f = d3.format(".3f");
               
-            tool.html(`${d.groupKey} </br> ${d.state[0].state} : ${f(av)}`)
+            tool.html(`${d.key} </br> ${d.state[0].state} : ${f(av)}`)
                 .style("left", (d3.event.pageX - 40) + "px")
                 .style("top", (d3.event.pageY - 28) + "px");
             tool.style('height', 'auto');
