@@ -84,6 +84,50 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pat
         toolbar.select('#show-drop-div-group').classed('show', false);
     });
 
+    console.log(calculatedScales)
+    let attributeOptions = calculatedScales.map(m=> m.field);
+
+    let checkedAttributes = ['Body_height', 'Body_width', 'Carpus', 'Clade', 'Femur', 'Forelimb'];
+
+    let dropdiv = toolbar.append('div').classed(`dropdown attribute-show`, true);
+    dropdiv.style('display', 'inline-block')
+    let button = dropdiv.append('button').classed('btn dropbtn btn-secondary dropdown-toggle', true).text('Shown Attributes');
+    let dropContent = dropdiv.append('div').attr('id', 'attribute-show').classed('dropdown-content', true);
+    let dropUl = dropContent.append('ul');
+    //dropContent.append('a').text('text').attr('font-size', 11);
+    let options = dropUl.selectAll('li').data(attributeOptions).join('li')
+    let checkBox = options.append('input').attr('type', 'checkbox');
+    options.append('text').text(d=> ` ${d}`);
+
+    let checkedDefault = options.filter(f=> checkedAttributes.indexOf(f) > -1).select('input');
+    checkedDefault.each((d, i, n) => n[i].checked = true)
+    console.log(checkedDefault)
+
+    button.on('click', (d, i, n)=> {
+        if(dropContent.classed('show')){
+            dropContent.classed('show', false);
+        }else{
+            dropContent.classed('show', true);
+        }
+    });
+
+    
+    
+ //   <div class="container">
+ // <div class="row">
+  //     <div class="col-lg-12">
+  //   <div class="button-group">
+      //  <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-cog"></span> <span class="caret"></span></button>
+{/* <ul class="dropdown-menu">
+  <li><a href="#" class="small" data-value="option1" tabIndex="-1"><input type="checkbox"/>&nbsp;Option 1</a></li>
+  <li><a href="#" class="small" data-value="option2" tabIndex="-1"><input type="checkbox"/>&nbsp;Option 2</a></li>
+  <li><a href="#" class="small" data-value="option3" tabIndex="-1"><input type="checkbox"/>&nbsp;Option 3</a></li>
+  <li><a href="#" class="small" data-value="option4" tabIndex="-1"><input type="checkbox"/>&nbsp;Option 4</a></li>
+  <li><a href="#" class="small" data-value="option5" tabIndex="-1"><input type="checkbox"/>&nbsp;Option 5</a></li>
+  <li><a href="#" class="small" data-value="option6" tabIndex="-1"><input type="checkbox"/>&nbsp;Option 6</a></li>
+</ul> */}
+
+
     // let brushButton = toolbar.append('button').attr('id', 'brush-control');
     // brushButton.attr('class', 'btn btn-outline-secondary').text('Highlight Brush');
     // brushButton.on('click', ()=> toggleFilters(filterButton, main, calculatedScales));
