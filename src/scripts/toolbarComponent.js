@@ -101,7 +101,6 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pat
 
     let checkedDefault = options.filter(f=> checkedAttributes.indexOf(f) > -1).select('input');
     checkedDefault.each((d, i, n) => n[i].checked = true)
-    console.log(checkedDefault)
 
     button.on('click', (d, i, n)=> {
         if(dropContent.classed('show')){
