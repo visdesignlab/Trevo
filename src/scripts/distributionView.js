@@ -901,7 +901,7 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
                         .classed('badge badge-secondary', true)
                         .style('background', brushColors[index][0])
                         .attr('value', `${data.bins.groupLabel}-${data.key}`)
-                        .datum(this)
+                        .datum({brush:this, nodes: nodes})
                         .text(`${data.bins.groupLabel}, ${data.key}: ${zero(brushedVal[0])} - ${zero(brushedVal[1])}`);
     
                     let xOut = badge.append('i').classed('close fas fa-times', true).style('padding-left', '10px');
@@ -927,7 +927,7 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
                     d3.select(doesItExist.datum()).call(brush.move, null);
                     d3.select(doesItExist.datum()).select('.overlay').attr('stroke-width', 0)
     
-                    doesItExist.datum(this)
+                   
     
                     treeNode.selectAll(`.${data.key}`)
                         .selectAll(`${data.bins.groupLabel}`)
@@ -979,6 +979,8 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
                         let notNodes = data.data.flatMap(m=> m.value.filter(f=> {
                             return (f.values.realVal < brushedVal[0]) || (f.values.realVal > brushedVal[1]);
                         }));
+
+                        doesItExist.datum({brush: this, nodes:nodes})
     
                     brushedNodes(nodes, notNodes, data, brushedVal, label);
                     
