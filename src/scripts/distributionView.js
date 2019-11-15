@@ -700,8 +700,6 @@ function renderDistributionComparison(div, data, branchScale){
                     maxState = m.color.state;
                 }
             });
-
-            console.log('maxstate',maxState, d3.select(node[i]).selectAll('.state-rect').data())
       
             let winStates = d3.select(node[i]).selectAll('rect.state-rect')
                 .filter((f, j, n)=>{
@@ -790,49 +788,188 @@ function renderDistributionComparison(div, data, branchScale){
        // return d;
     }).join('rect').classed('range', true);
 
-        // rangeRect.attr('width', 10);
-        // rangeRect.attr('height', (d, i)=> {
-        //     if(d.scales.yScale != undefined){
-        //         let newy = d.scales.yScale;
-        //         newy.range([80, 0]);
-        //         return newy(d.values.lowerCI95) - newy(d.values.upperCI95)
-        //     }else{
-        //         return 0;
-        //     }
-        // }).attr('transform', (d, i) => {
-        //     let newy = d.scales.yScale;
-        //     newy.range([80, 0]);
-        //     return 'translate(0,'+newy(d.values.upperCI95)+')'
-        // });
+    let avRect = continDist.selectAll('rect.av-rect').data(d=> d.data)
+        .join('rect').classed('av-rect', true).attr('width', 10).attr('height', (d, i)=> {
+        if(d.value != undefined){
+            return 3;
+        }else{
+            return 0;
+        }
+    });
     
-        // rangeRect.attr('fill', d=> {
-        //    // console.log(d)
-        //    // return "rgba(133, 193, 233, .05)"});
-        //     return brushColors[0][d.index]})
-        //     .attr('opacity', .1)
-    
-    
-        let avRect = continDist.selectAll('rect.av-rect').data(d=> d.data)
-            .join('rect').classed('av-rect', true).attr('width', 10).attr('height', (d, i)=> {
-            if(d.value != undefined){
-                return 3;
-            }else{
-                return 0;
-            }
-        });
-    
-        avRect.attr('transform', (d, i) => {
-            if(d.value != undefined){
-                let newy = d.value[0].scales.yScale;
-                newy.range([dimensions.height, 0]);
-                let mean = d3.mean(d.value.map(m=> +m.values.realVal));
-                return 'translate(0,'+newy(mean)+')';
-            }else{
-                return 'translate(0,0)';
-            }
-        }).attr('fill', (d)=>brushColors[0][d.index]);
+    avRect.attr('transform', (d, i) => {
+        if(d.value != undefined){
+            let newy = d.value[0].scales.yScale;
+            newy.range([dimensions.height, 0]);
+            let mean = d3.mean(d.value.map(m=> +m.values.realVal));
+            return 'translate(0,'+newy(mean)+')';
+        }else{
+            return 'translate(0,0)';
+        }
+    }).attr('fill', (d)=>brushColors[0][d.index]);
 
+     //////START BRANCH EXPERIMENT
+     let brush = d3.brushY().extent([[0, 0], [20, dimensions.height]])
+     brush.on('end', brushed);
 
+     continDist.append("g")
+     .classed('continuous-branch-brush', true)
+     .attr("class", "brush")
+     .call(brush);
+
+     function brushed(){
+        let data = d3.select(this.parentNode).data()[0]
+        var s = d3.event.selection;
+        var zero = d3.format(".3n");
+    
+        let index = d3.select('#toolbar').selectAll('.brush-span').size();
+        let classLabel = index === 0 ? 'one' : 'two';
+    
+        if(s != null){
+            let treeTest = d3.select('#sidebar').selectAll('.node').filter(f=> {
+                return f.data.leaf === true});
+    
+            if(treeTest.empty()){
+                renderTree(d3.select('#sidebar'), null, true);
+            }
+            
+            let y = d3.scaleLinear().domain([data.domain[0], data.domain[1]]).range([0, dimensions.height])
+            let attribute = data.key;
+            let brushedVal = [y.invert(s[1]), y.invert(s[0])];
+    
+            let treeNode  = d3.select('#sidebar').selectAll('.node');
+    
+            let selectedNodes = brushedNodes(data, brushedVal, classLabel);
+            let selectedBranch = selectedNodes[0];
+            let secondGrp = selectedNodes[1];
+            let antiSelected = selectedNodes[2];
+            let antiSecond = selectedNodes[3];
+    
+            if(index < 2){
+    
+                let doesItExist = d3.select('#toolbar').selectAll('.brush-span').filter((f, i, n)=> {
+                    return d3.select(n[i]).attr('value') == `${data.bins.groupLabel}-${data.key}`;
+                });
+    
+                if(doesItExist.size() === 0){
+    
+                    d3.select(this).select('.selection')
+                    .style('fill', `${brushColors[index][0]}`)
+                    .attr('stroke', `${brushColors[index][0]}`)
+                    .attr('stroke-width', 2);
+    
+                    d3.select(this).select('.overlay')
+                    .attr('stroke', brushColors[index][1])
+                    .attr('stroke-width', 2);
+    
+                    let badge = d3.select('#toolbar')
+                        .append('span')
+                        .attr('class', classLabel)
+                        .attr('id', classLabel)
+                        .classed('brush-span', true)
+                        .classed(`${data.bins.groupLabel}`, true)
+                        .classed('badge badge-secondary', true)
+                        .style('background', brushColors[index][0])
+                        .attr('value', `${data.bins.groupLabel}-${data.key}`)
+                        .datum(this)
+                        .text(`${data.bins.groupLabel}, ${data.key}: ${zero(brushedVal[0])} - ${zero(brushedVal[1])}`);
+    
+                    let xOut = badge.append('i').classed('close fas fa-times', true).style('padding-left', '10px');
+    
+                    xOut.on('click', (d, i, n)=> {
+                        d3.select(d).call(brush.move, null);
+                        d3.select(n[i].parentNode).remove();
+                        d3.select(d).select('.overlay').attr('stroke-width', 0);
+                    });
+    
+                }else{
+    
+    
+                    doesItExist.text(`${data.bins.groupLabel}, ${data.key}: ${zero(brushedVal[0])} - ${zero(brushedVal[1])}`);
+                    let xOut = doesItExist.append('i').classed('close fas fa-times', true).style('padding-left', '10px');
+    
+                    xOut.on('click', (d, i, n)=> {
+                        d3.select(d).call(brush.move, null);
+                        d3.select(d).select('.overlay').attr('stroke-width', 0);
+                        d3.select(n[i].parentNode).remove();
+                    });
+                   
+                    d3.select(doesItExist.datum()).call(brush.move, null);
+                    d3.select(doesItExist.datum()).select('.overlay').attr('stroke-width', 0)
+    
+                    doesItExist.datum(this)
+    
+                    treeNode.selectAll(`.${data.key}`)
+                        .selectAll(`${data.bins.groupLabel}`)
+                        .selectAll('.second-branch')
+                        .classed('second-branch', false)
+                        .classed('one', false)
+                        .classed('two', false)
+                        .classed(`${data.key}`, false);
+    
+                    treeNode.selectAll(`.${data.key}`)
+                        .selectAll('.selected-branch')
+                        .classed('selected-branch', false)
+                        .classed('one', false)
+                        .classed('two', false)
+                        .classed(`${data.key}`, false);
+    
+                        treeNode.selectAll(`.${data.key}`)
+                        .selectAll('.anti-brushed-second')
+                        .classed('anti-brushed-second', false)
+                        .classed('one', false)
+                        .classed('two', false)
+                        .classed(`${data.key}`, false);
+    
+                        treeNode.selectAll(`.${data.key}`)
+                        .selectAll('.anti-brushed-branch')
+                        .classed('anti-brushed-branch', false)
+                        .classed('one', false)
+                        .classed('two', false)
+                        .classed(`${data.key}`, false);
+    
+    
+                    let label = doesItExist.attr('id');
+    
+                    index = label === 'one' ? 0 : 1;
+    
+                    d3.select(this).select('.selection')
+                        .style('fill', `${brushColors[index][0]}`)
+                        .attr('stroke', `${brushColors[index][0]}`)
+                        .attr('stroke-width', 2);
+    
+                    d3.select(this).select('.overlay')
+                        .attr('stroke', brushColors[index][1])
+                        .attr('stroke-width', 2);
+    
+                    brushedNodes(data, brushedVal, label);
+                    
+                }
+    
+            }else{
+    
+                d3.select('#toolbar').selectAll('.brush-span').filter((f, i)=> i === 0).remove();
+    
+                let classLabel = colorBool === 0 ? 'one': 'two';
+    
+                d3.select('#toolbar')
+                    .append('span')
+                    .attr('class', )
+                    .classed('brush-span', true)
+                    .classed('badge badge-secondary', true)
+                    .style('background', brushColors[colorBool][0])
+                    .attr('value', `${data.bins.groupLabel}-${data.key}`)
+                    .text(`${data.bins.groupLabel}, ${data.key}: ${zero(brushedVal[0])} - ${zero(brushedVal[1])}`);
+                colorBool === 0 ? colorBool = 1 : colorBool = 0;
+                secondGrp.classed(classLabel, true);
+                selectedBranch.classed(classLabel, true);
+            }
+    
+        }else{
+            d3.selectAll(`.${data.key}.brushed-branch`).classed('brushed-branch', false);
+            d3.selectAll(`.${data.key}.brushed-second`).classed('brushed-second', false);
+        }
+     }
     
     }
 
@@ -1192,18 +1329,18 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
      .attr("class", "brush")
      .call(brush);
  
-    function brushed(){
+     function brushed(){
         let data = d3.select(this.parentNode).data()[0]
         var s = d3.event.selection;
         var zero = d3.format(".3n");
-
+    
         let index = d3.select('#toolbar').selectAll('.brush-span').size();
         let classLabel = index === 0 ? 'one' : 'two';
-
+    
         if(s != null){
             let treeTest = d3.select('#sidebar').selectAll('.node').filter(f=> {
                 return f.data.leaf === true});
-
+    
             if(treeTest.empty()){
                 renderTree(d3.select('#sidebar'), null, true);
             }
@@ -1211,32 +1348,32 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
             let y = d3.scaleLinear().domain([data.domain[0], data.domain[1]]).range([0, dimensions.height])
             let attribute = data.key;
             let brushedVal = [y.invert(s[1]), y.invert(s[0])];
-
+    
             let treeNode  = d3.select('#sidebar').selectAll('.node');
-
+    
             let selectedNodes = brushedNodes(data, brushedVal, classLabel);
             let selectedBranch = selectedNodes[0];
             let secondGrp = selectedNodes[1];
             let antiSelected = selectedNodes[2];
             let antiSecond = selectedNodes[3];
-
+    
             if(index < 2){
-
+    
                 let doesItExist = d3.select('#toolbar').selectAll('.brush-span').filter((f, i, n)=> {
                     return d3.select(n[i]).attr('value') == `${data.bins.groupLabel}-${data.key}`;
                 });
     
                 if(doesItExist.size() === 0){
-
+    
                     d3.select(this).select('.selection')
                     .style('fill', `${brushColors[index][0]}`)
                     .attr('stroke', `${brushColors[index][0]}`)
                     .attr('stroke-width', 2);
-
+    
                     d3.select(this).select('.overlay')
                     .attr('stroke', brushColors[index][1])
                     .attr('stroke-width', 2);
-
+    
                     let badge = d3.select('#toolbar')
                         .append('span')
                         .attr('class', classLabel)
@@ -1248,9 +1385,9 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
                         .attr('value', `${data.bins.groupLabel}-${data.key}`)
                         .datum(this)
                         .text(`${data.bins.groupLabel}, ${data.key}: ${zero(brushedVal[0])} - ${zero(brushedVal[1])}`);
-
+    
                     let xOut = badge.append('i').classed('close fas fa-times', true).style('padding-left', '10px');
-
+    
                     xOut.on('click', (d, i, n)=> {
                         d3.select(d).call(brush.move, null);
                         d3.select(n[i].parentNode).remove();
@@ -1258,11 +1395,11 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
                     });
     
                 }else{
-
+    
     
                     doesItExist.text(`${data.bins.groupLabel}, ${data.key}: ${zero(brushedVal[0])} - ${zero(brushedVal[1])}`);
                     let xOut = doesItExist.append('i').classed('close fas fa-times', true).style('padding-left', '10px');
-
+    
                     xOut.on('click', (d, i, n)=> {
                         d3.select(d).call(brush.move, null);
                         d3.select(d).select('.overlay').attr('stroke-width', 0);
@@ -1271,9 +1408,9 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
                    
                     d3.select(doesItExist.datum()).call(brush.move, null);
                     d3.select(doesItExist.datum()).select('.overlay').attr('stroke-width', 0)
-
+    
                     doesItExist.datum(this)
-
+    
                     treeNode.selectAll(`.${data.key}`)
                         .selectAll(`${data.bins.groupLabel}`)
                         .selectAll('.second-branch')
@@ -1281,52 +1418,52 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
                         .classed('one', false)
                         .classed('two', false)
                         .classed(`${data.key}`, false);
-
+    
                     treeNode.selectAll(`.${data.key}`)
                         .selectAll('.selected-branch')
                         .classed('selected-branch', false)
                         .classed('one', false)
                         .classed('two', false)
                         .classed(`${data.key}`, false);
-
+    
                         treeNode.selectAll(`.${data.key}`)
                         .selectAll('.anti-brushed-second')
                         .classed('anti-brushed-second', false)
                         .classed('one', false)
                         .classed('two', false)
                         .classed(`${data.key}`, false);
-
+    
                         treeNode.selectAll(`.${data.key}`)
                         .selectAll('.anti-brushed-branch')
                         .classed('anti-brushed-branch', false)
                         .classed('one', false)
                         .classed('two', false)
                         .classed(`${data.key}`, false);
-
-
+    
+    
                     let label = doesItExist.attr('id');
-
+    
                     index = label === 'one' ? 0 : 1;
-
+    
                     d3.select(this).select('.selection')
                         .style('fill', `${brushColors[index][0]}`)
                         .attr('stroke', `${brushColors[index][0]}`)
                         .attr('stroke-width', 2);
-
+    
                     d3.select(this).select('.overlay')
                         .attr('stroke', brushColors[index][1])
                         .attr('stroke-width', 2);
-
+    
                     brushedNodes(data, brushedVal, label);
                     
                 }
-
+    
             }else{
-
+    
                 d3.select('#toolbar').selectAll('.brush-span').filter((f, i)=> i === 0).remove();
-
+    
                 let classLabel = colorBool === 0 ? 'one': 'two';
-
+    
                 d3.select('#toolbar')
                     .append('span')
                     .attr('class', )
@@ -1339,7 +1476,7 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
                 secondGrp.classed(classLabel, true);
                 selectedBranch.classed(classLabel, true);
             }
-
+    
         }else{
             d3.selectAll(`.${data.key}.brushed-branch`).classed('brushed-branch', false);
             d3.selectAll(`.${data.key}.brushed-second`).classed('brushed-second', false);
@@ -1520,3 +1657,5 @@ function brushedNodes(data, brushedVal, classLabel){
 
     return [selectedBranch, secondGrp, notNodeSelectedBranch, notNodeSecondGrp];
 }
+
+
