@@ -451,23 +451,21 @@ function renderDistributionComparison(div, data, branchScale){
               //  b.histogram = { [data[0].label]: b.histogram, [data[1].label]: data[1].groupBins[i].branches[j].histogram }
                 b.data = [{key: data[0].label, 
                             value: b.data.map(m=>{
+                                    m.groupKey = data[0].label;
                                     m.index = 0;
                                     return m;
                                     }), 
                             index: 0},
-                    
-                   
-                       { key: data[1].label, 
-                         value : data[1].groupBins[i].branches[j].data.map(m=> {
-                           m.index = 1;
-                          return m;
-                         }), 
+                        
+                        { key: data[1].label, 
+                            value : data[1].groupBins[i].branches[j].data.map(m=> {
+                                    m.groupKey = data[1].label;
+                                    m.index = 1;
+                                    return m;
+                            }), 
                          index: 1 }];
-
                 return b;
             });
-
-    // console.log(d, d.branches)
             return d;
         });
 
@@ -594,7 +592,6 @@ function renderDistributionComparison(div, data, branchScale){
         let discreteDist = branchGroup.filter(f=> f.type === 'discrete').append('g');
 
         discreteDist.attr('transform', 'translate(5, 0)');
-       
 
         let discreteMiddleGroups = discreteDist.selectAll('g.middle-group')
             .data(d=> d.bins)
@@ -607,24 +604,22 @@ function renderDistributionComparison(div, data, branchScale){
         let stateRects = discreteMiddleGroups
         .selectAll('rect.state-rect')
         .data(d=> {
-           
             return d.value})
         .join('rect')
         .classed('state-rect', true)
         .attr('height', dimensions.squareDim)
         .attr('width', dimensions.squareDim/2);
 
-    stateRects.attr('fill', (d, i, n)=> {
-        let sum = d3.sum(d.state.map(m=> m.value))
-        let av = sum / d.state.length;
-        let scale = d3.scaleLinear().domain([0, 1]).range([0, 1]);
-        return `rgba(89, 91, 101, ${scale(av)})`;
-    }).attr('stroke-width', 0.5).attr('stroke', `rgba(200, 203, 219, .9)`);
+        stateRects.attr('fill', (d, i, n)=> {
+            let sum = d3.sum(d.state.map(m=> m.value))
+            let av = sum / d.state.length;
+            let scale = d3.scaleLinear().domain([0, 1]).range([0, 1]);
+            return `rgba(89, 91, 101, ${scale(av)})`;
+        }).attr('stroke-width', 0.5).attr('stroke', `rgba(200, 203, 219, .9)`);
 
         stateRects.attr('transform', (d, i)=> {
-            console.log(d, i)
             return `translate(0, ${(3.5+(i*(dimensions.squareDim+2)))})`
-        })
+        });
 
         let discreteBinGroups = discreteDist.selectAll('g.group')
                 .data(d=> d.bins)
@@ -632,7 +627,7 @@ function renderDistributionComparison(div, data, branchScale){
                 .classed('group', true)
                 .attr('transform', (d, i)=> { 
                     let move = d.index === 0 ? (-40 - (dimensions.squareDim/2)) : (dimensions.squareDim/2)
-                    return `translate(${move}, 0)`})
+                    return `translate(${move}, 0)`});
 
         let stateBarsPredicted = discreteBinGroups.selectAll('g.histo-bars')
         .data(d=> {
@@ -644,25 +639,82 @@ function renderDistributionComparison(div, data, branchScale){
         .classed('histo-bars', true);
 
         stateBarsPredicted.attr('transform', (d, i)=> {
-            //console.log('d for state move',d)
+           
             let dev = d3.deviation(d.state.map(m=> m.value));
             let mean = d3.mean(d.state.map(m=> m.value));
             let x = d3.scaleLinear().domain([0, 1]).range([0, 40]).clamp(true);
              
             let xMove = d.index === 0 ? (40 - x(mean)) : 0;
-            return `translate(${xMove}, ${3.5+(i*(dimensions.squareDim+2))})`});
+            return `translate(${xMove}, ${3.5+(i*(dimensions.squareDim+2))})`
+        });
 
         let bars = stateBarsPredicted.append('rect')
-        .attr('height', dimensions.squareDim)
-        .attr('width', (d, i, n)=> {
-          let dev = d3.deviation(d.state.map(m=> m.value));
-          let mean = d3.mean(d.state.map(m=> m.value));
-          let x = d3.scaleLinear().domain([0, 1]).range([0, 40]).clamp(true);
-          return x(mean)
+            .attr('height', dimensions.squareDim)
+            .attr('width', (d, i, n)=> {
+        let dev = d3.deviation(d.state.map(m=> m.value));
+        let mean = d3.mean(d.state.map(m=> m.value));
+        let x = d3.scaleLinear().domain([0, 1]).range([0, 40]).clamp(true);
+            return x(mean)
         })
         .attr('fill', d=> d.color.color)
         .attr('opacity', 0.3);
 
+        stateRects.on('mouseover', (d, i, n)=> {
+
+            console.log('mousover',d)
+            let sum = d3.sum(d.state.map(m=> m.value))
+            let av = sum / d.state.length;
+            let tool = d3.select('#tooltip');
+            tool.transition()
+                .duration(200)
+                .style("opacity", .9);
+            
+            let f = d3.format(".3f");
+              
+            tool.html(`${d.groupKey} </br> ${d.state[0].state} : ${f(av)}`)
+                .style("left", (d3.event.pageX - 40) + "px")
+                .style("top", (d3.event.pageY - 28) + "px");
+            tool.style('height', 'auto');
+    
+        }).on('mouseout', ()=>{
+            let tool = d3.select('#tooltip');
+            tool.transition()
+              .duration(500)
+              .style("opacity", 0);
+        });
+    
+        // let lastBranch = discreteDist.filter((d, i, n)=>{
+        //     return i === n.length - 1
+        // }).selectAll('g.state-bins').append('text').text((d, i)=> {
+        //     return d.color.state;
+        // });
+        // lastBranch.attr('y', 10).attr('x', dimensions.squareDim+4).style('font-size', 10);
+    
+        discreteMiddleGroups.each((d, i, node)=>{
+            console.log('ddd', d);
+            let maxBin = 0;
+            let maxState = null;
+            d.value.map(m=> {
+                if(d3.sum(m.state.flatMap(s=> s.value)) > maxBin){
+                    maxBin = d3.sum(m.state.flatMap(s=> s.value));
+                    maxState = m.color.state;
+                }
+            });
+
+            console.log('maxstate',maxState, d3.select(node[i]).selectAll('.state-rect').data())
+      
+            let winStates = d3.select(node[i]).selectAll('rect.state-rect')
+                .filter((f, j, n)=>{
+                    return f.color.state === maxState;
+                }).classed('win', true)
+                .attr('fill', (c)=> {
+                    return c.color.color;
+                }).attr('opacity', (c)=>{
+                    let sum = d3.sum(c.state.flatMap(s=> s.value));
+                    return sum/c.state.length;
+                })
+        });
+    
 
         //////PREDICTED CONTINUOUS
 
