@@ -28,6 +28,7 @@ let selectedClades = [];
 export function groupDistributions(pathData, mainDiv, scales, groupAttr){
 
     let groupKeys = scales.filter(f=> f.field === groupAttr)[0].scales.map(s=> s.scaleName);
+  
     let branchBinCount = d3.median(pathData.map(m=> m.length)) - d3.min(pathData.map(m=> m.length))
    
     let pathGroups = groupKeys.map(group => {
@@ -349,10 +350,18 @@ export function drawGroupLabels(pathData, svg, groupLabel){
  * @param {*} pathGroups 
  */
 function renderDistStructure(mainDiv, pathGroups){
+   
+    let shownAttributes = d3.select('#attribute-show').selectAll('input').filter((f, i, n)=> n[i].checked === true).data();
     let groupWrap = mainDiv.append('div').attr('id', 'summary-view');
     let groupDivs = groupWrap.selectAll('.group-div').data(pathGroups).join('div').classed('group-div', true);
 
     groupDivs.each((d, i, node)=> {
+        
+        // console.log(d3.entries(d.groupsBins))
+        // let newBins = d3.entries(d.groupsBins).filter(f=> {
+        //     console.log('f',f)
+        //     return shownAttributes.indexOf(f.key) > -1});
+       
 
         let group = d3.select(node[i]);
         group.style('text-align', 'center');
@@ -643,7 +652,6 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
         let stateRects = discreteMiddleGroups
         .selectAll('rect.state-rect')
         .data(d=> {
-            console.log(d);
             let bins = d.value.map(v=> {
                 v.key = d.key;
                 return v;
