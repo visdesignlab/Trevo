@@ -392,10 +392,10 @@ line.half{
 }
 
 .brushed-branch.one circle{
-  r: 4px !important;
-  fill:#0D47A1 !important;
+  r: 5px !important;
+  fill:#64B5F6 !important;
   stroke-width: 1px;
-  stroke: gainsboro;
+  stroke: black;
 }
 
 .brushed-second.one circle{
@@ -519,26 +519,18 @@ g.node.low circle{
 
 path.link.anti-brushed-second.one {
   fill: none;
-  stroke: #FFB74D !important;
+  stroke: #F39C12 !important;
   opacity: 0.8 !important;
   stroke-width: 2px;
 }
 
 .node.anti-brushed.one circle{
-  fill: #F4511E  !important;
+  fill: #F39C12  !important;
   opacity: 1 !important;
-  r: 4px;
+  r: 5px;
   stroke-width: 1px;
-  stroke: gainsboro;
+  stroke: black;
 }
-
-// .node.anti-brushed.two circle{
-//   fill: #F4511E  !important;
-//   opacity: 1 !important;
-//   r: 4px;
-//   stroke-width: 1px;
-//   stroke: gainsboro;
-// }
 
 .node.hover.two circle {
   //fill: #fff;

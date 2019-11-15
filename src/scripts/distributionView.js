@@ -17,7 +17,7 @@ const dimensions = {
 }
 
 const brushColors = [
-    ['#0D47A1', '#FFB74D'],
+    ['#64B5F6', '#F39C12'],
     ['#6A1B9A', '#FDD835'],
 ]
 
