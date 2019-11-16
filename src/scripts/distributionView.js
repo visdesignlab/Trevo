@@ -30,6 +30,8 @@ let selectedClades = [];
 export function groupDistributions(pathData, mainDiv, scales, groupAttr){
 
     let groupKeys = scales.filter(f=> f.field === groupAttr)[0].scales.map(s=> s.scaleName);
+
+    console.log('grouppp',groupKeys)
   
     let branchBinCount = d3.median(pathData.map(m=> m.length)) - d3.min(pathData.map(m=> m.length))
    

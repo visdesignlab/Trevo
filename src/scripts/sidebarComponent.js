@@ -9,6 +9,14 @@ import { dropDown } from './buttonComponents';
 import { updateRanking } from './pairView';
 import { pairPaths, maxTimeKeeper } from './dataFormat';
 
+const dimensions =  {
+    margin : {top: 10, right: 90, bottom: 50, left: 20},
+    width : 290,
+    height : 520
+}
+
+
+
 export function buildTreeStructure(paths, edges){
     let root = paths[0][0];
     let nestedData = getNested(root, edges);
@@ -84,10 +92,10 @@ export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
     treeViewButton.on('click', ()=> {
        sidebar.select('svg').remove();
        if(treeViewButton.text() === 'Show Lengths'){
-            renderTree(sidebar, null, true);
+            renderTree(sidebar, null, true, false, dimensions);
             treeViewButton.text('Hide Lengths');
        }else{
-            renderTree(sidebar, null, false);
+            renderTree(sidebar, null, false, false, dimensions);
             treeViewButton.text('Show Lengths');
        }
     });
@@ -101,13 +109,13 @@ export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
     let dropOptions = dropDown(sidebar, optionArray, `Color By Value`,'show-drop-div-sidebar');
     dropOptions.on('click', (d, i, n)=> {
         if(d.type === 'discrete'){
-            renderTree(sidebar, d, true);
+            renderTree(sidebar, d, true, false, dimensions);
             d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Colored by ${d.field}`)
         }else if(d.type === 'continuous'){
-            renderTree(sidebar, d, true);
+            renderTree(sidebar, d, true, false, dimensions);
             d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Colored by ${d.field}`);
         }else{
-            renderTree(sidebar, null, false);
+            renderTree(sidebar, null, false, false, dimensions);
             d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Color By Value`);
         }
        sidebar.select('#show-drop-div-sidebar').classed('show', false);
@@ -126,22 +134,22 @@ export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
                     if(d3.select('.dropdown.change-view').select('button').node().value === "View Pairs"){
                         updateRanking(pairPaths(normedPaths), d.field);
                     }
-                    renderTree(d3.select('#sidebar'), null, true, d.field);
+                    renderTree(d3.select('#sidebar'), null, true, d.field, dimensions);
                     d3.select('.attr-drop.dropdown').select('button').text(`Trait: ${d.field}`);
                     d3.select('.attr-drop.dropdown').select('button').attr('value')
                     d3.select('.attr-drop.dropdown').select('button').attr('value', d.field);
                     d3.select('#attr-drop').classed('show', false);
                 });
               
-                renderTree(d3.select('#sidebar'), null, true, d3.select('.attr-drop.dropdown').select('button').attr('value'))
+                renderTree(d3.select('#sidebar'), null, true, d3.select('.attr-drop.dropdown').select('button').attr('value'), dimensions)
               }else{
     
-                renderTree(d3.select('#sidebar'), null, true, d3.select('.attr-drop.dropdown').select('button').attr('value'))
+                renderTree(d3.select('#sidebar'), null, true, d3.select('.attr-drop.dropdown').select('button').attr('value'), dimensions)
               }
               phenogramButton.text('View Phylogeny');
           }else{
 
-            renderTree(d3.select('#sidebar'), null, false);
+            renderTree(d3.select('#sidebar'), null, false, false, dimensions);
             phenogramButton.text('View Phenogram');
 
           }
@@ -202,7 +210,7 @@ function collapseTree(treeData){
     }
 }
 
-function assignPosition(node, position) {
+export function assignPosition(node, position) {
     if (node.children === undefined || node.children === null){
         
         position = position + 1.5;
@@ -229,14 +237,7 @@ function addingEdgeLength(edge, data){
     }
 }
 
-export function renderTree(sidebar, att, uncollapse, pheno){
-
-    // set the dimensions and margins of the diagram
-    let dimensions = {
-        margin : {top: 10, right: 90, bottom: 50, left: 20},
-        width : 290,
-        height : 520
-    }
+export function renderTree(sidebar, att, uncollapse, pheno, dimensions){
 
     // declares a tree layout and assigns the size
     var treemap = d3.tree()
@@ -291,12 +292,14 @@ function findDepth(node, array){
     
 }
 
-function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, pheno){
+export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, pheno){
 
     d3.select('.pheno-y-axis').remove();
     d3.select('.pheno-x-axis').remove();
     
     assignPosition(treenodes, 0);
+
+    console.log('treeNodes', treenodes)
 
     let branchCount = findDepth(treenodes, []);
     let xScale = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, dimensions.width]).clamp(true);
@@ -323,7 +326,7 @@ function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, pheno){
     link.transition()
     .duration(500)
     .attr("d", function(d) {
-        if(length && pheno === undefined){
+        if((length && pheno === undefined) || (length && pheno === false)){
            return "M" + xScale(d.data.combEdge) + "," + yScale(d.position)
            + "C" + (xScale(d.data.combEdge) + xScale(d.parent.data.combEdge)) / 2 + "," + yScale(d.position)
            + " " + (xScale(d.parent.data.combEdge)) + "," + yScale(d.position)
@@ -335,6 +338,7 @@ function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, pheno){
     });
 
     if(pheno){
+        console.log(pheno)
         link.style('opacity', 0.3);
         g.attr('transform', 'translate(30, 50)');
 
@@ -362,9 +366,10 @@ function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, pheno){
     node.transition()
     .duration(500)
     .attr("transform", function(d) { 
-        if(length && pheno === undefined){
+        if(length && pheno === undefined || pheno === false){
             return "translate(" + xScale(d.data.combEdge) + "," + yScale(d.position) + ")"; 
         }else{
+
            return "translate(" + (xScale(d.data.attributes[pheno].values.realVal) - 5) + "," + yScale(d.data.combEdge) + ")"; 
         }
     });

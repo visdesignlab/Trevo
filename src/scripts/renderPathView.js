@@ -762,14 +762,14 @@ export function drawGroups(stateBins, scales){
                 });
 
             let innerStatePaths = speciesGrp.append('path')
-            .attr("d", d=> {
-                    return (d.type === 'discrete') ? lineGenD(d.paths) : lineGenC(d.paths);
-                })
-            .attr("class", (d, i)=> {
-                    return d.species + " inner-line"})
-            .style('stroke-width', 0.7)
-            .style('fill', 'none')
-            .style('stroke', 'gray');
+                .attr("d", d=> {
+                        return (d.type === 'discrete') ? lineGenD(d.paths) : lineGenC(d.paths);
+                    })
+                .attr("class", (d, i)=> {
+                        return d.species + " inner-line"})
+                .style('stroke-width', 0.7)
+                .style('fill', 'none')
+                .style('stroke', 'gray');
 
             innerStatePaths.on('mouseover', (d, i, n)=> {
                

@@ -222,9 +222,14 @@ let matchedLeaves = leaves.map((leaf, i)=>{
      let filterDiv = wrap.select('#filter-tab').classed('hidden', true);
 
     // ////////TREE RENDER IN SIDEBAR////////
+    let treeDimensions = {
+        margin : {top: 10, right: 90, bottom: 50, left: 20},
+        width : 290,
+        height : 520
+    }
     nestedData.push(buildTreeStructure(normedPaths, all.concat(matchedLeaves)));
     renderTreeButtons(normedPaths, calculatedScales, sidebar, false);
-    let tree = renderTree(sidebar, null, false);
+    let tree = renderTree(sidebar, null, false, false, treeDimensions);
     
     /// LOWER ATTRIBUTE VISUALIZATION ///
     initialViewLoad(calculatedScales, 'edgeLength');
