@@ -804,7 +804,7 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
             distrib.attr('transform', (d,i,n)=> {
                // console.log('in distrib',d)
                 if(d[0].index === 0){
-                    return 'translate(0, '+dimensions.height+') rotate(90)'
+                    return 'translate(0, 0) rotate(90)'
                 }else{
                     return 'translate(11, '+dimensions.height+') rotate(-90)'
                 }
@@ -859,6 +859,13 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
      let brush = d3.brushY().extent([[0, 0], [20, dimensions.height]])
      brush.on('end', brushed);
 
+   //  console.log(continDist.data)
+
+    //   continDist.selectAll('.distribution').append("g")
+    //  .classed('continuous-branch-brush', true)
+    //  .attr("class", "brush")
+    //  .call(brush);
+
      continDist.append("g")
      .classed('continuous-branch-brush', true)
      .attr("class", "brush")
@@ -867,7 +874,6 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
      function brushed(){
 
         let data = d3.select(this.parentNode).data()[0]
-
        
         var s = d3.event.selection;
         var zero = d3.format(".3n");
@@ -1210,6 +1216,7 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
         .classed('state-rect', true)
         .attr('height', dimensions.squareDim)
         .attr('width', dimensions.squareDim);
+
     stateRects.attr('fill', (d, i, n)=> {
         let sum = d3.sum(d.state.map(m=> m.value))
         let av = sum / d.state.length;
@@ -1316,6 +1323,7 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
             .data([d.bins])
             .join('g')
             .classed('distribution', true);
+
         distrib.attr('transform', 'translate(11, '+dimensions.height+') rotate(-90)');
         let path = distrib.append('path').attr('d', lineGen);
         path.attr("fill", defaultBarColor).attr('fill-opacity', .4)//.attr("fill", "rgba(133, 193, 233, .4)")
