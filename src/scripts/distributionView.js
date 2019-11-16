@@ -229,7 +229,6 @@ export function drawBranchPointDistribution(data, svg){
         .attr('height', 25)
         .attr('x', -10)
         .attr('y', -10)
-       // .attr('fill', '#fff');
        .attr('fill', 'none')
 
     let binWrap = branchBar.append('g').attr('transform', 'translate(102, -10)');
@@ -711,7 +710,7 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
         .attr('opacity', 0.3);
 
         stateRects.on('mouseover', (d, i, n)=> {
-            console.log('d fir moose',d)
+           
             let sum = d3.sum(d.state.map(m=> m.value))
             let av = sum / d.state.length;
             let tool = d3.select('#tooltip');
@@ -869,6 +868,8 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
      function brushed(){
 
         let data = d3.select(this.parentNode).data()[0]
+
+       
         var s = d3.event.selection;
         var zero = d3.format(".3n");
     
@@ -1323,7 +1324,8 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
     .y1((d, i, n)=> {
        // let dat = Object.keys(d).length - 1
         let dat = d.length;
-        let x = d3.scaleLinear().domain([0, 50]).range([0, ((dimensions.predictedWidth/n.count)*.7)]).clamp(true);
+        let count = n.count? n.count : 8;
+        let x = d3.scaleLinear().domain([0, 50]).range([0, ((dimensions.predictedWidth/count)*.7)]).clamp(true);
         return x(dat); 
     });
 
@@ -1398,6 +1400,10 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
      .call(brush);
  
      function brushed(){
+
+        console.log(this, this.parentNode);
+
+
         let data = d3.select(this.parentNode).data()[0]
         var s = d3.event.selection;
         var zero = d3.format(".3n");
@@ -1423,12 +1429,30 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
                 return (f.values.realVal >= brushedVal[0]) && (f.values.realVal <= brushedVal[1]);
             });
 
+            console.log('brushed nodes', nodes);
+
+            let test = continuousHistogram(nodes);
+
+            console.log('brushed test', test);
+
+            //////EXPERIMENTING WITH BRUSH DRAW DISTRIBUTIONS////
+            let brushedDist = d3.select(this.parentNode)
+            .selectAll('g.distribution-too')
+            .data([test])
+            .join('g')
+            .classed('distribution-too', true);
+
+            brushedDist.attr('transform', 'translate(0, 0) rotate(90)');
+            let path = brushedDist.append('path').attr('d', mirrorlineGen);
+            path.attr("fill", "rgba(133, 193, 233, .4)")
+            .style('stroke', "rgba(133, 193, 233, .9)");
+            console.log('path',path)
+            ////END DISTRIBUTION///
            
             let notNodes = data.data.filter(f=> {
                 return (f.values.realVal < brushedVal[0]) || (f.values.realVal > brushedVal[1]);
             });
 
-    
             let selectedNodes = brushedNodes(nodes, notNodes, data, brushedVal, classLabel);
             let selectedBranch = selectedNodes[0];
             let secondGrp = selectedNodes[1];
@@ -1532,16 +1556,18 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
                         .attr('stroke', brushColors[index][1])
                         .attr('stroke-width', 2);
 
-                        console.log('brush is fucked',data.data)
-                        let nodes = data.data.filter(f=> {
-                            return (f.values.realVal >= brushedVal[0]) && (f.values.realVal <= brushedVal[1]);
-                        });
+                       
+                    let nodes = data.data.filter(f=> {
+                        return (f.values.realVal >= brushedVal[0]) && (f.values.realVal <= brushedVal[1]);
+                    });
 
-                        let notNodes = data.data.filter(f=> {
-                            return (f.values.realVal < brushedVal[0]) || (f.values.realVal > brushedVal[1]);
-                        });
+                    console.log('nodes brushed',nodes)
 
-                        doesItExist.datum({brush:this, nodes: nodes})
+                    let notNodes = data.data.filter(f=> {
+                        return (f.values.realVal < brushedVal[0]) || (f.values.realVal > brushedVal[1]);
+                    });
+
+                    doesItExist.datum({brush:this, nodes: nodes})
     
                     brushedNodes(nodes, notNodes, data, brushedVal, label);
                     
@@ -1573,13 +1599,11 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
      }
 
      ///OBSERVED/////
-
      let observedWrap = binnedWrap.append('g').classed('observed', true);
      observedWrap.attr('transform', (d, i, n)=> {
          return 'translate('+ (dimensions.predictedWidth + 150) +', 0)'});
 
     ////OBSERVED CONTIUOUS/////
-
     let contOb = observedWrap.filter(f=> f.type === 'continuous');
     contOb.attr('transform', `translate(${dimensions.predictedWidth + 160}, -15)`);
 
@@ -1743,5 +1767,32 @@ function brushedNodes(nodes, notNodes, data, brushedVal, classLabel){
 
     return [selectedBranch, secondGrp, notNodeSelectedBranch, notNodeSecondGrp];
 }
+
+function continuousHistogram(data){
+    let x = data[0].yScale;
+    let histogram = d3.histogram()
+            .value(function(d) { return d.values.realVal; })  
+            .domain(x.domain())  
+            .thresholds(x.ticks(20)); 
+
+    return histogram(data);
+}
+
+let mirrorlineGen = d3.area()
+.curve(d3.curveCardinal)
+.x((d, i, n)=> {
+    let y = d3.scaleLinear().domain([n.length - 1, 0]).range([0, dimensions.height]).clamp(true);
+    return y(i); 
+})
+.y0(d=> {
+    return 0;
+})
+.y1((d, i, n)=> {
+   // let dat = Object.keys(d).length - 1
+    let dat = d.length;
+    let count = n.count? n.count : 8;
+    let x = d3.scaleLinear().domain([0, 50]).range([0, ((dimensions.predictedWidth/count)*.7)]).clamp(true);
+    return x(dat); 
+});
 
 
