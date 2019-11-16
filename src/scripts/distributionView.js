@@ -21,6 +21,8 @@ const brushColors = [
     ['#6A1B9A', '#FDD835'],
 ]
 
+const defaultBarColor = '#DCD4D4';
+
 let colorBool = 0;
 
 let selectedClades = [];
@@ -571,7 +573,8 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
                 let newy = d.scales.yScale;
                 newy.range([(dimensions.height - 5), 0]);
                 return 'translate(0,'+newy(+d.values.upperCI95)+')'
-            }).style('opacity', 0.5).attr('fill', "rgba(133, 193, 233)");
+            }).style('opacity', 0.5)//.attr('fill', "rgba(133, 193, 233)")
+            .attr('fill', defaultBarColor);
     
         let rootAv = contRoot.append('rect').attr('width', 12).attr('height', 3);
         
@@ -1081,7 +1084,7 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
             let newy = d.scales.yScale;
             newy.range([(dimensions.height - 5), 0]);
             return 'translate(0,'+newy(+d.values.upperCI95)+')'
-        }).style('opacity', 0.5).attr('fill', "rgba(133, 193, 233)");
+        }).style('opacity', 0.5).attr('fill', defaultBarColor);
 
     let rootAv = contRoot.append('rect').attr('width', 12).attr('height', 3);
     
@@ -1312,22 +1315,7 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
         d3.select(node[i]).select('.y-axis').remove();
     });
 
-    var lineGen = d3.area()
-    .curve(d3.curveCardinal)
-    .x((d, i, n)=> {
-        let y = d3.scaleLinear().domain([0, n.length - 1]).range([0, dimensions.height]).clamp(true);
-        return y(i); 
-    })
-    .y0(d=> {
-        return 0;
-    })
-    .y1((d, i, n)=> {
-       // let dat = Object.keys(d).length - 1
-        let dat = d.length;
-        let count = n.count? n.count : 8;
-        let x = d3.scaleLinear().domain([0, 50]).range([0, ((dimensions.predictedWidth/count)*.7)]).clamp(true);
-        return x(dat); 
-    });
+ 
 
     continDist.each((d, i, nodes)=> {
         let distrib = d3.select(nodes[i])
@@ -1337,8 +1325,8 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
             .classed('distribution', true);
         distrib.attr('transform', 'translate(11, '+dimensions.height+') rotate(-90)');
         let path = distrib.append('path').attr('d', lineGen);
-        path.attr("fill", "rgba(133, 193, 233, .4)")
-        .style('stroke', "rgba(133, 193, 233, .9)");
+        path.attr("fill", defaultBarColor).attr('fill-opacity', .4)//.attr("fill", "rgba(133, 193, 233, .4)")
+        .style('stroke', defaultBarColor);
     });
 
     let contRect = continDist.append('rect')
@@ -1369,7 +1357,8 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
         return 'translate(0,'+newy(d.values.upperCI95)+')'
     });
 
-    rangeRect.attr('fill', "rgba(133, 193, 233, .05)");
+    //rangeRect.attr('fill', "rgba(133, 193, 233, .05)");
+    rangeRect.attr('fill', defaultBarColor).attr('opacity', 0.5)
 
     let avRect = continDist.append('rect').attr('width', 10).attr('height', (d, i)=> {
         if(d.data[0] != undefined){
@@ -1403,7 +1392,6 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
 
         console.log(this, this.parentNode);
 
-
         let data = d3.select(this.parentNode).data()[0]
         var s = d3.event.selection;
         var zero = d3.format(".3n");
@@ -1429,11 +1417,7 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
                 return (f.values.realVal >= brushedVal[0]) && (f.values.realVal <= brushedVal[1]);
             });
 
-            console.log('brushed nodes', nodes);
-
             let test = continuousHistogram(nodes);
-
-            console.log('brushed test', test);
 
             //////EXPERIMENTING WITH BRUSH DRAW DISTRIBUTIONS////
             let brushedDist = d3.select(this.parentNode)
@@ -1444,9 +1428,9 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
 
             brushedDist.attr('transform', 'translate(0, 0) rotate(90)');
             let path = brushedDist.append('path').attr('d', mirrorlineGen);
-            path.attr("fill", "rgba(133, 193, 233, .4)")
-            .style('stroke', "rgba(133, 193, 233, .9)");
-            console.log('path',path)
+            path.attr("fill", brushColors[index][0]).attr('fill-opacity', 0.5)
+            .style('stroke', brushColors[index][0]);
+           
             ////END DISTRIBUTION///
            
             let notNodes = data.data.filter(f=> {
@@ -1568,7 +1552,6 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
                     });
 
                     doesItExist.datum({brush:this, nodes: nodes})
-    
                     brushedNodes(nodes, notNodes, data, brushedVal, label);
                     
                 }
@@ -1616,7 +1599,8 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
     }).attr('height', (d, i)=> {
         let y = d3.scaleLinear().domain([0, Object.keys(d).length]).range([(dimensions.height - dimensions.margin), 0])
         return y(Object.keys(d).length - 2)
-    }).attr('fill', 'rgba(133, 193, 233, .5)');
+    })//.attr('fill', 'rgba(133, 193, 233, .5)');
+    .attr('fill', defaultBarColor).attr('fill-opacity', .5);
 
     contBars.attr('transform', (d, i, n)=> {
         let movex = dimensions.observedWidth / n.length;
@@ -1779,9 +1763,26 @@ function continuousHistogram(data){
 }
 
 let mirrorlineGen = d3.area()
+    .curve(d3.curveCardinal)
+    .x((d, i, n)=> {
+        let y = d3.scaleLinear().domain([n.length - 1, 0]).range([0, dimensions.height]).clamp(true);
+        return y(i); 
+    })
+    .y0(d=> {
+        return 0;
+    })
+    .y1((d, i, n)=> {
+    // let dat = Object.keys(d).length - 1
+        let dat = d.length;
+        let count = n.count? n.count : 8;
+        let x = d3.scaleLinear().domain([0, 50]).range([0, ((dimensions.predictedWidth/count)*.7)]).clamp(true);
+        return x(dat); 
+});
+
+var lineGen = d3.area()
 .curve(d3.curveCardinal)
 .x((d, i, n)=> {
-    let y = d3.scaleLinear().domain([n.length - 1, 0]).range([0, dimensions.height]).clamp(true);
+    let y = d3.scaleLinear().domain([0, n.length - 1]).range([0, dimensions.height]).clamp(true);
     return y(i); 
 })
 .y0(d=> {
