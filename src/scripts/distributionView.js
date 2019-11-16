@@ -1405,18 +1405,27 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
             if(treeTest.empty()){
                 renderTree(d3.select('#sidebar'), null, true);
             }
-            
+
+           
+            console.log(data)
             let y = d3.scaleLinear().domain([data.domain[0], data.domain[1]]).range([0, dimensions.height])
+            //let y = data.data[0].yScale
+           // y.range([0, dimensions.height])
             let attribute = data.key;
             let brushedVal = [y.invert(s[1]), y.invert(s[0])];
+
+            console.log(brushedVal)
     
             let treeNode  = d3.select('#sidebar').selectAll('.node');
 
             let nodes = data.data.filter(f=> {
-                return (f.values.realVal >= brushedVal[0]) && (f.values.realVal <= brushedVal[1]);
+                return (f.values.realVal > brushedVal[0]) && (f.values.realVal < brushedVal[1]);
             });
+            console.log(nodes, data.data)
 
             let test = continuousHistogram(nodes);
+
+           // console.log(test, )
            
             test.maxCount = d3.sum(data.bins.map(m=> m.length));
 
@@ -1434,14 +1443,13 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
 
             let nodeNames = nodes.map(m=> m.node);
 
-            let otherBins = continDist.filter(f=> f.index === data.index);
+            let otherBins = continDist.filter(f=> f.index === data.index && f.key != data.key);
             otherBins.each((b, i, n)=> {
                 
                 let test = continuousHistogram(b.data.filter(f=> nodeNames.indexOf(f.node)));
                
                 test.maxCount = d3.sum(b.bins.map(m=> m.length));
-                console.log(test)
-            
+              
                 let otherDist = d3.select(n[i]).selectAll('g.distribution-too')
                 .data([test])
                 .join('g')
@@ -1453,7 +1461,7 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
                 .style('stroke', brushColors[index][0]);
     
             });
-            console.log(otherBins)
+          
             
             ////END DISTRIBUTION///
            
@@ -1775,6 +1783,7 @@ function brushedNodes(nodes, notNodes, data, brushedVal, classLabel){
 }
 
 function continuousHistogram(data){
+    console.log('data',data)
     let x = data[0].yScale;
     let histogram = d3.histogram()
             .value(function(d) { return d.values.realVal; })  
