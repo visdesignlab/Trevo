@@ -1315,8 +1315,6 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
         d3.select(node[i]).select('.y-axis').remove();
     });
 
- 
-
     continDist.each((d, i, nodes)=> {
         let distrib = d3.select(nodes[i])
             .selectAll('g')
@@ -1390,11 +1388,12 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
  
      function brushed(){
 
-        console.log(this, this.parentNode);
 
         let data = d3.select(this.parentNode).data()[0]
         var s = d3.event.selection;
         var zero = d3.format(".3n");
+
+        console.log(d3.sum(data.bins.map(m=> m.length)))
     
         let index = d3.select('#toolbar').selectAll('.brush-span').size();
         let classLabel = index === 0 ? 'one' : 'two';
@@ -1418,6 +1417,8 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
             });
 
             let test = continuousHistogram(nodes);
+           
+            test.maxCount = d3.sum(data.bins.map(m=> m.length));
 
             //////EXPERIMENTING WITH BRUSH DRAW DISTRIBUTIONS////
             let brushedDist = d3.select(this.parentNode)
@@ -1430,7 +1431,30 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
             let path = brushedDist.append('path').attr('d', mirrorlineGen);
             path.attr("fill", brushColors[index][0]).attr('fill-opacity', 0.5)
             .style('stroke', brushColors[index][0]);
-           
+
+            let nodeNames = nodes.map(m=> m.node);
+
+            let otherBins = continDist.filter(f=> f.index === data.index);
+            otherBins.each((b, i, n)=> {
+                
+                let test = continuousHistogram(b.data.filter(f=> nodeNames.indexOf(f.node)));
+               
+                test.maxCount = d3.sum(b.bins.map(m=> m.length));
+                console.log(test)
+            
+                let otherDist = d3.select(n[i]).selectAll('g.distribution-too')
+                .data([test])
+                .join('g')
+                .classed('distribution-too', true);
+
+                otherDist.attr('transform', 'translate(0, 0) rotate(90)');
+                let path = otherDist.append('path').attr('d', mirrorlineGen);
+                path.attr("fill", brushColors[index][0]).attr('fill-opacity', 0.5)
+                .style('stroke', brushColors[index][0]);
+    
+            });
+            console.log(otherBins)
+            
             ////END DISTRIBUTION///
            
             let notNodes = data.data.filter(f=> {
@@ -1494,8 +1518,6 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
                    
                     d3.select(doesItExist.datum().brush).call(brush.move, null);
                     d3.select(doesItExist.datum().brush).select('.overlay').attr('stroke-width', 0)
-    
-                   
     
                     treeNode.selectAll(`.${data.key}`)
                         .selectAll(`${data.bins.groupLabel}`)
@@ -1772,10 +1794,10 @@ let mirrorlineGen = d3.area()
         return 0;
     })
     .y1((d, i, n)=> {
-    // let dat = Object.keys(d).length - 1
+       
         let dat = d.length;
         let count = n.count? n.count : 8;
-        let x = d3.scaleLinear().domain([0, 50]).range([0, ((dimensions.predictedWidth/count)*.7)]).clamp(true);
+        let x = d3.scaleLinear().domain([0, n.maxCount]).range([0, ((dimensions.predictedWidth/count)*.7)]).clamp(true);
         return x(dat); 
 });
 
@@ -1790,9 +1812,10 @@ var lineGen = d3.area()
 })
 .y1((d, i, n)=> {
    // let dat = Object.keys(d).length - 1
+    let max = d3.sum(n.map(m=> m.length))
     let dat = d.length;
     let count = n.count? n.count : 8;
-    let x = d3.scaleLinear().domain([0, 50]).range([0, ((dimensions.predictedWidth/count)*.7)]).clamp(true);
+    let x = d3.scaleLinear().domain([0, max]).range([0, ((dimensions.predictedWidth/count)*.7)]).clamp(true);
     return x(dat); 
 });
 
