@@ -1862,7 +1862,6 @@ var lineGen = d3.area()
         let max = d.maxCount? d.maxCount : d3.sum(n.map(m=> m.length))
         let dat = d.length;
         let count = n.count? n.count : 8;
-        console.log('max',max)
         let x = d3.scaleLinear().domain([0, max]).range([0, ((dimensions.predictedWidth/count)*.7)]).clamp(true);
         return x(dat); 
     });

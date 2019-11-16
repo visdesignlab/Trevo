@@ -84,7 +84,7 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pat
         toolbar.select('#show-drop-div-group').classed('show', false);
     });
 
-    console.log(calculatedScales)
+    /////ATTRIBUTE DROP DOWN
     let attributeOptions = calculatedScales.map(m=> m.field);
 
     let checkedAttributes = ['Body_height', 'Body_width', 'Carpus', 'Clade', 'Femur', 'Forelimb'];
