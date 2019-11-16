@@ -859,13 +859,6 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
      let brush = d3.brushY().extent([[0, 0], [20, dimensions.height]])
      brush.on('end', brushed);
 
-   //  console.log(continDist.data)
-
-    //   continDist.selectAll('.distribution').append("g")
-    //  .classed('continuous-branch-brush', true)
-    //  .attr("class", "brush")
-    //  .call(brush);
-
      continDist.append("g")
      .classed('continuous-branch-brush', true)
      .attr("class", "brush")
@@ -897,7 +890,56 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
 
             let nodes = data.data.flatMap(m=> m.value.filter(f=> {
                 return (f.values.realVal >= brushedVal[0]) && (f.values.realVal <= brushedVal[1]);
-            }))
+            }));
+
+            //////
+
+            let nodeNames = nodes.map(m=> m.node);
+
+            let otherBins = continDist.filter(f=> f.index === data.index && f.key != data.key);
+            otherBins.each((b, i, n)=> {
+
+                
+                
+                //let test = continuousHistogram(b.data.flatMap(m=> m.value).filter(f=> nodeNames.indexOf(f.node)));
+                let test = b.data.map((m, j)=> {
+                    m.histo = continuousHistogram(m.value.filter(f=> nodeNames.indexOf(f.node)));
+                    m.maxCount = d3.sum(b.bins[j].value.map(m=> m.length));
+                    return m
+                });
+                
+              
+                let otherDist = d3.select(n[i]).selectAll('g.distribution-too')
+                .data(test)
+                .join('g')
+                .classed('distribution-too', true);
+
+                let pathGroup = otherDist.selectAll('g').data(d=> {
+                    let histo = d.histo.map(h=> {
+                        h.index = d.index;
+                        return h;
+                    });
+                    return [histo]})
+                    .join('g')
+                    pathGroup.each((e, i, g)=> {
+                        let index = e[0].index;
+                        let path = d3.select(g[i]).append('path')
+                            .attr('d', index === 0 ? mirrorlineGen : lineGen);
+                        path.attr("fill", brushColors[index][0])
+                            .attr('fill-opacity', 0.5)
+                            .style('stroke', brushColors[index][0]);
+                        console.log(e, index, g)
+                        pathGroup.attr('transform', index === 0 ? 'translate(0, 0) rotate(90)' : `translate(11, ${dimensions.height}) rotate(90)`);
+                    })//.append('path').attr('d', console.log(this));
+
+                 
+                // let path = otherDist.append('path').attr('d', mirrorlineGen);
+                // path.attr("fill", brushColors[index][0]).attr('fill-opacity', 0.5)
+                // .style('stroke', brushColors[index][0]);
+    
+            });
+
+            //////
            
             let notNodes = data.data.flatMap(m=> m.value.filter(f=> {
                 return (f.values.realVal < brushedVal[0]) || (f.values.realVal > brushedVal[1]);
@@ -962,7 +1004,6 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
                     d3.select(doesItExist.datum()).select('.overlay').attr('stroke-width', 0)
     
                    
-    
                     treeNode.selectAll(`.${data.key}`)
                         .selectAll(`${data.bins.groupLabel}`)
                         .selectAll('.second-branch')
@@ -1412,8 +1453,7 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
            
            // console.log(data)
             let y = d3.scaleLinear().domain([data.domain[0], data.domain[1]]).range([0, dimensions.height])
-            //let y = data.data[0].yScale
-           // y.range([0, dimensions.height])
+           
             let attribute = data.key;
             let brushedVal = [y.invert(s[1]), y.invert(s[0])];
     
@@ -1810,20 +1850,21 @@ let mirrorlineGen = d3.area()
 });
 
 var lineGen = d3.area()
-.curve(d3.curveCardinal)
-.x((d, i, n)=> {
-    let y = d3.scaleLinear().domain([0, n.length - 1]).range([0, dimensions.height]).clamp(true);
-    return y(i); 
-})
-.y0(d=> {
-    return 0;
-})
-.y1((d, i, n)=> {
-    let max = d3.sum(n.map(m=> m.length))
-    let dat = d.length;
-    let count = n.count? n.count : 8;
-    let x = d3.scaleLinear().domain([0, max]).range([0, ((dimensions.predictedWidth/count)*.7)]).clamp(true);
-    return x(dat); 
-});
+    .curve(d3.curveCardinal)
+    .x((d, i, n)=> {
+        let y = d3.scaleLinear().domain([0, n.length - 1]).range([0, dimensions.height]).clamp(true);
+        return y(i); 
+    })
+    .y0(d=> {
+        return 0;
+    })
+    .y1((d, i, n)=> {
+        let max = d.maxCount? d.maxCount : d3.sum(n.map(m=> m.length))
+        let dat = d.length;
+        let count = n.count? n.count : 8;
+        console.log('max',max)
+        let x = d3.scaleLinear().domain([0, max]).range([0, ((dimensions.predictedWidth/count)*.7)]).clamp(true);
+        return x(dat); 
+    });
 
 
