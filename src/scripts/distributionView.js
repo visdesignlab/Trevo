@@ -684,11 +684,11 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
                     return `translate(${move}, 0)`});
 
         let stateBarsPredicted = discreteBinGroups.selectAll('g.histo-bars')
-        .data(d=> {
-            let binvalue = d.value.map(v=> {
-                v.index = d.index;
-                return v;
-            })
+            .data(d=> {
+                let binvalue = d.value.map(v=> {
+                    v.index = d.index;
+                    return v;
+                })
             return binvalue}).join('g')
         .classed('histo-bars', true);
 
@@ -785,36 +785,33 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
             d3.select(node[i]).select('.y-axis').remove();
         });
 
-        var lineGen = d3.area()
-        .curve(d3.curveCardinal)
-        .x((d, i, n)=> {
-            let y = d3.scaleLinear().domain([0, n.length - 1]).range([0, dimensions.height]).clamp(true);
-            return y(i); 
-        })
-        .y0(d=> {
-            return 0;
-        })
-        .y1((d, i, n)=> {
-        // let dat = Object.keys(d).length - 1
-            let dat = d.length;
-            let x = d3.scaleLinear().domain([0, 50]).range([0, ((dimensions.predictedWidth/n.count)*.7)]).clamp(true);
-            return x(dat); 
-        });
-
         let continBinGroups = continDist.selectAll('g.group').data(d=> {
             return d.bins;
         }).join('g').classed('group', true);
 
         continBinGroups.each((d, i, nodes)=> {
+            //console.log('contin',d, nodes)
+            d.value.maxCount = d3.sum(d.value.map(m=> m.length));
             let distrib = d3.select(nodes[i])
                 .selectAll('g')
-                .data([d.value])
+                .data([d.value.map(v=> {
+                    v.maxCount = d3.sum(d.value.map(m=> m.length))
+                    v.index = d.index;
+                    return v;
+                })])
                 .join('g')
                 .classed('distribution', true);
-            distrib.attr('transform', 'translate(11, '+dimensions.height+') rotate(-90)');
-            let path = distrib.append('path').attr('d', lineGen);
+            distrib.attr('transform', (d,i,n)=> {
+               // console.log('in distrib',d)
+                if(d[0].index === 0){
+                    return 'translate(0, '+dimensions.height+') rotate(90)'
+                }else{
+                    return 'translate(11, '+dimensions.height+') rotate(-90)'
+                }
+               });
+            let path = distrib.append('path').attr('d', d.index === 0 ? mirrorlineGen : lineGen);
             path.attr("fill", (v, i, n)=> {
-                return brushColors[0][d.index]})
+                return defaultBarColor})
             .attr('opacity', 0.4)
             .style('stroke', brushColors[0][d.index]);
         });
@@ -835,8 +832,7 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
             m.gindex = i;
             return m;
         })
-        return newData
-       // return d;
+        return newData;
     }).join('rect').classed('range', true);
 
     let avRect = continDist.selectAll('rect.av-rect').data(d=> d.data)
@@ -1137,7 +1133,6 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
 
 
     /////BRANCHES
-
     let branchGroup = predictedWrap.selectAll('g.branch-bin').data(d=> {
         return d.branches}).join('g').classed('branch-bin', true);
 
@@ -1393,7 +1388,7 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
         var s = d3.event.selection;
         var zero = d3.format(".3n");
 
-        console.log(d3.sum(data.bins.map(m=> m.length)))
+       // console.log(d3.sum(data.bins.map(m=> m.length)))
     
         let index = d3.select('#toolbar').selectAll('.brush-span').size();
         let classLabel = index === 0 ? 'one' : 'two';
@@ -1407,22 +1402,19 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
             }
 
            
-            console.log(data)
+           // console.log(data)
             let y = d3.scaleLinear().domain([data.domain[0], data.domain[1]]).range([0, dimensions.height])
             //let y = data.data[0].yScale
            // y.range([0, dimensions.height])
             let attribute = data.key;
             let brushedVal = [y.invert(s[1]), y.invert(s[0])];
-
-            console.log(brushedVal)
     
             let treeNode  = d3.select('#sidebar').selectAll('.node');
 
             let nodes = data.data.filter(f=> {
                 return (f.values.realVal > brushedVal[0]) && (f.values.realVal < brushedVal[1]);
             });
-            console.log(nodes, data.data)
-
+           
             let test = continuousHistogram(nodes);
 
            // console.log(test, )
@@ -1728,10 +1720,6 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
 }
 
 function brushedNodes(nodes, notNodes, data, brushedVal, classLabel){
-
-    
-    //let time = d3.extent(data.map(d=> d.combLength))
-    console.log('nodes',nodes)
    
     let nodeNames = nodes.map(m=> m.node);
     let notNodeNames = notNodes.map(m=> m.node);
@@ -1783,7 +1771,7 @@ function brushedNodes(nodes, notNodes, data, brushedVal, classLabel){
 }
 
 function continuousHistogram(data){
-    console.log('data',data)
+    
     let x = data[0].yScale;
     let histogram = d3.histogram()
             .value(function(d) { return d.values.realVal; })  
@@ -1796,17 +1784,20 @@ function continuousHistogram(data){
 let mirrorlineGen = d3.area()
     .curve(d3.curveCardinal)
     .x((d, i, n)=> {
+      
         let y = d3.scaleLinear().domain([n.length - 1, 0]).range([0, dimensions.height]).clamp(true);
+        
         return y(i); 
     })
     .y0(d=> {
         return 0;
     })
     .y1((d, i, n)=> {
-       
+        let max = n.maxCount ? n.maxCount : d.maxCount;
         let dat = d.length;
         let count = n.count? n.count : 8;
-        let x = d3.scaleLinear().domain([0, n.maxCount]).range([0, ((dimensions.predictedWidth/count)*.7)]).clamp(true);
+        let x = d3.scaleLinear().domain([0, max]).range([0, ((dimensions.predictedWidth/count)*.7)]).clamp(true);
+        
         return x(dat); 
 });
 
@@ -1820,7 +1811,6 @@ var lineGen = d3.area()
     return 0;
 })
 .y1((d, i, n)=> {
-   // let dat = Object.keys(d).length - 1
     let max = d3.sum(n.map(m=> m.length))
     let dat = d.length;
     let count = n.count? n.count : 8;
