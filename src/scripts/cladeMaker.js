@@ -53,6 +53,9 @@ export function drawTreeForGroups(div){
 function cladeToolbar(div){
 
     let toolBar = div.append('div').classed('clade-toolbar', true);
+    let textInput = toolBar.append('input').attr('type', 'text').attr('placeholder', 'Name your Group')
+    //<input type="text" class="form-control" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1">
+   // </div>
     let addCladeGroupButton = toolBar.append('button').text('Add Clade Group');
     addCladeGroupButton.on('click', ()=> {
         addCladeGroup('Test', []);
