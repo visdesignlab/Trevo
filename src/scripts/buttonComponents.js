@@ -1,3 +1,5 @@
+import * as d3 from "d3";
+
 export function dropDown(div, optionArray, dropText, dropId){
     let dropdiv = div.append('div').classed(`dropdown ${dropId}`, true);
     dropdiv.style('display', 'inline-block')
@@ -17,4 +19,8 @@ export function dropDown(div, optionArray, dropText, dropId){
     });
     options.raise()
     return options;
+}
+
+export function updateDropdown(optionArray, dropId){
+    d3.select(`#${dropId}`).selectAll('a').data(optionArray).join('a').text(d=> d.field);
 }

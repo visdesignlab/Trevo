@@ -1,5 +1,6 @@
 import {dataMaster, nestedData} from './index';
 import { renderTree } from './sidebarComponent';
+import { updateDropdown } from './buttonComponents';
 
 export const cladesGroupKeeper = []
 export const chosenCladesGroup = []
@@ -53,6 +54,13 @@ function cladeToolbar(div){
 
     let toolBar = div.append('div').classed('clade-toolbar', true);
     let addCladeGroupButton = toolBar.append('button').text('Add Clade Group');
+    addCladeGroupButton.on('click', ()=> {
+        addCladeGroup('Test', []);
+        console.log(cladesGroupKeeper);
+        updateDropdown(cladesGroupKeeper, 'change-clade');
+    
+    });
+    
 
 }
 
