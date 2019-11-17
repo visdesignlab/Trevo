@@ -110,7 +110,11 @@ function cladeToolbar(div){
             .classed('clade-name', true)
             .attr('value', `Group ${ind+1}`)
             .attr('type', 'text');
-            let rects = d3.selectAll('.overlay-brush').append('rect').attr('height', 100).attr('width', 300)
+            let rects = d3.selectAll('.overlay-brush')
+            .append('rect')
+            .attr('height', 100)
+            .attr('width', 300)
+            .attr('transform',  (d,i, n)=> `translate(${0},${(800 / n.length) * i})`)
             console.log(rects, d3.select('.overlay-brush'))
         }
     }
