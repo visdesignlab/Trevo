@@ -66,11 +66,7 @@ function cladeToolbar(div){
 
     let inputGroup = toolBar.append('div').classed('input-group input-number-group', true);
     let minusButton = inputGroup.append('button').text('-');
-    minusButton.on('click', ()=> {
-        let num = numberText.attr('value');
-        numberText.attr('value', +num - 1);
-    });
-
+   
     let numberText = inputGroup.append('input')
         .attr('value', 3)
         .attr('min', 0)
@@ -79,10 +75,32 @@ function cladeToolbar(div){
         .classed('input-number', true);
 
     let plusButton = inputGroup.append('button').text('+');
+
+    let nameWrap = inputGroup.append('div').classed('name-input-wrap', true);
+    minusButton.on('click', ()=> {
+        let num = numberText.attr('value');
+        numberText.attr('value', +num - 1);
+        addTextInputForGroups(+numberText.attr('value'), nameWrap);
+    });
+
     plusButton.on('click', ()=> {
         let num = numberText.attr('value');
         numberText.attr('value', +num + 1);
+        addTextInputForGroups(+numberText.attr('value'), nameWrap);
     });
+
+    addTextInputForGroups(+numberText.attr('value'), nameWrap);
+
+    function addTextInputForGroups(index, nameWrap){
+       
+        nameWrap.selectAll('*').remove();
+        for(let ind = 0; ind < index; ind = ind + 1){
+            nameWrap.append('input')
+            .attr('value', `Group ${ind+1}`)
+            .attr('type', 'text');
+        }
+
+    }
 
 //     <h6 class="text-center">Unit(s)</h6>
 // <div class="input-group input-number-group">
