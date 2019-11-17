@@ -1,6 +1,7 @@
 import {dataMaster, nestedData} from './index';
 import { renderTree } from './sidebarComponent';
 import { updateDropdown } from './buttonComponents';
+import * as d3 from "d3";
 
 export const cladesGroupKeeper = []
 export const chosenCladesGroup = []
@@ -53,12 +54,20 @@ export function drawTreeForGroups(div){
 function cladeToolbar(div){
 
     let toolBar = div.append('div').classed('clade-toolbar', true);
-    let textInput = toolBar.append('input').attr('type', 'text').attr('placeholder', 'Name your Group')
-    //<input type="text" class="form-control" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1">
-   // </div>
+    let textInput = toolBar.append('input')
+    .classed('group-name', true)
+    .attr('type', 'text')
+    .attr('value', 'Name Your Group');
+  
     let addCladeGroupButton = toolBar.append('button').text('Add Clade Group');
     addCladeGroupButton.on('click', ()=> {
-        addCladeGroup('Test', []);
+        let cladeNames = []
+        d3.selectAll('.clade-name').each((e, i, n)=> {
+           cladeNames.push(n[i].value);
+        });
+        d3.select('.group-name').attr('value')
+        let groupName = d3.select('.group-name').node().value;
+        addCladeGroup(groupName, cladeNames);
         console.log(cladesGroupKeeper);
         updateDropdown(cladesGroupKeeper, 'change-clade');
     
@@ -96,24 +105,11 @@ function cladeToolbar(div){
         nameWrap.selectAll('*').remove();
         for(let ind = 0; ind < index; ind = ind + 1){
             nameWrap.append('input')
+            .classed('clade-name', true)
             .attr('value', `Group ${ind+1}`)
             .attr('type', 'text');
         }
-
     }
-
-//     <h6 class="text-center">Unit(s)</h6>
-// <div class="input-group input-number-group">
-//   <div class="input-group-button">
-//     <span class="input-number-decrement">-</span>
-//   </div>
-//   <input class="input-number" type="number" value="1" min="0" max="1000">
-//   <div class="input-group-button">
-//     <span class="input-number-increment">+</span>
-//   </div>
-// </div>
-    
-
 }
 
 export function createCladeView(div){
