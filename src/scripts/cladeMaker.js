@@ -48,6 +48,8 @@ export function drawTreeForGroups(div){
 
     renderTree(div, null, true, false, dimensions);
 
+    div.select('.tree-svg').append('g').classed('overlay', true);
+
 
 }
 
@@ -68,7 +70,7 @@ function cladeToolbar(div){
         d3.select('.group-name').attr('value')
         let groupName = d3.select('.group-name').node().value;
         addCladeGroup(groupName, cladeNames);
-        console.log(cladesGroupKeeper);
+        
         updateDropdown(cladesGroupKeeper, 'change-clade');
     
     });

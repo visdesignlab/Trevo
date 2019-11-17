@@ -255,6 +255,7 @@ export function renderTree(sidebar, att, uncollapse, pheno, dimensions){
 
     let sidebarTest = sidebar.select('svg');
     let treeSvg = sidebarTest.empty() ? sidebar.append("svg") : sidebarTest;
+    treeSvg.classed('tree-svg', true);
     treeSvg.attr("width", dimensions.width + dimensions.margin.left + dimensions.margin.right)
     .attr("height", dimensions.height + dimensions.margin.top + dimensions.margin.bottom);
 
