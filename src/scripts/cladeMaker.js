@@ -37,18 +37,20 @@ export function groupDataByAttribute(scales, data, groupAttr){
     
 }
 
-export function drawTreeForGroups(div){
+export async function drawTreeForGroups(div){
 
     const dimensions =  {
         margin : {top: 10, right: 90, bottom: 50, left: 20},
         width : 620,
         height : 820,
-        lengthHeight: 900,
+        lengthHeight: 800,
     }
 
     renderTree(div, null, true, false, dimensions);
 
-    div.select('.tree-svg').append('g').classed('overlay', true);
+    div.select('.tree-svg').classed('clade-view', true).append('g').classed('overlay-brush', true);
+
+    console.log(div.selectAll('.tree-svg.clade-view'))
 
 
 }
@@ -70,9 +72,7 @@ function cladeToolbar(div){
         d3.select('.group-name').attr('value')
         let groupName = d3.select('.group-name').node().value;
         addCladeGroup(groupName, cladeNames);
-        
         updateDropdown(cladesGroupKeeper, 'change-clade');
-    
     });
 
     let inputGroup = toolBar.append('div').classed('input-group input-number-group', true);
@@ -110,12 +110,16 @@ function cladeToolbar(div){
             .classed('clade-name', true)
             .attr('value', `Group ${ind+1}`)
             .attr('type', 'text');
+            let rects = d3.selectAll('.overlay-brush').append('rect').attr('height', 100).attr('width', 300)
+            console.log(rects, d3.select('.overlay-brush'))
         }
     }
 }
 
-export function createCladeView(div){
-    cladeToolbar(div);
+export async function createCladeView(div){
+    
     drawTreeForGroups(div);
+    cladeToolbar(div);
+    console.log(div.selectAll('.tree-svg.clade-view'))
 
 }
