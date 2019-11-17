@@ -63,6 +63,22 @@ function cladeToolbar(div){
         updateDropdown(cladesGroupKeeper, 'change-clade');
     
     });
+
+    let inputGroup = toolBar.append('div').classed('input-group input-number-group', true);
+    let minusButton = inputGroup.append('button').text('-');
+    let numberText = inputGroup.append('input').attr('type', 'number').classed('input-number', true);
+    let plusButton = inputGroup.append('button').text('+');
+
+//     <h6 class="text-center">Unit(s)</h6>
+// <div class="input-group input-number-group">
+//   <div class="input-group-button">
+//     <span class="input-number-decrement">-</span>
+//   </div>
+//   <input class="input-number" type="number" value="1" min="0" max="1000">
+//   <div class="input-group-button">
+//     <span class="input-number-increment">+</span>
+//   </div>
+// </div>
     
 
 }
