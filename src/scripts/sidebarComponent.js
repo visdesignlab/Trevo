@@ -12,10 +12,9 @@ import { pairPaths, maxTimeKeeper } from './dataFormat';
 const dimensions =  {
     margin : {top: 10, right: 90, bottom: 50, left: 20},
     width : 290,
-    height : 520
+    height : 520,
+    lengthHeight: 800,
 }
-
-
 
 export function buildTreeStructure(paths, edges){
     let root = paths[0][0];
@@ -299,7 +298,7 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, 
     
     assignPosition(treenodes, 0);
 
-    console.log('treeNodes', treenodes)
+   // console.log('treeNodes', treenodes)
 
     let branchCount = findDepth(treenodes, []);
     let xScale = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, dimensions.width]).clamp(true);
@@ -307,7 +306,7 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, 
 
     if(length){   
         g.attr('transform', 'translate(20, 265)');
-        treeSvg.attr('height', 800);
+        treeSvg.attr('height', dimensions.lengthHeight);
         yScale.range([500, 0]).domain([0, branchCount.length])
         xScale.range([0, dimensions.width + 10]);
     } 
@@ -338,7 +337,7 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, 
     });
 
     if(pheno){
-        console.log(pheno)
+        
         link.style('opacity', 0.3);
         g.attr('transform', 'translate(30, 50)');
 

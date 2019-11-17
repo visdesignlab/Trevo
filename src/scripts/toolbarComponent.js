@@ -5,6 +5,7 @@ import {toggleFilters, getLatestData} from './filterComponent';
 import { updateMainView } from './viewControl';
 import { collapsed } from '.';
 import { dropDown } from './buttonComponents';
+import { cladesGroupKeeper, groupDataByAttribute, addCladeGroup } from './cladeMaker';
 
 
 export function findBrushedNodes(){
@@ -18,6 +19,13 @@ export function findBrushedNodes(){
 export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pathView){
 
     let viewArray = [{'field':'Summary View'},{'field':'Path View'},{'field':'Pair View'}, {'field':'Clade View'}];
+
+    if(cladesGroupKeeper.length === 0){
+        let groupData = groupDataByAttribute(calculatedScales, normedPaths, 'Clade');
+        addCladeGroup('Clade Attribute', groupData);
+    }
+
+    let cladeOptions = cladesGroupKeeper;
 
     let viewDrop = dropDown(toolbar, viewArray, viewArray[0].field, 'change-view');
 
@@ -109,6 +117,8 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pat
             dropContent.classed('show', true);
         }
     });
+
+    let cladePickerDrop = dropDown(toolbar, cladesGroupKeeper, cladesGroupKeeper[0].field, 'change-clade');
 
     
    // let brushButton = toolbar.append('button').attr('id', 'brush-control');

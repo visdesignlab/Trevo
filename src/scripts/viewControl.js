@@ -3,7 +3,7 @@ import { renderDistibutions, groupDistributions } from './distributionView';
 import {drawPathsAndAttributes} from './renderPathView';
 import { getLatestData } from "./filterComponent";
 import { generatePairs, rankingControl } from "./pairView";
-import { drawTreeForGroups } from "./cladeMaker";
+import { drawTreeForGroups, createCladeView } from "./cladeMaker";
 
 export let groupedView = false;
 
@@ -27,7 +27,7 @@ export function updateMainView(scales, d){
         rankingControl(data);
         generatePairs(data);
     }else if(d === 'Clade View'){
-        drawTreeForGroups(main);
+        createCladeView(main);
     }else{
         console.error('field not found');
     }

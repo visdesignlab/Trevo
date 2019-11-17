@@ -76,6 +76,13 @@ ul {
 #branch-tooltip.hidden, #state-tooltip.hidden {
   display: none;
 }
+
+.clade-toolbar{
+height:150px;
+width:100%;
+background-color: gainsboro;
+}
+
 .dropdown-content {
   display: none;
   position: absolute;
