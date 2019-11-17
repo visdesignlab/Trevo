@@ -66,8 +66,23 @@ function cladeToolbar(div){
 
     let inputGroup = toolBar.append('div').classed('input-group input-number-group', true);
     let minusButton = inputGroup.append('button').text('-');
-    let numberText = inputGroup.append('input').attr('type', 'number').classed('input-number', true);
+    minusButton.on('click', ()=> {
+        let num = numberText.attr('value');
+        numberText.attr('value', +num - 1);
+    });
+
+    let numberText = inputGroup.append('input')
+        .attr('value', 3)
+        .attr('min', 0)
+        .attr('max', 10)
+        .attr('type', 'number')
+        .classed('input-number', true);
+
     let plusButton = inputGroup.append('button').text('+');
+    plusButton.on('click', ()=> {
+        let num = numberText.attr('value');
+        numberText.attr('value', +num + 1);
+    });
 
 //     <h6 class="text-center">Unit(s)</h6>
 // <div class="input-group input-number-group">
