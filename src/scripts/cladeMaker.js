@@ -112,9 +112,10 @@ function cladeToolbar(div){
             .attr('type', 'text');
             let rects = d3.selectAll('.overlay-brush')
             .append('rect')
+            .classed(`${ind + 1}-rect`, true)
             .attr('height', 100)
-            .attr('width', 300)
-            .attr('transform',  (d,i, n)=> `translate(${0},${(800 / n.length) * i})`)
+            .attr('width', 500)
+            .attr('transform',  (d, i, n)=> `translate(${0},${((800 / index) * ind)})`)
             console.log(rects, d3.select('.overlay-brush'))
         }
     }
