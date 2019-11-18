@@ -30,6 +30,7 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pat
     let viewDrop = dropDown(toolbar, viewArray, viewArray[0].field, 'change-view');
 
     viewDrop.on('click', (d, i, n)=> {
+        console.log('clicked change view',d)
         updateMainView(calculatedScales, d.field);
         d3.select('.dropdown.change-view').select('button').node().value = d.field;
         d3.select('.dropdown.change-view').select('button').text(d.field)
@@ -71,7 +72,7 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pat
 
     let dropOptions = dropDown(toolbar, optionArray, 'Group By','show-drop-div-group');
     toolbar.select('#show-drop-div-group').attr('value', 'ungrouped');
-//dropOptions.display('display', 'none')
+
     dropOptions.on('click', (d, i, n)=> {
         if(d.type === 'discrete'){
             let data = getLatestData();
@@ -120,6 +121,14 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pat
 
     let cladePickerDrop = dropDown(toolbar, cladesGroupKeeper, cladesGroupKeeper[0].field, 'change-clade');
 
+    cladePickerDrop.on('click', (d, i, n)=> {
+        console.log('d', d)
+      //  updateMainView(calculatedScales, d.field);
+        d3.select('.dropdown.change-view').select('button').node().value = d.field;
+        d3.select('.dropdown.change-view').select('button').text('Chosen Clade Group: ' +d.field)
+        d3.select('#change-view').classed('show', false);
+    });
+       
     
    // let brushButton = toolbar.append('button').attr('id', 'brush-control');
     // brushButton.attr('class', 'btn btn-outline-secondary').text('Highlight Brush');

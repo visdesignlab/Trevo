@@ -29,9 +29,7 @@ let selectedClades = [];
 
 export function groupDistributions(pathData, mainDiv, scales, groupAttr){
 
-    let groupKeys = scales.filter(f=> f.field === groupAttr)[0].scales.map(s=> s.scaleName);
-
-    console.log('grouppp',groupKeys)
+    let groupKeys = scales.filter(f=> f.field === groupAttr)[0].scales.map(s=> s.scaleName)
   
     let branchBinCount = d3.median(pathData.map(m=> m.length)) - d3.min(pathData.map(m=> m.length))
    
@@ -352,7 +350,7 @@ export function drawGroupLabels(pathData, svg, groupLabel){
  * @param {*} mainDiv 
  * @param {*} pathGroups 
  */
-function renderDistStructure(mainDiv, pathGroups){
+export function renderDistStructure(mainDiv, pathGroups){
    
     let shownAttributes = d3.select('#attribute-show').selectAll('input').filter((f, i, n)=> n[i].checked === true).data();
     let groupWrap = mainDiv.append('div').attr('id', 'summary-view');

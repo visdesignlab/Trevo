@@ -4,6 +4,8 @@ import * as d3 from "d3";
 import { addingEdgeLength, assignPosition } from './sidebarComponent';
 import { maxTimeKeeper } from './dataFormat';
 import { getLatestData } from './filterComponent';
+import { renderDistStructure } from './distributionView';
+import { updateMainView } from './viewControl';
 
 export const cladesGroupKeeper = []
 export const chosenCladesGroup = []
@@ -39,6 +41,21 @@ export function groupDataByAttribute(scales, data, groupAttr){
     
 }
 
+export function groupDataByClade(scales, data, cladeInfo){
+
+    console.log('clade info', cladeInfo);
+   
+    return cladeInfo.groups.map(group => {
+       
+        let paths = data.filter(path=> {
+            return group.nodes.indexOf(path[path.length - 1]) > -1;
+        });
+
+         return {'field': group.clade, 'paths': paths}
+    });
+    
+}
+
 export async function drawTreeForGroups(div){
 
     const dimensions =  {
@@ -56,7 +73,7 @@ export async function drawTreeForGroups(div){
     div.select('.tree-svg').classed('clade-view', true).append('g').classed('overlay-brush', true);
 }
 
-function cladeToolbar(div){
+function cladeToolbar(div, scales){
 
     let toolBar = div.append('div').classed('clade-toolbar', true);
     let textInput = toolBar.append('input')
@@ -82,6 +99,9 @@ function cladeToolbar(div){
         let groupName = d3.select('.group-name').node().value;
         addCladeGroup(groupName, cladeNames, clades);
         updateDropdown(cladesGroupKeeper, 'change-clade');
+        let groups = groupDataByClade(cladesGroupKeeper[cladesGroupKeeper.length - 1]);
+        console.log(groups);
+        updateMainView( scales, 'Summary View', groups);
     });
 
     let inputGroup = toolBar.append('div').classed('input-group input-number-group', true);
@@ -164,9 +184,9 @@ function labelSpecies(nodes){
     .attr('y', 2)
 }
 
-export async function createCladeView(div){
+export async function createCladeView(div, scales){
     drawTreeForGroups(div);
-    cladeToolbar(div);
+    cladeToolbar(div, scales);
 }
 
 export function renderTree(sidebar, att, dimensions){

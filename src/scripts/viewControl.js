@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import { renderDistibutions, groupDistributions } from './distributionView';
+import { renderDistibutions, groupDistributions, renderDistStructure } from './distributionView';
 import {drawPathsAndAttributes} from './renderPathView';
 import { getLatestData } from "./filterComponent";
 import { generatePairs, rankingControl } from "./pairView";
@@ -7,7 +7,7 @@ import { drawTreeForGroups, createCladeView } from "./cladeMaker";
 
 export let groupedView = false;
 
-export function updateMainView(scales, d){
+export function updateMainView(scales, d, groups){
 
     let main = d3.select('#main');
     let data = getLatestData();
@@ -21,13 +21,20 @@ export function updateMainView(scales, d){
         document.getElementById("scrunch").disabled = false;
     }else if(d === 'Summary View'){
         d3.select('#pair-rank').classed('hidden', true);
-        groupDistributions(data, main, scales, 'Clade');
         document.getElementById("scrunch").disabled = true;
+        if(groups){
+            renderDistStructure(main, groups)
+        }else{
+            groupDistributions(data, main, scales, 'Clade');
+        }
+      
+        
     }else if(d === 'Pair View'){
         rankingControl(data);
         generatePairs(data);
     }else if(d === 'Clade View'){
-        createCladeView(main);
+        d3.select('#pair-rank').classed('hidden', true);
+        createCladeView(main, scales);
     }else{
         console.error('field not found');
     }
