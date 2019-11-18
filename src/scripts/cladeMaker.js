@@ -50,6 +50,9 @@ export async function drawTreeForGroups(div){
 
     renderTree(div, null, dimensions);
 
+    let leaf = div.select('.tree-svg').selectAll('.node--leaf');
+    labelSpecies(leaf);
+
     div.select('.tree-svg').classed('clade-view', true).append('g').classed('overlay-brush', true);
 }
 
@@ -115,8 +118,8 @@ function cladeToolbar(div){
             let rect = rectGroup.append('rect')
             .classed(`rect-${ind + 1}`, true)
             .attr('height', 100)
-            .attr('width', 700)
-            .attr('opacity', 0.5)
+            .attr('width', 910)
+            .attr('opacity', 0.3)
             .attr('transform',  (d, i, n)=> `translate(${0},${((800 / index) * ind)})`);
 
             let rectSizer = rectGroup.append('rect').attr('class', `handle-${ind}`)
@@ -144,6 +147,14 @@ function cladeToolbar(div){
             }))
         }
     }
+}
+
+function labelSpecies(nodes){
+    nodes.append('text')
+    .text(d=> d.data.node)
+    .attr('font-size', 9)
+    .attr('x', 4)
+    .attr('y', 2)
 }
 
 export async function createCladeView(div){
