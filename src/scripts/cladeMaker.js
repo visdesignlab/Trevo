@@ -69,6 +69,13 @@ function cladeToolbar(div){
         let cladeNames = []
         d3.selectAll('.clade-name').each((e, i, n)=> {
            cladeNames.push(n[i].value);
+           let rectTest = d3.select(`.rect-${i + 1}`).node().getBoundingClientRect();
+           div.select('.tree-svg.clade-view').selectAll('.node--leaf').filter((f, j, node)=> {
+               console.log(node[j]);
+               let circPos = node[j].getBoundingClientRect();
+               return circPos.y >= rectTest.y-4 && circPos.y <= ((rectTest.y + rectTest.height) - 4);
+           }).select('circle').attr('fill', 'red');
+           console.log(rectTest)
         });
         d3.select('.group-name').attr('value')
         let groupName = d3.select('.group-name').node().value;
@@ -135,7 +142,6 @@ function cladeToolbar(div){
                 let height = +d3.select(`.rect-${ind + 1}`).attr('height')
                 let rectY = d3.select(`.rect-${ind + 1}`).node().getBoundingClientRect().bottom;
                 d3.select(`.rect-${ind + 1}`).attr('height', height + (dragY-rectY) + 70);
-
             }));
             
             rect.call(d3.drag().on('drag', function(){
