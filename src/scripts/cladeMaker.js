@@ -105,6 +105,7 @@ function cladeToolbar(div){
     function addTextInputForGroups(index, nameWrap){
        
         nameWrap.selectAll('*').remove();
+        d3.selectAll('.overlay-brush').selectAll('rect').remove();
         for(let ind = 0; ind < index; ind = ind + 1){
             nameWrap.append('input')
             .classed('clade-name', true)
