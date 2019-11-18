@@ -110,13 +110,20 @@ function cladeToolbar(div){
             .classed('clade-name', true)
             .attr('value', `Group ${ind+1}`)
             .attr('type', 'text');
+
             let rects = d3.selectAll('.overlay-brush')
             .append('rect')
             .classed(`${ind + 1}-rect`, true)
             .attr('height', 100)
-            .attr('width', 500)
-            .attr('transform',  (d, i, n)=> `translate(${0},${((800 / index) * ind)})`)
-            console.log(rects, d3.select('.overlay-brush'))
+            .attr('width', 700)
+            .attr('opacity', 0.5)
+            .attr('transform',  (d, i, n)=> `translate(${0},${((800 / index) * ind)})`);
+          
+            let drag = d3.drag().on('drag', function(){
+                let dragPos = d3.mouse(this);
+                d3.select(this).attr('y', dragPos[1])
+            })
+            rects.call(drag)
         }
     }
 }
