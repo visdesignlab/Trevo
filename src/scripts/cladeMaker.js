@@ -18,7 +18,7 @@ export function useCladeGroup(){
 
 export function addCladeGroup(name, clades, nodes){
     cladesGroupKeeper.push({field: name, names: clades, groups:nodes});
-    return cladesGroupKeeper
+    return {field: name, names: clades, groups:nodes};
 }
 
 export function removeCladeGroup(clades){
@@ -41,7 +41,7 @@ export function groupDataByAttribute(scales, data, groupAttr){
     
 }
 
-export function groupDataByClade(scales, data, cladeInfo){
+export function groupDataByClade(cladeInfo, data){
 
     console.log('clade info', cladeInfo);
    
@@ -97,10 +97,10 @@ function cladeToolbar(div, scales){
         });
         d3.select('.group-name').attr('value')
         let groupName = d3.select('.group-name').node().value;
-        addCladeGroup(groupName, cladeNames, clades);
+        let chosenGroup = addCladeGroup(groupName, cladeNames, clades);
         updateDropdown(cladesGroupKeeper, 'change-clade');
-        let groups = groupDataByClade(cladesGroupKeeper[cladesGroupKeeper.length - 1]);
-        console.log(groups);
+        let groups = groupDataByClade(chosenGroup, getLatestData());
+        
         updateMainView( scales, 'Summary View', groups);
     });
 
