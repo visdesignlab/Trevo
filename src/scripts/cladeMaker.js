@@ -112,36 +112,48 @@ function cladeToolbar(div){
             .attr('value', `Group ${ind+1}`)
             .attr('type', 'text');
 
-            let rectGroup = d3.selectAll('.overlay-brush')
+            let rectGroup = d3.select('.overlay-brush').append('g').classed(`group-${ind}`, true)
 
             let rect = rectGroup.append('rect')
-            .classed(`${ind + 1}-rect`, true)
+            .classed(`rect-${ind + 1}`, true)
             .attr('height', 100)
             .attr('width', 700)
             .attr('opacity', 0.5)
             .attr('transform',  (d, i, n)=> `translate(${0},${((800 / index) * ind)})`);
 
-            let rectSizer = rectGroup.append('rect')
+            let rectSizer = rectGroup.append('rect').attr('class', `handle-${ind}`)
             .attr('width', 700)
             .attr('height', 20)
-            .attr('y', rect.node().getBoundingClientRect().bottom - rect.node().getBoundingClientRect().height)
-            .call(d3.drag().container(rectGroup.node())
-            .subject(function () {
-              return {x: d3.event.x, y: d3.event.y};
-            }))
-            
-
-          
-            let drag = d3.drag().on('drag', function(){
+            .attr('y', rect.node().getBoundingClientRect().y + 20)
+            .call(d3.drag()
+            // .container(rectGroup.node())
+            // .subject(function () {
+            //   return {x: d3.event.x, y: d3.event.y};
+            // }))
+            .on('drag', function(){
                 let dragPos = d3.mouse(this);
                 let dragY = d3.event.y
                 console.log('drag y',dragY)
                 d3.select(this).attr('y', dragPos[1]);
+                let height = +d3.select(`.rect-${ind + 1}`).attr('height')
+                console.log(height)
+                let rectY = d3.select(`.rect-${ind + 1}`).node().getBoundingClientRect().bottom;
+                console.log(rectY)
+                d3.select(`.rect-${ind + 1}`).attr('height', height + (dragY-rectY) + 70);
+
+            }));
+            
+            let moveRect = d3.drag().on('drag', function(){
+                let dragPos = d3.mouse(this);
+                let dragY = d3.event.y
+                console.log('drag y',dragY)
+                d3.select(this).attr('y', dragPos[1]);
+                d3.select(`.handle-${ind}`).attr('y', dragY + 80);
                 //d3.select(this).attr('transform', `translate(0,${dragPos[1]})`);
                 //d.height + d.y - dragY
                 console.log(this.getBoundingClientRect())
             })
-            rect.call(drag)
+            rect.call(moveRect)
         }
     }
 }
