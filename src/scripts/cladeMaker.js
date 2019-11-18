@@ -4,7 +4,7 @@ import * as d3 from "d3";
 import { addingEdgeLength, assignPosition } from './sidebarComponent';
 import { maxTimeKeeper } from './dataFormat';
 import { getLatestData } from './filterComponent';
-import { renderDistStructure } from './distributionView';
+import { renderDistStructure, binGroups } from './distributionView';
 import { updateMainView } from './viewControl';
 
 export const cladesGroupKeeper = []
@@ -41,17 +41,17 @@ export function groupDataByAttribute(scales, data, groupAttr){
     
 }
 
-export function groupDataByClade(cladeInfo, data){
+export function groupDataByClade(scales, data, cladeInfo){
 
-    console.log('clade info', cladeInfo);
+    let branchBinCount = d3.median(data.map(m=> m.length)) - d3.min(data.map(m=> m.length))
    
     return cladeInfo.groups.map(group => {
-       
         let paths = data.filter(path=> {
             return group.nodes.indexOf(path[path.length - 1]) > -1;
         });
 
-         return {'field': group.clade, 'paths': paths}
+        let groupBins = binGroups(paths, group, scales, branchBinCount);
+        return {'label': group.clade, 'paths': paths, 'groupBins': groupBins}
     });
     
 }
@@ -99,7 +99,8 @@ function cladeToolbar(div, scales){
         let groupName = d3.select('.group-name').node().value;
         let chosenGroup = addCladeGroup(groupName, cladeNames, clades);
         updateDropdown(cladesGroupKeeper, 'change-clade');
-        let groups = groupDataByClade(chosenGroup, getLatestData());
+        let groups = groupDataByClade(scales, getLatestData(), chosenGroup);
+        d3.select('.dropdown.change-clade').select('button').text(chosenGroup.field)
         
         updateMainView( scales, 'Summary View', groups);
     });
