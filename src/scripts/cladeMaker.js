@@ -28,6 +28,8 @@ export function removeCladeGroup(clades){
 export function groupDataByAttribute(scales, data, groupAttr){
 
     let groupKeys = scales.filter(f=> f.field === groupAttr)[0].scales.map(s=> s.scaleName);
+
+
   
     let branchBinCount = d3.median(data.map(m=> m.length)) - d3.min(data.map(m=> m.length))
    
@@ -35,8 +37,11 @@ export function groupDataByAttribute(scales, data, groupAttr){
         let paths = data.filter(path => {
             return group.includes(path[path.length - 1].attributes[groupAttr].values[groupAttr]);
         });
+    
 
-        return {'field': group, 'paths': paths}
+        let groupBins = binGroups(paths, group, scales, branchBinCount);
+        return {'label': group, 'paths': paths, 'groupBins': groupBins}
+
     });
     
 }
@@ -100,8 +105,8 @@ function cladeToolbar(div, scales){
         let chosenGroup = addCladeGroup(groupName, cladeNames, clades);
         updateDropdown(cladesGroupKeeper, 'change-clade');
         let groups = groupDataByClade(scales, getLatestData(), chosenGroup);
-        d3.select('.dropdown.change-clade').select('button').text(chosenGroup.field)
-        
+
+        d3.select('.dropdown.change-clade').select('button').text(`Clades Shown: ${chosenGroup.field}`)
         updateMainView( scales, 'Summary View', groups);
     });
 

@@ -202,7 +202,7 @@ let matchedLeaves = leaves.map((leaf, i)=>{
         leaf: true
     }
     return newEdge;
-})
+});
 
 
     let all = matchedEdges.filter(f=> f.attributes != null);

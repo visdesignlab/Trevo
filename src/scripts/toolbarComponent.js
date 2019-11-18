@@ -22,7 +22,8 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pat
 
     if(cladesGroupKeeper.length === 0){
         let groupData = groupDataByAttribute(calculatedScales, normedPaths, 'Clade');
-        addCladeGroup('Clade Attribute', groupData);
+  
+        let chosenClade = addCladeGroup('Clade Attribute', groupData.map(m=> m.label), groupData);
     }
 
     let cladeOptions = cladesGroupKeeper;
@@ -69,7 +70,7 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pat
         }
     });
 
-    let dropOptions = dropDown(toolbar, optionArray, 'Group By','show-drop-div-group');
+    let dropOptions = dropDown(toolbar, optionArray, 'Group By', 'show-drop-div-group');
     toolbar.select('#show-drop-div-group').attr('value', 'ungrouped');
 
     dropOptions.on('click', (d, i, n)=> {
@@ -102,7 +103,7 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pat
     let button = dropdiv.append('button').classed('btn dropbtn btn-secondary dropdown-toggle', true).text('Shown Attributes');
     let dropContent = dropdiv.append('div').attr('id', 'attribute-show').classed('dropdown-content', true);
     let dropUl = dropContent.append('ul');
-    //dropContent.append('a').text('text').attr('font-size', 11);
+    
     let options = dropUl.selectAll('li').data(attributeOptions).join('li')
     let checkBox = options.append('input').attr('type', 'checkbox');
     options.append('text').text(d=> ` ${d}`);
@@ -118,17 +119,13 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pat
         }
     });
 
-    let cladePickerDrop = dropDown(toolbar, cladesGroupKeeper, cladesGroupKeeper[0].field, 'change-clade');
+    let cladePickerDrop = dropDown(toolbar, cladesGroupKeeper, `Clades Shown: ${cladesGroupKeeper[0].field}`, 'change-clade');
     d3.select('#change-clade').selectAll('a').on('click', (d, i, n)=> {
         console.log('d for cladez',d);
+        d3.select('.dropdown.change-clade').select('button').text(`Clades Shown: ${d.field}`)
+        updateMainView(calculatedScales, 'Summary View', d.groups);
     });
-    // cladePickerDrop.on('click', (d, i, n)=> {
-    //     console.log('d', d)
-    //   //  updateMainView(calculatedScales, d.field);
-    //     d3.select('.dropdown.change-view').select('button').node().value = d.field;
-    //     d3.select('.dropdown.change-view').select('button').text('Chosen Clade Group: ' +d.field)
-    //     d3.select('#change-view').classed('show', false);
-    // });
+
        
     
    // let brushButton = toolbar.append('button').attr('id', 'brush-control');
