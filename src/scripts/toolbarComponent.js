@@ -30,7 +30,6 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pat
     let viewDrop = dropDown(toolbar, viewArray, viewArray[0].field, 'change-view');
 
     viewDrop.on('click', (d, i, n)=> {
-        console.log('clicked change view',d)
         updateMainView(calculatedScales, d.field);
         d3.select('.dropdown.change-view').select('button').node().value = d.field;
         d3.select('.dropdown.change-view').select('button').text(d.field)
@@ -120,14 +119,16 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pat
     });
 
     let cladePickerDrop = dropDown(toolbar, cladesGroupKeeper, cladesGroupKeeper[0].field, 'change-clade');
-
-    cladePickerDrop.on('click', (d, i, n)=> {
-        console.log('d', d)
-      //  updateMainView(calculatedScales, d.field);
-        d3.select('.dropdown.change-view').select('button').node().value = d.field;
-        d3.select('.dropdown.change-view').select('button').text('Chosen Clade Group: ' +d.field)
-        d3.select('#change-view').classed('show', false);
+    d3.select('#change-clade').selectAll('a').on('click', (d, i, n)=> {
+        console.log('d for cladez',d);
     });
+    // cladePickerDrop.on('click', (d, i, n)=> {
+    //     console.log('d', d)
+    //   //  updateMainView(calculatedScales, d.field);
+    //     d3.select('.dropdown.change-view').select('button').node().value = d.field;
+    //     d3.select('.dropdown.change-view').select('button').text('Chosen Clade Group: ' +d.field)
+    //     d3.select('#change-view').classed('show', false);
+    // });
        
     
    // let brushButton = toolbar.append('button').attr('id', 'brush-control');
