@@ -121,7 +121,6 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pat
 
     let cladePickerDrop = dropDown(toolbar, cladesGroupKeeper, `Clades Shown: ${cladesGroupKeeper[0].field}`, 'change-clade');
     d3.select('#change-clade').selectAll('a').on('click', (d, i, n)=> {
-        console.log('d for cladez',d);
         d3.select('.dropdown.change-clade').select('button').text(`Clades Shown: ${d.field}`)
         updateMainView(calculatedScales, 'Summary View', d.groups);
     });
