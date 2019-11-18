@@ -120,6 +120,17 @@ function cladeToolbar(div){
             .attr('width', 700)
             .attr('opacity', 0.5)
             .attr('transform',  (d, i, n)=> `translate(${0},${((800 / index) * ind)})`);
+
+            let rectSizer = rectGroup.append('rect')
+            .attr('width', 700)
+            .attr('height', 20)
+            .attr('y', rect.node().getBoundingClientRect().bottom - rect.node().getBoundingClientRect().height)
+            .call(d3.drag().container(rectGroup.node())
+            .subject(function () {
+              return {x: d3.event.x, y: d3.event.y};
+            }))
+            
+
           
             let drag = d3.drag().on('drag', function(){
                 let dragPos = d3.mouse(this);
