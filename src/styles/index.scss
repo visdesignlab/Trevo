@@ -78,9 +78,11 @@ ul {
 }
 
 .clade-toolbar{
-height:150px;
+height:80px;
 width:100%;
 background-color: gainsboro;
+position:fixed;
+bottom:0;
 }
 
 .dropdown-content {

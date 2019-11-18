@@ -1,7 +1,9 @@
 import {dataMaster, nestedData} from './index';
-import { renderTree } from './sidebarComponent';
 import { updateDropdown } from './buttonComponents';
 import * as d3 from "d3";
+import { addingEdgeLength, assignPosition } from './sidebarComponent';
+import { maxTimeKeeper } from './dataFormat';
+import { getLatestData } from './filterComponent';
 
 export const cladesGroupKeeper = []
 export const chosenCladesGroup = []
@@ -42,17 +44,13 @@ export async function drawTreeForGroups(div){
     const dimensions =  {
         margin : {top: 10, right: 90, bottom: 50, left: 20},
         width : 620,
-        height : 820,
+        height : 700,
         lengthHeight: 800,
     }
 
-    renderTree(div, null, true, false, dimensions);
+    renderTree(div, null, dimensions);
 
     div.select('.tree-svg').classed('clade-view', true).append('g').classed('overlay-brush', true);
-
-    console.log(div.selectAll('.tree-svg.clade-view'))
-
-
 }
 
 function cladeToolbar(div){
@@ -125,43 +123,224 @@ function cladeToolbar(div){
             .attr('width', 700)
             .attr('height', 20)
             .attr('y', rect.node().getBoundingClientRect().y + 20)
+            .attr('opacity', 0)
             .call(d3.drag()
-            // .container(rectGroup.node())
-            // .subject(function () {
-            //   return {x: d3.event.x, y: d3.event.y};
-            // }))
             .on('drag', function(){
                 let dragPos = d3.mouse(this);
                 let dragY = d3.event.y
-                console.log('drag y',dragY)
                 d3.select(this).attr('y', dragPos[1]);
                 let height = +d3.select(`.rect-${ind + 1}`).attr('height')
-                console.log(height)
                 let rectY = d3.select(`.rect-${ind + 1}`).node().getBoundingClientRect().bottom;
-                console.log(rectY)
                 d3.select(`.rect-${ind + 1}`).attr('height', height + (dragY-rectY) + 70);
 
             }));
             
-            let moveRect = d3.drag().on('drag', function(){
+            rect.call(d3.drag().on('drag', function(){
                 let dragPos = d3.mouse(this);
                 let dragY = d3.event.y
-                console.log('drag y',dragY)
                 d3.select(this).attr('y', dragPos[1]);
-                d3.select(`.handle-${ind}`).attr('y', dragY + 80);
-                //d3.select(this).attr('transform', `translate(0,${dragPos[1]})`);
-                //d.height + d.y - dragY
-                console.log(this.getBoundingClientRect())
-            })
-            rect.call(moveRect)
+                let rectH = d3.select(`.rect-${ind + 1}`).node().getBoundingClientRect().height;
+                d3.select(`.handle-${ind}`).attr('y', dragY + (rectH - 20));
+            }))
         }
     }
 }
 
 export async function createCladeView(div){
-    
     drawTreeForGroups(div);
     cladeToolbar(div);
-    console.log(div.selectAll('.tree-svg.clade-view'))
+}
 
+export function renderTree(sidebar, att, dimensions){
+
+    // declares a tree layout and assigns the size
+    var treemap = d3.tree()
+    .size([dimensions.height, dimensions.width]);
+
+    addingEdgeLength(0, nestedData[0]);
+    
+    //  assigns the data to a hierarchy using parent-child relationships
+    var treenodes = d3.hierarchy(nestedData[0]);
+
+    // maps the node data to the tree layout
+    treenodes = treemap(treenodes);
+
+    let sidebarTest = sidebar.select('svg');
+    let treeSvg = sidebarTest.empty() ? sidebar.append("svg") : sidebarTest;
+    treeSvg.classed('tree-svg', true);
+    treeSvg.attr("width", dimensions.width + dimensions.margin.left + dimensions.margin.right)
+    .attr("height", dimensions.height + dimensions.margin.top + dimensions.margin.bottom);
+
+    let gTest = treeSvg.select('g.tree-g');
+    let g = gTest.empty() ? treeSvg.append("g").classed('tree-g', true) : gTest;
+    g.attr("transform",
+      "translate(" + dimensions.margin.left + "," + dimensions.margin.top + ")");
+
+   
+        ////Break this out into other nodes////
+    updateTree(treenodes, dimensions, treeSvg, g, att, true);
+    
+    /////END TREE STUFF
+    ///////////
+}
+
+export function findDepth(node, array){
+
+    function stepDown(n){
+        if(n.children != null){
+            n.children.forEach(child=> {
+                stepDown(child);
+            })
+        }else{
+            array.push(n);
+        }
+    }
+    stepDown(node);
+
+    return array;
+    
+}
+
+export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length){
+    
+    assignPosition(treenodes, 0);
+
+   let test = getLatestData();
+
+    let branchCount = findDepth(treenodes, []);
+    let xScale = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, dimensions.width]).clamp(true);
+    let yScale = d3.scaleLinear().range([dimensions.height, 0]).domain([0, 1])
+
+    if(length){   
+        g.attr('transform', 'translate(30, 370)');
+        treeSvg.attr('height', 1000);
+        yScale.range([580, 0]).domain([0, test.length-10])
+        xScale.range([0, 800]);
+    } 
+
+    // adds the links between the nodes
+    let link = g.selectAll(".link")
+    .data( treenodes.descendants().slice(1))
+    .join("path")
+    .attr("class", "link");
+
+    link.transition()
+    .duration(500)
+    .attr("d", function(d) {
+       
+           return "M" + xScale(d.data.combEdge) + "," + yScale(d.position)
+           + "C" + (xScale(d.data.combEdge) + xScale(d.parent.data.combEdge)) / 2 + "," + yScale(d.position)
+           + " " + (xScale(d.parent.data.combEdge)) + "," + yScale(d.position)
+           + " " + xScale(d.parent.data.combEdge) + "," + yScale(d.parent.position);
+     
+    });
+
+    // adds each node as a group
+    var node = g.selectAll(".node")
+    .data(treenodes.descendants(), d => d.data.node)
+    .join("g")
+    .attr("class", function(d) { 
+    return "node" + 
+    (d.children ? " node--internal" : " node--leaf"); });
+
+    // adds the circle to the node
+    node.selectAll('circle').data(d=> [d]).join("circle")
+      .attr("r", 3);
+
+    node.transition()
+    .duration(500)
+    .attr("transform", function(d) { 
+       
+            return "translate(" + xScale(d.data.combEdge) + "," + yScale(d.position) + ")"; 
+       
+    });
+
+    if(attrDraw != null){
+        let leaves = node.filter(n=> n.data.leaf === true);
+        let notleaves = node.filter(n=> n.data.leaf != true);
+
+        if(attrDraw.type === 'discrete'){
+            attrDraw.stateColors.forEach(att=> {
+                let circ = leaves.filter(f=> {
+                    return att.state.includes(f.data.attributes[attrDraw.field].states.state)//f.data.attributes[attrDraw.field].winState === att.state;
+                }).select('circle');
+                circ.attr('fill', att.color);
+                notleaves.selectAll('circle').attr('fill', 'gray');
+            });
+        }else{
+            let scale = attrDraw.yScale;
+            scale.range(['#fff', '#E74C3C']);
+            leaves.select('circle').attr('fill', (d, i)=> {
+                return scale(d.data.attributes[attrDraw.field].values.realVal);
+            });
+        }
+    }else{
+        node.selectAll('circle').attr('fill', 'gray');
+    }
+
+    node.on('mouseover', (d, i, n)=> {
+        let paths = d3.select('#main-path-view').selectAll('.paths');
+        let points = d3.select('#main-summary-view').selectAll('.branch-points');
+        points.filter(f=> f.node === d.data.node).classed('selected', true);
+
+        let selectedPaths = paths.filter(path=> {
+            let nodes = path.map(m=> m.node);
+            return nodes.indexOf(d.data.node) > -1;
+        }).classed('hover', true);
+        selectedPaths.selectAll('g').filter(g=> g.node === d.data.node).classed('selected', true);
+        d3.select(n[i]).classed('selected-branch', true);
+
+        if(d.data.label){
+            let tool = d3.select('#tooltip');
+            tool.transition()
+            .duration(200)
+            .style("opacity", .9);
+          
+            tool.html(`${d.data.label.charAt(0).toUpperCase() + d.data.label.slice(1)}`)
+            .style("left", (d3.event.pageX - 40) + "px")
+            .style("top", (d3.event.pageY - 28) + "px");
+            tool.style('height', 'auto');
+        }
+
+    }).on('mouseout', (d, i, n)=> {
+        d3.selectAll('.paths.hover').classed('hover', false);
+        d3.selectAll('g.selected').classed('selected', false);
+        d3.select(n[i]).classed('selected-branch', false);
+
+        let tool = d3.select('#tooltip');
+        tool.transition()
+          .duration(500)
+          .style("opacity", 0);
+    });
+    let leaves = node.filter(f=> f.data.children.length == 0);
+
+    node.selectAll('text').remove();
+    node.selectAll('.triangle').remove();
+
+    let branchNodes = node.filter(n=> n.branchPoint === true);
+    branchNodes.each((b, i, n)=> {
+        if(b.children === null){
+            let triangle = d3.select(n[i]).append('path').classed('triangle', true).attr('d', d3.symbol().type(d3.symbolTriangle).size('400'))
+            triangle.attr('transform', `rotate(-90) translate(0, 65) scale(.9 4)`);
+            triangle.attr('fill', 'gray').style('opacity', 0.3);
+            let text = d3.select(n[i]).selectAll('text').data(d=> [d]).join('text').text(b.clade);
+            text.attr('transform', 'translate(55, 5)');
+        }
+    })
+    branchNodes.select('circle').attr('fill', 'red').attr('r', 4.5);
+    branchNodes.on('click', (d, i, n)=> {
+        if(d.children == null){
+            uncollapseSub(d);
+        }else{
+            collapseSub(d);
+        }
+        let lengthBool = d3.select('button#length').text() === 'Hide Lengths';
+        updateTree(treenodes, dimensions, treeSvg, g, attrDraw, lengthBool);
+      
+    });
+
+    node.raise();
+    node.selectAll('circle').raise();
+
+    return node;
 }

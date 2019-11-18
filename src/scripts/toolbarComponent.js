@@ -108,7 +108,7 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pat
     options.append('text').text(d=> ` ${d}`);
 
     let checkedDefault = options.filter(f=> checkedAttributes.indexOf(f) > -1).select('input');
-    checkedDefault.each((d, i, n) => n[i].checked = true)
+    checkedDefault.each((d, i, n) => n[i].checked = true);
 
     button.on('click', (d, i, n)=> {
         if(dropContent.classed('show')){

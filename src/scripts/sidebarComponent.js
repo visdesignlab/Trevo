@@ -227,7 +227,7 @@ export function assignPosition(node, position) {
     }
 }
 
-function addingEdgeLength(edge, data){
+export function addingEdgeLength(edge, data){
     data.combEdge = data.edgeLength + edge;
     if(data.children){
         data.children.forEach(chil=> {
@@ -275,7 +275,7 @@ export function renderTree(sidebar, att, uncollapse, pheno, dimensions){
     ///////////
 }
 
-function findDepth(node, array){
+export function findDepth(node, array){
 
     function stepDown(n){
         if(n.children != null){
@@ -307,7 +307,7 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, 
 
     if(length){   
         g.attr('transform', 'translate(20, 265)');
-        treeSvg.attr('height', dimensions.lengthHeight);
+        treeSvg.attr('height', 800);
         yScale.range([500, 0]).domain([0, branchCount.length])
         xScale.range([0, dimensions.width + 10]);
     } 
