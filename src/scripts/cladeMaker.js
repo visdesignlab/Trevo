@@ -14,8 +14,8 @@ export function useCladeGroup(){
 
 }
 
-export function addCladeGroup(name, clades){
-    cladesGroupKeeper.push({field: name, groups: clades});
+export function addCladeGroup(name, clades, nodes){
+    cladesGroupKeeper.push({field: name, names: clades, groups:nodes});
     return cladesGroupKeeper
 }
 
@@ -67,19 +67,20 @@ function cladeToolbar(div){
     let addCladeGroupButton = toolBar.append('button').text('Add Clade Group');
     addCladeGroupButton.on('click', ()=> {
         let cladeNames = []
+        let clades = []
         d3.selectAll('.clade-name').each((e, i, n)=> {
            cladeNames.push(n[i].value);
            let rectTest = d3.select(`.rect-${i + 1}`).node().getBoundingClientRect();
-           div.select('.tree-svg.clade-view').selectAll('.node--leaf').filter((f, j, node)=> {
-               console.log(node[j]);
+           let nodes = div.select('.tree-svg.clade-view').selectAll('.node--leaf').filter((f, j, node)=> {
                let circPos = node[j].getBoundingClientRect();
                return circPos.y >= rectTest.y-4 && circPos.y <= ((rectTest.y + rectTest.height) - 4);
-           }).select('circle').attr('fill', 'red');
-           console.log(rectTest)
+           })
+           nodes.select('circle').attr('fill', 'red');
+           clades.push({'clade': n[i].value , 'nodes': nodes.data().map(m=> m.data)})
         });
         d3.select('.group-name').attr('value')
         let groupName = d3.select('.group-name').node().value;
-        addCladeGroup(groupName, cladeNames);
+        addCladeGroup(groupName, cladeNames, clades);
         updateDropdown(cladesGroupKeeper, 'change-clade');
     });
 
