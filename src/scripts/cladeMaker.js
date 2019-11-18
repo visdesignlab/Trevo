@@ -112,8 +112,9 @@ function cladeToolbar(div){
             .attr('value', `Group ${ind+1}`)
             .attr('type', 'text');
 
-            let rects = d3.selectAll('.overlay-brush')
-            .append('rect')
+            let rectGroup = d3.selectAll('.overlay-brush')
+
+            let rect = rectGroup.append('rect')
             .classed(`${ind + 1}-rect`, true)
             .attr('height', 100)
             .attr('width', 700)
@@ -122,9 +123,14 @@ function cladeToolbar(div){
           
             let drag = d3.drag().on('drag', function(){
                 let dragPos = d3.mouse(this);
-                d3.select(this).attr('y', dragPos[1])
+                let dragY = d3.event.y
+                console.log('drag y',dragY)
+                d3.select(this).attr('y', dragPos[1]);
+                //d3.select(this).attr('transform', `translate(0,${dragPos[1]})`);
+                //d.height + d.y - dragY
+                console.log(this.getBoundingClientRect())
             })
-            rects.call(drag)
+            rect.call(drag)
         }
     }
 }
