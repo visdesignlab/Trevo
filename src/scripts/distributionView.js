@@ -7,6 +7,7 @@ import { renderTree } from './sidebarComponent';
 import { colorKeeper } from '.';
 import { comparisonKeeper } from './selectedPaths';
 import { chosenCladesGroup } from './cladeMaker';
+import { updateMainView } from './viewControl';
 
 const dimensions = {
     height: 80,
@@ -468,7 +469,10 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
     
     xOut.on('click', (d, i, n)=> {
         divWrap.remove();
-        renderDistStructure(div, pathGroups);
+        updateMainView(branchScale, 'Summary View', chosenCladesGroup[chosenCladesGroup.length-1].groups);
+        d3.select('#sidebar').selectAll('.node').remove();
+        d3.select('#sidebar').selectAll('.link').remove();
+        renderTree(d3.select('#sidebar'), null, true);
     });
 
     if(data.length > 1){
