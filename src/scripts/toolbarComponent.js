@@ -88,9 +88,7 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pat
     /////ATTRIBUTE DROP DOWN
     let attributeOptions = calculatedScales.map(m=> m.field);
 
-    console.log('attropt',attributeOptions)
-
-    let checkedAttributes = ['Body_height', 'Body_width', 'Carpus', 'Clade', 'Femur', 'Forelimb'];
+    let checkedAttributes = attributeOptions.length > 5 ? ['Body_height', 'Body_width', 'Carpus', 'Clade', 'Femur', 'Forelimb'] : attributeOptions;
 
     let dropdiv = toolbar.append('div').classed(`dropdown attribute-show`, true);
     dropdiv.style('display', 'inline-block')

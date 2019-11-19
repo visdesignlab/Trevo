@@ -10,10 +10,10 @@ import { comparisonKeeper } from './selectedPaths';
 const dimensions = {
     height: 80,
     observedWidth : 200,
-    predictedWidth : 800,
+    predictedWidth : 900,
     margin : 20,
     squareDim : 15,
-    timeRange: 795
+    timeRange: 895
 }
 
 const brushColors = [
@@ -44,7 +44,6 @@ export function groupDistributions(pathData, mainDiv, scales, groupAttr){
 
     renderDistStructure(mainDiv, pathGroups);
 }
-
 export function binGroups(pathData, groupLabel, scales, branchCount){
 
     let attrHide = filterMaster.filter(f=> f.type === 'hide-attribute').map(m=> m.attribute);
@@ -223,7 +222,6 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
     sortedBins.keys = keys;
     return sortedBins;
 }
-
 export function drawBranchPointDistribution(data, svg){
 
     let branchBar = svg.append('g').classed('branch-bar', true);
@@ -239,12 +237,12 @@ export function drawBranchPointDistribution(data, svg){
         .attr('y1', 2)
         .attr('y2', 2)
         .attr('x1', '100')
-        .attr('x2', 890)
+        .attr('x2', dimensions.predictedWidth)
         .attr('stroke', 'gray')
         .attr('stroke-width', .25);
 
     branchBar.append('text').text('Root').attr('transform', 'translate(70, 7)');
-    let leafLabel = branchBar.append('g').classed('leaf-label', true).attr('transform', 'translate(950, 7)');
+    let leafLabel = branchBar.append('g').classed('leaf-label', true).attr('transform', `translate(${dimensions.predictedWidth + 200}, 7)`);
     leafLabel.append('text').text('Leaves');
 
     let nodeLengthArray = [];
@@ -259,7 +257,7 @@ export function drawBranchPointDistribution(data, svg){
         })
     });
 
-    let bPointScale = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, 795]);
+    let bPointScale = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, dimensions.timeRange]);
     let pointGroups = branchBar.selectAll('g.branch-points').data(nodeLengthArray)
         .join('g').attr('class', (d, i)=> d.node).classed('branch-points', true);
 
@@ -267,7 +265,7 @@ export function drawBranchPointDistribution(data, svg){
         return `translate(${(105 + bPointScale(d.eMove))}, 0)`});
     pointGroups.append('circle').attr('r', 5).attr('fill', '#fff').attr('opacity', 0.5)//.attr('fill', "rgba(123, 141, 153, 0.5)");
 
-    let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, 795]);
+    let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, dimensions.timeRange]);
     
     let binsRects = binWrap
         .selectAll('rect.bin')
@@ -734,14 +732,7 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
               .duration(500)
               .style("opacity", 0);
         });
-    
-        // let lastBranch = discreteDist.filter((d, i, n)=>{
-        //     return i === n.length - 1
-        // }).selectAll('g.state-bins').append('text').text((d, i)=> {
-        //     return d.color.state;
-        // });
-        // lastBranch.attr('y', 10).attr('x', dimensions.squareDim+4).style('font-size', 10);
-    
+
         discreteMiddleGroups.each((d, i, node)=>{
             let maxBin = 0;
             let maxState = null;
@@ -1844,7 +1835,7 @@ let mirrorlineGen = d3.area()
         let max = n.maxCount ? n.maxCount : d.maxCount;
         let dat = d.length;
         let count = n.count? n.count : 8;
-        let x = d3.scaleLinear().domain([0, max]).range([0, ((dimensions.predictedWidth/count)*.7)]).clamp(true);
+        let x = d3.scaleLinear().domain([0, max]).range([0, ((dimensions.predictedWidth/count)*.5)]).clamp(true);
         
         return x(dat); 
 });
@@ -1862,7 +1853,7 @@ var lineGen = d3.area()
         let max = d.maxCount? d.maxCount : d3.sum(n.map(m=> m.length))
         let dat = d.length;
         let count = n.count? n.count : 8;
-        let x = d3.scaleLinear().domain([0, max]).range([0, ((dimensions.predictedWidth/count)*.7)]).clamp(true);
+        let x = d3.scaleLinear().domain([0, max]).range([0, ((dimensions.predictedWidth/count)*.5)]).clamp(true);
         return x(dat); 
     });
 
