@@ -23,7 +23,7 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pat
     let viewDrop = dropDown(toolbar, viewArray, viewArray[0].field, 'change-view');
 
     viewDrop.on('click', (d, i, n)=> {
-        updateMainView(calculatedScales, d.field);
+        updateMainView(d.field);
         d3.select('.dropdown.change-view').select('button').node().value = d.field;
         d3.select('.dropdown.change-view').select('button').text(d.field)
         d3.select('#change-view').classed('show', false);
@@ -105,7 +105,7 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pat
     button.on('click', (d, i, n)=> {
         if(dropContent.classed('show')){
             dropContent.classed('show', false);
-            updateMainView(calculatedScales, 'Summary View', chosenCladesGroup[chosenCladesGroup.length - 1].groups)
+            updateMainView('Summary View', chosenCladesGroup[chosenCladesGroup.length - 1].groups)
         }else{
             dropContent.classed('show', true);
         }
@@ -117,7 +117,7 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pat
     d3.select('#change-clade').selectAll('a').on('click', (d, i, n)=> {
         d3.select('.dropdown.change-clade').select('button').text(`Clades Shown: ${d.field}`)
         chosenCladesGroup.push(d)
-        updateMainView(calculatedScales, 'Summary View', d.groups);
+        updateMainView('Summary View', d.groups);
     });
     if(cladesGroupKeeper.length === 0){
         d3.select('.dropdown.change-clade').select('button').text(d.field);

@@ -4,14 +4,17 @@ import {drawPathsAndAttributes} from './renderPathView';
 import { getLatestData } from "./filterComponent";
 import { generatePairs, rankingControl } from "./pairView";
 import { drawTreeForGroups, createCladeView } from "./cladeMaker";
+import { calculatedScalesKeeper } from ".";
 
 export let groupedView = false;
 
-export function updateMainView(scales, d, groups){
+export function updateMainView(d, groups){
 
     let main = d3.select('#main');
     let data = getLatestData();
     let moveMetric = 'edgeLength';
+
+    let scales = calculatedScalesKeeper[0];
 
     main.selectAll('*').remove();
   

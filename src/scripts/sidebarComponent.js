@@ -3,7 +3,6 @@ import * as d3 from "d3";
 
 import {dataMaster, nestedData, collapsed} from './index';
 import {filterMaster, removeFilter, addFilter} from './filterComponent';
-import { updateMainView, groupedView } from './viewControl';
 import {getNested} from './pathCalc';
 import { dropDown } from './buttonComponents';
 import { updateRanking } from './pairView';
@@ -31,7 +30,7 @@ export function buildTreeStructure(paths, edges){
 //     let brushId = 'brush-'+ filterMaster.filter(f=> f.attributType === 'topology').length;
 //     let filterOb = addFilter('data-filter', 'topology', brushId, treeFilter, [...data], [...test], null);
 
-//     updateMainView(scales, 'edgeLength');
+//     updateMainView('edgeLength');
    
 //     ///DIMMING THE FILTERED OUT NODES//////
 
@@ -60,7 +59,7 @@ export function buildTreeStructure(paths, edges){
 //     let xSpan = label.append('i').classed('close fas fa-times', true);
 //     xSpan.on('click', async (d, i, n)=> {
 //         removeFilter(brushId);
-//         await updateMainView(scales, 'edgeLength');
+//         await updateMainView('edgeLength');
 //         d3.selectAll('.selected').classed('selected', false);
 //         d3.selectAll('.link-not-there').classed('link-not-there', false);
 //         d3.selectAll('.node-not-there').classed('node-not-there', false);

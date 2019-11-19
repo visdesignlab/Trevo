@@ -98,7 +98,7 @@ function createNewCladeGroup(div, scales){
 
     d3.select('.dropdown.change-clade').select('button').text(`Clades Shown: ${chosenGroup.field}`);
 
-    updateMainView( scales, 'Summary View', groups);
+    updateMainView('Summary View', groups);
     
     renderTree(d3.select('#sidebar'), null, true, false)
 }

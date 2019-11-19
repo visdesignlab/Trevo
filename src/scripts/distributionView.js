@@ -4,8 +4,6 @@ import * as d3 from "d3";
 import {filterMaster, getLatestData} from './filterComponent';
 import { pullPath } from './pathCalc';
 import { renderTree } from './sidebarComponent';
-import { colorKeeper } from '.';
-import { comparisonKeeper } from './selectedPaths';
 import { chosenCladesGroup } from './cladeMaker';
 import { updateMainView } from './viewControl';
 
@@ -29,7 +27,7 @@ const defaultBarColor = '#DCD4D4';
 
 let colorBool = 0;
 
-let selectedClades = [];
+const selectedClades = [[]];
 
 export function groupDistributions(pathData, mainDiv, scales, groupAttr){
 
@@ -423,12 +421,13 @@ export function renderDistStructure(mainDiv, pathGroups){
     
         groupLabelBars.on('click', (d, i, n)=> {
             d3.select(n[i]).select('rect').attr('fill', '#F5B041');
-            comparisonKeeper.push(Object.assign({},d));
-            if(comparisonKeeper.length > 1){
+            
+            selectedClades[selectedClades.length - 1].push(Object.assign({},d));
+            if(selectedClades[selectedClades.length - 1].length > 1){
 
                 mainDiv.selectAll('*').remove();
                 mainDiv.select('#compare-wrap').remove();
-                renderDistributionComparison(mainDiv, comparisonKeeper, branchScale, pathGroups);
+                renderDistributionComparison(mainDiv, selectedClades[selectedClades.length - 1], branchScale, pathGroups);
                 //renderDistStructure(mainDiv, pathGroups.filter(p=> p.label != d.label))
 
             }else{
@@ -469,7 +468,9 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
     
     xOut.on('click', (d, i, n)=> {
         divWrap.remove();
-        updateMainView(branchScale, 'Summary View', chosenCladesGroup[chosenCladesGroup.length-1].groups);
+        console.log(selectedClades)
+        selectedClades.push(new Array());
+        updateMainView('Summary View', chosenCladesGroup[chosenCladesGroup.length-1].groups);
         d3.select('#sidebar').selectAll('.node').remove();
         d3.select('#sidebar').selectAll('.link').remove();
         renderTree(d3.select('#sidebar'), null, true);

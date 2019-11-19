@@ -13,6 +13,7 @@ export const savedSelected = [];
 export const collapsed = false;
 export const nestedData = [];
 export const speciesTest = [];
+export const calculatedScalesKeeper = [];
 
 export const colorKeeper = [
     ['#0dc1d1', '#c8f7fd'],
@@ -133,7 +134,8 @@ loadData(d3.json, './public/data/new-anolis-edges.json', 'edge').then(async edge
     });
 
   
-    let calculatedScales = calculateNewScales(calculatedAtt, attributeList.map(m=> m.field), colorKeeper)
+    let calculatedScales = calculateNewScales(calculatedAtt, attributeList.map(m=> m.field), colorKeeper);
+    calculatedScalesKeeper.push(calculatedScales);
 
     let matchedEdges = edges.rows.map((edge, i)=> {
         let attrib = calculatedAtt.filter(f=> f.node === edge.To)[0]

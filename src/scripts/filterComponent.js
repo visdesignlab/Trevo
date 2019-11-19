@@ -104,7 +104,7 @@ function addFilterTag(data, scales){
             let filterLine = filterMaster.filter(f=> f.filterType === 'data-filter').filter(f=> data.attribute != f.attribute);
             ////YOU NEED TO CHANGE THIS TO REMOVE FILTER FUNCTION
             removeFilter(data.filterId, scales);
-            updateMainView(scales, null);
+            updateMainView('Summary View');
             d3.selectAll('.link-not-there').classed('link-not-there', false);
             d3.selectAll('.node-not-there').classed('node-not-there', false);
             button.remove();
@@ -122,7 +122,7 @@ function addFilterTag(data, scales){
         let xSpan = button.append('i').classed('close fas fa-times', true);
         xSpan.on('click', ()=> {
             removeFilter(data.filterId, scales);
-            updateMainView(scales, null);
+            updateMainView('Summary View');
             d3.selectAll('.link-not-there').classed('link-not-there', false);
             d3.selectAll('.node-not-there').classed('node-not-there', false);
             button.remove();
@@ -137,7 +137,7 @@ function addFilterTag(data, scales){
         let xSpan = button.append('i').classed('close fas fa-times', true);
         xSpan.on('click', ()=> {
             removeFilter(data.filterId, scales);
-            updateMainView(scales, null);
+            updateMainView('Summary View');
             d3.selectAll('.link-not-there').classed('link-not-there', false);
             d3.selectAll('.node-not-there').classed('node-not-there', false);
             button.remove();
@@ -185,7 +185,7 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                     let filId = 'd-'+filterMaster.filter(f=> f.attributeType === 'discrete').length;
                     let filterOb = addFilter('data-filter', 'discrete', filId, discreteFilter, [...data], [...test], [['state', [fromState, toState]], ['selectedOption', selectedOption]]);
 
-                    updateMainView(scales, null);
+                    updateMainView('Summary View');
 
                     ////Class Tree Links////
                     let treeLinks  = d3.select('#sidebar').selectAll('.link');
@@ -267,7 +267,7 @@ function stateFilter(filterDiv, filterButton, normedPaths, main, moveMetric, sca
                     let filId = 'c-'+filterMaster.filter(f=> f.attributeType === 'continuous').length;
                     let filterOb = addFilter('data-filter', 'continuous', filId, continuousFilter, [...data], [...test], [['selectedOption', selectedOption], ['predictedFilter', predictedFilter], ['observedFilter', observedFilter]]);
 
-                    updateMainView(scales, null);
+                    updateMainView('Summary View');
 
                     /////ADD THE FILTER TO THE TOOLBAR/////
                     addFilterTag(filterOb, scales);
@@ -314,7 +314,7 @@ export function nodeFilter(selectedNode, scales){
 
     let filterOb = addFilter('data-filter', 'branch', filId, nodeFilter, [...data], [...test], [['nodeId', selectedNode]])
     addFilterTag(filterOb, scales);
-    updateMainView(scales, null);
+    updateMainView('Summary View');
 
    ////Class Tree Links////
    let treeLinks  = d3.select('#sidebar').selectAll('.link');
@@ -347,7 +347,7 @@ export function leafStateFilter(selectedState, scales){
 
     let filterOb = addFilter('data-filter', 'leaf', filId, nodeFilter, [...data], [...test], [['leafState', [selectedState.label, selectedState.winState]]])
     addFilterTag(filterOb, scales);
-    updateMainView(scales, null);
+    updateMainView('Summary View');
 
    ////Class Tree Links////
    let treeLinks  = d3.select('#sidebar').selectAll('.link');
@@ -425,7 +425,7 @@ function queryFilter(filterDiv, filterButton, normedPaths, main, scales){
 
              ////DRAW THE PATHS
          
-             updateMainView(scales, null);
+             updateMainView('Summary View');
 
             let filterToolbar = d3.select("#toolbar");
             let button = filterToolbar.append('button').classed('btn btn-info', true);
@@ -434,7 +434,7 @@ function queryFilter(filterDiv, filterButton, normedPaths, main, scales){
             button.append('h6').text('Query Filter');
             let xSpan = button.append('i').classed('close fas fa-times', true);
             xSpan.on('click', ()=> {
-                updateMainView(scales, null);
+                updateMainView('Summary View');
                 button.remove();
             });
             d3.select('#main-path-view').style('height', ()=>{
@@ -492,8 +492,8 @@ function renderAttToggles(filterDiv, normedPaths, scales){
             newFilMaster.push({'type':'hide-attribute', 'attribute':key.field, 'before-data': [...normedPaths], 'data': [...normedPaths]});
         });
         filterMaster = newFilMaster;
-        console.log(filterMaster)
-        updateMainView(scales, null);
+    
+        updateMainView("Summary View");
     });
     let labelText = labelGroups.append('text').text(d=> d).style('font-size', 10);
     labelText.attr('transform', 'translate(10, 4)');  
