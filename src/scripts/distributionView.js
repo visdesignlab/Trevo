@@ -6,6 +6,7 @@ import { pullPath } from './pathCalc';
 import { renderTree } from './sidebarComponent';
 import { colorKeeper } from '.';
 import { comparisonKeeper } from './selectedPaths';
+import { chosenCladesGroup } from './cladeMaker';
 
 const dimensions = {
     height: 80,
@@ -469,6 +470,33 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
     });
 
     if(data.length > 1){
+
+        renderTree(d3.select('#sidebar'), null, true);
+       
+        let selectedNodes = Array.from(new Set(data.flatMap(f=> f.paths).flatMap(p=> p.map(m=> m.node))));
+   
+        let testNodes = d3.select('#sidebar').selectAll('.node').filter(f=> selectedNodes.indexOf(f.data.node) === -1);
+        let testLinks = d3.select('#sidebar').selectAll('.link').filter(f=> selectedNodes.indexOf(f.data.node) === -1);
+
+        testNodes.attr('opacity', 0.3)
+        testLinks.attr('opacity', 0.3)
+
+        let pathsListOne = Array.from(new Set(data[0].paths.flatMap(p=> p.map(m=> m.node))));
+        let pathsListTwo = Array.from(new Set(data[1].paths.flatMap(p=> p.map(m=> m.node))));
+
+        let testNodesOne = d3.select('#sidebar').selectAll('.node').filter(f=> pathsListOne.indexOf(f.data.node) > -1);
+        let testLinksOne = d3.select('#sidebar').selectAll('.link').filter(f=> pathsListOne.indexOf(f.data.node) > -1);
+
+        testNodesOne.attr('opacity', .8).selectAll('circle').attr('fill', brushColors[0][0])
+        testLinksOne.attr('opacity', .8).style('stroke', brushColors[0][0])
+
+        let testNodesTwo = d3.select('#sidebar').selectAll('.node').filter(f=> pathsListTwo.indexOf(f.data.node) > -1);
+        let testLinksTwo = d3.select('#sidebar').selectAll('.link').filter(f=> pathsListTwo.indexOf(f.data.node) > -1);
+
+        testNodesTwo.attr('opacity', .8).selectAll('circle').attr('fill', brushColors[0][1])
+        testLinksTwo.attr('opacity', .8).style('stroke', brushColors[0][1])
+
+
         textDiv.append('i')
         .classed('fas fa-arrow-left', true)
         .style('margin-right', '10px');
@@ -481,6 +509,7 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
             .style('margin-bottom', '7px')
             .style('background', brushColors[0][i])
         });
+
         textDiv.append('i')
         .classed('fas fa-arrow-right', true)
         .style('margin-left', '10px');
@@ -490,17 +519,17 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
 
     ////COMBINEDATA///
     if(data.length > 1){
-        console.log(data[0].groupBins)
+    
         let startBins = data[0].groupBins.filter(f=> shownAttributes.indexOf(f.key) > -1);
         let mapBins = data[1].groupBins.filter(f=> shownAttributes.indexOf(f.key) > -1);
         let combined = startBins.map((d, i, n)=> {
-           // d.branches = {[data[0].label]: d.branches, [data[1].label]: data[1].groupBins[i].branches }
+         
             d.branches = [...d.branches].map((b, j)=> {
                 
                 b.bins = [{key:data[0].label, value: b.bins, index:0},
                           {key:data[1].label, value: mapBins[i].branches[j].bins, index:1}
                          ];
-              //  b.histogram = { [data[0].label]: b.histogram, [data[1].label]: data[1].groupBins[i].branches[j].histogram }
+             
                 b.data = [{key: data[0].label, 
                             value: b.data.map(m=>{
                                     m.groupKey = data[0].label;
@@ -900,8 +929,6 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
             let otherBins = continDist.filter(f=> f.index === data.index && f.key != data.key);
             otherBins.each((b, i, n)=> {
 
-                
-                
                 //let test = continuousHistogram(b.data.flatMap(m=> m.value).filter(f=> nodeNames.indexOf(f.node)));
                 let test = b.data.map((m, j)=> {
                     m.histo = continuousHistogram(m.value.filter(f=> nodeNames.indexOf(f.node)));
@@ -909,7 +936,6 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
                     return m
                 });
                 
-              
                 let otherDist = d3.select(n[i]).selectAll('g.distribution-too')
                 .data(test)
                 .join('g')
