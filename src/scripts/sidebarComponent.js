@@ -237,10 +237,12 @@ export function renderTree(sidebar, att, uncollapse, pheno){
 
     const dimensions =  {
         margin : {top: 10, right: 90, bottom: 50, left: 20},
-        width : 290,
+        width : 260,
         height : 520,
         lengthHeight: 800,
     }
+
+ 
 
     // declares a tree layout and assigns the size
     var treemap = d3.tree()
@@ -263,6 +265,7 @@ export function renderTree(sidebar, att, uncollapse, pheno){
     treeSvg.attr("width", dimensions.width + dimensions.margin.left + dimensions.margin.right)
     .attr("height", dimensions.height + dimensions.margin.top + dimensions.margin.bottom);
 
+
     let gTest = treeSvg.select('g.tree-g');
     let g = gTest.empty() ? treeSvg.append("g").classed('tree-g', true) : gTest;
     g.attr("transform",
@@ -271,14 +274,14 @@ export function renderTree(sidebar, att, uncollapse, pheno){
     if(groupedBool === "ungrouped" && uncollapse === false){
         if((cladesGroupKeeper.length > 0) && (chosenCladesGroup[chosenCladesGroup.length - 1].field != 'Clade Attribute)')){
             let newNodes = collapseTree(treenodes);
-            updateTree(newNodes, dimensions, treeSvg, g, att, lengthBool);
+            updateTree(newNodes, dimensions, treeSvg, g, att, lengthBool, uncollapse);
         }else{
-            updateTree(treenodes, dimensions, treeSvg, g, att, lengthBool, pheno);
+            updateTree(treenodes, dimensions, treeSvg, g, att, lengthBool, pheno, uncollapse);
         }
         
     }else{
         ////Break this out into other nodes////
-        updateTree(treenodes, dimensions, treeSvg, g, att, lengthBool, pheno);
+        updateTree(treenodes, dimensions, treeSvg, g, att, lengthBool, pheno, uncollapse);
     }
     /////END TREE STUFF
     ///////////
@@ -301,7 +304,7 @@ export function findDepth(node, array){
     
 }
 
-export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, pheno){
+export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, pheno, uncollapse){
 
     d3.select('.pheno-y-axis').remove();
     d3.select('.pheno-x-axis').remove();
@@ -463,12 +466,52 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, 
             collapseSub(d);
         }
         let lengthBool = d3.select('button#length').text() === 'Hide Lengths';
-        updateTree(treenodes, dimensions, treeSvg, g, attrDraw, lengthBool);
+        updateTree(treenodes, dimensions, treeSvg, g, attrDraw, lengthBool, uncollapse);
       
     });
 
     node.raise();
     node.selectAll('circle').raise();
+
+
+    if(uncollapse){
+       
+        // let groups = chosenCladesGroup[chosenCladesGroup.length - 1];
+        
+        // let groupGroup = treeSvg.selectAll('.clade-rects')
+        // .data(groups.groups)
+        // .join('g')
+        // .attr('class', d=> d.label)
+        // .classed('clade-rects', true)
+    
+        // let rect = groupGroup.append('rect');
+        // rect.attr('width', 20);
+        // rect.attr('height', (d, i)=> {
+        //     return d.paths.length * 6;
+        // });
+        // groupGroup.each((d, i, node)=> {
+       
+        //     let first = d.paths.map(m=> m[m.length-1].node);
+        //     let test = treeSvg.selectAll('.node--leaf').filter((f)=> {
+        //         return first.indexOf(f.data.node) > -1});
+        //     let leafSort = test.data().sort((a, b)=> {
+        //         return a.x - b.x;
+        //     });
+        //     console.log(leafSort[0].data.node)
+
+        //     let chosenNode = test.filter(f=> {
+        //         return f.data.node === leafSort[leafSort.length - 1].data.node;
+        //     });
+
+        //     console.log(chosenNode.data())
+     
+        //     d3.select(node[i]).attr('transform', `translate(300, ${yScale(leafSort[0].position)})`)
+        // })
+
+     
+      
+        
+    }
 
     return node;
 }
