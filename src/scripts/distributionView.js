@@ -413,7 +413,7 @@ export function renderDistStructure(mainDiv, pathGroups){
         .attr('x', d=> -((d.stateKeys.length)*(dimensions.squareDim)/2))
         .style('text-anchor', 'middle')
         .style('font-size', 11)
-        .attr('transform', 'rotate(-90)')
+        .attr('transform', 'rotate(-90)');
     
         let groupLabelBars = drawGroupLabels(d.groupBins, svg, d.label);
     
@@ -1465,7 +1465,7 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
             let otherBins = continDist.filter(f=> f.index === data.index && f.key != data.key);
             otherBins.each((b, i, n)=> {
                 
-                let test = continuousHistogram(b.data.filter(f=> nodeNames.indexOf(f.node)));
+                let test = continuousHistogram(b.data.filter(f=> nodeNames.indexOf(f.node) > -1) );
                
                 test.maxCount = d3.sum(b.bins.map(m=> m.length));
               
@@ -1480,6 +1480,31 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
                 .style('stroke', brushColors[index][0]);
     
             });
+
+            let descendBins = continDist.filter(f=> {
+                return (f.index > data.index) && (f.key === data.key)});
+            descendBins.each((b, i, n)=> {
+
+                console.log('b.data',b.data)
+                let test = b.data.filter(f=> {
+                    return (f.values.realVal > brushedVal[0]) && (f.values.realVal < brushedVal[1]);
+                    });
+
+                 let testH = continuousHistogram(test);
+               
+                 testH.maxCount = d3.sum(b.bins.map(m=> m.length));
+              
+                let otherDist = d3.select(n[i]).selectAll('g.distribution-too')
+                .data([testH])
+                .join('g')
+                .classed('distribution-too', true);
+
+                otherDist.attr('transform', 'translate(0, 0) rotate(90)');
+                let path = otherDist.append('path').attr('d', mirrorlineGen);
+                path.attr("fill", brushColors[index][0]).attr('fill-opacity', 0.5)
+                .style('stroke', brushColors[index][0]);
+
+            })
           
             ////END DISTRIBUTION///
            

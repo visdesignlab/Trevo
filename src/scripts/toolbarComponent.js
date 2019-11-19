@@ -105,14 +105,10 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pat
     button.on('click', (d, i, n)=> {
         if(dropContent.classed('show')){
             dropContent.classed('show', false);
+            updateMainView(calculatedScales, 'Summary View', chosenCladesGroup[chosenCladesGroup.length - 1].groups)
         }else{
             dropContent.classed('show', true);
         }
-    });
-
-    options.on('click', (d, i, n)=> {
-        dropContent.classed('show', false);
-        updateMainView(calculatedScales, 'Summary View', chosenCladesGroup[chosenCladesGroup.length - 1].groups)
     });
 
     /////CLADE VIEW////
