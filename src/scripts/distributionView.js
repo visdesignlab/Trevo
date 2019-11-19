@@ -353,7 +353,7 @@ export function drawGroupLabels(pathData, svg, groupLabel){
 export function renderDistStructure(mainDiv, pathGroups){
    
     let shownAttributes = d3.select('#attribute-show').selectAll('input').filter((f, i, n)=> n[i].checked === true).data();
-    console.log(shownAttributes, pathGroups)
+   
     let groupWrap = mainDiv.append('div').attr('id', 'summary-view');
     let groupDivs = groupWrap.selectAll('.group-div').data(pathGroups).join('div').classed('group-div', true);
 
@@ -438,6 +438,8 @@ export function renderDistStructure(mainDiv, pathGroups){
 }
 
 function renderDistributionComparison(div, data, branchScale, pathGroups){
+
+    let shownAttributes = d3.select('#attribute-show').selectAll('input').filter((f, i, n)=> n[i].checked === true).data();
   
     let divWrap = div.append('div').attr('id', 'compare-wrap');
 
@@ -463,7 +465,7 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
     
     xOut.on('click', (d, i, n)=> {
         divWrap.remove();
-        renderDistStructure(div,  pathGroups);
+        renderDistStructure(div, pathGroups);
     });
 
     if(data.length > 1){
@@ -488,12 +490,15 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
 
     ////COMBINEDATA///
     if(data.length > 1){
-        let combined = data[0].groupBins.map((d, i, n)=> {
+        console.log(data[0].groupBins)
+        let startBins = data[0].groupBins.filter(f=> shownAttributes.indexOf(f.key) > -1);
+        let mapBins = data[1].groupBins.filter(f=> shownAttributes.indexOf(f.key) > -1);
+        let combined = startBins.map((d, i, n)=> {
            // d.branches = {[data[0].label]: d.branches, [data[1].label]: data[1].groupBins[i].branches }
             d.branches = [...d.branches].map((b, j)=> {
                 
                 b.bins = [{key:data[0].label, value: b.bins, index:0},
-                          {key:data[1].label, value: data[1].groupBins[i].branches[j].bins, index:1}
+                          {key:data[1].label, value: mapBins[i].branches[j].bins, index:1}
                          ];
               //  b.histogram = { [data[0].label]: b.histogram, [data[1].label]: data[1].groupBins[i].branches[j].histogram }
                 b.data = [{key: data[0].label, 
@@ -505,7 +510,7 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
                             index: 0},
                         
                         { key: data[1].label, 
-                            value : data[1].groupBins[i].branches[j].data.map(m=> {
+                            value : mapBins[i].branches[j].data.map(m=> {
                                     m.groupKey = data[1].label;
                                     m.index = 1;
                                     return m;
