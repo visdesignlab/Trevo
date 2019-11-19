@@ -1619,12 +1619,14 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
     
                     xOut.on('click', (d, i, n)=> {
                         console.log(d, index)
+                        
                         d3.select(d.brush).call(brush.move, null);
                         d3.select(n[i].parentNode).remove();
                         d3.select(d.brush).select('.overlay').attr('stroke-width', 0);
                         descendBins.selectAll('.distribution-too').remove();
                         otherBins.selectAll('.distribution-too').remove();
                         d3.select(d.brush.parentNode).select('.distribution-too').remove();
+                        
                     });
     
                 }else{
