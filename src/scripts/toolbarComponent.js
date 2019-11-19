@@ -87,8 +87,7 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pat
 
     /////ATTRIBUTE DROP DOWN
     let attributeOptions = calculatedScales.map(m=> m.field);
-
-    let checkedAttributes = attributeOptions.length > 5 ? ['Body_height', 'Body_width', 'Carpus', 'Clade', 'Femur', 'Forelimb'] : attributeOptions;
+    let checkedAttributes = attributeOptions.length > 5 ? ['Body_height', 'Body_width', 'Carpus', 'Group', 'Femur', 'island/mainland', 'Head_width', 'Forelimb'] : attributeOptions;
 
     let dropdiv = toolbar.append('div').classed(`dropdown attribute-show`, true);
     dropdiv.style('display', 'inline-block')
@@ -110,6 +109,14 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pat
             dropContent.classed('show', true);
         }
     });
+
+    options.on('click', (d, i, n)=> {
+        dropContent.classed('show', false);
+        updateMainView(calculatedScales, 'Summary View', chosenCladesGroup[chosenCladesGroup.length - 1].groups)
+    });
+
+
+    /////CLADE VIEW////
 
     let cladePickerDrop = dropDown(toolbar, cladesGroupKeeper, `Clades Shown: ${cladesGroupKeeper[0].field}`, 'change-clade');
     d3.select('#change-clade').selectAll('a').on('click', (d, i, n)=> {

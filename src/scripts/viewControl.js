@@ -27,8 +27,6 @@ export function updateMainView(scales, d, groups){
         }else{
             groupDistributions(data, main, scales, 'Clade');
         }
-      
-        
     }else if(d === 'Pair View'){
         rankingControl(data);
         generatePairs(data);
