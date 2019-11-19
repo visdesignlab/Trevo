@@ -110,7 +110,7 @@ export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
             renderTree(sidebar, d, true, false);
             d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Colored by ${d.field}`);
         }else{
-            renderTree(sidebar, null, false, false, dimensions);
+            renderTree(sidebar, null, false, false);
             d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Color By Value`);
         }
        sidebar.select('#show-drop-div-sidebar').classed('show', false);
@@ -129,22 +129,22 @@ export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
                     if(d3.select('.dropdown.change-view').select('button').node().value === "View Pairs"){
                         updateRanking(pairPaths(normedPaths), d.field);
                     }
-                    renderTree(d3.select('#sidebar'), null, true, d.field, dimensions);
+                    renderTree(d3.select('#sidebar'), null, true, d.field);
                     d3.select('.attr-drop.dropdown').select('button').text(`Trait: ${d.field}`);
                     d3.select('.attr-drop.dropdown').select('button').attr('value')
                     d3.select('.attr-drop.dropdown').select('button').attr('value', d.field);
                     d3.select('#attr-drop').classed('show', false);
                 });
               
-                renderTree(d3.select('#sidebar'), null, true, d3.select('.attr-drop.dropdown').select('button').attr('value'), dimensions)
+                renderTree(d3.select('#sidebar'), null, true, d3.select('.attr-drop.dropdown').select('button').attr('value'))
               }else{
     
-                renderTree(d3.select('#sidebar'), null, true, d3.select('.attr-drop.dropdown').select('button').attr('value'), dimensions)
+                renderTree(d3.select('#sidebar'), null, true, d3.select('.attr-drop.dropdown').select('button').attr('value'))
               }
               phenogramButton.text('View Phylogeny');
           }else{
 
-            renderTree(d3.select('#sidebar'), null, false, false, dimensions);
+            renderTree(d3.select('#sidebar'), null, false, false);
             phenogramButton.text('View Phenogram');
 
           }
