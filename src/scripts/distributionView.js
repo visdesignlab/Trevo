@@ -441,9 +441,9 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
   
     let divWrap = div.append('div').attr('id', 'compare-wrap');
 
-    let groupHeader = divWrap.append('div').classed('compare-header', true);
+    let groupHeader = divWrap.append('div').classed('compare-header', true).style('margin', 'auto');
 
-    let text = groupHeader.append('div').attr('height', 50)
+    let textDiv = groupHeader.append('div').attr('height', 50).attr('width', 200).style('margin-left', '460px');
     let branchPointSvg  = groupHeader.append('svg');
 
     let pointData = {paths: data[0].paths.concat(data[1].paths), groupBins: data[0].groupBins}
@@ -467,14 +467,21 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
     });
 
     if(data.length > 1){
+        textDiv.append('i')
+        .classed('fas fa-arrow-left', true)
+        .style('margin-right', '10px');
+
         data.forEach((d, i)=> {
-            text.append('span')
+        textDiv.append('span')
             .text(d.label)
             .classed('badge badge-secondary', true)
             .style('padding', '5px')
             .style('margin-bottom', '7px')
             .style('background', brushColors[0][i])
-        })
+        });
+        textDiv.append('i')
+        .classed('fas fa-arrow-right', true)
+        .style('margin-left', '10px');
         
     }
     let svg = divWrap.append('svg').attr('class', 'compare-svg');
