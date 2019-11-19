@@ -468,7 +468,7 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
     
     xOut.on('click', (d, i, n)=> {
         divWrap.remove();
-        console.log(selectedClades)
+      
         selectedClades.push(new Array());
         updateMainView('Summary View', chosenCladesGroup[chosenCladesGroup.length-1].groups);
         d3.select('#sidebar').selectAll('.node').remove();
@@ -526,7 +526,7 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
 
     ////COMBINEDATA///
     if(data.length > 1){
-    
+        console.log('data',data)
         let startBins = data[0].groupBins.filter(f=> shownAttributes.indexOf(f.key) > -1);
         let mapBins = data[1].groupBins.filter(f=> shownAttributes.indexOf(f.key) > -1);
         let combined = startBins.map((d, i, n)=> {
@@ -554,6 +554,31 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
                          index: 1 }];
                 return b;
             });
+            console.log(d.leafData)
+            // d.leafData = d.leafData.map((b, j)=> {
+            //     console.log('leaf',b)
+                
+            // //     // b.bins = [{key:data[0].label, value: b.bins, index:0},
+            // //     //           {key:data[1].label, value: mapBins[i].branches[j].bins, index:1}
+            // //     //          ];
+             
+            // //     // b.data = [{key: data[0].label, 
+            // //     //             value: b.data.map(m=>{
+            // //     //                     m.groupKey = data[0].label;
+            // //     //                     m.index = 0;
+            // //     //                     return m;
+            // //     //                     }), 
+            // //     //             index: 0},
+                        
+            // //     //         { key: data[1].label, 
+            // //     //             value : mapBins[i].branches[j].data.map(m=> {
+            // //     //                     m.groupKey = data[1].label;
+            // //     //                     m.index = 1;
+            // //     //                     return m;
+            // //     //             }), 
+            // //     //          index: 1 }];
+            // //     // return b;
+            // // });
             return d;
         });
 
@@ -827,7 +852,7 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
         }).join('g').classed('group', true);
 
         continBinGroups.each((d, i, nodes)=> {
-            //console.log('contin',d, nodes)
+          
             d.value.maxCount = d3.sum(d.value.map(m=> m.length));
             let distrib = d3.select(nodes[i])
                 .selectAll('g')
@@ -839,7 +864,6 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
                 .join('g')
                 .classed('distribution', true);
             distrib.attr('transform', (d,i,n)=> {
-               // console.log('in distrib',d)
                 if(d[0].index === 0){
                     return 'translate(0, 0) rotate(90)'
                 }else{
@@ -861,7 +885,7 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
 
     let rangeRectWrap = continDist.selectAll('g.range-wrap').data(d=> {
         return d.data;
-    }).join('g').classed('range-wrap', true)
+    }).join('g').classed('range-wrap', true);
     
     let rangeRect = rangeRectWrap.selectAll('rect.range').data((d,i)=> {
         let newData = d.value.map(m=> {
@@ -962,7 +986,7 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
                         path.attr("fill", brushColors[index][0])
                             .attr('fill-opacity', 0.5)
                             .style('stroke', brushColors[index][0]);
-                        console.log(e, index, g)
+                        
                         pathGroup.attr('transform', index === 0 ? 'translate(0, 0) rotate(90)' : `translate(11, ${dimensions.height}) rotate(90)`);
                     })//.append('path').attr('d', console.log(this));
 
@@ -986,7 +1010,6 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
             let antiSecond = selectedNodes[3];
     
             if(index < 2){
-    
                 let doesItExist = d3.select('#toolbar').selectAll('.brush-span').filter((f, i, n)=> {
                     return d3.select(n[i]).attr('value') == `${data.bins.groupLabel}-${data.key}`;
                 });
@@ -1017,9 +1040,10 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
                     let xOut = badge.append('i').classed('close fas fa-times', true).style('padding-left', '10px');
     
                     xOut.on('click', (d, i, n)=> {
-                        d3.select(d).call(brush.move, null);
-                        d3.select(n[i].parentNode).remove();
-                        d3.select(d).select('.overlay').attr('stroke-width', 0);
+                        console.log('d',d)
+                        // d3.select(d).call(brush.move, null);
+                        // d3.select(n[i].parentNode).remove();
+                        // d3.select(d).select('.overlay').attr('stroke-width', 0);
                     });
     
                 }else{
@@ -1037,7 +1061,6 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
                     d3.select(doesItExist.datum()).call(brush.move, null);
                     d3.select(doesItExist.datum()).select('.overlay').attr('stroke-width', 0)
     
-                   
                     treeNode.selectAll(`.${data.key}`)
                         .selectAll(`${data.bins.groupLabel}`)
                         .selectAll('.second-branch')
@@ -1089,7 +1112,7 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
                             return (f.values.realVal < brushedVal[0]) || (f.values.realVal > brushedVal[1]);
                         }));
 
-                        doesItExist.datum({brush: this, nodes:nodes})
+                        doesItExist.datum({brush: this, nodes: nodes})
     
                     brushedNodes(nodes, notNodes, data, brushedVal, label);
                     
@@ -1109,6 +1132,7 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
                     .style('background', brushColors[colorBool][0])
                     .attr('value', `${data.bins.groupLabel}-${data.key}`)
                     .text(`${data.bins.groupLabel}, ${data.key}: ${zero(brushedVal[0])} - ${zero(brushedVal[1])}`);
+
                 colorBool === 0 ? colorBool = 1 : colorBool = 0;
                 secondGrp.classed(classLabel, true);
                 selectedBranch.classed(classLabel, true);
@@ -1530,7 +1554,6 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
                 return (f.index > data.index) && (f.key === data.key)});
             descendBins.each((b, i, n)=> {
 
-                console.log('b.data',b.data)
                 let test = b.data.filter(f=> {
                     return (f.values.realVal > brushedVal[0]) && (f.values.realVal < brushedVal[1]);
                     });
@@ -1595,9 +1618,12 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
                     let xOut = badge.append('i').classed('close fas fa-times', true).style('padding-left', '10px');
     
                     xOut.on('click', (d, i, n)=> {
-                        d3.select(d).call(brush.move, null);
+                        d3.select(d.brush).call(brush.move, null);
                         d3.select(n[i].parentNode).remove();
-                        d3.select(d).select('.overlay').attr('stroke-width', 0);
+                        d3.select(d.brush).select('.overlay').attr('stroke-width', 0);
+                        descendBins.selectAll('.distribution-too').remove();
+                        otherBins.selectAll('.distribution-too').remove();
+                        d3.select(d.brush.parentNode).select('.distribution-too').remove();
                     });
     
                 }else{
