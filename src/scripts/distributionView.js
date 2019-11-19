@@ -1618,6 +1618,7 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
                     let xOut = badge.append('i').classed('close fas fa-times', true).style('padding-left', '10px');
     
                     xOut.on('click', (d, i, n)=> {
+                        console.log(d, index)
                         d3.select(d.brush).call(brush.move, null);
                         d3.select(n[i].parentNode).remove();
                         d3.select(d.brush).select('.overlay').attr('stroke-width', 0);
