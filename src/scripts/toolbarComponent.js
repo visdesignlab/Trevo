@@ -115,13 +115,12 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pat
         updateMainView(calculatedScales, 'Summary View', chosenCladesGroup[chosenCladesGroup.length - 1].groups)
     });
 
-
     /////CLADE VIEW////
 
     let cladePickerDrop = dropDown(toolbar, cladesGroupKeeper, `Clades Shown: ${cladesGroupKeeper[0].field}`, 'change-clade');
     d3.select('#change-clade').selectAll('a').on('click', (d, i, n)=> {
         d3.select('.dropdown.change-clade').select('button').text(`Clades Shown: ${d.field}`)
-        chosenCladesGroup.push(D)
+        chosenCladesGroup.push(d)
         updateMainView(calculatedScales, 'Summary View', d.groups);
     });
     if(cladesGroupKeeper.length === 0){

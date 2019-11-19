@@ -428,6 +428,7 @@ path.link.brushed-second.one {
 .brushed-second.two circle{
   r: 4px !important;
   fill:#6A1B9A !important;
+ 
 }
 path.link.brushed-second.two {
   fill: none;
@@ -436,10 +437,10 @@ path.link.brushed-second.two {
   stroke-width: 2px;
 }
 .brushed-branch.two circle{
-  r: 4px !important;
+  r: 5px !important;
   fill:#6A1B9A !important;
   stroke-width: 1px;
-  stroke: gainsboro;
+  stroke: black;
 }
 
 .node.anti-brushed-second.two circle{

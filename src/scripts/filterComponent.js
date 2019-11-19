@@ -75,7 +75,7 @@ export function toggleFilters(filterButton, main, scales){
 
         //move metric is 'edgeLength'
 
-        renderAttToggles(filterDiv, data, scales);
+        //renderAttToggles(filterDiv, data, scales);
         stateFilter(filterDiv, filterButton, data, main, scales);
         queryFilter(filterDiv, filterButton, data, main, scales);
 
