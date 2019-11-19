@@ -5,7 +5,7 @@ import {toggleFilters, getLatestData} from './filterComponent';
 import { updateMainView } from './viewControl';
 import { collapsed } from '.';
 import { dropDown } from './buttonComponents';
-import { cladesGroupKeeper, groupDataByAttribute, addCladeGroup } from './cladeMaker';
+import { cladesGroupKeeper, groupDataByAttribute, addCladeGroup, chosenCladesGroup } from './cladeMaker';
 
 
 export function findBrushedNodes(){
@@ -19,14 +19,6 @@ export function findBrushedNodes(){
 export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pathView){
 
     let viewArray = [{'field':'Summary View'},{'field':'Path View'},{'field':'Pair View'}, {'field':'Clade View'}];
-
-    if(cladesGroupKeeper.length === 0){
-        let groupData = groupDataByAttribute(calculatedScales, normedPaths, 'Clade');
-  
-        let chosenClade = addCladeGroup('Clade Attribute', groupData.map(m=> m.label), groupData);
-    }
-
-    let cladeOptions = cladesGroupKeeper;
 
     let viewDrop = dropDown(toolbar, viewArray, viewArray[0].field, 'change-view');
 
@@ -96,6 +88,8 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pat
     /////ATTRIBUTE DROP DOWN
     let attributeOptions = calculatedScales.map(m=> m.field);
 
+    console.log('attropt',attributeOptions)
+
     let checkedAttributes = ['Body_height', 'Body_width', 'Carpus', 'Clade', 'Femur', 'Forelimb'];
 
     let dropdiv = toolbar.append('div').classed(`dropdown attribute-show`, true);
@@ -122,14 +116,12 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pat
     let cladePickerDrop = dropDown(toolbar, cladesGroupKeeper, `Clades Shown: ${cladesGroupKeeper[0].field}`, 'change-clade');
     d3.select('#change-clade').selectAll('a').on('click', (d, i, n)=> {
         d3.select('.dropdown.change-clade').select('button').text(`Clades Shown: ${d.field}`)
+        chosenCladesGroup.push(D)
         updateMainView(calculatedScales, 'Summary View', d.groups);
     });
-
-       
-    
-   // let brushButton = toolbar.append('button').attr('id', 'brush-control');
-    // brushButton.attr('class', 'btn btn-outline-secondary').text('Highlight Brush');
-    // brushButton.on('click', ()=> toggleFilters(filterButton, main, calculatedScales));
+    if(cladesGroupKeeper.length === 0){
+        d3.select('.dropdown.change-clade').select('button').text(d.field);
+    }
 }
 
 ////COLLAPSES THE NODES DOWN

@@ -8,13 +8,9 @@ import {getNested} from './pathCalc';
 import { dropDown } from './buttonComponents';
 import { updateRanking } from './pairView';
 import { pairPaths, maxTimeKeeper } from './dataFormat';
+import { cladesGroupKeeper, chosenCladesGroup } from './cladeMaker';
 
-const dimensions =  {
-    margin : {top: 10, right: 90, bottom: 50, left: 20},
-    width : 290,
-    height : 520,
-    lengthHeight: 800,
-}
+
 
 export function buildTreeStructure(paths, edges){
     let root = paths[0][0];
@@ -22,57 +18,57 @@ export function buildTreeStructure(paths, edges){
     return nestedData;
 }
 
-function updateBrush(treeBrush, scales){
+// function updateBrush(treeBrush, scales){
     
-    let sidebar = d3.select('#sidebar');
-    let toolbarDiv = d3.select('#toolbar');
+//     let sidebar = d3.select('#sidebar');
+//     let toolbarDiv = d3.select('#toolbar');
 
-    let data = filterMaster.length === 0 ? dataMaster[0] : dataMaster[0];
-    let nodes = sidebar.select('svg').select('g').selectAll('.node');
-    let selectedNodes = nodes.filter(n=> (n.y > d3.event.selection[0][0]) && (n.y < d3.event.selection[1][0]) && (n.x > d3.event.selection[0][1]) && (n.x < d3.event.selection[1][1])).classed('selected', true);
-    let filterArray = selectedNodes.data().map(n=> n.data.node);
-    let test = treeFilter(data, filterArray);
-    let brushId = 'brush-'+ filterMaster.filter(f=> f.attributType === 'topology').length;
-    let filterOb = addFilter('data-filter', 'topology', brushId, treeFilter, [...data], [...test], null);
+//     let data = filterMaster.length === 0 ? dataMaster[0] : dataMaster[0];
+//     let nodes = sidebar.select('svg').select('g').selectAll('.node');
+//     let selectedNodes = nodes.filter(n=> (n.y > d3.event.selection[0][0]) && (n.y < d3.event.selection[1][0]) && (n.x > d3.event.selection[0][1]) && (n.x < d3.event.selection[1][1])).classed('selected', true);
+//     let filterArray = selectedNodes.data().map(n=> n.data.node);
+//     let test = treeFilter(data, filterArray);
+//     let brushId = 'brush-'+ filterMaster.filter(f=> f.attributType === 'topology').length;
+//     let filterOb = addFilter('data-filter', 'topology', brushId, treeFilter, [...data], [...test], null);
 
-    updateMainView(scales, 'edgeLength');
+//     updateMainView(scales, 'edgeLength');
    
-    ///DIMMING THE FILTERED OUT NODES//////
+//     ///DIMMING THE FILTERED OUT NODES//////
 
-    ////Class Tree Links////
-    let treeLinks  = d3.select('#sidebar').selectAll('.link');
-    let treeNode  = d3.select('#sidebar').selectAll('.node');
+//     ////Class Tree Links////
+//     let treeLinks  = d3.select('#sidebar').selectAll('.link');
+//     let treeNode  = d3.select('#sidebar').selectAll('.node');
 
-    let nodeList = test.flatMap(path=> path.map(node => node.node));
+//     let nodeList = test.flatMap(path=> path.map(node => node.node));
 
-    d3.selectAll('.link-not-there').classed('link-not-there', false);
-    d3.selectAll('.node-not-there').classed('node-not-there', false);
+//     d3.selectAll('.link-not-there').classed('link-not-there', false);
+//     d3.selectAll('.node-not-there').classed('node-not-there', false);
 
-    let missingLinks = treeLinks.filter(f=> nodeList.indexOf(f.data.node) === -1);
-    missingLinks.classed('link-not-there', true);
+//     let missingLinks = treeLinks.filter(f=> nodeList.indexOf(f.data.node) === -1);
+//     missingLinks.classed('link-not-there', true);
 
-    let missingNodes = treeNode.filter(f=> nodeList.indexOf(f.data.node) === -1);
-    missingNodes.classed('node-not-there', true);
+//     let missingNodes = treeNode.filter(f=> nodeList.indexOf(f.data.node) === -1);
+//     missingNodes.classed('node-not-there', true);
 
-    ///END NODE DIMMING///////
+//     ///END NODE DIMMING///////
 
-    let button = toolbarDiv.append('button').classed('btn btn-info', true);
-    let span = button.append('span').classed('badge badge-light', true);
-    span.text(test.length);
-    let label = button.append('h6').text('Tree Filter');
+//     let button = toolbarDiv.append('button').classed('btn btn-info', true);
+//     let span = button.append('span').classed('badge badge-light', true);
+//     span.text(test.length);
+//     let label = button.append('h6').text('Tree Filter');
 
-    let xSpan = label.append('i').classed('close fas fa-times', true);
-    xSpan.on('click', async (d, i, n)=> {
-        removeFilter(brushId);
-        await updateMainView(scales, 'edgeLength');
-        d3.selectAll('.selected').classed('selected', false);
-        d3.selectAll('.link-not-there').classed('link-not-there', false);
-        d3.selectAll('.node-not-there').classed('node-not-there', false);
-        button.remove();
-        d3.select(this).call(treeBrush.move, null);
-        d3.select('.tree-brush').remove();
-    });
-}
+//     let xSpan = label.append('i').classed('close fas fa-times', true);
+//     xSpan.on('click', async (d, i, n)=> {
+//         removeFilter(brushId);
+//         await updateMainView(scales, 'edgeLength');
+//         d3.selectAll('.selected').classed('selected', false);
+//         d3.selectAll('.link-not-there').classed('link-not-there', false);
+//         d3.selectAll('.node-not-there').classed('node-not-there', false);
+//         button.remove();
+//         d3.select(this).call(treeBrush.move, null);
+//         d3.select('.tree-brush').remove();
+//     });
+// }
 
 export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
     
@@ -91,10 +87,10 @@ export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
     treeViewButton.on('click', ()=> {
        sidebar.select('svg').remove();
        if(treeViewButton.text() === 'Show Lengths'){
-            renderTree(sidebar, null, true, false, dimensions);
+            renderTree(sidebar, null, true, false);
             treeViewButton.text('Hide Lengths');
        }else{
-            renderTree(sidebar, null, false, false, dimensions);
+            renderTree(sidebar, null, false, false);
             treeViewButton.text('Show Lengths');
        }
     });
@@ -108,10 +104,10 @@ export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
     let dropOptions = dropDown(sidebar, optionArray, `Color By Value`,'show-drop-div-sidebar');
     dropOptions.on('click', (d, i, n)=> {
         if(d.type === 'discrete'){
-            renderTree(sidebar, d, true, false, dimensions);
+            renderTree(sidebar, d, true, false);
             d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Colored by ${d.field}`)
         }else if(d.type === 'continuous'){
-            renderTree(sidebar, d, true, false, dimensions);
+            renderTree(sidebar, d, true, false);
             d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Colored by ${d.field}`);
         }else{
             renderTree(sidebar, null, false, false, dimensions);
@@ -187,6 +183,7 @@ function collapseTree(treeData){
 
     function stepDown(node){
         let leaves = getLeaves(node, []);
+        
         let ids = new Set(leaves.map(m=> m.data.attributes.Clade.values.Clade));
         if(ids.size > 1){
             node.children.map(n=> stepDown(n))
@@ -236,14 +233,21 @@ export function addingEdgeLength(edge, data){
     }
 }
 
-export function renderTree(sidebar, att, uncollapse, pheno, dimensions){
+export function renderTree(sidebar, att, uncollapse, pheno){
+
+    const dimensions =  {
+        margin : {top: 10, right: 90, bottom: 50, left: 20},
+        width : 290,
+        height : 520,
+        lengthHeight: 800,
+    }
 
     // declares a tree layout and assigns the size
     var treemap = d3.tree()
     .size([dimensions.height, dimensions.width]);
 
     addingEdgeLength(0, nestedData[0]);
-
+    
     //  assigns the data to a hierarchy using parent-child relationships
     var treenodes = d3.hierarchy(nestedData[0]);
 
@@ -265,8 +269,13 @@ export function renderTree(sidebar, att, uncollapse, pheno, dimensions){
       "translate(" + dimensions.margin.left + "," + dimensions.margin.top + ")");
 
     if(groupedBool === "ungrouped" && uncollapse === false){
-        let newNodes = collapseTree(treenodes);
-        updateTree(newNodes, dimensions, treeSvg, g, att, lengthBool);
+        if((cladesGroupKeeper.length > 0) && (chosenCladesGroup[chosenCladesGroup.length - 1].field != 'Clade Attribute)')){
+            let newNodes = collapseTree(treenodes);
+            updateTree(newNodes, dimensions, treeSvg, g, att, lengthBool);
+        }else{
+            updateTree(treenodes, dimensions, treeSvg, g, att, lengthBool, pheno);
+        }
+        
     }else{
         ////Break this out into other nodes////
         updateTree(treenodes, dimensions, treeSvg, g, att, lengthBool, pheno);

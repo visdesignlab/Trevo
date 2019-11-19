@@ -1,7 +1,7 @@
 import {dataMaster, nestedData} from './index';
 import { updateDropdown } from './buttonComponents';
 import * as d3 from "d3";
-import { addingEdgeLength, assignPosition } from './sidebarComponent';
+import { addingEdgeLength, assignPosition, renderTree } from './sidebarComponent';
 import { maxTimeKeeper } from './dataFormat';
 import { getLatestData } from './filterComponent';
 import { renderDistStructure, binGroups } from './distributionView';
@@ -27,10 +27,10 @@ export function removeCladeGroup(clades){
 
 export function groupDataByAttribute(scales, data, groupAttr){
 
+    console.log('scales', scales)
+
     let groupKeys = scales.filter(f=> f.field === groupAttr)[0].scales.map(s=> s.scaleName);
 
-
-  
     let branchBinCount = d3.median(data.map(m=> m.length)) - d3.min(data.map(m=> m.length))
    
     return groupKeys.map(group => {
@@ -38,7 +38,6 @@ export function groupDataByAttribute(scales, data, groupAttr){
             return group.includes(path[path.length - 1].attributes[groupAttr].values[groupAttr]);
         });
     
-
         let groupBins = binGroups(paths, group, scales, branchBinCount);
         return {'label': group, 'paths': paths, 'groupBins': groupBins}
 
@@ -70,12 +69,38 @@ export async function drawTreeForGroups(div){
         lengthHeight: 800,
     }
 
-    renderTree(div, null, dimensions);
+    renderCladeTree(div, null, dimensions);
 
     let leaf = div.select('.tree-svg').selectAll('.node--leaf');
-    labelSpecies(leaf);
+    labelTree(leaf);
 
     div.select('.tree-svg').classed('clade-view', true).append('g').classed('overlay-brush', true);
+}
+
+function createNewCladeGroup(div, scales){
+    let cladeNames = []
+    let clades = []
+    d3.selectAll('.clade-name').each((e, i, n)=> {
+       cladeNames.push(n[i].value);
+       let rectTest = d3.select(`.rect-${i + 1}`).node().getBoundingClientRect();
+       let nodes = div.select('.tree-svg.clade-view').selectAll('.node--leaf').filter((f, j, node)=> {
+           let circPos = node[j].getBoundingClientRect();
+           return circPos.y >= rectTest.y-4 && circPos.y <= ((rectTest.y + rectTest.height) - 4);
+       })
+       nodes.select('circle').attr('fill', 'red');
+       clades.push({'clade': n[i].value , 'nodes': nodes.data().map(m=> m.data)})
+    });
+   // d3.select('.group-name').attr('value')
+    let groupName = d3.select('.group-name').node().value;
+    let chosenGroup = addCladeGroup(groupName, cladeNames, clades);
+    updateDropdown(cladesGroupKeeper, 'change-clade');
+    let groups = groupDataByClade(scales, getLatestData(), chosenGroup);
+
+    d3.select('.dropdown.change-clade').select('button').text(`Clades Shown: ${chosenGroup.field}`);
+
+    updateMainView( scales, 'Summary View', groups);
+    
+    renderTree(d3.select('#sidebar'), null, true, false)
 }
 
 function cladeToolbar(div, scales){
@@ -87,28 +112,7 @@ function cladeToolbar(div, scales){
     .attr('value', 'Name Your Group');
   
     let addCladeGroupButton = toolBar.append('button').text('Add Clade Group');
-    addCladeGroupButton.on('click', ()=> {
-        let cladeNames = []
-        let clades = []
-        d3.selectAll('.clade-name').each((e, i, n)=> {
-           cladeNames.push(n[i].value);
-           let rectTest = d3.select(`.rect-${i + 1}`).node().getBoundingClientRect();
-           let nodes = div.select('.tree-svg.clade-view').selectAll('.node--leaf').filter((f, j, node)=> {
-               let circPos = node[j].getBoundingClientRect();
-               return circPos.y >= rectTest.y-4 && circPos.y <= ((rectTest.y + rectTest.height) - 4);
-           })
-           nodes.select('circle').attr('fill', 'red');
-           clades.push({'clade': n[i].value , 'nodes': nodes.data().map(m=> m.data)})
-        });
-        d3.select('.group-name').attr('value')
-        let groupName = d3.select('.group-name').node().value;
-        let chosenGroup = addCladeGroup(groupName, cladeNames, clades);
-        updateDropdown(cladesGroupKeeper, 'change-clade');
-        let groups = groupDataByClade(scales, getLatestData(), chosenGroup);
-
-        d3.select('.dropdown.change-clade').select('button').text(`Clades Shown: ${chosenGroup.field}`)
-        updateMainView( scales, 'Summary View', groups);
-    });
+    addCladeGroupButton.on('click', ()=> createNewCladeGroup(div, scales));
 
     let inputGroup = toolBar.append('div').classed('input-group input-number-group', true);
     let minusButton = inputGroup.append('button').text('-');
@@ -182,7 +186,11 @@ function cladeToolbar(div, scales){
     }
 }
 
-function labelSpecies(nodes){
+export function cladeSpecies(){
+
+}
+
+function labelTree(nodes){
     nodes.append('text')
     .text(d=> d.data.node)
     .attr('font-size', 9)
@@ -195,7 +203,7 @@ export async function createCladeView(div, scales){
     cladeToolbar(div, scales);
 }
 
-export function renderTree(sidebar, att, dimensions){
+export function renderCladeTree(sidebar, att, dimensions){
 
     // declares a tree layout and assigns the size
     var treemap = d3.tree()
@@ -222,14 +230,13 @@ export function renderTree(sidebar, att, dimensions){
 
    
         ////Break this out into other nodes////
-    updateTree(treenodes, dimensions, treeSvg, g, att, true);
+    updateCladeTree(treenodes, dimensions, treeSvg, g, att, true);
     
     /////END TREE STUFF
     ///////////
 }
 
 export function findDepth(node, array){
-
     function stepDown(n){
         if(n.children != null){
             n.children.forEach(child=> {
@@ -240,12 +247,10 @@ export function findDepth(node, array){
         }
     }
     stepDown(node);
-
     return array;
-    
 }
 
-export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length){
+export function updateCladeTree(treenodes, dimensions, treeSvg, g, attrDraw, length){
     
     assignPosition(treenodes, 0);
 
@@ -379,7 +384,7 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length){
             collapseSub(d);
         }
         let lengthBool = d3.select('button#length').text() === 'Hide Lengths';
-        updateTree(treenodes, dimensions, treeSvg, g, attrDraw, lengthBool);
+        updateCladeTree(treenodes, dimensions, treeSvg, g, attrDraw, lengthBool);
       
     });
 

@@ -6,6 +6,7 @@ import {allPaths, pullPath, getPathRevised, getPath} from './pathCalc';
 import {renderTree, buildTreeStructure, renderTreeButtons} from './sidebarComponent';
 import {toolbarControl} from './toolbarComponent';
 import { initialViewLoad } from './viewControl';
+import { groupDataByClade, groupDataByAttribute, addCladeGroup, cladesGroupKeeper, chosenCladesGroup} from './cladeMaker';
 
 export const dataMaster = [];
 export const savedSelected = [];
@@ -123,7 +124,6 @@ loadData(d3.json, './public/data/new-anolis-edges.json', 'edge').then(async edge
                     }
                 }else{
                      values[m.key] = m.value;   
-                    
                 }
             });
             newRow[att.field].values = values;
@@ -133,93 +133,106 @@ loadData(d3.json, './public/data/new-anolis-edges.json', 'edge').then(async edge
     });
 
   
+    let calculatedScales = calculateNewScales(calculatedAtt, attributeList.map(m=> m.field), colorKeeper)
 
-
-let calculatedScales = calculateNewScales(calculatedAtt, attributeList.map(m=> m.field), colorKeeper)
-
-let matchedEdges = edges.rows.map((edge, i)=> {
-    let attrib = calculatedAtt.filter(f=> f.node === edge.To)[0]
-    if(attrib){
-        Object.keys(attrib).filter(f=> f != 'node').map((att, i)=>{
-            
-            let scales = calculatedScales.filter(f=> f.field=== att)[0]
-            attrib[att].scales = scales;
-            return att;
-            
-        })
-    }
-    let newEdge = {
-        V1: edge.From,
-        V2: edge.To,
-        node: edge.To,
-        edgeLength: edge.edgeLength,
-        attributes: attrib ? attrib : null
-    }
-    return newEdge;
-});
-
-
-let calcLeafAtt = leafChar.map((row, i)=> {
-    let newRow = {};
-    attributeList.forEach((att)=>{
-        newRow[att.field] = {};
-        newRow[att.field].field = att.field;
-        newRow[att.field].type = att.type;
-        let values = {}
-        d3.entries(row).filter(f=> f.key.includes(att.field)).map(m=> {
-            if(att.type === 'continuous'){
-                values.realVal = m.value;
-            }else{
-                values[m.key] = m.value;   
-            }
-        });
-        newRow[att.field].values = values;
-    });
-    newRow.node = row.species;
-    newRow.label = row.species;
-    
-    return newRow;
-})
-
-
-let matchedLeaves = leaves.map((leaf, i)=>{
-    let attrib = calcLeafAtt.filter(f=> f.node === leaf.To)[0]
-    if(attrib){
-        Object.keys(attrib).map((att, i)=>{
-            if(att!='node' && att != 'label'){
+    let matchedEdges = edges.rows.map((edge, i)=> {
+        let attrib = calculatedAtt.filter(f=> f.node === edge.To)[0]
+        if(attrib){
+            Object.keys(attrib).filter(f=> f != 'node').map((att, i)=>{
+                
                 let scales = calculatedScales.filter(f=> f.field=== att)[0]
                 attrib[att].scales = scales;
                 return att;
-            }
-        });
-    }
-    let newEdge = {
-        V1: leaf.From,
-        V2: leaf.To,
-        node: leaf.To,
-        edgeLength: leaf.edgeLength,
-        attributes: attrib ? attrib : null,
-        leaf: true
-    }
-    return newEdge;
-});
+                
+            })
+        }
+        let newEdge = {
+            V1: edge.From,
+            V2: edge.To,
+            node: edge.To,
+            edgeLength: edge.edgeLength,
+            attributes: attrib ? attrib : null
+        }
+        return newEdge;
+    });
 
+
+    let calcLeafAtt = leafChar.map((row, i)=> {
+        let newRow = {};
+        attributeList.forEach((att)=>{
+            newRow[att.field] = {};
+            newRow[att.field].field = att.field;
+            newRow[att.field].type = att.type;
+            let values = {}
+            d3.entries(row).filter(f=> f.key.includes(att.field)).map(m=> {
+                if(att.type === 'continuous'){
+                    values.realVal = m.value;
+                }else{
+                    values[m.key] = m.value;   
+                }
+            });
+            newRow[att.field].values = values;
+        });
+        newRow.node = row.species;
+        newRow.label = row.species;
+        
+        return newRow;
+    })
+
+
+    let matchedLeaves = leaves.map((leaf, i)=>{
+        let attrib = calcLeafAtt.filter(f=> f.node === leaf.To)[0]
+        if(attrib){
+            Object.keys(attrib).map((att, i)=>{
+                if(att!='node' && att != 'label'){
+                    let scales = calculatedScales.filter(f=> f.field=== att)[0]
+                    attrib[att].scales = scales;
+                    return att;
+                }
+            });
+        }
+        let newEdge = {
+            V1: leaf.From,
+            V2: leaf.To,
+            node: leaf.To,
+            edgeLength: leaf.edgeLength,
+            attributes: attrib ? attrib : null,
+            group: null,
+            leaf: true
+        }
+        return newEdge;
+    });
 
     let all = matchedEdges.filter(f=> f.attributes != null);
 
     let paths = allPaths(all, matchedLeaves, "V1", "V2");
-   
+    
     let addedRoot = rootAttribute(paths, calculatedAtt, calculatedScales);
 
     let normedPaths = combineLength(addedRoot);
 
-    dataMaster.push(normedPaths);
+    if(cladesGroupKeeper.length === 0){
+        let attArray = calculatedScales.map(m=> m.field)
+        if(attArray.indexOf('Clade') > -1){
+            let groupData = groupDataByAttribute(calculatedScales, normedPaths, 'Clade');
+            let chosenClade = addCladeGroup('Clade Attribute', groupData.map(m=> m.label), groupData);
+            chosenCladesGroup.push(chosenClade)
 
+        }else{
+            console.error('no clade information');
+        }
+    }
+
+    dataMaster.push(normedPaths);
     speciesTest.push(normedPaths.flatMap(m=> m.filter(f=> f.leaf === true)).map(l=> l.node));
-   
-     toolbarControl(toolbarDiv, normedPaths, main, calculatedScales, 'paths');
+
+
+
     
-     let filterDiv = wrap.select('#filter-tab').classed('hidden', true);
+
+    toolbarControl(toolbarDiv, normedPaths, main, calculatedScales, 'paths');
+    
+    let filterDiv = wrap.select('#filter-tab').classed('hidden', true);
 
     // ////////TREE RENDER IN SIDEBAR////////
     let treeDimensions = {
