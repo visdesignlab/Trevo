@@ -22,6 +22,8 @@ const brushColors = [
     ['#6A1B9A', '#FDD835'],
 ]
 
+const compareColors = ['#546E7A', '#5D4037']
+
 const defaultBarColor = '#DCD4D4';
 
 let colorBool = 0;
@@ -264,7 +266,7 @@ export function drawBranchPointDistribution(data, svg){
 
     pointGroups.attr('transform', (d, i) => {
         return `translate(${(105 + bPointScale(d.eMove))}, 0)`});
-    pointGroups.append('circle').attr('r', 5).attr('fill', '#fff').attr('opacity', 0.5)//.attr('fill', "rgba(123, 141, 153, 0.5)");
+    pointGroups.append('circle').attr('r', 5).attr('fill', '#fff').attr('opacity', 0.5);
 
     let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, dimensions.timeRange]);
     
@@ -487,14 +489,14 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
         let testNodesOne = d3.select('#sidebar').selectAll('.node').filter(f=> pathsListOne.indexOf(f.data.node) > -1);
         let testLinksOne = d3.select('#sidebar').selectAll('.link').filter(f=> pathsListOne.indexOf(f.data.node) > -1);
 
-        testNodesOne.attr('opacity', .8).selectAll('circle').attr('fill', brushColors[0][0])
-        testLinksOne.attr('opacity', .8).style('stroke', brushColors[0][0])
+        testNodesOne.attr('opacity', .8).selectAll('circle').attr('fill', compareColors[0])
+        testLinksOne.attr('opacity', .8).style('stroke', compareColors[0])
 
         let testNodesTwo = d3.select('#sidebar').selectAll('.node').filter(f=> pathsListTwo.indexOf(f.data.node) > -1);
         let testLinksTwo = d3.select('#sidebar').selectAll('.link').filter(f=> pathsListTwo.indexOf(f.data.node) > -1);
 
-        testNodesTwo.attr('opacity', .8).selectAll('circle').attr('fill', brushColors[0][1])
-        testLinksTwo.attr('opacity', .8).style('stroke', brushColors[0][1])
+        testNodesTwo.attr('opacity', .8).selectAll('circle').attr('fill', compareColors[1])
+        testLinksTwo.attr('opacity', .8).style('stroke', compareColors[1])
 
 
         textDiv.append('i')
@@ -507,7 +509,7 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
             .classed('badge badge-secondary', true)
             .style('padding', '5px')
             .style('margin-bottom', '7px')
-            .style('background', brushColors[0][i])
+            .style('background', compareColors[i])
         });
 
         textDiv.append('i')
@@ -843,7 +845,7 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
             path.attr("fill", (v, i, n)=> {
                 return defaultBarColor})
             .attr('opacity', 0.4)
-            .style('stroke', brushColors[0][d.index]);
+            .style('stroke', compareColors[d.index]);
         });
 
         let contRect = continBinGroups.append('rect')
@@ -883,7 +885,7 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
         }else{
             return 'translate(0,0)';
         }
-    }).attr('fill', (d)=>brushColors[0][d.index]);
+    }).attr('fill', (d)=>compareColors[d.index]);
 
      //////START BRANCH EXPERIMENT
      let brush = d3.brushY().extent([[0, 0], [20, dimensions.height]])
