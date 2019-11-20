@@ -468,7 +468,6 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
     
     xOut.on('click', (d, i, n)=> {
         divWrap.remove();
-      
         selectedClades.push(new Array());
         updateMainView('Summary View', chosenCladesGroup[chosenCladesGroup.length-1].groups);
         d3.select('#sidebar').selectAll('.node').remove();
@@ -849,10 +848,10 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
 
         let continBinGroups = continDist.selectAll('g.group').data(d=> {
             return d.bins;
-        }).join('g').classed('group', true);
+        }).join('g').attr('class', d=> `g-${d.index} group`)//.classed('group', true);
 
         continBinGroups.each((d, i, nodes)=> {
-          
+            d.maxCount = d3.sum(d.value.map(m=> m.length));
             d.value.maxCount = d3.sum(d.value.map(m=> m.length));
             let distrib = d3.select(nodes[i])
                 .selectAll('g')
@@ -918,16 +917,21 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
 
      //////START BRANCH EXPERIMENT
      let brush = d3.brushY().extent([[0, 0], [20, dimensions.height]])
-     brush.on('end', brushed);
+     brush.on('end', brushedComparison);
 
      continDist.append("g")
      .classed('continuous-branch-brush', true)
      .attr("class", "brush")
      .call(brush);
 
-     function brushed(){
+     //////BRUSH FOR COMPARISON/////
+
+     function brushedComparison(){
 
         let data = d3.select(this.parentNode).data()[0]
+
+       console.log('dataaaa', data)
+        let maxCounts = data.bins.map(m => m.maxCount);
        
         var s = d3.event.selection;
         var zero = d3.format(".3n");
@@ -939,9 +943,6 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
             let treeTest = d3.select('#sidebar').selectAll('.node').filter(f=> {
                 return f.data.leaf === true});
     
-            if(treeTest.empty()){
-                renderTree(d3.select('#sidebar'), null, true);
-            }
             
             let y = d3.scaleLinear().domain([data.domain[0], data.domain[1]]).range([0, dimensions.height])
             let attribute = data.key;
@@ -949,53 +950,102 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
     
             let treeNode  = d3.select('#sidebar').selectAll('.node');
 
-            let nodes = data.data.flatMap(m=> m.value.filter(f=> {
+            // let nodes = data.data.flatMap(m=> m.value.filter(f=> {
+            //     return (f.values.realVal >= brushedVal[0]) && (f.values.realVal <= brushedVal[1]);
+            // }));
+
+            let nodes = data.data.map(m=> m.value.filter(f=> {
                 return (f.values.realVal >= brushedVal[0]) && (f.values.realVal <= brushedVal[1]);
             }));
 
-            //////
+            console.log(nodes)
+
+            let otherBins = continDist.filter(f=> f.index === data.index && f.key != data.key);
+           
+
+            nodes.forEach((n, i)=> {
+               
+                if(n.length > 0){
+                    let test = d3.select(this.parentNode).select(`.g-${i}`)
+                    let groupDis = test.append('g').classed('distribution-too', true);
+                    console.log(n, i)
+                    let histo = continuousHistogram(n)
+                    histo.maxCount = maxCounts[i];
+
+                    let names = n.map(m=> m.node);
+                   
+                    groupDis
+                    .data([histo]);
+
+                    groupDis.append('path')
+                    .attr('d', i === 0 ? mirrorlineGen : lineGen)
+                    .style('stroke', compareColors[i])
+                    .style('fill', compareColors[i])
+                    .style('fill-opacity', 0.8);
+
+                    groupDis.attr('transform', i === 0 ? 'translate(0, 0) rotate(90)' : `translate(11, ${dimensions.height}) rotate(-90)`);
+                    let otherDis = otherBins
+                    .select(`.g-${i}`).each((o, j, oNode)=> {
+                        let oHisto = continuousHistogram(o.data.filter(f=> f.index === i)[0].value.filter(f=> names.indexOf(f.node) > -1));
+                        oHisto.maxCount = o.bins[i].maxCount;
+                        let oDist = d3.select(oNode[j]).append('g').classed('distribution-too', true);
+                        oDist.data([oHisto])
+                        .append('path')
+                        .attr('d', i === 0 ? mirrorlineGen : lineGen)
+                        .style('stroke', compareColors[i])
+                        .style('fill', compareColors[i])
+                        .style('fill-opacity', 0.8);
+                        oDist.attr('transform', i === 0 ? 'translate(0, 0) rotate(90)' : `translate(11, ${dimensions.height}) rotate(-90)`);
+                    });
+
+                   
+                  
+                }
+            });
+
+            ////
 
             let nodeNames = nodes.map(m=> m.node);
 
-            let otherBins = continDist.filter(f=> f.index === data.index && f.key != data.key);
-            otherBins.each((b, i, n)=> {
+            // let otherBins = continDist.filter(f=> f.index === data.index && f.key != data.key);
+            // otherBins.each((b, i, n)=> {
 
-                //let test = continuousHistogram(b.data.flatMap(m=> m.value).filter(f=> nodeNames.indexOf(f.node)));
-                let test = b.data.map((m, j)=> {
-                    m.histo = continuousHistogram(m.value.filter(f=> nodeNames.indexOf(f.node)));
-                    m.maxCount = d3.sum(b.bins[j].value.map(m=> m.length));
-                    return m
-                });
+            //     // //let test = continuousHistogram(b.data.flatMap(m=> m.value).filter(f=> nodeNames.indexOf(f.node)));
+            //     // let test = b.data.map((m, j)=> {
+            //     //     m.histo = continuousHistogram(m.value.filter(f=> nodeNames.indexOf(f.node)));
+            //     //     m.maxCount = d3.sum(b.bins[j].value.map(m=> m.length));
+            //     //     return m
+            //     // });
                 
-                let otherDist = d3.select(n[i]).selectAll('g.distribution-too')
-                .data(test)
-                .join('g')
-                .classed('distribution-too', true);
+            //     // let otherDist = d3.select(n[i]).selectAll('g.distribution-too')
+            //     // .data(test)
+            //     // .join('g')
+            //     // .classed('distribution-too', true);
 
-                let pathGroup = otherDist.selectAll('g').data(d=> {
-                    let histo = d.histo.map(h=> {
-                        h.index = d.index;
-                        return h;
-                    });
-                    return [histo]})
-                    .join('g')
-                    pathGroup.each((e, i, g)=> {
-                        let index = e[0].index;
-                        let path = d3.select(g[i]).append('path')
-                            .attr('d', index === 0 ? mirrorlineGen : lineGen);
-                        path.attr("fill", brushColors[index][0])
-                            .attr('fill-opacity', 0.5)
-                            .style('stroke', brushColors[index][0]);
+            //     // let pathGroup = otherDist.selectAll('g').data(d=> {
+            //     //     let histo = d.histo.map(h=> {
+            //     //         h.index = d.index;
+            //     //         return h;
+            //     //     });
+            //     //     return [histo]})
+            //     //     .join('g')
+            //     //     pathGroup.each((e, i, g)=> {
+            //     //         let index = e[0].index;
+            //     //         let path = d3.select(g[i]).append('path')
+            //     //             .attr('d', index === 0 ? mirrorlineGen : lineGen);
+            //     //         path.attr("fill", brushColors[index][0])
+            //     //             .attr('fill-opacity', 0.5)
+            //     //             .style('stroke', brushColors[index][0]);
                         
-                        pathGroup.attr('transform', index === 0 ? 'translate(0, 0) rotate(90)' : `translate(11, ${dimensions.height}) rotate(90)`);
-                    })//.append('path').attr('d', console.log(this));
+            //     //         pathGroup.attr('transform', index === 0 ? 'translate(0, 0) rotate(90)' : `translate(11, ${dimensions.height}) rotate(90)`);
+            //     //     })//.append('path').attr('d', console.log(this));
 
                  
-                // let path = otherDist.append('path').attr('d', mirrorlineGen);
-                // path.attr("fill", brushColors[index][0]).attr('fill-opacity', 0.5)
-                // .style('stroke', brushColors[index][0]);
+            //     // // let path = otherDist.append('path').attr('d', mirrorlineGen);
+            //     // // path.attr("fill", brushColors[index][0]).attr('fill-opacity', 0.5)
+            //     // // .style('stroke', brushColors[index][0]);
     
-            });
+            // });
 
             //////
            
@@ -1627,14 +1677,11 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
                         descendBins.selectAll('.distribution-too').remove();
                         otherBins.selectAll('.distribution-too').remove();
                         d3.select(d.brush.parentNode).select('.distribution-too').remove();
-                        console.log(d3.select('.tree-g').selectAll('.one'))
                         d3.select('#sidebar').selectAll(`.${classy}`).classed('anti-brushed-second', false);
                         d3.select('#sidebar').selectAll(`.${classy}`).classed('anti-brushed', false);
-                        
                     });
     
                 }else{
-    
     
                     doesItExist.text(`${data.bins.groupLabel}, ${data.key}: ${zero(brushedVal[0])} - ${zero(brushedVal[1])}`);
                     let xOut = doesItExist.append('i').classed('close fas fa-times', true).style('padding-left', '10px');
