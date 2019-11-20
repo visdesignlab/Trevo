@@ -1619,6 +1619,7 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
     
                     xOut.on('click', (d, i, n)=> {
                         console.log(d, index)
+                        let classy = index === 0 ? 'one' : 'two';
                         
                         d3.select(d.brush).call(brush.move, null);
                         d3.select(n[i].parentNode).remove();
@@ -1626,6 +1627,9 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
                         descendBins.selectAll('.distribution-too').remove();
                         otherBins.selectAll('.distribution-too').remove();
                         d3.select(d.brush.parentNode).select('.distribution-too').remove();
+                        console.log(d3.select('.tree-g').selectAll('.one'))
+                        d3.select('#sidebar').selectAll(`.${classy}`).classed('anti-brushed-second', false);
+                        d3.select('#sidebar').selectAll(`.${classy}`).classed('anti-brushed', false);
                         
                     });
     
