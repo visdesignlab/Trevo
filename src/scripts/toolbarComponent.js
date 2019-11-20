@@ -65,6 +65,8 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pat
     let dropOptions = dropDown(toolbar, optionArray, 'Group By', 'show-drop-div-group');
     toolbar.select('#show-drop-div-group').attr('value', 'ungrouped');
 
+    d3.select('.dropdown.show-drop-div-group').select('button').style('display', 'none')
+
     dropOptions.on('click', (d, i, n)=> {
         if(d.type === 'discrete'){
             let data = getLatestData();

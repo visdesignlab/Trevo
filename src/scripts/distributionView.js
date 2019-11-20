@@ -478,6 +478,8 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
     if(data.length > 1){
 
         renderTree(d3.select('#sidebar'), null, true);
+
+        d3.select('#toolbar').selectAll('.brush-span').remove();
        
         let selectedNodes = Array.from(new Set(data.flatMap(f=> f.paths).flatMap(p=> p.map(m=> m.node))));
    
@@ -553,31 +555,59 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
                          index: 1 }];
                 return b;
             });
-            console.log(d.leafData)
-            // d.leafData = d.leafData.map((b, j)=> {
-            //     console.log('leaf',b)
+          
+           if(d.type === 'continuous'){
+
+            d.leafData.data = [{key: data[0].label, 
+                value: d.leafData.data.map(m=>{
+                        m.groupKey = data[0].label;
+                        m.index = 0;
+                        return m;
+                        }), 
+                index: 0},
+            
+            { key: data[1].label, 
+                value : mapBins[i].leafData.data.map(m=> {
+                        m.groupKey = data[1].label;
+                        m.index = 1;
+                        return m;
+                }), 
+             index: 1 }];
+
+             d.leafData.bins = [{key:data[0].label, value: d.leafData.bins, index:0},
+             {key:data[1].label, value: mapBins[i].leafData.bins, index:1}
+                ];
+
+
+
+           }else{
+
+            d.leafData.data = [{key: data[0].label, 
+                value: d.leafData.data.map(m=>{
+                        m.groupKey = data[0].label;
+                        m.index = 0;
+                        return m;
+                        }), 
+                index: 0},
+            
+            { key: data[1].label, 
+                value : mapBins[i].leafData.data.map(m=> {
+                        m.groupKey = data[1].label;
+                        m.index = 1;
+                        return m;
+                }), 
+             index: 1 }];
+
+             d.leafData.bins = [
                 
-            // //     // b.bins = [{key:data[0].label, value: b.bins, index:0},
-            // //     //           {key:data[1].label, value: mapBins[i].branches[j].bins, index:1}
-            // //     //          ];
-             
-            // //     // b.data = [{key: data[0].label, 
-            // //     //             value: b.data.map(m=>{
-            // //     //                     m.groupKey = data[0].label;
-            // //     //                     m.index = 0;
-            // //     //                     return m;
-            // //     //                     }), 
-            // //     //             index: 0},
-                        
-            // //     //         { key: data[1].label, 
-            // //     //             value : mapBins[i].branches[j].data.map(m=> {
-            // //     //                     m.groupKey = data[1].label;
-            // //     //                     m.index = 1;
-            // //     //                     return m;
-            // //     //             }), 
-            // //     //          index: 1 }];
-            // //     // return b;
-            // // });
+                {key:data[0].label, keys: d.stateKeys, value: d.leafData.bins, index:0},
+                {key:data[1].label, keys: d.stateKeys, value: mapBins[i].leafData.bins, index:1}
+
+                ];
+
+           }
+           
+           
             return d;
         });
 
@@ -764,7 +794,6 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
             let dev = d3.deviation(d.state.map(m=> m.value));
             let mean = d3.mean(d.state.map(m=> m.value));
             let x = d3.scaleLinear().domain([0, 1]).range([0, 40]).clamp(true);
-             
             let xMove = d.index === 0 ? (40 - x(mean)) : 0;
             return `translate(${xMove}, ${3.5+(i*(dimensions.squareDim+2))})`
         });
@@ -825,7 +854,6 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
                 })
         });
     
-
         //////PREDICTED CONTINUOUS
 
           //CONTIN PREDICTED
@@ -930,7 +958,6 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
 
         let data = d3.select(this.parentNode).data()[0]
 
-       console.log('dataaaa', data)
         let maxCounts = data.bins.map(m => m.maxCount);
        
         var s = d3.event.selection;
@@ -1013,17 +1040,10 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
                         .style('fill-opacity', 0.8);
                         oDist.attr('transform', i === 0 ? 'translate(0, 0) rotate(90)' : `translate(11, ${dimensions.height}) rotate(-90)`);
 
-            });
-           
-
-                   
+                    });
                   
                 }
             });
-
-            ////
-
-            let nodeNames = nodes.map(m=> m.node);
 
              let nodesFlat = data.data.flatMap(m=> m.value.filter(f=> {
                 return (f.values.realVal >= brushedVal[0]) && (f.values.realVal <= brushedVal[1]);
@@ -1071,10 +1091,6 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
                     let xOut = badge.append('i').classed('close fas fa-times', true).style('padding-left', '10px');
     
                     xOut.on('click', (d, i, n)=> {
-                        console.log('d',d)
-                        // d3.select(d).call(brush.move, null);
-                        // d3.select(n[i].parentNode).remove();
-                        // d3.select(d).select('.overlay').attr('stroke-width', 0);
                         let classy = index === 0 ? 'one' : 'two';
                         
                         d3.select(d.brush).call(brush.move, null);
@@ -1088,8 +1104,7 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
                     });
     
                 }else{
-    
-    
+
                     doesItExist.text(`${data.bins.groupLabel}, ${data.key}: ${zero(brushedVal[0])} - ${zero(brushedVal[1])}`);
                     let xOut = doesItExist.append('i').classed('close fas fa-times', true).style('padding-left', '10px');
     
@@ -1185,8 +1200,138 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
         }
      }
     
-    }
 
+    ///OBSERVED/////
+    let observedWrap = binnedWrap.append('g').classed('observed', true);
+    observedWrap.attr('transform', (d, i, n)=> {
+        return 'translate('+ (dimensions.predictedWidth + 150) +', 0)'});
+
+    ////OBSERVED CONTIUOUS/////
+    let contOb = observedWrap.filter(f=> f.type === 'continuous');
+    contOb.attr('transform', `translate(${dimensions.predictedWidth + 160}, -15)`);
+
+    let compContGroups = contOb.selectAll('g.cont-groups').data(d=> d.leafData.bins).join('g').classed('cont-groups', true);
+
+    let contBars = compContGroups.selectAll('g.ob-bars').data(d=> {
+        let value = d.value.map(m=> {
+            m.index = d.index;
+            return m;
+        });
+        return value}).join('g').classed('ob-bars', true);
+
+    let cRects = contBars.append('rect').attr('width', (d, i, n)=> {
+        let width = dimensions.observedWidth / n.length;
+        return width;
+    }).attr('height', (d, i)=> {
+        let y = d3.scaleLinear().domain([0, Object.keys(d).length]).range([(dimensions.height - dimensions.margin), 0])
+        return y(Object.keys(d).length - 2)
+    })
+    .attr('fill', d=> compareColors[d.index]).attr('fill-opacity', .4);
+
+    contBars.attr('transform', (d, i, n)=> {
+        let movex = dimensions.observedWidth / n.length;
+        let y = d3.scaleLinear()
+            .domain([0, Object.keys(d).length])
+            .range([(dimensions.height - dimensions.margin), 0]);
+
+     let movey = dimensions.height - y(Object.keys(d).length - 2);
+     return 'translate('+(movex * i)+', '+movey+')'});
+
+ contOb.each((d, i, nodes)=> {
+
+     let xvalues = d.leafData.data[0].value.map(m=> {
+         return +m.values.realVal});
+     let x = d3.scaleLinear()
+         .domain([d3.min(xvalues), d3.max(xvalues)])
+         .range([0, dimensions.observedWidth]);
+
+     let y = d3.scaleLinear()
+         .domain([0, d3.max(d.leafData.bins[0].value.map(b=> Object.keys(b).length)) - 2])
+         .range([(dimensions.height - dimensions.margin), 0]);
+     
+     d3.select(nodes[i])
+         .append('g')
+         .classed('x-axis', true)
+         .call(d3.axisBottom(x))
+         .attr('transform', 'translate(0, '+dimensions.height+')')
+
+     d3.select(nodes[i]).append('g')
+         .classed('y-axis', true)
+         .call(d3.axisLeft(y).ticks(4))
+         .attr('transform', 'translate(0, '+dimensions.margin+')');
+
+         d3.select(nodes[i]).select('.x-axis').selectAll('text').style('font-size', '8px');
+         d3.select(nodes[i]).select('.y-axis').selectAll('text').style('font-size', '8px');
+
+         d3.select(nodes[i])
+         .append('g')
+         .classed('x-axis-label', true)
+         .append('text').text('Frequency')
+         .attr('transform', `translate(-20, ${dimensions.height- 10}) rotate(-90)`)
+         .style('font-size', '10px');
+ });
+ 
+        ////Observed Discrete////
+        let discOb =  observedWrap.filter(f=> f.type === 'discrete');
+
+        discOb.attr('transform', `translate(${dimensions.predictedWidth + 160}, 5)`);
+
+        let compDisGroups = discOb.selectAll('g.dis-groups').data(d=> d.leafData.bins).join('g').classed('dis-groups', true);
+
+        let discBars = compDisGroups.selectAll('g.ob-bars').data(d=> {
+            
+            return d.keys.map((key, i)=>{
+                return {state: key, data: d.value[i], max: d3.sum(d.value[i].map(b=> b.length)), index: d.index}
+            });
+        }).join('g').classed('ob-bars', true);
+        let dRects = discBars.append('rect').attr('width', (d, i, n)=> {
+            let width = dimensions.observedWidth / n.length;
+            return width/2;
+        }).attr('height', (d, i, n)=> {
+           
+            let height = d.data[0] ? (d.data[0].scales.stateColors.length * dimensions.squareDim - 10): 0;
+            let y = d3.scaleLinear().domain([0, d.max]).range([0, (height)])
+            return y(d.data.length);
+        }).attr('fill', (d, i) => {
+            return d.data[0] != undefined ? d.data[0].color : '#fff';
+        }).attr('opacity', 0.3);
+
+        discBars.attr('transform', (d, i, n)=> {
+            let movex = dimensions.observedWidth / n.length;
+            let offSet = movex / 2
+            let height = d.data[0] ? (d.data[0].scales.stateColors.length * dimensions.squareDim - 10) : 0;
+            let y = d3.scaleLinear().domain([0, d.max]).range([0, (height-5)])
+            let movey = (height-2) - y(d.data.length);
+            let finalMove = d.index === 0 ? 'translate('+(movex * i)+', '+movey+')' : 'translate('+(offSet+(movex * i))+', '+movey+')';
+            return finalMove;
+        })
+
+        dRects.on('mouseover', (d, i, n)=> {
+            let state = d3.select('g.'+d[0].label).selectAll('g.state');
+            state.filter(f=> {
+                return f[0].state === d[0].winState}).attr('opacity', 0.8);
+            state.filter(f=> f[0].state != d[0].winState).attr('opacity', 0.1);
+            d3.select(n[i]).attr('opacity', 0.9);
+        }).on('mouseout', (d, i, n)=> {
+            d3.select(n[i]).attr('opacity', 0.3);
+            let state = d3.select('g.'+d[0].label).selectAll('g.state').attr('opacity', 0.6);
+        });
+
+        discOb.each((d, i, nodes)=> {
+                
+                let xPoint = d3.scalePoint().domain(d.stateKeys).range([0, dimensions.observedWidth]).padding(.6)
+                let height = d.stateKeys ? (d.stateKeys.length * dimensions.squareDim - 10) : 0;
+                let y = d3.scaleLinear().domain([0, d.leafData.data.length]).range([(height), 0]);
+                d3.select(nodes[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(4))//.attr('transform', 'translate(0, '+height+')');
+                d3.select(nodes[i]).append('g').classed('x-axis', true).call(d3.axisBottom(xPoint)).attr('transform', 'translate(0, '+height+')');
+
+                d3.select(nodes[i]).select('.x-axis').selectAll('text').style('font-size', '8px');
+                d3.select(nodes[i]).select('.y-axis').selectAll('text').style('font-size', '8px');
+        });
+
+
+
+    }
 
 }
 
