@@ -38,6 +38,10 @@ export function rankingControl(data){
     .text(d=> d)
     .attr('y', 10)
     .attr('x', (d, i)=> (300+(200 * i)));
+
+
+
+    console.log('VALUE', d3.select('.attr-drop.dropdown').select('button'))
   
     defaultW.forEach((color, i) => {
       var slider = slide
@@ -51,7 +55,8 @@ export function rankingControl(data){
         .fill('#7FB3D5')
         .on('end', num => {
          defaultW[i] = num;
-         updateRanking(pairPaths(data), d3.select('.attr-drop.dropdown').select('button').text(), defaultW);
+         console.log(d3.select('.attr-drop.dropdown').select('button').attr('value'))
+         updateRanking(pairPaths(data), d3.select('.attr-drop.dropdown').select('button').attr('value'), defaultW);
         });
   
       weightPicker
@@ -88,6 +93,8 @@ export function generatePairs(data){
         updateRanking([...pairs], attKeys[0].field, weights);
 }
 export function updateRanking(pairs, field, weights){
+
+  console.log('pairs',pairs, field)
   
     let deltaMax = d3.max([...pairs].map(m=> m.deltas.filter(f=> f.key === field)[0]).map(m=> m.value));
     let closeMax = d3.max([...pairs].map(m=> m.closeness.filter(f=> f.key === field)[0]).map(m=> m.value));
