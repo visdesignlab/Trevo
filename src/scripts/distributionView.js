@@ -950,25 +950,24 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
     
             let treeNode  = d3.select('#sidebar').selectAll('.node');
 
-            // let nodes = data.data.flatMap(m=> m.value.filter(f=> {
-            //     return (f.values.realVal >= brushedVal[0]) && (f.values.realVal <= brushedVal[1]);
-            // }));
-
             let nodes = data.data.map(m=> m.value.filter(f=> {
                 return (f.values.realVal >= brushedVal[0]) && (f.values.realVal <= brushedVal[1]);
             }));
 
-            console.log(nodes)
 
             let otherBins = continDist.filter(f=> f.index === data.index && f.key != data.key);
-           
+
+            let descendBins = continDist.filter(f=> {
+                return (f.index > data.index) && (f.key === data.key)});
+                
+            
 
             nodes.forEach((n, i)=> {
                
                 if(n.length > 0){
                     let test = d3.select(this.parentNode).select(`.g-${i}`)
                     let groupDis = test.append('g').classed('distribution-too', true);
-                    console.log(n, i)
+                    
                     let histo = continuousHistogram(n)
                     histo.maxCount = maxCounts[i];
 
@@ -998,6 +997,25 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
                         oDist.attr('transform', i === 0 ? 'translate(0, 0) rotate(90)' : `translate(11, ${dimensions.height}) rotate(-90)`);
                     });
 
+                    let otherDesDis = descendBins
+                    .select(`.g-${i}`).each((o, j, oNode)=> {
+
+                        let oHisto = continuousHistogram(o.data.filter(f=> f.index === i)[0].value
+                                    .filter(f=> (f.values.realVal > brushedVal[0]) && (f.values.realVal < brushedVal[1])));
+                        oHisto.maxCount = o.bins[i].maxCount;
+
+                        let oDist = d3.select(oNode[j]).append('g').classed('distribution-too', true);
+                        oDist.data([oHisto])
+                        .append('path')
+                        .attr('d', i === 0 ? mirrorlineGen : lineGen)
+                        .style('stroke', compareColors[i])
+                        .style('fill', compareColors[i])
+                        .style('fill-opacity', 0.8);
+                        oDist.attr('transform', i === 0 ? 'translate(0, 0) rotate(90)' : `translate(11, ${dimensions.height}) rotate(-90)`);
+
+            });
+           
+
                    
                   
                 }
@@ -1007,53 +1025,16 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
 
             let nodeNames = nodes.map(m=> m.node);
 
-            // let otherBins = continDist.filter(f=> f.index === data.index && f.key != data.key);
-            // otherBins.each((b, i, n)=> {
+             let nodesFlat = data.data.flatMap(m=> m.value.filter(f=> {
+                return (f.values.realVal >= brushedVal[0]) && (f.values.realVal <= brushedVal[1]);
+            }));
 
-            //     // //let test = continuousHistogram(b.data.flatMap(m=> m.value).filter(f=> nodeNames.indexOf(f.node)));
-            //     // let test = b.data.map((m, j)=> {
-            //     //     m.histo = continuousHistogram(m.value.filter(f=> nodeNames.indexOf(f.node)));
-            //     //     m.maxCount = d3.sum(b.bins[j].value.map(m=> m.length));
-            //     //     return m
-            //     // });
-                
-            //     // let otherDist = d3.select(n[i]).selectAll('g.distribution-too')
-            //     // .data(test)
-            //     // .join('g')
-            //     // .classed('distribution-too', true);
-
-            //     // let pathGroup = otherDist.selectAll('g').data(d=> {
-            //     //     let histo = d.histo.map(h=> {
-            //     //         h.index = d.index;
-            //     //         return h;
-            //     //     });
-            //     //     return [histo]})
-            //     //     .join('g')
-            //     //     pathGroup.each((e, i, g)=> {
-            //     //         let index = e[0].index;
-            //     //         let path = d3.select(g[i]).append('path')
-            //     //             .attr('d', index === 0 ? mirrorlineGen : lineGen);
-            //     //         path.attr("fill", brushColors[index][0])
-            //     //             .attr('fill-opacity', 0.5)
-            //     //             .style('stroke', brushColors[index][0]);
-                        
-            //     //         pathGroup.attr('transform', index === 0 ? 'translate(0, 0) rotate(90)' : `translate(11, ${dimensions.height}) rotate(90)`);
-            //     //     })//.append('path').attr('d', console.log(this));
-
-                 
-            //     // // let path = otherDist.append('path').attr('d', mirrorlineGen);
-            //     // // path.attr("fill", brushColors[index][0]).attr('fill-opacity', 0.5)
-            //     // // .style('stroke', brushColors[index][0]);
-    
-            // });
-
-            //////
            
             let notNodes = data.data.flatMap(m=> m.value.filter(f=> {
                 return (f.values.realVal < brushedVal[0]) || (f.values.realVal > brushedVal[1]);
             }));
     
-            let selectedNodes = brushedNodes(nodes, notNodes, data, brushedVal, classLabel);
+            let selectedNodes = brushedNodes(nodesFlat, notNodes, data, brushedVal, classLabel);
             let selectedBranch = selectedNodes[0];
             let secondGrp = selectedNodes[1];
             let antiSelected = selectedNodes[2];
@@ -1094,6 +1075,16 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
                         // d3.select(d).call(brush.move, null);
                         // d3.select(n[i].parentNode).remove();
                         // d3.select(d).select('.overlay').attr('stroke-width', 0);
+                        let classy = index === 0 ? 'one' : 'two';
+                        
+                        d3.select(d.brush).call(brush.move, null);
+                        d3.select(n[i].parentNode).remove();
+                        d3.select(d.brush).select('.overlay').attr('stroke-width', 0);
+                        descendBins.selectAll('.distribution-too').remove();
+                        otherBins.selectAll('.distribution-too').remove();
+                        d3.select(d.brush.parentNode).selectAll('.distribution-too').remove();
+                        d3.select('#sidebar').selectAll(`.${classy}`).classed('anti-brushed-second', false);
+                        d3.select('#sidebar').selectAll(`.${classy}`).classed('anti-brushed', false);
                     });
     
                 }else{
@@ -1602,6 +1593,7 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
 
             let descendBins = continDist.filter(f=> {
                 return (f.index > data.index) && (f.key === data.key)});
+
             descendBins.each((b, i, n)=> {
 
                 let test = b.data.filter(f=> {
@@ -1668,7 +1660,7 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
                     let xOut = badge.append('i').classed('close fas fa-times', true).style('padding-left', '10px');
     
                     xOut.on('click', (d, i, n)=> {
-                        console.log(d, index)
+                       
                         let classy = index === 0 ? 'one' : 'two';
                         
                         d3.select(d.brush).call(brush.move, null);
