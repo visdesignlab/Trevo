@@ -31,6 +31,8 @@ const selectedClades = [[]];
 
 export function groupDistributions(pathData, mainDiv, scales, groupAttr){
 
+    console.log(pathData, mainDiv, scales, groupAttr);
+
     let groupKeys = scales.filter(f=> f.field === groupAttr)[0].scales.map(s=> s.scaleName)
   
     let branchBinCount = d3.median(pathData.map(m=> m.length)) - d3.min(pathData.map(m=> m.length))
@@ -360,7 +362,7 @@ export function renderDistStructure(mainDiv, pathGroups){
     let groupDivs = groupWrap.selectAll('.group-div').data(pathGroups).join('div').classed('group-div', true);
 
     groupDivs.each((d, i, node)=> {
-        
+        console.log('d',d)
        let filteredAttributes = d.groupBins.filter(f=> {
            return shownAttributes.indexOf(f.key) > -1;
        });

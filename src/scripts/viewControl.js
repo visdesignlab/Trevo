@@ -28,7 +28,7 @@ export function updateMainView(d, groups){
         if(groups){
             renderDistStructure(main, groups)
         }else{
-            groupDistributions(data, main, scales, 'Clade');
+            groupDistributions(data, main, scales, null);
         }
     }else if(d === 'Pair View'){
         rankingControl(data);

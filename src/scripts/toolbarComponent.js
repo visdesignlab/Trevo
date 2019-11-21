@@ -23,7 +23,9 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pat
     let viewDrop = dropDown(toolbar, viewArray, viewArray[0].field, 'change-view');
 
     viewDrop.on('click', (d, i, n)=> {
-        updateMainView(d.field);
+        let group = chosenCladesGroup[chosenCladesGroup.length - 1];
+       
+        updateMainView(d.field, group.groups);
         d3.select('.dropdown.change-view').select('button').node().value = d.field;
         d3.select('.dropdown.change-view').select('button').text(d.field)
         d3.select('#change-view').classed('show', false);
@@ -89,7 +91,7 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pat
 
     /////ATTRIBUTE DROP DOWN
     let attributeOptions = calculatedScales.map(m=> m.field);
-    let checkedAttributes = attributeOptions.length > 5 ? ['Body_height', 'Body_width', 'Carpus', 'Group', 'Femur', 'island/mainland', 'Head_width', 'Forelimb'] : attributeOptions;
+    let checkedAttributes = attributeOptions.length > 11 ? ['Body_height', 'Body_width', 'Carpus', 'Group', 'Femur', 'island/mainland', 'Head_width', 'Forelimb'] : attributeOptions;
 
     let dropdiv = toolbar.append('div').classed(`dropdown attribute-show`, true);
     dropdiv.style('display', 'inline-block')

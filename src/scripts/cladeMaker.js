@@ -27,7 +27,6 @@ export function removeCladeGroup(clades){
 
 export function groupDataByAttribute(scales, data, groupAttr){
 
-    console.log('scales', scales)
 
     let groupKeys = scales.filter(f=> f.field === groupAttr)[0].scales.map(s=> s.scaleName);
 
@@ -39,8 +38,7 @@ export function groupDataByAttribute(scales, data, groupAttr){
         });
     
         let groupBins = binGroups(paths, group, scales, branchBinCount);
-        return {'label': group, 'paths': paths, 'groupBins': groupBins}
-
+        return {'label': group, 'paths': paths, 'groupBins': groupBins};
     });
     
 }
