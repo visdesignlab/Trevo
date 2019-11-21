@@ -23,7 +23,7 @@ const brushColors = [
 
 const compareColors = ['#546E7A', '#5D4037']
 
-const defaultBarColor = '#DCD4D4';
+const defaultBarColor = '#baaaaa'//#DCD4D4';
 
 let colorBool = 0;
 

@@ -39,9 +39,6 @@ export function rankingControl(data){
     .attr('y', 10)
     .attr('x', (d, i)=> (300+(200 * i)));
 
-
-
-    console.log('VALUE', d3.select('.attr-drop.dropdown').select('button'))
   
     defaultW.forEach((color, i) => {
       var slider = slide
@@ -55,7 +52,7 @@ export function rankingControl(data){
         .fill('#7FB3D5')
         .on('end', num => {
          defaultW[i] = num;
-         console.log(d3.select('.attr-drop.dropdown').select('button').attr('value'))
+       
          updateRanking(pairPaths(data), d3.select('.attr-drop.dropdown').select('button').attr('value'), defaultW);
         });
   
