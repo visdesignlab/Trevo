@@ -16,9 +16,8 @@ export function findBrushedNodes(){
     let nodes = brushData.flatMap(m=> m.nodes);
     return nodes;
 }
-export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pathView){
+export function toolbarControl(toolbar, main, calculatedScales){
 
-    console.log('calc',calculatedScales)
 
     let viewArray = [{'field':'Summary View'},{'field':'Path View'},{'field':'Pair View'}, {'field':'Clade View'}];
 
@@ -93,7 +92,7 @@ export function toolbarControl(toolbar, normedPaths, main, calculatedScales, pat
 
     /////ATTRIBUTE DROP DOWN
     let attributeOptions = calculatedScales.map(m=> m.field);
-    let checkedAttributes = attributeOptions.length > 11 ? ['Body_height', 'Body_width', 'Carpus', 'Group', 'Femur', 'island/mainland', 'Head_width', 'Forelimb'] : attributeOptions;
+    let checkedAttributes = attributeOptions.length > 11 ? attributeOptions.slice(0, 8) : attributeOptions;
 
     let dropdiv = toolbar.append('div').classed(`dropdown attribute-show`, true);
     dropdiv.style('display', 'inline-block')
