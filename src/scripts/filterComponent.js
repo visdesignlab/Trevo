@@ -1,7 +1,7 @@
 import '../styles/index.scss';
 
 import * as d3 from "d3";
-import {dataMaster} from './index';
+import {dataMaster, calculatedScalesKeeper} from './index';
 import { updateMainView } from './viewControl';
 
 export let filterMaster = [];
@@ -61,6 +61,10 @@ export function getLatestData(){
     return data;
 }
 
+export function getScales(){
+    return calculatedScalesKeeper[calculatedScalesKeeper.length - 1];
+}
+
 ///NEED TO BREAK THESE OUT INTO SEPARATE FILTERS
 export function toggleFilters(filterButton, main, scales){
     console.log(filterButton, main, scales)
@@ -86,7 +90,6 @@ export function toggleFilters(filterButton, main, scales){
         main.style('padding-top', '0px');
     }
 }
-
 function addFilterTag(data, scales){
 
     let filterToolbar = d3.select('#toolbar');

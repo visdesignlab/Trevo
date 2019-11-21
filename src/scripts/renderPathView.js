@@ -1,10 +1,9 @@
 import '../styles/index.scss';
 import * as d3 from "d3";
 import * as d3Array from 'd3-array'
-import { colorKeeper } from './index';
 import {pathSelected, renderComparison} from './selectedPaths';
 import {formatAttributeData, maxTimeKeeper} from './dataFormat';
-import {filterMaster, nodeFilter, getLatestData, leafStateFilter} from './filterComponent';
+import {filterMaster, nodeFilter, getLatestData, leafStateFilter, getScales} from './filterComponent';
 import { drawBranchPointDistribution } from './distributionView';
 import { dropDown } from './buttonComponents';
 import { groupedView } from './viewControl';
@@ -15,7 +14,9 @@ const dimensions = {
     collapsedHeight: 20,
 }
 
-export function drawPathsAndAttributes(pathData, main, calculatedScales){
+export function drawPathsAndAttributes(pathData, main){
+
+    let scales = getScales();
 
     let nodeTooltipFlag = true;
 
@@ -23,25 +24,22 @@ export function drawPathsAndAttributes(pathData, main, calculatedScales){
   
     main.select('#main-path-view').selectAll('*').remove();
 
-    let pathGroups = renderPaths(pathData, main, calculatedScales);
+    let pathGroups = renderPaths(pathData, main);
   
       /// LOWER ATTRIBUTE VISUALIZATION ///
     let attributeWrapper = pathGroups.append('g').classed('attribute-wrapper', true);
-    let attrHide = filterMaster.filter(f=> f.type === 'hide-attribute').map(m=> m.attribute);
+  
+    let shownAttributes = d3.select('#attribute-show').selectAll('input').filter((f, i, n)=> n[i].checked === true).data();
 
-    let attKeys = attrHide.length > 0 ? calculatedScales.filter(f=> attrHide.indexOf(f.field) === -1).map(m=> m.field) : null;
+    let attData = formatAttributeData(pathData, scales, shownAttributes);
 
-    let attData = formatAttributeData(pathData, calculatedScales, attKeys);
-
-    let attrMove = attKeys === null ? calculatedScales.length : attKeys.length;
-
-    let predictedAttrGrps = renderAttributes(attributeWrapper, attData, calculatedScales, null, collapsed);
+    let predictedAttrGrps = renderAttributes(attributeWrapper, attData, collapsed);
     let attributeHeight = (collapsed === 'true')? 22 : 45;
-    pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (attrMove + 1))) +')');
+    pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (shownAttributes.length + 1))) +')');
     
     let cGroups = drawContAtt(predictedAttrGrps, collapsed);
     let dGroups = drawDiscreteAtt(predictedAttrGrps, collapsed, false);
-    sizeAndMove(main.select('#main-path-view'), attributeWrapper, pathData, (attrMove * attributeHeight));
+    sizeAndMove(main.select('#main-path-view'), attributeWrapper, pathData, (shownAttributes.length * attributeHeight));
 
     let leafStates = d3.selectAll('.discrete-leaf');
     leafStates.on('click', (d, i)=> {
@@ -58,7 +56,7 @@ export function drawPathsAndAttributes(pathData, main, calculatedScales){
             d3.select("#state-tooltip").classed("hidden", false);
 
             d3.select("#filter-by-state").on('click', ()=> {
-                leafStateFilter(d, calculatedScales);
+                leafStateFilter(d, scales);
                 nodeTooltipFlag = false;
                 d3.select("#state-tooltip").classed("hidden", true);
             });
@@ -76,7 +74,7 @@ export function drawPathsAndAttributes(pathData, main, calculatedScales){
                 nodeTooltipFlag = false;
                 d3.select("#state-tooltip").classed("hidden", true);
 
-                pathSelected(test, notIt, calculatedScales);
+                pathSelected(test, notIt, scales);
 
             });
 
@@ -91,7 +89,9 @@ export function sizeAndMove(svg, attribWrap, data, attrMove){
     attribWrap.attr('transform', (d)=> 'translate(140, 25)');
         ///////////////////////////////////
 }
-export function renderPaths(pathData, main, scales){
+export function renderPaths(pathData, main){
+
+    let scales = getScales();
 
     ////YOU SHOULD MOVE THESE APPENDING THINGS OUT OF HERE///////
     /////Rendering ///////
@@ -239,7 +239,7 @@ export function renderPaths(pathData, main, scales){
 
     return pathGroups;
 }
-export function renderAttributes(attributeWrapper, data, scales, filterArray, collapsed){
+export function renderAttributes(attributeWrapper, data, collapsed){
     let attributeHeight = (collapsed === 'true')? 20 : 45;
     let predictedAttrGrps = attributeWrapper.selectAll('g').data((d, i)=> {
         return data[i]}).join('g');
@@ -952,7 +952,7 @@ export function drawGroups(stateBins, scales){
      });
      confiBars.style('opacity', 0.1);
            
-           //drawGroups(stateBins, calculatedScales);
+           //drawGroups(stateBins, scales);
     }else{
             console.error('THIS HAS TO BE DISCRETE');
         }
