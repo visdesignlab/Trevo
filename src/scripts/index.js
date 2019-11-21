@@ -49,9 +49,10 @@ let discreteTraitList = ['Clade', 'Group', 'island/mainland']
 
 let wrap = d3.select('#wrapper');
 let main = wrap.select('#main');
-let selectedPaths = wrap.select('#selected');
+wrap.select('#selected').classed('hidden', true);
 let sidebar = wrap.select('#sidebar');
 let toolbarDiv = wrap.select('#toolbar');
+wrap.select('#filter-tab').classed('hidden', true);
 
 let tooltip = wrap.append("div")
 .attr("id", "tooltip")
@@ -63,20 +64,25 @@ appLaunch();
 
 async function appLaunch(){
 
-    dataLoadAndFormat('centrarchid-edges.json', 'centrarchid-edge-lengths.json', 'centrarchid-leaf-data.csv', 'centrarchid-res.json').then((centData)=> {
+    // dataLoadAndFormat('centrarchid-edges.json', 'centrarchid-edge-lengths.json', 'centrarchid-leaf-data.csv', 'centrarchid-res.json').then((centData)=> {
       
-        //toolbarDiv, normedPaths, main, calculatedScales, 'paths')
-            toolbarControl(toolbarDiv, centData[0], main, centData[1], 'paths');
-                
-            wrap.select('#filter-tab').classed('hidden', true);
-            
-            renderTreeButtons(centData[0], centData[1], sidebar, false);
-               
-            renderTree(sidebar, null, true, false);
-                
-            /// LOWER ATTRIBUTE VISUALIZATION ///
-            initialViewLoad(centData[1]);
-    });
+    //         toolbarControl(toolbarDiv, centData[0], main, centData[1], 'paths');
+    //         wrap.select('#filter-tab').classed('hidden', true);
+    //         renderTreeButtons(centData[0], centData[1], sidebar, false);
+    //         renderTree(sidebar, null, true, false);
+    //         /// LOWER ATTRIBUTE VISUALIZATION ///
+    //         initialViewLoad(centData[1]);
+    // });
+
+    dataLoadAndFormat('anolis-edges.json', 'anolis-edge-lengths.json', 'anolis-leaf-data.csv', 'anolis-res.json').then((centData)=> {
+      
+        toolbarControl(toolbarDiv, centData[0], main, centData[1], 'paths');
+        
+        renderTreeButtons(centData[0], centData[1], sidebar, false);
+        renderTree(sidebar, null, true, false);
+        /// LOWER ATTRIBUTE VISUALIZATION ///
+        initialViewLoad(centData[1]);
+});
 
 }
 
