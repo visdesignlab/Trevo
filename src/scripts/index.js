@@ -63,10 +63,20 @@ appLaunch();
 
 async function appLaunch(){
 
-    let test = await dataLoadAndFormat('centrarchid-edges.json', 'centrarchid-edge-lengths.json', 'centrarchid-leaf-data.csv', 'centrarchid-res.json');
-
-    console.log('dm', test);
-    console.log('dataa', dataMaster, calculatedScalesKeeper)
+    dataLoadAndFormat('centrarchid-edges.json', 'centrarchid-edge-lengths.json', 'centrarchid-leaf-data.csv', 'centrarchid-res.json').then((centData)=> {
+      
+        //toolbarDiv, normedPaths, main, calculatedScales, 'paths')
+            toolbarControl(toolbarDiv, centData[0], main, centData[1], 'paths');
+                
+            wrap.select('#filter-tab').classed('hidden', true);
+            
+            renderTreeButtons(centData[0], centData[1], sidebar, false);
+               
+            renderTree(sidebar, null, true, false);
+                
+            /// LOWER ATTRIBUTE VISUALIZATION ///
+            initialViewLoad(centData[1]);
+    });
 
 }
 
@@ -227,28 +237,15 @@ async function dataLoadAndFormat(edgeFile, edgeLengthFile, leafCharFile, resFile
     
                 let chosenClade = addCladeGroup('Ungrouped', ['Whole Set'], [{'label': 'Ungrouped', 'paths': normedPaths, 'groupBins': group}]);
                 chosenCladesGroup.push(chosenClade)
-    
             }
         }
         
-        calculatedScalesKeeper.push(calculatedScales);
-        dataMaster.push(normedPaths);
-       // speciesTest.push(normedPaths.flatMap(m=> m.filter(f=> f.leaf === true)).map(l=> l.node));
-    
-        toolbarControl(toolbarDiv, normedPaths, main, calculatedScales, 'paths');
-        
-        let filterDiv = wrap.select('#filter-tab').classed('hidden', true);
-    
-        nestedData.push(buildTreeStructure(normedPaths, all.concat(matchedLeaves)));
-        renderTreeButtons(normedPaths, calculatedScales, sidebar, false);
-       
-        renderTree(sidebar, null, true, false);
-        
-        /// LOWER ATTRIBUTE VISUALIZATION ///
-        initialViewLoad(calculatedScales);
 
+    calculatedScalesKeeper.push(calculatedScales);
+    dataMaster.push(normedPaths);
+    nestedData.push(buildTreeStructure(normedPaths, all.concat(matchedLeaves)));
 
-    return [dataMaster, calculatedScalesKeeper]
+    return [normedPaths, calculatedScales];
 }
 
 
