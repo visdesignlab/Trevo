@@ -25,6 +25,7 @@ export function updateMainView(d, groups){
     }else if(d === 'Summary View'){
         d3.select('#pair-rank').classed('hidden', true);
         document.getElementById("scrunch").disabled = true;
+        document.getElementById("discrete-view").disabled = true;
         if(groups){
             renderDistStructure(main, groups)
         }else{
@@ -54,10 +55,14 @@ export function initialViewLoad(scales){
         groupDistributions(data, main, scales, 'Clade');
         d3.select('#view-toggle').text('View Paths');
         document.getElementById("scrunch").disabled = true;
+       
+        document.getElementById("discrete-view").disabled = true;
     }else{
         drawPathsAndAttributes(data, main, scales);
         d3.select('#view-toggle').text('View Summary');
         document.getElementById("scrunch").disabled = false;
+        document.getElementById("discrete-view").disabled = true;
+      
     }
 
 }
