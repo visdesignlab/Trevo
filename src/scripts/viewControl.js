@@ -46,6 +46,8 @@ export function initialViewLoad(scales){
     let main = d3.select('#main');
     let data = getLatestData();
 
+    console.log('data',data)
+
     main.selectAll('*').remove();
 
     if(data.length > 50){
