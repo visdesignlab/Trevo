@@ -68,7 +68,7 @@ async function appLaunch(){
       
             toolbarControl(toolbarDiv, main, centData[1]);
             wrap.select('#filter-tab').classed('hidden', true);
-            renderTreeButtons(centData[0], centData[1], sidebar, false);
+            renderTreeButtons(centData[0], sidebar, false);
             renderTree(sidebar, null, true, false);
             /// LOWER ATTRIBUTE VISUALIZATION ///
             initialViewLoad(centData[1]);
@@ -78,7 +78,7 @@ async function appLaunch(){
       
 //         toolbarControl(toolbarDiv, main, centData[1]);
         
-//         renderTreeButtons(centData[0], centData[1], sidebar, false);
+//         renderTreeButtons(centData[0], sidebar, false);
 //         renderTree(sidebar, null, true, false);
 //         /// LOWER ATTRIBUTE VISUALIZATION ///
 //         initialViewLoad(centData[1]);

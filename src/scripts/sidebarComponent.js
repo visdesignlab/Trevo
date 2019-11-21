@@ -2,7 +2,7 @@ import '../styles/index.scss';
 import * as d3 from "d3";
 
 import {dataMaster, nestedData, collapsed} from './index';
-import {filterMaster, removeFilter, addFilter} from './filterComponent';
+import {filterMaster, removeFilter, addFilter, getScales} from './filterComponent';
 import {getNested} from './pathCalc';
 import { dropDown } from './buttonComponents';
 import { updateRanking } from './pairView';
@@ -69,12 +69,14 @@ export function buildTreeStructure(paths, edges){
 //     });
 // }
 
-export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
-    
+export function renderTreeButtons(normedPaths, sidebar){
+
+    let scales = getScales();
+
     ///SIDBAR STUFF
     sidebar = sidebar.append('div').classed('button-wrap', true);
     // let treeButton = sidebar.append('button').text('Filter by Tree').classed('btn btn-outline-secondary', true);  
-    // let treeBrush = d3.brush().extent([[0, 0], [400, 600]]).on('end', (d, i, n) => updateBrush(treeBrush, calculatedScales));
+    // let treeBrush = d3.brush().extent([[0, 0], [400, 600]]).on('end', (d, i, n) => updateBrush(treeBrush, scales));
     // treeButton.on('click', ()=> {
     //     renderTree(sidebar, true, null, true);
     //     let treeBrushG = sidebar.select('svg').append('g').classed('tree-brush', true).call(treeBrush);
@@ -98,7 +100,7 @@ export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
 
     let optionArray = [{'field':'None'}];
 
-    calculatedScales.map(m=> optionArray.push(m));
+    scales.map(m=> optionArray.push(m));
 
     let dropOptions = dropDown(sidebar, optionArray, `Color By Value`,'show-drop-div-sidebar');
     dropOptions.on('click', (d, i, n)=> {
@@ -116,8 +118,7 @@ export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
     });
 
     let phenoOptions = [{'field':'None'}];
-
-    calculatedScales.filter(f=> f.type != 'discrete').map(m=> phenoOptions.push(m));
+    scales.filter(f=> f.type != 'discrete').map(m=> phenoOptions.push(m));
 
       ///BUTTON FOR PHENOGRAM VIEW. MAYBE MOVE THIS TO SIDEBAR
       let phenogramButton = d3.select('#sidebar').select('.button-wrap').append('button').text('View Phenogram');
