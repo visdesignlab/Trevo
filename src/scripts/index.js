@@ -250,6 +250,7 @@ async function dataLoadAndFormat(edgeFile, edgeLengthFile, leafCharFile, resFile
     calculatedScalesKeeper.push(calculatedScales);
     dataMaster.push(normedPaths);
     nestedData.push(buildTreeStructure(normedPaths, all.concat(matchedLeaves)));
+    speciesTest.push(normedPaths.flatMap(m=> m.filter(f=> f.leaf === true)).map(l=> l.node));
 
     return [normedPaths, calculatedScales];
 }
