@@ -115,14 +115,18 @@ export function renderTreeButtons(normedPaths, calculatedScales, sidebar){
        sidebar.select('#show-drop-div-sidebar').classed('show', false);
     });
 
+    let phenoOptions = [{'field':'None'}];
+
+    calculatedScales.filter(f=> f.type != 'discrete').map(m=> phenoOptions.push(m));
+
       ///BUTTON FOR PHENOGRAM VIEW. MAYBE MOVE THIS TO SIDEBAR
       let phenogramButton = d3.select('#sidebar').select('.button-wrap').append('button').text('View Phenogram');
       phenogramButton.classed('btn btn-outline-secondary', true); 
       phenogramButton.on('click', ()=> {
           if(phenogramButton.text() === 'View Phenogram'){
             if(d3.select('.attr-drop.dropdown').select('button').empty()){
-                let drop = dropDown(d3.select('#toolbar'), optionArray, `Trait: ${optionArray[1].field}`, 'attr-drop');
-                d3.select('.attr-drop.dropdown').select('button').attr('value', optionArray[1].field);
+                let drop = dropDown(d3.select('#toolbar'), phenoOptions, `Trait: ${phenoOptions[1].field}`, 'attr-drop');
+                d3.select('.attr-drop.dropdown').select('button').attr('value', phenoOptions[1].field);
                 d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Color By Value`);
                 drop.on('click', (d, i, n)=> {
                     if(d3.select('.dropdown.change-view').select('button').node().value === "View Pairs"){
@@ -242,7 +246,6 @@ export function renderTree(sidebar, att, uncollapse, pheno){
     }
 
  
-
     // declares a tree layout and assigns the size
     var treemap = d3.tree()
     .size([dimensions.height, dimensions.width]);
