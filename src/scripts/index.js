@@ -66,7 +66,7 @@ async function appLaunch(){
 
     // dataLoadAndFormat('centrarchid-edges.json', 'centrarchid-edge-lengths.json', 'centrarchid-leaf-data.csv', 'centrarchid-res.json').then((centData)=> {
       
-    //         toolbarControl(toolbarDiv, centData[0], main, centData[1], 'paths');
+    //         toolbarControl(toolbarDiv, main, centData[1]);
     //         wrap.select('#filter-tab').classed('hidden', true);
     //         renderTreeButtons(centData[0], centData[1], sidebar, false);
     //         renderTree(sidebar, null, true, false);
@@ -76,7 +76,7 @@ async function appLaunch(){
 
     dataLoadAndFormat('anolis-edges.json', 'anolis-edge-lengths.json', 'anolis-leaf-data.csv', 'anolis-res.json').then((centData)=> {
       
-        toolbarControl(toolbarDiv, centData[0], main, centData[1], 'paths');
+        toolbarControl(toolbarDiv, main, centData[1]);
         
         renderTreeButtons(centData[0], centData[1], sidebar, false);
         renderTree(sidebar, null, true, false);
