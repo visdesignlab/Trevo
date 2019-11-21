@@ -42,39 +42,40 @@ export const colorKeeper = [
     ['#3928A6'],
 ]
 
-export const attributeList = [
-    // 'PCIII_padwidth_vs_tail',
-    // 'PCII_head',
-    // 'PCIV_lamella_num',
-    // 'PCI_limbs',
-    {field: 'Body_height', type: 'continuous'},
-    {field:'Body_width', type:'continuous'},
-    {field:'Carpus', type:'continuous'},
-    {field:'Clade', type:'discrete'},
-    {field:'Close', type: 'continuous'},
-    {field:'Femur', type: 'continuous'},
-    {field:'Forelimb', type: 'continuous'},
-    {field:'Group', type: 'discrete'},
-    {field:'Head_length', type: 'continuous'},
-    {field:'Head_width', type: 'continuous'},
-    {field:'Head_depth', type: 'continuous'},
-    {field:'Hind_limb', type: 'continuous'},
-    {field:'Humerus', type: 'continuous'},
-    {field:'island/mainland', type:'discrete'},
-    {field:'Interlimb', type: 'continuous'},
-    {field:'Longest_toe', type: 'continuous'},
-    {field:'Ltoe', type: 'continuous'},
-    {field:'Lower_jaw', type: 'continuous'},
-    {field:'Nmorpho', type: 'continuous'},
-    {field:'Open', type: 'continuous'},
-    {field:'Outlever', type: 'continuous'},
-    {field:'Radius', type: 'continuous'},
-    {field:'Snout', type: 'continuous'},
-    {field:'SVL', type: 'continuous'},
-    {field:'Tail', type: 'continuous'},
-    {field:'Tarsus', type: 'continuous'},
-    {field:'Tibia', type: 'continuous'},
-];
+export const attributeList = [];
+
+// export const attributeList = [
+
+//     {field: 'Body_height', type: 'continuous'},
+//     {field:'Body_width', type:'continuous'},
+//     {field:'Carpus', type:'continuous'},
+//     {field:'Clade', type:'discrete'},
+//     {field:'Close', type: 'continuous'},
+//     {field:'Femur', type: 'continuous'},
+//     {field:'Forelimb', type: 'continuous'},
+//     {field:'Group', type: 'discrete'},
+//     {field:'Head_length', type: 'continuous'},
+//     {field:'Head_width', type: 'continuous'},
+//     {field:'Head_depth', type: 'continuous'},
+//     {field:'Hind_limb', type: 'continuous'},
+//     {field:'Humerus', type: 'continuous'},
+//     {field:'island/mainland', type:'discrete'},
+//     {field:'Interlimb', type: 'continuous'},
+//     {field:'Longest_toe', type: 'continuous'},
+//     {field:'Ltoe', type: 'continuous'},
+//     {field:'Lower_jaw', type: 'continuous'},
+//     {field:'Nmorpho', type: 'continuous'},
+//     {field:'Open', type: 'continuous'},
+//     {field:'Outlever', type: 'continuous'},
+//     {field:'Radius', type: 'continuous'},
+//     {field:'Snout', type: 'continuous'},
+//     {field:'SVL', type: 'continuous'},
+//     {field:'Tail', type: 'continuous'},
+//     {field:'Tarsus', type: 'continuous'},
+//     {field:'Tibia', type: 'continuous'},
+// ];
+
+let discreteTraitList = ['Clade', 'Group', 'island/mainland']
 
 let wrap = d3.select('#wrapper');
 let main = wrap.select('#main');
@@ -84,15 +85,29 @@ let toolbarDiv = wrap.select('#toolbar');
 
 loadData(d3.json, './public/data/new-anolis-edges.json', 'edge').then(async edges => {
 
+    
     //helper function to create array of unique elements
     Array.prototype.unique = function() {
         return this.filter(function (value, index, self) { 
             return self.indexOf(value) === index;
         });
     }
-    
-    let edgeLen = await loadData(d3.json, './public/data/new-anolis-edge-length.json', 'edge');
 
+    let leafChar = await loadData(d3.csv, './public/data/new-anolis-leaf-char.csv', '');
+
+    ///Creating attribute list to add estimated values in //
+
+    leafChar.columns.filter(f=> f != 'species').forEach((d, i)=> {
+
+        if(discreteTraitList.indexOf(d) > -1){
+            attributeList.push({field: d, type: 'discrete'});
+        }else{
+            attributeList.push({field: d, type:'continuous'});
+        }
+
+    });
+
+    let edgeLen = await loadData(d3.json, './public/data/new-anolis-edge-length.json', 'edge');
     let char = await loadData(d3.json, './public/data/new-anolis-res.json', '');
 
     edges.rows = edges.rows.filter(f=> f.From != "").map((edge, i)=> {
@@ -104,7 +119,7 @@ loadData(d3.json, './public/data/new-anolis-edges.json', 'edge').then(async edge
     let edgeSource = edges.rows.map(d=> d.From);
    
     let leaves = edges.rows.filter(f=> edgeSource.indexOf(f.To) == -1 );
-    let leafChar = await loadData(d3.csv, './public/data/new-anolis-leaf-char.csv', '');
+   
 
     let calculatedAtt = char.rows.map((row, i)=> {
         let newRow = {};
