@@ -1,7 +1,7 @@
 import '../styles/index.scss';
 import {formatAttributeData, maxTimeKeeper} from './dataFormat';
 import * as d3 from "d3";
-import {filterMaster, getLatestData} from './filterComponent';
+import {filterMaster, getLatestData, getScales} from './filterComponent';
 import { pullPath } from './pathCalc';
 import { renderTree } from './sidebarComponent';
 import { chosenCladesGroup } from './cladeMaker';
@@ -22,16 +22,14 @@ const brushColors = [
 ]
 
 const compareColors = ['#546E7A', '#5D4037']
-
 const defaultBarColor = '#DCD4D4';
 
 let colorBool = 0;
-
 const selectedClades = [[]];
 
-export function groupDistributions(pathData, mainDiv, scales, groupAttr){
+export function groupDistributions(pathData, mainDiv, groupAttr){
 
-    console.log(pathData, mainDiv, scales, groupAttr);
+    let scales = getScales();
 
     let groupKeys = scales.filter(f=> f.field === groupAttr)[0].scales.map(s=> s.scaleName)
   

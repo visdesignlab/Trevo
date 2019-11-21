@@ -1,7 +1,7 @@
 import '../styles/index.scss';
 import * as d3 from "d3";
 import {loadData} from './dataLoad';
-import {calculateScales, calculateNewScales, matchLeaves, matchEdges, normPaths, filterKeeper, pairPaths, rootAttribute, combineLength} from './dataFormat';
+import {calculateNewScales, rootAttribute, combineLength} from './dataFormat';
 import {allPaths, pullPath, getPathRevised, getPath} from './pathCalc';
 import {renderTree, buildTreeStructure, renderTreeButtons} from './sidebarComponent';
 import {toolbarControl} from './toolbarComponent';
@@ -64,25 +64,25 @@ appLaunch();
 
 async function appLaunch(){
 
-    // dataLoadAndFormat('centrarchid-edges.json', 'centrarchid-edge-lengths.json', 'centrarchid-leaf-data.csv', 'centrarchid-res.json').then((centData)=> {
+    dataLoadAndFormat('centrarchid-edges.json', 'centrarchid-edge-lengths.json', 'centrarchid-leaf-data.csv', 'centrarchid-res.json').then((centData)=> {
       
-    //         toolbarControl(toolbarDiv, main, centData[1]);
-    //         wrap.select('#filter-tab').classed('hidden', true);
-    //         renderTreeButtons(centData[0], centData[1], sidebar, false);
-    //         renderTree(sidebar, null, true, false);
-    //         /// LOWER ATTRIBUTE VISUALIZATION ///
-    //         initialViewLoad(centData[1]);
-    // });
+            toolbarControl(toolbarDiv, main, centData[1]);
+            wrap.select('#filter-tab').classed('hidden', true);
+            renderTreeButtons(centData[0], centData[1], sidebar, false);
+            renderTree(sidebar, null, true, false);
+            /// LOWER ATTRIBUTE VISUALIZATION ///
+            initialViewLoad(centData[1]);
+    });
 
-    dataLoadAndFormat('anolis-edges.json', 'anolis-edge-lengths.json', 'anolis-leaf-data.csv', 'anolis-res.json').then((centData)=> {
+//     dataLoadAndFormat('anolis-edges.json', 'anolis-edge-lengths.json', 'anolis-leaf-data.csv', 'anolis-res.json').then((centData)=> {
       
-        toolbarControl(toolbarDiv, main, centData[1]);
+//         toolbarControl(toolbarDiv, main, centData[1]);
         
-        renderTreeButtons(centData[0], centData[1], sidebar, false);
-        renderTree(sidebar, null, true, false);
-        /// LOWER ATTRIBUTE VISUALIZATION ///
-        initialViewLoad(centData[1]);
-});
+//         renderTreeButtons(centData[0], centData[1], sidebar, false);
+//         renderTree(sidebar, null, true, false);
+//         /// LOWER ATTRIBUTE VISUALIZATION ///
+//         initialViewLoad(centData[1]);
+// });
 
 }
 

@@ -73,10 +73,6 @@ ul {
  // pointer-events: none;
 }
 
-#branch-tooltip.hidden, #state-tooltip.hidden {
-  display: none;
-}
-
 .clade-toolbar{
 height:80px;
 width:100%;
@@ -147,10 +143,26 @@ bottom:0;
   position:fixed;
 }
 
-#filter-tab.hidden, #pair-rank.hidden{
+#filter-tab.hidden, 
+#pair-rank.hidden, 
+#selected.hidden
+{
   height:0;
   opacity:0;
 }
+
+button.hidden{
+  height:0;
+  opacity:0;
+  width: 0;
+  display:none;
+}
+
+#branch-tooltip.hidden, 
+#state-tooltip.hidden {
+  display: none;
+}
+
 
 #selected{
   position: fixed;

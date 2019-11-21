@@ -20,49 +20,80 @@ export function updateMainView(d, groups){
   
     if(d === 'Path View' || d === null){
         d3.select('#pair-rank').classed('hidden', true);
-        drawPathsAndAttributes(data, main, scales, moveMetric);
+        drawPathsAndAttributes(data, main);
+
         document.getElementById("scrunch").disabled = false;
+        document.getElementById("discrete-view").disabled = false;
+
+        d3.select('#scrunch').classed('hidden', false);
+        d3.select('#discrete-view').classed('hidden', false);
+
     }else if(d === 'Summary View'){
         d3.select('#pair-rank').classed('hidden', true);
+
         document.getElementById("scrunch").disabled = true;
         document.getElementById("discrete-view").disabled = true;
+
+        d3.select('#scrunch').classed('hidden', true);
+        d3.select('#discrete-view').classed('hidden', true);
+
         if(groups){
             renderDistStructure(main, groups)
         }else{
-            groupDistributions(data, main, scales, null);
+            groupDistributions(data, main, null);
         }
     }else if(d === 'Pair View'){
         rankingControl(data);
         generatePairs(data);
+
+        document.getElementById("scrunch").disabled = true;
+        document.getElementById("discrete-view").disabled = true;
+
+        d3.select('#scrunch').classed('hidden', true);
+        d3.select('#discrete-view').classed('hidden', true);
+
     }else if(d === 'Clade View'){
         d3.select('#pair-rank').classed('hidden', true);
         createCladeView(main, scales);
+
+        document.getElementById("scrunch").disabled = true;
+        document.getElementById("discrete-view").disabled = true;
+
+        d3.select('#scrunch').classed('hidden', true);
+        d3.select('#discrete-view').classed('hidden', true);
+
     }else{
         console.error('field not found');
     }
 }
-
 export function initialViewLoad(scales){
 
     let main = d3.select('#main');
     let data = getLatestData();
 
-    console.log('data',data)
-
     main.selectAll('*').remove();
 
     if(data.length > 50){
-        groupDistributions(data, main, scales, 'Clade');
+        groupDistributions(data, main, 'Clade');
         d3.select('#view-toggle').text('View Paths');
+
         document.getElementById("scrunch").disabled = true;
-       
         document.getElementById("discrete-view").disabled = true;
+
+        d3.select('#scrunch').classed('hidden', true);
+        d3.select('#discrete-view').classed('hidden', true);
+
     }else{
-        drawPathsAndAttributes(data, main, scales);
+        drawPathsAndAttributes(data, main);
         d3.select('#view-toggle').text('View Summary');
+
         document.getElementById("scrunch").disabled = false;
-        document.getElementById("discrete-view").disabled = true;
+        document.getElementById("discrete-view").disabled = false;
+
+        d3.select('#scrunch').classed('hidden', false);
+        d3.select('#discrete-view').classed('hidden', false);
       
     }
 
 }
+
