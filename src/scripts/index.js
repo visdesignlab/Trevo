@@ -64,7 +64,7 @@ appLaunch();
 
 async function appLaunch(){
 
-    dataLoadAndFormat('centrarchid-edges.json', 'centrarchid-edge-lengths.json', 'centrarchid-leaf-data.csv', 'centrarchid-res.json').then((centData)=> {
+    dataLoadAndFormat('centrarchid-edges.json', 'centrarchid-edge-lengths.json', 'centrarchid-leaf-data.csv', 'centrarchid-res.json', 'Centrarchid').then((centData)=> {
       
             toolbarControl(toolbarDiv, main, centData[1]);
             wrap.select('#filter-tab').classed('hidden', true);
@@ -74,7 +74,7 @@ async function appLaunch(){
             initialViewLoad(centData[1]);
     });
 
-//     dataLoadAndFormat('anolis-edges.json', 'anolis-edge-lengths.json', 'anolis-leaf-data.csv', 'anolis-res.json').then((centData)=> {
+//     dataLoadAndFormat('anolis-edges.json', 'anolis-edge-lengths.json', 'anolis-leaf-data.csv', 'anolis-res.json', 'Anolis').then((centData)=> {
       
 //         toolbarControl(toolbarDiv, main, centData[1]);
         
@@ -86,7 +86,7 @@ async function appLaunch(){
 
 }
 
-async function dataLoadAndFormat(edgeFile, edgeLengthFile, leafCharFile, resFile){
+async function dataLoadAndFormat(edgeFile, edgeLengthFile, leafCharFile, resFile, dataName){
 
         //helper function to create array of unique elements
         Array.prototype.unique = function() {
@@ -239,9 +239,9 @@ async function dataLoadAndFormat(edgeFile, edgeLengthFile, leafCharFile, resFile
     
             }else{
            
-                let group = binGroups(normedPaths, 'ungrouped', calculatedScales, 8);
+                let group = binGroups(normedPaths, dataName, calculatedScales, 8);
     
-                let chosenClade = addCladeGroup('Ungrouped', ['Whole Set'], [{'label': 'Ungrouped', 'paths': normedPaths, 'groupBins': group}]);
+                let chosenClade = addCladeGroup(dataName, ['Whole Set'], [{'label': dataName, 'paths': normedPaths, 'groupBins': group}]);
                 chosenCladesGroup.push(chosenClade)
             }
         }
