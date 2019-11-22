@@ -64,15 +64,25 @@ appLaunch();
 
 async function appLaunch(){
 
-    dataLoadAndFormat('centrarchid-edges.json', 'centrarchid-edge-lengths.json', 'centrarchid-leaf-data.csv', 'centrarchid-res.json', 'Centrarchid').then((centData)=> {
+    dataLoadAndFormat('geospiza-edges.json', 'geospiza-edge-lengths.json', 'geospiza-leaf-data.csv', 'geospiza-res.json', 'Geospiza').then((centData)=> {
       
-            toolbarControl(toolbarDiv, main, centData[1]);
-            wrap.select('#filter-tab').classed('hidden', true);
-            renderTreeButtons(centData[0], sidebar, false);
-            renderTree(sidebar, null, true, false);
-            /// LOWER ATTRIBUTE VISUALIZATION ///
-            initialViewLoad(centData[1]);
+        toolbarControl(toolbarDiv, main, centData[1]);
+        wrap.select('#filter-tab').classed('hidden', true);
+        renderTreeButtons(centData[0], sidebar, false);
+        renderTree(sidebar, null, true, false);
+        /// LOWER ATTRIBUTE VISUALIZATION ///
+        initialViewLoad(centData[1]);
     });
+
+    // dataLoadAndFormat('centrarchid-edges.json', 'centrarchid-edge-lengths.json', 'centrarchid-leaf-data.csv', 'centrarchid-res.json', 'Centrarchid').then((centData)=> {
+      
+    //         toolbarControl(toolbarDiv, main, centData[1]);
+    //         wrap.select('#filter-tab').classed('hidden', true);
+    //         renderTreeButtons(centData[0], sidebar, false);
+    //         renderTree(sidebar, null, true, false);
+    //         /// LOWER ATTRIBUTE VISUALIZATION ///
+    //         initialViewLoad(centData[1]);
+    // });
 
 //     dataLoadAndFormat('anolis-edges.json', 'anolis-edge-lengths.json', 'anolis-leaf-data.csv', 'anolis-res.json', 'Anolis').then((centData)=> {
       
