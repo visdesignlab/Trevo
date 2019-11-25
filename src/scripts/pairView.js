@@ -10,8 +10,6 @@ export function rankingControl(data){
     let rankDiv = d3.select('#pair-rank').classed('hidden', false);
     rankDiv.selectAll('*').remove();
 
-    
-
     let defaultW = [1, 1, 1];
   
     let weightPicker = rankDiv
@@ -37,16 +35,16 @@ export function rankingControl(data){
     weightPicker.selectAll('text.labels').data(labels).join('text').classed('labels', true)
     .text(d=> d)
     .attr('y', 10)
-    .attr('x', (d, i)=> (300+(200 * i)));
+    .attr('x', (d, i)=> (300+(230 * i)));
 
   
     defaultW.forEach((color, i) => {
       var slider = slide
         .sliderBottom()
-        .min(0)
+        .min(-1)
         .max(1)
         .step(.1)
-        .width(150)
+        .width(180)
         .default(defaultW[i])
         .displayValue(false)
         .fill('#7FB3D5')
@@ -58,7 +56,7 @@ export function rankingControl(data){
   
       weightPicker
         .append('g')
-        .attr('transform', `translate(${300+(200 * i)}, 20)`)
+        .attr('transform', `translate(${300+(230 * i)}, 20)`)
         .call(slider);
     });
 }
@@ -99,6 +97,7 @@ export function updateRanking(pairs, field, weights){
     let deltaScale = d3.scaleLinear().domain([0, deltaMax]).range([0, 1]);
     let closeScale = d3.scaleLinear().domain([closeMax, 0]).range([0, 1]);
     let distScale = d3.scaleLinear().domain([0, distMax]).range([0, 1]);
+
     let pickedPairs = [...pairs].map(p=> {
         p.delta = p.deltas.filter(d=> d.key === field)[0];
         p.closeness = p.closeness.filter(d=> d.key === field)[0];
@@ -147,7 +146,8 @@ function drawSorted(pairs, field){
 
     let scoreWrap = pairWraps.append('g').classed('score-wrap', true);
     let scoreGroups = scoreWrap.selectAll('g.score').data((d, i)=> {
-        return [{label: 'Distance', value: d.distance, score: d.distanceRank}, 
+        return [
+         {label: 'Distance', value: d.distance, score: d.distanceRank}, 
          {label: 'Delta', value: d.delta.value, score: d.deltaRank},
          {label: 'Closeness', value: d.closeness.value, score: d.closenessRank}
         ];
@@ -187,7 +187,6 @@ function drawSorted(pairs, field){
     //BEGIN EXPERIOMENTING////]
 
     let pairGroupN = pairWraps.selectAll('g.pair-neighbor').data((d, i, n)=> {
-
       let species1 = d.p1.map(n=> n.node);
       let species2 = d.p2.map(n=> n.node);
       let labels = [...d.p1.filter(n=> n.leaf === true).map(m=> m.node)].concat(d.p2.filter(n=> n.leaf === true).map(m=> m.node));
@@ -197,9 +196,11 @@ function drawSorted(pairs, field){
           return ne;
       });
       
-      let speciesNames = [species1[species1.length-1], species2[species2.length-1]]
+      let speciesNames = [species1[species1.length-1], species2[species2.length-1]];
+
       ////EXPERIMENTING WITH NODES////
-      let neighPaths = dataMaster[0].filter(f=> (neighbors.indexOf(f[f.length - 1].node)) > -1 && (speciesNames.indexOf(f[f.length - 1].node) === -1));
+      let neighPaths = dataMaster[0].filter(f=> 
+        (neighbors.indexOf(f[f.length - 1].node)) > -1 && (speciesNames.indexOf(f[f.length - 1].node) === -1));
   
       let labeledN = [...neighPaths].map(path=> {
         let name = path[path.length - 1].node;
@@ -236,7 +237,6 @@ function drawSorted(pairs, field){
       .attr('stroke-width', 1)
       .style('stroke', 'rgba(160, 141, 184, .9)');
      
-
       let branchesN = pairGroupN.selectAll('g.branch-n').data(d=> d).join('g').classed('branch-n', true);
       branchesN.attr('transform', (d, i)=> `translate(${xScale(d.combLength)}, 0)`);
       branchesN.filter(f=> f.leaf != true).append('rect').attr('width', 10).attr('height', (d)=> {
