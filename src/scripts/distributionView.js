@@ -345,6 +345,44 @@ export function drawGroupLabels(pathData, svg, groupLabel){
     .style('text-anchor', 'middle')
     .attr('transform', `translate(23, ${(shownAttributes.length * (dimensions.height+ 15)/2)}), rotate(-90)`);
 
+
+    // /////START TRYING TO ADD COMPARISON
+
+    // nodeGroups.on('click', (d, i, n)=> {
+    //     // if(nodeTooltipFlag){
+    //     //     nodeTooltipFlag = false;
+    //     //     d3.select("#branch-tooltip").classed("hidden", true);
+    //     // }else{
+    //         nodeTooltipFlag = true;
+    //         d3.select("#branch-tooltip")
+    //         .style("left", (d3.event.pageX) + "px")
+    //         .style("top", (d3.event.pageY - 28) + "px")
+    //         .select("#value")
+    //         .text(d.node);
+    //         d3.select("#branch-tooltip").classed("hidden", false);
+
+    //         d3.select("#filter-by-node").on('click', ()=> {
+    //             nodeFilter(d.node, scales);
+    //             nodeTooltipFlag = false;
+    //             d3.select("#branch-tooltip").classed("hidden", true);
+    //         });
+
+    //         d3.select("#select-by-node").on('click', ()=> {
+    //             let data = getLatestData();
+    //             let test = pathGroups.filter(path => {
+    //                 return path.map(node => node.node).indexOf(d.node) > -1;
+    //             });
+    //             let notIt = pathGroups.filter(path => {
+    //                 return path.map(node => node.node).indexOf(d.node) === -1;
+    //             });
+    //             nodeTooltipFlag = false;
+    //             d3.select("#branch-tooltip").classed("hidden", true);
+    //             pathSelected(test.data(), notIt.data(), scales);
+    //         });
+    //    // }
+    // });
+    // //////////
+
     return cladeLabel;
 }
 /**
@@ -353,6 +391,8 @@ export function drawGroupLabels(pathData, svg, groupLabel){
  * @param {*} pathGroups 
  */
 export function renderDistStructure(mainDiv, pathGroups){
+
+    let compareTooltipFlag = false;
    
     let shownAttributes = d3.select('#attribute-show').selectAll('input').filter((f, i, n)=> n[i].checked === true).data();
    
@@ -419,23 +459,58 @@ export function renderDistStructure(mainDiv, pathGroups){
     
         let groupLabelBars = drawGroupLabels(d.groupBins, svg, d.label);
     
-        groupLabelBars.on('click', (d, i, n)=> {
-            d3.select(n[i]).select('rect').attr('fill', '#F5B041');
+        // groupLabelBars.on('click', (d, i, n)=> {
+        //     d3.select(n[i]).select('rect').attr('fill', '#F5B041');
             
-            selectedClades[selectedClades.length - 1].push(Object.assign({},d));
-            if(selectedClades[selectedClades.length - 1].length > 1){
+        //     selectedClades[selectedClades.length - 1].push(Object.assign({},d));
+        //     if(selectedClades[selectedClades.length - 1].length > 1){
 
-                mainDiv.selectAll('*').remove();
-                mainDiv.select('#compare-wrap').remove();
-                renderDistributionComparison(mainDiv, selectedClades[selectedClades.length - 1], branchScale, pathGroups);
-                //renderDistStructure(mainDiv, pathGroups.filter(p=> p.label != d.label))
+        //         mainDiv.selectAll('*').remove();
+        //         mainDiv.select('#compare-wrap').remove();
+        //         renderDistributionComparison(mainDiv, selectedClades[selectedClades.length - 1], branchScale, pathGroups);
+        //         //renderDistStructure(mainDiv, pathGroups.filter(p=> p.label != d.label))
 
-            }else{
+        //     }else{
               
                 
-            }
+        //     }
+
+            groupLabelBars.on('click', (d, i, n)=> {
+                if(compareTooltipFlag){
+                    compareTooltipFlag = false;
+                    d3.select("#compare-tooltip").classed("hidden", true);
+                }else{
+                    console.log(d)
+                    compareTooltipFlag = true;
+                    d3.select("#compare-tooltip")
+                    .style("left", (d3.event.pageX) + "px")
+                    .style("top", (d3.event.pageY - 28) + "px")
+                    .select("#value")
+                    .text(d.node);
+                    d3.select("#compare-tooltip").classed("hidden", false);
+        
+                    d3.select("#filter-by-node").on('click', ()=> {
+                        nodeFilter(d.node, scales);
+                      //  nodeTooltipFlag = false;
+                        d3.select("#compare-tooltip").classed("hidden", true);
+                    });
+        
+                    d3.select("#select-by-node").on('click', ()=> {
+                        let data = getLatestData();
+                        let test = pathGroups.filter(path => {
+                            return path.map(node => node.node).indexOf(d.node) > -1;
+                        });
+                        let notIt = pathGroups.filter(path => {
+                            return path.map(node => node.node).indexOf(d.node) === -1;
+                        });
+                        nodeTooltipFlag = false;
+                        d3.select("#compare-tooltip").classed("hidden", true);
+                        pathSelected(test.data(), notIt.data(), scales);
+                    });
+                 }
+            });
            
-        });
+       // });
         renderDistibutions(binnedWrap, branchScale, pointGroups);
     });
 }
