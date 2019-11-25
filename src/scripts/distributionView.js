@@ -489,24 +489,24 @@ export function renderDistStructure(mainDiv, pathGroups){
                     .text(d.node);
                     d3.select("#compare-tooltip").classed("hidden", false);
         
-                    d3.select("#filter-by-node").on('click', ()=> {
-                        nodeFilter(d.node, scales);
-                      //  nodeTooltipFlag = false;
+                    d3.select('#select-for-compare').on('click', ()=> {
+                        
+                        compareTooltipFlag = false;
                         d3.select("#compare-tooltip").classed("hidden", true);
-                    });
-        
-                    d3.select("#select-by-node").on('click', ()=> {
-                        let data = getLatestData();
-                        let test = pathGroups.filter(path => {
-                            return path.map(node => node.node).indexOf(d.node) > -1;
-                        });
-                        let notIt = pathGroups.filter(path => {
-                            return path.map(node => node.node).indexOf(d.node) === -1;
-                        });
-                        nodeTooltipFlag = false;
-                        d3.select("#compare-tooltip").classed("hidden", true);
-                        pathSelected(test.data(), notIt.data(), scales);
-                    });
+                        d3.select(n[i]).select('rect').attr('fill', '#F5B041');
+                        selectedClades[selectedClades.length - 1].push(Object.assign({},d));
+                        if(selectedClades[selectedClades.length - 1].length > 1){
+                
+                            mainDiv.selectAll('*').remove();
+                            mainDiv.select('#compare-wrap').remove();
+                            renderDistributionComparison(mainDiv, selectedClades[selectedClades.length - 1], branchScale, pathGroups);
+                                //renderDistStructure(mainDiv, pathGroups.filter(p=> p.label != d.label))
+                        }
+                    })
+                       
+                    
+         
+            
                  }
             });
            
