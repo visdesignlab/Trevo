@@ -172,7 +172,6 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
             .domain(y.domain())  
             .thresholds(y.ticks(10)); 
   
-           
             mapNorm.map((n, i, nodeArray)=> {
                 
                 let colors = scale.stateColors;

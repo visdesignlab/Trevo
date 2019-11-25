@@ -95,14 +95,12 @@ return attributes;
 }
 
 function calculateCloseness(pair, field){
-
  let leaf1 = pair.p1.filter(p=> p.leaf === true)[0].attributes;
  let leaf2 = pair.p2.filter(p=> p.leaf === true)[0].attributes;
 
  return d3.entries(leaf1).filter(f=> f.value.type === 'continuous').map(m=> {
     
      m.value = Math.abs(m.value.values.realVal - leaf2[m.key].values.realVal);
-     
      return m
  });
 }
@@ -156,7 +154,6 @@ export function calculateNewScales(attributes, keyList, colorKeeper){
         }
     });
 }
-
 
 export function calculateScales(calculatedAtt, colorKeeper){
     return Object.keys(calculatedAtt).map((d, i)=> {
@@ -290,7 +287,6 @@ export function matchEdges(edges, edgeLen, calculatedAtt, calculatedScales){
     });
 
 }
-
 export function rootAttribute(paths, calculatedAtt, calculatedScales){
 
     let rootAtt = calculatedAtt.filter(f=> f.node === paths[0][0].node)[0];
@@ -306,7 +302,6 @@ export function rootAttribute(paths, calculatedAtt, calculatedScales){
     });
 
 };
-
 export function combineLength(paths){
 
     let maxTime = paths.map(path=> d3.sum(path.map(p=> p.edgeLength)))[0];
