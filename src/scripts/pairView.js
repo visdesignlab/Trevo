@@ -35,7 +35,7 @@ export function rankingControl(data){
     weightPicker.selectAll('text.labels').data(labels).join('text').classed('labels', true)
     .text(d=> d)
     .attr('y', 10)
-    .attr('x', (d, i)=> (300+(230 * i)));
+    .attr('x', (d, i)=> (300+(260 * i)));
 
   
     defaultW.forEach((color, i) => {
@@ -44,7 +44,7 @@ export function rankingControl(data){
         .min(-1)
         .max(1)
         .step(.1)
-        .width(180)
+        .width(210)
         .default(defaultW[i])
         .displayValue(false)
         .fill('#7FB3D5')
@@ -56,8 +56,13 @@ export function rankingControl(data){
   
       weightPicker
         .append('g')
-        .attr('transform', `translate(${300+(230 * i)}, 20)`)
+        .attr('transform', `translate(${300+(260 * i)}, 20)`)
         .call(slider);
+
+      weightPicker.selectAll('.tick')
+      .filter(f=> f < 0).select('text')
+      .attr('fill', 'red')
+      .attr('opacity', 0.6);
     });
 }
 export function generatePairs(data){
@@ -190,6 +195,8 @@ function drawSorted(pairs, field){
       let species1 = d.p1.map(n=> n.node);
       let species2 = d.p2.map(n=> n.node);
       let labels = [...d.p1.filter(n=> n.leaf === true).map(m=> m.node)].concat(d.p2.filter(n=> n.leaf === true).map(m=> m.node));
+
+
       let neighbors = labels.flatMap(m=> {
           let start = speciesTest[0].indexOf(m);
           let ne = speciesTest[0].filter((f, j)=> (j < (+start + 2)) && (j > (+start - 2)));
@@ -320,7 +327,7 @@ function drawSorted(pairs, field){
             return ne;
         });
         
-        let neighNodes = dataMaster[0].filter(f=> neighbors.indexOf(f[f.length -1].node) > -1).flatMap(m=> m.map(f=> f.node))
+        let neighNodes = []//dataMaster[0].filter(f=> neighbors.indexOf(f[f.length -1].node) > -1).flatMap(m=> m.map(f=> f.node))
        
         let treeNode  = d3.select('#sidebar').selectAll('.node');
         let treeLinks  = d3.select('#sidebar').selectAll('.link');
@@ -334,16 +341,16 @@ function drawSorted(pairs, field){
 
         treeLinks.filter(f=> species1.indexOf(f.data.node) > -1).classed('hover one', true);
         treeLinks.filter(f=> species2.indexOf(f.data.node) > -1).classed('hover two', true);
-        treeNode.filter(f=> neighNodes.indexOf(f.data.node) > -1).classed('hover-neighbor', true);
+       // treeNode.filter(f=> neighNodes.indexOf(f.data.node) > -1).classed('hover-neighbor', true);
         //Hiding Others
         treeNode.filter(f=> (neighNodes.indexOf(f.data.node) === -1) && (species1.concat(species2).indexOf(f.data.node) === -1)).classed('hover-not', true);
-        //Coloring Niehgbors
-        treeLinks.filter(f=> neighNodes.indexOf(f.data.node) > -1).classed('hover-neighbor', true);
+        //Coloring Neighbors
+       // treeLinks.filter(f=> neighNodes.indexOf(f.data.node) > -1).classed('hover-neighbor', true);
         //Hiding Others
         treeLinks.filter(f=> (neighNodes.indexOf(f.data.node) === -1) && (species1.concat(species2).indexOf(f.data.node) === -1)).classed('hover-not', true);
         
         let speciesNames = [species1[species1.length-1], species2[species2.length-1]]
-        d3.select(n[i]).selectAll('.pair-neighbor').attr('opacity', 1);
+       // d3.select(n[i]).selectAll('.pair-neighbor').attr('opacity', 1);
         return d3.select(this).classed('hover', true);
     })
     .on('mouseleave', (d, i, n)=>{

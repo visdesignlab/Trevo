@@ -131,7 +131,6 @@ async function dataLoadAndFormat(edgeFile, edgeLengthFile, leafCharFile, resFile
         let edgeSource = edges.rows.map(d=> d.From);
        
         let leaves = edges.rows.filter(f=> edgeSource.indexOf(f.To) == -1 );
-       
     
         let calculatedAtt = char.rows.map((row, i)=> {
             let newRow = {};
