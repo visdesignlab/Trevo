@@ -10,6 +10,7 @@ import { pullPath } from './pathCalc';
 
 export const cladesGroupKeeper = []
 export const chosenCladesGroup = []
+export const cladeKeeper = []
 
 
 
@@ -28,7 +29,7 @@ export function growSidebarRenderTree(){
     let x = sidebar.select('.button-wrap').append('div')
     .style('position', 'absolute')
     .style('right', '5px')
-    .style('top', '25px')
+    .style('top', '18px')
     .append('i')
     .classed('close fas fa-times', true)
     .style('padding-right', '10px');
@@ -65,7 +66,6 @@ export function growSidebarRenderTree(){
     function  findCommonNode(path1, path2){
 
         let common = path1.filter(f=> path2.map(m=> m.node).indexOf(f.node) > -1);
-        let highlighted = common[common.length - 1] 
 
         let subtreeFinder = [nestedData[0]];
 
@@ -77,12 +77,36 @@ export function growSidebarRenderTree(){
             }
         })
 
-        let test = pullPath([subtreeFinder[subtreeFinder.length - 1]], subtreeFinder[subtreeFinder.length - 1].children, [], [], 0);
-        let nodeNames = test.flatMap(path => path.map(p=> p.node))
+        let paths = pullPath([subtreeFinder[subtreeFinder.length - 1]], subtreeFinder[subtreeFinder.length - 1].children, [], [], 0);
+        let nodeNames = paths.flatMap(path => path.map(p=> p.node))
         nodes.filter(f=> nodeNames.indexOf(f.data.node) > -1).select('circle').attr('fill', 'orange');
         link.filter(f=> nodeNames.filter((n)=> n != common[common.length - 1].node).indexOf(f.data.node) > -1).style('stroke', 'orange');
 
-        sidebar.select('.button-wrap').append('input').attr('type', 'text');
+        let wrap = sidebar.select('.button-wrap').append('div').classed("input-group mb-3", true).style('width', '300px');
+        
+        let textInput = wrap.append('input').attr('type', 'text')
+        .classed('form-control', true)
+        .attr('placeholder', 'Clade Name')
+        .style('margin-right', 0)
+        .style('margin-left', '5px')
+        .style('margin-top', '5px')
+        .property('aria-describedby', "basic-addon2");
+
+        let button = wrap.append('div').classed('input-group-append', true).append('button').attr('type', 'button').classed('btn btn-outline-secondary', true);
+        button.text('Add Clade');
+        button.on('click', ()=> {
+           
+            addClade(textInput.node().value, paths);
+            growSidebarRenderTree();
+            
+        });
+      //  <div class="input-group mb-3">
+ // <input type="text" class="form-control" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="basic-addon2">
+ //// <div class="input-group-append">
+  //  <button class="btn btn-outline-secondary" type="button">Button</button>
+ // </div>
+//</input>
+//</div>
         
         //pullPath(pathArray, nodes, arrayOfArray, nameArray, depth)
         
@@ -114,6 +138,10 @@ export function growSidebarRenderTree(){
 
    sidebar.select('.tree-svg').classed('clade-view', true).append('g').classed('overlay-brush', true);
 
+}
+
+export function addClade(name, nodes){
+    cladeKeeper.push({field: name, nodes: nodes})
 }
 
 export function addCladeGroup(name, clades, nodes){
