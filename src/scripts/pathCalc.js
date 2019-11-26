@@ -100,7 +100,7 @@ export function pullPath(pathArray, nodes, arrayOfArray, nameArray, depth){
             pathArray.push(Object.assign({}, node));
             pullPath([...pathArray], [...node.children], arrayOfArray, nameArray, depth+1);
         }else{
-            nameArray.push(node.data.node);
+            nameArray.push(node.node);
             node.flag = true;
             arrayOfArray.push([...pathArray, Object.assign({},node)]);
         }

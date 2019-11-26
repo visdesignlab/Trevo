@@ -6,6 +6,7 @@ import { maxTimeKeeper } from './dataFormat';
 import { getLatestData } from './filterComponent';
 import { renderDistStructure, binGroups } from './distributionView';
 import { updateMainView } from './viewControl';
+import { pullPath } from './pathCalc';
 
 export const cladesGroupKeeper = []
 export const chosenCladesGroup = []
@@ -21,9 +22,10 @@ export function growSidebarRenderTree(){
     .duration(500)
     .style('width', '600px');
 
-    sidebar.selectAll('*').remove();
+    sidebar.select('.tree-svg').selectAll('*').remove();
+    sidebar.select('.button-wrap').selectAll('*').remove();
 
-    let x = sidebar.append('div')
+    let x = sidebar.select('.button-wrap').append('div')
     .style('position', 'absolute')
     .style('right', '5px')
     .style('top', '25px')
@@ -56,13 +58,34 @@ export function growSidebarRenderTree(){
 
     let leaf = sidebar.select('.tree-svg').selectAll('.node--leaf');
     let nodes = sidebar.select('.tree-svg').selectAll('.node');
+    let link = sidebar.select('.tree-svg').selectAll('.link');
 
     let nodeData = getLatestData();
+  
+    function  findCommonNode(path1, path2){
 
-    function searchForNode(dat1, dat2){
-        let node1 = nodes.filter(f=> f.data.node === dat1.V1);
-        let node2 = nodes.filter(f=> f.data.node === dat2.V1);
-        console.log('node',node1.data()[0], node2.data()[0]);
+        let common = path1.filter(f=> path2.map(m=> m.node).indexOf(f.node) > -1);
+        let highlighted = common[common.length - 1] 
+
+        let subtreeFinder = [nestedData[0]];
+
+        common.map(m=> m.node).map((m, i)=> {
+            if(i > 0){
+                let child = subtreeFinder[subtreeFinder.length - 1].children.filter(f=> {
+                    return f.node === m})[0];
+                subtreeFinder.push(child)
+            }
+        })
+
+        let test = pullPath([subtreeFinder[subtreeFinder.length - 1]], subtreeFinder[subtreeFinder.length - 1].children, [], [], 0);
+        let nodeNames = test.flatMap(path => path.map(p=> p.node))
+        nodes.filter(f=> nodeNames.indexOf(f.data.node) > -1).select('circle').attr('fill', 'orange');
+        link.filter(f=> nodeNames.filter((n)=> n != common[common.length - 1].node).indexOf(f.data.node) > -1).style('stroke', 'orange');
+
+        sidebar.select('.button-wrap').append('input').attr('type', 'text');
+        
+        //pullPath(pathArray, nodes, arrayOfArray, nameArray, depth)
+        
     }
    
 
@@ -72,12 +95,17 @@ export function growSidebarRenderTree(){
        
         d3.select(n[i]).select('circle').attr('fill', 'orange').attr('r', '5');
         if(cladeBool === null){
-            cladeBool = d.data;
+            cladeBool = d;
         }else{
-            console.log(cladeBool, d.data)
-            console.log(nodeData);
+            //console.log(cladeBool, d.data)
+            //console.log(nodeData);
 
-            searchForNode(cladeBool, d.data);
+            let dat1 = nodeData.filter(f=> f[f.length-1].node === cladeBool.data.node)[0];
+            let dat2 = nodeData.filter(f=> f[f.length-1].node === d.data.node)[0];
+
+            console.log(dat1,  dat2);
+
+            findCommonNode(dat1, dat2);
             cladeBool = null;
         }
         
