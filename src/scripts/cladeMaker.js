@@ -1,7 +1,7 @@
-import {dataMaster, nestedData} from './index';
+import {dataMaster, nestedData, calculatedScalesKeeper} from './index';
 import { updateDropdown } from './buttonComponents';
 import * as d3 from "d3";
-import { addingEdgeLength, assignPosition, renderTree } from './sidebarComponent';
+import { addingEdgeLength, assignPosition, renderTree, renderTreeButtons } from './sidebarComponent';
 import { maxTimeKeeper } from './dataFormat';
 import { getLatestData } from './filterComponent';
 import { renderDistStructure, binGroups } from './distributionView';
@@ -12,7 +12,79 @@ export const chosenCladesGroup = []
 
 
 
-export function useCladeGroup(){
+export function growSidebarRenderTree(){
+
+    let cladeBool = null;
+    let sidebar = d3.select('#sidebar');
+
+    sidebar.transition()
+    .duration(500)
+    .style('width', '600px');
+
+    sidebar.selectAll('*').remove();
+
+    let x = sidebar.append('div')
+    .style('position', 'absolute')
+    .style('right', '5px')
+    .style('top', '25px')
+    .append('i')
+    .classed('close fas fa-times', true)
+    .style('padding-right', '10px');
+
+    x.on('click', ()=> {
+
+        sidebar.transition()
+        .duration(500)
+        .style('width', '350px');
+
+        sidebar.selectAll('*').remove();
+
+        ////REDRAW SIDEBAR
+        renderTreeButtons(getLatestData(), sidebar, false);
+        renderTree(sidebar, null, true, false);
+
+    });
+
+    const dimensions =  {
+        margin : {top: 10, right: 90, bottom: 50, left: 20},
+        width : 400,
+        height : 400,
+        lengthHeight: 500,
+    }
+   
+    renderCladeTree(sidebar, null, dimensions);
+
+    let leaf = sidebar.select('.tree-svg').selectAll('.node--leaf');
+    let nodes = sidebar.select('.tree-svg').selectAll('.node');
+
+    let nodeData = getLatestData();
+
+    function searchForNode(dat1, dat2){
+        let node1 = nodes.filter(f=> f.data.node === dat1.V1);
+        let node2 = nodes.filter(f=> f.data.node === dat2.V1);
+        console.log('node',node1.data()[0], node2.data()[0]);
+    }
+   
+
+    labelTree(leaf);
+
+    leaf.on('click', (d, i, n)=> {
+       
+        d3.select(n[i]).select('circle').attr('fill', 'orange').attr('r', '5');
+        if(cladeBool === null){
+            cladeBool = d.data;
+        }else{
+            console.log(cladeBool, d.data)
+            console.log(nodeData);
+
+            searchForNode(cladeBool, d.data);
+            cladeBool = null;
+        }
+        
+    })
+
+
+   sidebar.select('.tree-svg').classed('clade-view', true).append('g').classed('overlay-brush', true);
 
 }
 
@@ -67,11 +139,13 @@ export async function drawTreeForGroups(div){
         lengthHeight: 800,
     }
 
+   
     renderCladeTree(div, null, dimensions);
 
     let leaf = div.select('.tree-svg').selectAll('.node--leaf');
     labelTree(leaf);
 
+   
     div.select('.tree-svg').classed('clade-view', true).append('g').classed('overlay-brush', true);
 }
 
@@ -88,7 +162,7 @@ function createNewCladeGroup(div, scales){
        nodes.select('circle').attr('fill', 'red');
        clades.push({'clade': n[i].value , 'nodes': nodes.data().map(m=> m.data)})
     });
-   // d3.select('.group-name').attr('value')
+ 
     let groupName = d3.select('.group-name').node().value;
     let chosenGroup = addCladeGroup(groupName, cladeNames, clades);
     updateDropdown(cladesGroupKeeper, 'change-clade');
@@ -97,7 +171,6 @@ function createNewCladeGroup(div, scales){
     d3.select('.dropdown.change-clade').select('button').text(`Clades Shown: ${chosenGroup.field}`);
 
     updateMainView('Summary View', groups);
-    
     renderTree(d3.select('#sidebar'), null, true, false)
 }
 
@@ -184,10 +257,6 @@ function cladeToolbar(div, scales){
     }
 }
 
-export function cladeSpecies(){
-
-}
-
 function labelTree(nodes){
     nodes.append('text')
     .text(d=> d.data.node)
@@ -262,7 +331,7 @@ export function updateCladeTree(treenodes, dimensions, treeSvg, g, attrDraw, len
         g.attr('transform', 'translate(30, 370)');
         treeSvg.attr('height', 1000);
         yScale.range([580, 0]).domain([0, test.length-10])
-        xScale.range([0, 800]);
+        xScale.range([0, dimensions.width]);
     } 
 
     // adds the links between the nodes
@@ -297,9 +366,7 @@ export function updateCladeTree(treenodes, dimensions, treeSvg, g, attrDraw, len
     node.transition()
     .duration(500)
     .attr("transform", function(d) { 
-       
             return "translate(" + xScale(d.data.combEdge) + "," + yScale(d.position) + ")"; 
-       
     });
 
     if(attrDraw != null){

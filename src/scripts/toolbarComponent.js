@@ -5,7 +5,7 @@ import {toggleFilters, getLatestData} from './filterComponent';
 import { updateMainView } from './viewControl';
 import { collapsed } from '.';
 import { dropDown } from './buttonComponents';
-import { cladesGroupKeeper, groupDataByAttribute, addCladeGroup, chosenCladesGroup } from './cladeMaker';
+import { cladesGroupKeeper, groupDataByAttribute, addCladeGroup, chosenCladesGroup, growSidebarRenderTree } from './cladeMaker';
 
 
 export function findBrushedNodes(){
@@ -117,7 +117,6 @@ export function toolbarControl(toolbar, main, calculatedScales){
     });
 
     /////CLADE VIEW////
-
     let cladePickerDrop = dropDown(toolbar, cladesGroupKeeper, `Clades Shown: ${cladesGroupKeeper[0].field}`, 'change-clade');
     d3.select('#change-clade').selectAll('a').on('click', (d, i, n)=> {
         d3.select('.dropdown.change-clade').select('button').text(`Clades Shown: ${d.field}`)
@@ -127,6 +126,10 @@ export function toolbarControl(toolbar, main, calculatedScales){
     if(cladesGroupKeeper.length === 0){
         d3.select('.dropdown.change-clade').select('button').text(d.field);
     }
+
+    let cladeButton = toolbar.append('button').attr('id', 'clade-maker');
+    cladeButton.attr('class', 'btn btn-outline-secondary').text('Add Clades');
+    cladeButton.on('click', ()=> growSidebarRenderTree());
 }
 
 ////COLLAPSES THE NODES DOWN
