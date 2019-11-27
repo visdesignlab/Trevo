@@ -133,6 +133,7 @@ def assemble_leaf_nodes(leaf_nodes, leaf_data):
 
 def main():
     basename = sys.argv[1]
+    outname = sys.argv[2]
 
     edgefile = f'{basename}-edges.json'
     with open(edgefile) as stream:
@@ -170,8 +171,14 @@ def main():
     # pprint(internal_data)
     # pprint(leaf_data)
 
-    # write_csv(internal_data, sys.stdout)
-    write_csv(leaf_data, sys.stdout)
+    with open(f'{outname}-internal.csv', 'w') as out:
+        write_csv(internal_data, out)
+
+    with open(f'{outname}-leaf.csv', 'w') as out:
+        write_csv(leaf_data, out)
+
+    with open(f'{outname}-edges.csv', 'w') as out:
+        write_csv(edges, out)
 
     return 0
 
