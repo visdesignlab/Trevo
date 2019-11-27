@@ -94,9 +94,11 @@ async function appLaunch(){
         initialViewLoad(centData[1]);
 });
 
+dataLoadAndFormatMultinet('anolis_edges.csv', 'anolis_internal.csv', 'anolis_leaf.csv', 'Anolis');
+
 }
 
-async function dataLoadAndFormat(edgeFile, edgeLengthFile, leafCharFile, resFile, dataName){
+async function dataLoadAndFormatMultinet(edgeFile, internalFile, leafFile, dataName){
 
         //helper function to create array of unique elements
         Array.prototype.unique = function() {
@@ -105,14 +107,17 @@ async function dataLoadAndFormat(edgeFile, edgeLengthFile, leafCharFile, resFile
             });
         }
 
-        let edges = await loadData(d3.json, `./public/data/${edgeFile}`, 'edge');
-        let leafChar = await loadData(d3.csv, `./public/data/${leafCharFile}`, '');
-        let edgeLen = await loadData(d3.json, `./public/data/${edgeLengthFile}`, 'edge');
-        let char = await loadData(d3.json, `./public/data/${resFile}`, '');
+        let attributeList = []
+
+        let edges = await loadData(d3.csv, `./data/${edgeFile}`, 'edge');
+        let internal = await loadData(d3.csv, `./data/${internalFile}`, '');
+        let leaves = await loadData(d3.csv, `./data/${leafFile}`, '');
+       
+        console.log(internal, leaves)
     
         ///Creating attribute list to add estimated values in //
     
-        leafChar.columns.filter(f=> f != 'species').forEach((d, i)=> {
+        leaves.columns.filter(f=> (f != 'species') && (f != 'label') && (f != '_key')).forEach((d, i)=> {
     
             if(discreteTraitList.indexOf(d) > -1){
                 attributeList.push({field: d, type: 'discrete'});
@@ -121,18 +126,10 @@ async function dataLoadAndFormat(edgeFile, edgeLengthFile, leafCharFile, resFile
             }
     
         });
+
+console.log(attributeList)
     
-        edges.rows = edges.rows.filter(f=> f.From != "").map((edge, i)=> {
-            edge.edgeLength = edgeLen.rows[i].x;
-            return edge;
-        });  
-    
-        //Mapping data together/////
-        let edgeSource = edges.rows.map(d=> d.From);
-       
-        let leaves = edges.rows.filter(f=> edgeSource.indexOf(f.To) == -1 );
-    
-        let calculatedAtt = char.rows.map((row, i)=> {
+        let calculatedAtt = internal.map((row, i)=> {
             let newRow = {};
             attributeList.forEach((att)=>{
                 newRow[att.field] = {};
@@ -155,36 +152,11 @@ async function dataLoadAndFormat(edgeFile, edgeLengthFile, leafCharFile, resFile
                 });
                 newRow[att.field].values = values;
             });
-            newRow.node = row.nodeLabels;
+            newRow.node = row.label;
             return newRow;
         });
-    
-      
-        let calculatedScales = calculateNewScales(calculatedAtt, attributeList.map(m=> m.field), colorKeeper);
-    
-        let matchedEdges = edges.rows.map((edge, i)=> {
-            let attrib = calculatedAtt.filter(f=> f.node === edge.To)[0]
-            if(attrib){
-                Object.keys(attrib).filter(f=> f != 'node').map((att, i)=>{
-                    
-                    let scales = calculatedScales.filter(f=> f.field=== att)[0]
-                    attrib[att].scales = scales;
-                    return att;
-                    
-                })
-            }
-            let newEdge = {
-                V1: edge.From,
-                V2: edge.To,
-                node: edge.To,
-                edgeLength: edge.edgeLength,
-                attributes: attrib ? attrib : null
-            }
-            return newEdge;
-        });
-    
-    
-        let calcLeafAtt = leafChar.map((row, i)=> {
+
+        let calcLeafAtt = leaves.map((row, i)=> {
             let newRow = {};
             attributeList.forEach((att)=>{
                 newRow[att.field] = {};
@@ -200,68 +172,267 @@ async function dataLoadAndFormat(edgeFile, edgeLengthFile, leafCharFile, resFile
                 });
                 newRow[att.field].values = values;
             });
-            newRow.node = row.species;
-            newRow.label = row.species;
+            newRow.node = row.label;
+            newRow.label = row.label;
             
             return newRow;
         })
+
+
     
+      
+        let calculatedScales = calculateNewScales(calculatedAtt, attributeList.map(m=> m.field), colorKeeper);
     
-        let matchedLeaves = leaves.map((leaf, i)=>{
-            let attrib = calcLeafAtt.filter(f=> f.node === leaf.To)[0]
+        let matchedEdges = edges.map((edge, i)=> {
+
+            let index = +edge._to.match(/(\d+)/)[0];
+            let attrib = edge._to.includes("internal") ? calculatedAtt[index] : calcLeafAtt[index];
+
+            let nodeInfo = edge._to.includes("internal") ? internal[index] : leaves[index];
+
+            console.log('nodeInfo',nodeInfo)
+
             if(attrib){
-                Object.keys(attrib).map((att, i)=>{
-                    if(att!='node' && att != 'label'){
-                        let scales = calculatedScales.filter(f=> f.field=== att)[0]
-                        attrib[att].scales = scales;
-                        return att;
-                    }
-                });
+                Object.keys(attrib).filter(f=> (f != 'node') && (f != 'label')).map((att, i)=>{
+                    let scales = calculatedScales.filter(f=> f.field=== att)[0]
+                    attrib[att].scales = scales;
+                    return att;
+                })
             }
             let newEdge = {
-                V1: leaf.From,
-                V2: leaf.To,
-                node: leaf.To,
-                edgeLength: leaf.edgeLength,
-                attributes: attrib ? attrib : null,
-                group: null,
-                leaf: true
+                V1: edge._from,
+                V2: attrib.node,
+                node: attrib.node,
+                edgeLength: edge.edgeLength,
+                attributes: attrib ? attrib : null
             }
             return newEdge;
         });
+
+        console.log(matchedEdges)
     
-        let all = matchedEdges.filter(f=> f.attributes != null);
     
-        let paths = allPaths(all, matchedLeaves, "V1", "V2");
+
+    
+    
+//         let matchedLeaves = leaves.map((leaf, i)=>{
+//             let attrib = calcLeafAtt.filter(f=> f.node === leaf.To)[0]
+//             if(attrib){
+//                 Object.keys(attrib).map((att, i)=>{
+//                     if(att!='node' && att != 'label'){
+//                         let scales = calculatedScales.filter(f=> f.field=== att)[0]
+//                         attrib[att].scales = scales;
+//                         return att;
+//                     }
+//                 });
+//             }
+//             let newEdge = {
+//                 V1: leaf.From,
+//                 V2: leaf.To,
+//                 node: leaf.To,
+//                 edgeLength: leaf.edgeLength,
+//                 attributes: attrib ? attrib : null,
+//                 group: null,
+//                 leaf: true
+//             }
+//             return newEdge;
+//         });
+    
+//         let all = matchedEdges.filter(f=> f.attributes != null);
+    
+//         let paths = allPaths(all, matchedLeaves, "V1", "V2");
         
-        let addedRoot = rootAttribute(paths, calculatedAtt, calculatedScales);
+//         let addedRoot = rootAttribute(paths, calculatedAtt, calculatedScales);
     
-        let normedPaths = combineLength(addedRoot);
+//         let normedPaths = combineLength(addedRoot);
     
-        if(cladesGroupKeeper.length === 0){
-            let attArray = calculatedScales.map(m=> m.field)
-            if(attArray.indexOf('Clade') > -1){
-                let groupData = groupDataByAttribute(calculatedScales, normedPaths, 'Clade');
+//         if(cladesGroupKeeper.length === 0){
+//             let attArray = calculatedScales.map(m=> m.field)
+//             if(attArray.indexOf('Clade') > -1){
+//                 let groupData = groupDataByAttribute(calculatedScales, normedPaths, 'Clade');
+//                 let chosenClade = addCladeGroup('Clade Attribute', groupData.map(m=> m.label), groupData);
+//                 chosenCladesGroup.push(chosenClade)
     
-                let chosenClade = addCladeGroup('Clade Attribute', groupData.map(m=> m.label), groupData);
-                chosenCladesGroup.push(chosenClade)
-    
-            }else{
-           
-                let group = binGroups(normedPaths, dataName, calculatedScales, 8);
-    
-                let chosenClade = addCladeGroup(dataName, ['Whole Set'], [{'label': dataName, 'paths': normedPaths, 'groupBins': group}]);
-                chosenCladesGroup.push(chosenClade)
-            }
+//             }else{
+//                 let group = binGroups(normedPaths, dataName, calculatedScales, 8);
+//                 let chosenClade = addCladeGroup(dataName, ['Whole Set'], [{'label': dataName, 'paths': normedPaths, 'groupBins': group}]);
+//                 chosenCladesGroup.push(chosenClade)
+//             }
+//         }
+        
+
+//     calculatedScalesKeeper.push(calculatedScales);
+//     dataMaster.push(normedPaths);
+//     nestedData.push(buildTreeStructure(normedPaths, all.concat(matchedLeaves)));
+//     speciesTest.push(normedPaths.flatMap(m=> m.filter(f=> f.leaf === true)).map(l=> l.node));
+
+//     return [normedPaths, calculatedScales];
+}
+
+
+async function dataLoadAndFormat(edgeFile, edgeLengthFile, leafCharFile, resFile, dataName){
+
+    //helper function to create array of unique elements
+    Array.prototype.unique = function() {
+        return this.filter(function (value, index, self) { 
+            return self.indexOf(value) === index;
+        });
+    }
+
+    let edges = await loadData(d3.json, `./public/data/${edgeFile}`, 'edge');
+    let leafChar = await loadData(d3.csv, `./public/data/${leafCharFile}`, '');
+    let edgeLen = await loadData(d3.json, `./public/data/${edgeLengthFile}`, 'edge');
+    let char = await loadData(d3.json, `./public/data/${resFile}`, '');
+
+    ///Creating attribute list to add estimated values in //
+
+    leafChar.columns.filter(f=> f != 'species').forEach((d, i)=> {
+
+        if(discreteTraitList.indexOf(d) > -1){
+            attributeList.push({field: d, type: 'discrete'});
+        }else{
+            attributeList.push({field: d, type:'continuous'});
         }
+
+    });
+
+    edges.rows = edges.rows.filter(f=> f.From != "").map((edge, i)=> {
+        edge.edgeLength = edgeLen.rows[i].x;
+        return edge;
+    });  
+
+    //Mapping data together/////
+    let edgeSource = edges.rows.map(d=> d.From);
+   
+    let leaves = edges.rows.filter(f=> edgeSource.indexOf(f.To) == -1 );
+
+    let calculatedAtt = char.rows.map((row, i)=> {
+        let newRow = {};
+        attributeList.forEach((att)=>{
+            newRow[att.field] = {};
+            newRow[att.field].field = att.field;
+            newRow[att.field].type = att.type;
+            let values = {}
+            d3.entries(row).filter(f=> f.key.includes(att.field)).map(m=> {
+                if(att.type === 'continuous'){
+                   
+                    if(m.key.includes('upperCI')){
+                        values.upperCI95 = m.value;
+                    }else if(m.key.includes('lowerCI')){
+                        values.lowerCI95 = m.value;
+                    }else{
+                        values.realVal = m.value;
+                    }
+                }else{
+                     values[m.key] = m.value;   
+                }
+            });
+            newRow[att.field].values = values;
+        });
+        newRow.node = row.nodeLabels;
+        return newRow;
+    });
+
+  
+    let calculatedScales = calculateNewScales(calculatedAtt, attributeList.map(m=> m.field), colorKeeper);
+
+    let matchedEdges = edges.rows.map((edge, i)=> {
+        let attrib = calculatedAtt.filter(f=> f.node === edge.To)[0]
+        if(attrib){
+            Object.keys(attrib).filter(f=> f != 'node').map((att, i)=>{
+                
+                let scales = calculatedScales.filter(f=> f.field=== att)[0]
+                attrib[att].scales = scales;
+                return att;
+                
+            })
+        }
+        let newEdge = {
+            V1: edge.From,
+            V2: edge.To,
+            node: edge.To,
+            edgeLength: edge.edgeLength,
+            attributes: attrib ? attrib : null
+        }
+        return newEdge;
+    });
+
+
+    let calcLeafAtt = leafChar.map((row, i)=> {
+        let newRow = {};
+        attributeList.forEach((att)=>{
+            newRow[att.field] = {};
+            newRow[att.field].field = att.field;
+            newRow[att.field].type = att.type;
+            let values = {}
+            d3.entries(row).filter(f=> f.key.includes(att.field)).map(m=> {
+                if(att.type === 'continuous'){
+                    values.realVal = m.value;
+                }else{
+                    values[m.key] = m.value;   
+                }
+            });
+            newRow[att.field].values = values;
+        });
+        newRow.node = row.species;
+        newRow.label = row.species;
         
+        return newRow;
+    })
 
-    calculatedScalesKeeper.push(calculatedScales);
-    dataMaster.push(normedPaths);
-    nestedData.push(buildTreeStructure(normedPaths, all.concat(matchedLeaves)));
-    speciesTest.push(normedPaths.flatMap(m=> m.filter(f=> f.leaf === true)).map(l=> l.node));
 
-    return [normedPaths, calculatedScales];
+    let matchedLeaves = leaves.map((leaf, i)=>{
+        let attrib = calcLeafAtt.filter(f=> f.node === leaf.To)[0]
+        if(attrib){
+            Object.keys(attrib).map((att, i)=>{
+                if(att!='node' && att != 'label'){
+                    let scales = calculatedScales.filter(f=> f.field=== att)[0]
+                    attrib[att].scales = scales;
+                    return att;
+                }
+            });
+        }
+        let newEdge = {
+            V1: leaf.From,
+            V2: leaf.To,
+            node: leaf.To,
+            edgeLength: leaf.edgeLength,
+            attributes: attrib ? attrib : null,
+            group: null,
+            leaf: true
+        }
+        return newEdge;
+    });
+
+    let all = matchedEdges.filter(f=> f.attributes != null);
+
+    let paths = allPaths(all, matchedLeaves, "V1", "V2");
+    
+    let addedRoot = rootAttribute(paths, calculatedAtt, calculatedScales);
+
+    let normedPaths = combineLength(addedRoot);
+
+    if(cladesGroupKeeper.length === 0){
+        let attArray = calculatedScales.map(m=> m.field)
+        if(attArray.indexOf('Clade') > -1){
+            let groupData = groupDataByAttribute(calculatedScales, normedPaths, 'Clade');
+            let chosenClade = addCladeGroup('Clade Attribute', groupData.map(m=> m.label), groupData);
+            chosenCladesGroup.push(chosenClade)
+
+        }else{
+            let group = binGroups(normedPaths, dataName, calculatedScales, 8);
+            let chosenClade = addCladeGroup(dataName, ['Whole Set'], [{'label': dataName, 'paths': normedPaths, 'groupBins': group}]);
+            chosenCladesGroup.push(chosenClade)
+        }
+    }
+    
+
+calculatedScalesKeeper.push(calculatedScales);
+dataMaster.push(normedPaths);
+nestedData.push(buildTreeStructure(normedPaths, all.concat(matchedLeaves)));
+speciesTest.push(normedPaths.flatMap(m=> m.filter(f=> f.leaf === true)).map(l=> l.node));
+
+return [normedPaths, calculatedScales];
 }
 
 
