@@ -3,10 +3,26 @@ import json
 from pprint import pprint
 import sys
 
-from typing import Any
+from typing import Any, TextIO, Sequence, Set, Optional, Dict, Mapping
+from mypy_extensions import TypedDict
+
+class EdgeRow(TypedDict):
+    _from: str
+    _to: str
 
 
-def upconvert(value):
+class PartitionSpec(TypedDict):
+    root: str
+    internal: Set[str]
+    leaf: Set[str]
+
+
+DataRow = Dict[str, Any]
+IdTable = Mapping[str, int]
+
+
+# Converts a string value to its most precise convertable form.
+def upconvert(value: str) -> Any:
     try:
         return int(value)
     except ValueError:
@@ -20,25 +36,25 @@ def upconvert(value):
     return value
 
 
-def parse_edge_file(stream):
+def parse_edge_file(stream: TextIO) -> Sequence[EdgeRow]:
     data = json.loads(stream.read())
 
     return [{'_from': row['From'], '_to': row['To']} for row in data['rows'] if row['From'] and row['To']]
 
 
-def parse_edge_length_file(stream):
+def parse_edge_length_file(stream: TextIO) -> Sequence[float]:
     data = json.loads(stream.read())
 
     return [row['x'] for row in data['rows']]
 
 
-def parse_data_file(stream):
+def parse_data_file(stream: TextIO) -> Sequence[DataRow]:
     data = json.loads(stream.read())
 
     return data['rows']
 
 
-def parse_leaf_file(stream):
+def parse_leaf_file(stream: TextIO) -> Sequence[DataRow]:
     data = csv.DictReader(stream)
 
     ret = []
@@ -51,7 +67,7 @@ def parse_leaf_file(stream):
     return ret
 
 
-def write_csv(data, stream):
+def write_csv(data: Sequence[Mapping[str, Any]], stream: TextIO) -> None:
     writer = csv.DictWriter(stream, fieldnames = data[0].keys())
 
     writer.writeheader()
@@ -59,11 +75,11 @@ def write_csv(data, stream):
         writer.writerow(d)
 
 
-def tree_nodes(edges):
+def tree_nodes(edges: Sequence[EdgeRow]) -> Set[str]:
     return set(edge['_from'] for edge in edges).union(set(edge['_to'] for edge in edges))
 
 
-def partition_tree(edges):
+def partition_tree(edges: Sequence[EdgeRow]) -> PartitionSpec:
     # Create candidate sets for the root and leaf nodes respectively,
     # initializing them to set of all nodes.
     nodes = tree_nodes(edges)
@@ -91,14 +107,14 @@ def partition_tree(edges):
     }
 
 
-def generate_ids(s):
+def generate_ids(s: Set[str]) -> IdTable:
     return {enum[1]: enum[0] for enum in enumerate(s)}
 
 
-def assemble_internal_nodes(root_node, internal_nodes, internal_data):
+def assemble_internal_nodes(root_node: str, internal_nodes: Set[str], internal_data: Sequence[DataRow]) -> Sequence[DataRow]:
     ids = generate_ids(internal_nodes.union({root_node}))
 
-    def augment(rec):
+    def augment(rec: DataRow) -> DataRow:
         rec['label'] = rec['nodeLabels']
         del rec['nodeLabels']
 
@@ -111,10 +127,10 @@ def assemble_internal_nodes(root_node, internal_nodes, internal_data):
     return data
 
 
-def assemble_leaf_nodes(leaf_nodes, leaf_data):
+def assemble_leaf_nodes(leaf_nodes: Set[str], leaf_data: Sequence[DataRow]) -> Sequence[DataRow]:
     ids = generate_ids(leaf_nodes)
 
-    def augment(rec):
+    def augment(rec: DataRow) -> Optional[DataRow]:
         # pprint(rec)
         rec['label'] = rec['species']
         del rec['species']
@@ -131,7 +147,7 @@ def assemble_leaf_nodes(leaf_nodes, leaf_data):
     return sorted([x for x in data if x is not None], key = lambda row: row['_key'])
 
 
-def main():
+def main() -> int:
     basename = sys.argv[1]
     outname = sys.argv[2]
 
