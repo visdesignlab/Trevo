@@ -3,7 +3,7 @@ import json
 from pprint import pprint
 import sys
 
-from typing import Any, TextIO, Sequence, Set, Optional, Dict, Mapping
+from typing import Any, TextIO, List, Sequence, Set, Optional, Dict, Mapping, Literal
 from mypy_extensions import TypedDict
 
 class EdgeRow(TypedDict):
@@ -77,6 +77,22 @@ def edge_length_table(edges: Sequence[EdgeRow], lengths: Sequence[float], root: 
     table[root] = 0
 
     return table
+
+
+def update_edges(edges: Sequence[EdgeRow], intIds: IdTable, leafIds: IdTable, outname: str) -> Sequence[EdgeRow]:
+    columns: List[Literal['_from', '_to']] = ['_from', '_to']
+    for edge in edges:
+        for column in columns:
+
+            label = edge[column]
+
+            assert label in intIds or label in leafIds
+            table = 'internal' if label in intIds else 'leaf'
+            key = intIds[label] if label in intIds else leafIds[label]
+
+            edge[column] = f'{outname}-{table}/{key}'
+
+    return edges
 
 
 def write_csv(data: Sequence[Mapping[str, Any]], stream: TextIO) -> None:
@@ -201,6 +217,8 @@ def main() -> int:
 
     # pprint(internal_data)
     # pprint(leaf_data)
+
+    edges = update_edges(edges, internalIds, leafIds, outname)
 
     with open(f'{outname}-internal.csv', 'w') as out:
         write_csv(internal_data, out)
