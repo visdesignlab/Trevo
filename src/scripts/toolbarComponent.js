@@ -131,41 +131,40 @@ export function toolbarControl(toolbar, main, calculatedScales){
     cladeButton.attr('class', 'btn btn-outline-secondary').text('Add Clades');
     cladeButton.on('click', ()=> growSidebarRenderTree());
 
-
     /////ATTRIBUTE DROP DOWN
     let cladeOptions = cladeKeeper;
-    let checkedClades = attributeOptions.length > 11 ? attributeOptions.slice(0, 2) : attributeOptions;
+   // let checkedClades = attributeOptions.length > 11 ? attributeOptions.slice(0, 2) : attributeOptions;
 
     let dropdivClade = toolbar.append('div').classed(`dropdown clade-show`, true);
     dropdivClade.style('display', 'inline-block')
-    let button = dropdivClade.append('button').classed('btn dropbtn btn-secondary dropdown-toggle', true).text('Shown Clades');
+    let buttonClade = dropdivClade.append('button').classed('btn dropbtn btn-secondary dropdown-toggle', true).text('Shown Clades');
 
     let dropContentClade = dropdivClade.append('div').attr('id', 'clade-show').classed('dropdown-content', true);
     let dropUlClade = dropContentClade.append('ul');
 
-    updateCladeDrop(dropUl, cladeOptions)
+    updateCladeDrop(dropUlClade, cladeOptions);
     
     // checkedDefault.each((d, i, n) => n[i].checked = true);
 
-    // button.on('click', (d, i, n)=> {
-    //     if(dropContent.classed('show')){
-    //         dropContent.classed('show', false);
-    //         updateMainView('Summary View', chosenCladesGroup[chosenCladesGroup.length - 1].groups)
-    //     }else{
-    //         dropContent.classed('show', true);
-    //     }
-    // });
+    buttonClade.on('click', (d, i, n)=> {
+        if(dropContentClade.classed('show')){
+            dropContentClade.classed('show', false);
+           // updateMainView('Summary View', chosenCladesGroup[chosenCladesGroup.length - 1].groups)
+        }else{
+            dropContentClade.classed('show', true);
+        }
+    });
 }
 
-function updateCladeDrop(dropUl){
+export function updateCladeDrop(dropUl, cladeOptions){
 
-   
+    console.log(cladeOptions, dropUl)
     
-     let options = dropUl.selectAll('li').data(attributeOptions).join('li')
-     let checkBox = options.append('input').attr('type', 'checkbox');
-     options.append('text').text(d=> ` ${d}`);
+     let options = dropUl.selectAll('li').data(cladeOptions).join('li')
+     let checkBox = options.selectAll('input').data(d=> [d]).join('input').attr('type', 'checkbox');
+     options.selectAll('text').data(d=> [d]).join('text').text(d=> ` ${d.field}`);
 
-     let checkedDefault = options.filter(f=> checkedAttributes.indexOf(f) > -1).select('input');
+    // let checkedDefault = options.filter(f=> checkedAttributes.indexOf(f) > -1).select('input');
 
 
 }

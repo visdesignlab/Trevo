@@ -7,6 +7,7 @@ import { getLatestData } from './filterComponent';
 import { renderDistStructure, binGroups } from './distributionView';
 import { updateMainView } from './viewControl';
 import { pullPath } from './pathCalc';
+import { updateCladeDrop } from './toolbarComponent';
 
 export const cladesGroupKeeper = []
 export const chosenCladesGroup = []
@@ -95,10 +96,15 @@ export function growSidebarRenderTree(){
         let button = wrap.append('div').classed('input-group-append', true).append('button').attr('type', 'button').classed('btn btn-outline-secondary', true);
         button.text('Add Clade');
         button.on('click', ()=> {
+
+            let name = textInput.node().value != "" ? textInput.node().value : `Clade-${cladeKeeper.length + 1}`
            
-            addClade(textInput.node().value, paths);
+            addClade(name, paths);
             growSidebarRenderTree();
-            
+            let ul = d3.select('div#clade-show').selectAll('ul');
+
+            console.log('ul',ul)
+            updateCladeDrop(ul, cladeKeeper)
         });
         
     }
@@ -115,8 +121,6 @@ export function growSidebarRenderTree(){
 
             let dat1 = nodeData.filter(f=> f[f.length-1].node === cladeBool.data.node)[0];
             let dat2 = nodeData.filter(f=> f[f.length-1].node === d.data.node)[0];
-
-            console.log(dat1,  dat2);
 
             findCommonNode(dat1, dat2);
             cladeBool = null;
