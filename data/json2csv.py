@@ -87,12 +87,24 @@ def update_edges(edges: Sequence[EdgeRow], intIds: IdTable, leafIds: IdTable, ou
             label = edge[column]
 
             assert label in intIds or label in leafIds
-            table = 'internal' if label in intIds else 'leaf'
+            table = internal_table_name(outname) if label in intIds else leaf_table_name(outname)
             key = intIds[label] if label in intIds else leafIds[label]
 
-            edge[column] = f'{outname}-{table}/{key}'
+            edge[column] = f'{table}/{key}'
 
     return edges
+
+
+def internal_table_name(outname: str) -> str:
+    return f'{outname}_internal'
+
+
+def leaf_table_name(outname: str) -> str:
+    return f'{outname}_leaf'
+
+
+def edge_table_name(outname: str) -> str:
+    return f'{outname}_edges'
 
 
 def write_csv(data: Sequence[Mapping[str, Any]], stream: TextIO) -> None:
@@ -220,13 +232,13 @@ def main() -> int:
 
     edges = update_edges(edges, internalIds, leafIds, outname)
 
-    with open(f'{outname}-internal.csv', 'w') as out:
+    with open(f'{internal_table_name(outname)}.csv', 'w') as out:
         write_csv(internal_data, out)
 
-    with open(f'{outname}-leaf.csv', 'w') as out:
+    with open(f'{leaf_table_name(outname)}.csv', 'w') as out:
         write_csv(leaf_data, out)
 
-    with open(f'{outname}-edges.csv', 'w') as out:
+    with open(f'{edge_table_name(outname)}.csv', 'w') as out:
         write_csv(edges, out)
 
     return 0
