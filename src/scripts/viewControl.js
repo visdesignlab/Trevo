@@ -17,6 +17,9 @@ export function updateMainView(d, groups){
     let scales = calculatedScalesKeeper[0];
 
     main.selectAll('*').remove();
+
+    let view = d3.select('#view-pheno').text()
+    console.log('view change', view);
   
     if(d === 'Path View' || d === null){
         d3.select('#pair-rank').classed('hidden', true);
@@ -29,6 +32,7 @@ export function updateMainView(d, groups){
         d3.select('#discrete-view').classed('hidden', false);
 
     }else if(d === 'Summary View'){
+
         d3.select('#pair-rank').classed('hidden', true);
 
         document.getElementById("scrunch").disabled = true;

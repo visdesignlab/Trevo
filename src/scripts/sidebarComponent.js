@@ -122,7 +122,7 @@ export function renderTreeButtons(normedPaths, sidebar){
 
       ///BUTTON FOR PHENOGRAM VIEW. MAYBE MOVE THIS TO SIDEBAR
       let phenogramButton = d3.select('#sidebar').select('.button-wrap').append('button').text('View Phenogram');
-      phenogramButton.classed('btn btn-outline-secondary', true); 
+      phenogramButton.classed('btn btn-outline-secondary', true).attr('id', 'view-pheno'); 
       phenogramButton.on('click', ()=> {
           if(phenogramButton.text() === 'View Phenogram'){
             if(d3.select('.attr-drop.dropdown').select('button').empty()){
@@ -149,7 +149,7 @@ export function renderTreeButtons(normedPaths, sidebar){
           }else{
             ////ADD THE HIDE BUTTON HERE 
             let view = d3.select('.dropdown.change-view').select('button').text();
-            console.log('what is the view',view)
+           
             if(view != "Pair View"){
                 d3.select('.dropdown.attr-drop').remove();
             }
