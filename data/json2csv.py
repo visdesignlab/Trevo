@@ -123,9 +123,7 @@ def generate_ids(s: Set[str]) -> IdTable:
     return {enum[1]: enum[0] for enum in enumerate(s)}
 
 
-def assemble_internal_nodes(root_node: str, internal_nodes: Set[str], internal_data: Sequence[DataRow], lengths: LengthTable) -> Sequence[DataRow]:
-    ids = generate_ids(internal_nodes.union({root_node}))
-
+def assemble_internal_nodes(ids: IdTable, internal_data: Sequence[DataRow], lengths: LengthTable) -> Sequence[DataRow]:
     def augment(rec: DataRow) -> DataRow:
         rec['label'] = rec['nodeLabels']
         del rec['nodeLabels']
@@ -141,9 +139,7 @@ def assemble_internal_nodes(root_node: str, internal_nodes: Set[str], internal_d
     return data
 
 
-def assemble_leaf_nodes(leaf_nodes: Set[str], leaf_data: Sequence[DataRow]) -> Sequence[DataRow]:
-    ids = generate_ids(leaf_nodes)
-
+def assemble_leaf_nodes(ids: IdTable, leaf_data: Sequence[DataRow]) -> Sequence[DataRow]:
     def augment(rec: DataRow) -> Optional[DataRow]:
         # pprint(rec)
         rec['label'] = rec['species']
@@ -197,8 +193,11 @@ def main() -> int:
 
     # pprint(partition)
 
-    internal_data = assemble_internal_nodes(partition['root'], partition['internal'], res, node_lengths)
-    leaf_data = assemble_leaf_nodes(partition['leaf'], leaf)
+    internalIds = generate_ids(partition['internal'].union({partition['root']}))
+    internal_data = assemble_internal_nodes(internalIds, res, node_lengths)
+
+    leafIds = generate_ids(partition['leaf'])
+    leaf_data = assemble_leaf_nodes(leafIds, leaf)
 
     # pprint(internal_data)
     # pprint(leaf_data)
