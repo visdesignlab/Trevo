@@ -187,36 +187,54 @@ def main() -> int:
     basename = sys.argv[1]
     outname = sys.argv[2]
 
+    # Open and parse data input files.
+    #
+    # The edge file determines the topology of the graph.
     edgefile = f'{basename}-edges.json'
     with open(edgefile) as stream:
         edges = parse_edge_file(stream)
 
+    # Edge lengths are listed in the same order as the edges.
     edgelengthfile = f'{basename}-edge-lengths.json'
     with open(edgelengthfile) as stream:
         edge_lengths = parse_edge_length_file(stream)
 
+    # The internal node data is stored, with uncertainty values, in a JSON file.
     resfile = f'{basename}-res.json'
     with open(resfile) as stream:
         res = parse_data_file(stream)
 
+    # The leaf node data has no uncertainty values, and is stored in a CSV file.
     leafattrfile = f'{basename}-leaf-data.csv'
     with open(leafattrfile) as stream:
         leaf = parse_leaf_file(stream)
 
-    nodes = tree_nodes(edges)
-
+    # Create a partition of the tree's nodes into a root node, internal nodes,
+    # and leaf nodes. The root node is technically an internal node, but it is
+    # partitioned separately because it's useful to do so.
     partition = partition_tree(edges)
 
+    # Create a table from node name to edge length (while the specially called
+    # out root node is assigned a 0 length). The length data gives the lengths
+    # of each edge, but the length is encoded into the data carried by the
+    # target node of each edge (explaining why the root, which no edge targets,
+    # gets a hard-coded 0).
     node_lengths = edge_length_table(edges, edge_lengths, partition['root'])
 
+    # Generate internal key values for the internal nodes, then create a table
+    # of internal node data.
     internalIds = generate_ids(partition['internal'].union({partition['root']}))
     internal_data = assemble_internal_nodes(internalIds, res, node_lengths)
 
+    # Do the same for the leaf data.
     leafIds = generate_ids(partition['leaf'])
     leaf_data = assemble_leaf_nodes(leafIds, leaf)
 
+    # Update the edge data with corrected ids (constructed from the table name
+    # and the correct key value).
     edges = update_edges(edges, internalIds, leafIds, outname)
 
+    # Write out all the computed data to CSV files.
     with open(f'{internal_table_name(outname)}.csv', 'w') as out:
         write_csv(internal_data, out)
 
