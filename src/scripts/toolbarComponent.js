@@ -5,7 +5,7 @@ import {toggleFilters, getLatestData} from './filterComponent';
 import { updateMainView } from './viewControl';
 import { collapsed } from '.';
 import { dropDown } from './buttonComponents';
-import { cladesGroupKeeper, groupDataByAttribute, addCladeGroup, chosenCladesGroup, growSidebarRenderTree } from './cladeMaker';
+import { cladesGroupKeeper, groupDataByAttribute, addCladeGroup, chosenCladesGroup, growSidebarRenderTree, cladeKeeper } from './cladeMaker';
 
 
 export function findBrushedNodes(){
@@ -130,8 +130,45 @@ export function toolbarControl(toolbar, main, calculatedScales){
     let cladeButton = toolbar.append('button').attr('id', 'clade-maker');
     cladeButton.attr('class', 'btn btn-outline-secondary').text('Add Clades');
     cladeButton.on('click', ()=> growSidebarRenderTree());
+
+
+    /////ATTRIBUTE DROP DOWN
+    let cladeOptions = cladeKeeper;
+    let checkedClades = attributeOptions.length > 11 ? attributeOptions.slice(0, 2) : attributeOptions;
+
+    let dropdivClade = toolbar.append('div').classed(`dropdown clade-show`, true);
+    dropdivClade.style('display', 'inline-block')
+    let button = dropdivClade.append('button').classed('btn dropbtn btn-secondary dropdown-toggle', true).text('Shown Clades');
+
+    let dropContentClade = dropdivClade.append('div').attr('id', 'clade-show').classed('dropdown-content', true);
+    let dropUlClade = dropContentClade.append('ul');
+
+    updateCladeDrop(dropUl, cladeOptions)
+    
+    // checkedDefault.each((d, i, n) => n[i].checked = true);
+
+    // button.on('click', (d, i, n)=> {
+    //     if(dropContent.classed('show')){
+    //         dropContent.classed('show', false);
+    //         updateMainView('Summary View', chosenCladesGroup[chosenCladesGroup.length - 1].groups)
+    //     }else{
+    //         dropContent.classed('show', true);
+    //     }
+    // });
 }
 
+function updateCladeDrop(dropUl){
+
+   
+    
+     let options = dropUl.selectAll('li').data(attributeOptions).join('li')
+     let checkBox = options.append('input').attr('type', 'checkbox');
+     options.append('text').text(d=> ` ${d}`);
+
+     let checkedDefault = options.filter(f=> checkedAttributes.indexOf(f) > -1).select('input');
+
+
+}
 ////COLLAPSES THE NODES DOWN
 function toggleScrunch(button, main, calculatedScales){
 

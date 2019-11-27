@@ -100,15 +100,6 @@ export function growSidebarRenderTree(){
             growSidebarRenderTree();
             
         });
-      //  <div class="input-group mb-3">
- // <input type="text" class="form-control" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="basic-addon2">
- //// <div class="input-group-append">
-  //  <button class="btn btn-outline-secondary" type="button">Button</button>
- // </div>
-//</input>
-//</div>
-        
-        //pullPath(pathArray, nodes, arrayOfArray, nameArray, depth)
         
     }
    
@@ -121,8 +112,6 @@ export function growSidebarRenderTree(){
         if(cladeBool === null){
             cladeBool = d;
         }else{
-            //console.log(cladeBool, d.data)
-            //console.log(nodeData);
 
             let dat1 = nodeData.filter(f=> f[f.length-1].node === cladeBool.data.node)[0];
             let dat2 = nodeData.filter(f=> f[f.length-1].node === d.data.node)[0];
