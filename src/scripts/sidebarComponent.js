@@ -7,7 +7,7 @@ import {getNested} from './pathCalc';
 import { dropDown } from './buttonComponents';
 import { updateRanking } from './pairView';
 import { pairPaths, maxTimeKeeper } from './dataFormat';
-import { cladesGroupKeeper, chosenCladesGroup } from './cladeMaker';
+import { cladesGroupKeeper, chosenCladesGroup, growSidebarRenderTree } from './cladeMaker';
 
 
 
@@ -153,6 +153,10 @@ export function renderTreeButtons(normedPaths, sidebar){
 
           }
       })
+
+        let cladeButton = sidebar.append('button').attr('id', 'clade-maker');
+        cladeButton.attr('class', 'btn btn-outline-secondary').text('Clade View');
+        cladeButton.on('click', ()=> growSidebarRenderTree());
 }
 
 function treeFilter(data, selectedNodes){
@@ -452,6 +456,7 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, 
     node.selectAll('.triangle').remove();
 
     let branchNodes = node.filter(n=> n.branchPoint === true);
+
     branchNodes.each((b, i, n)=> {
         if(b.children === null){
             let triangle = d3.select(n[i]).append('path').classed('triangle', true).attr('d', d3.symbol().type(d3.symbolTriangle).size('400'))

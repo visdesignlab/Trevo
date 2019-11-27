@@ -127,9 +127,9 @@ export function toolbarControl(toolbar, main, calculatedScales){
         d3.select('.dropdown.change-clade').select('button').text(d.field);
     }
 
-    let cladeButton = toolbar.append('button').attr('id', 'clade-maker');
-    cladeButton.attr('class', 'btn btn-outline-secondary').text('Add Clades');
-    cladeButton.on('click', ()=> growSidebarRenderTree());
+    // let cladeButton = toolbar.append('button').attr('id', 'clade-maker');
+    // cladeButton.attr('class', 'btn btn-outline-secondary').text('Add Clades');
+    // cladeButton.on('click', ()=> growSidebarRenderTree());
 
     /////ATTRIBUTE DROP DOWN
     let cladeOptions = cladeKeeper;
@@ -158,10 +158,15 @@ export function toolbarControl(toolbar, main, calculatedScales){
 
 export function updateCladeDrop(dropUl, cladeOptions){
 
-    console.log(cladeOptions, dropUl)
     let options = dropUl.selectAll('li').data(cladeOptions).join('li')
     let checkBox = options.selectAll('input').data(d=> [d]).join('input').attr('type', 'checkbox');
     options.selectAll('text').data(d=> [d]).join('text').text(d=> ` ${d.field}`);
+    if(cladeOptions.length < 1){
+        d3.select('.dropdown.clade-show').select('button').classed('hidden', true);
+    }else{
+        d3.select('.dropdown.clade-show').select('button').classed('hidden', false);
+    }
+    
     // let checkedDefault = options.filter(f=> checkedAttributes.indexOf(f) > -1).select('input');
 }
 ////COLLAPSES THE NODES DOWN

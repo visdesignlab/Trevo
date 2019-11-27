@@ -39,7 +39,7 @@ export function growSidebarRenderTree(){
 
         sidebar.transition()
         .duration(500)
-        .style('width', '350px');
+        .style('width', '380px');
 
         sidebar.selectAll('*').remove();
 
@@ -96,14 +96,10 @@ export function growSidebarRenderTree(){
         let button = wrap.append('div').classed('input-group-append', true).append('button').attr('type', 'button').classed('btn btn-outline-secondary', true);
         button.text('Add Clade');
         button.on('click', ()=> {
-
             let name = textInput.node().value != "" ? textInput.node().value : `Clade-${cladeKeeper.length + 1}`
-           
             addClade(name, paths);
             growSidebarRenderTree();
             let ul = d3.select('div#clade-show').selectAll('ul');
-
-            console.log('ul',ul)
             updateCladeDrop(ul, cladeKeeper)
         });
         
@@ -113,21 +109,17 @@ export function growSidebarRenderTree(){
     labelTree(leaf);
 
     leaf.on('click', (d, i, n)=> {
-       
         d3.select(n[i]).select('circle').attr('fill', 'orange').attr('r', '5');
         if(cladeBool === null){
             cladeBool = d;
         }else{
-
             let dat1 = nodeData.filter(f=> f[f.length-1].node === cladeBool.data.node)[0];
             let dat2 = nodeData.filter(f=> f[f.length-1].node === d.data.node)[0];
 
             findCommonNode(dat1, dat2);
             cladeBool = null;
         }
-        
-    })
-
+    });
 
    sidebar.select('.tree-svg').classed('clade-view', true).append('g').classed('overlay-brush', true);
 
