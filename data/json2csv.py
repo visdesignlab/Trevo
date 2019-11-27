@@ -19,6 +19,7 @@ class PartitionSpec(TypedDict):
 
 DataRow = Dict[str, Any]
 IdTable = Mapping[str, int]
+LengthTable = Mapping[str, float]
 
 
 # Converts a string value to its most precise convertable form.
@@ -67,6 +68,17 @@ def parse_leaf_file(stream: TextIO) -> Sequence[DataRow]:
     return ret
 
 
+def edge_length_table(edges: Sequence[EdgeRow], lengths: Sequence[float], root: str) -> LengthTable:
+    assert len(edges) == len(lengths)
+    table = {edge['_to']: length for (edge, length) in zip(edges, lengths)}
+
+    assert root not in table
+
+    table[root] = 0
+
+    return table
+
+
 def write_csv(data: Sequence[Mapping[str, Any]], stream: TextIO) -> None:
     writer = csv.DictWriter(stream, fieldnames = data[0].keys())
 
@@ -111,7 +123,7 @@ def generate_ids(s: Set[str]) -> IdTable:
     return {enum[1]: enum[0] for enum in enumerate(s)}
 
 
-def assemble_internal_nodes(root_node: str, internal_nodes: Set[str], internal_data: Sequence[DataRow]) -> Sequence[DataRow]:
+def assemble_internal_nodes(root_node: str, internal_nodes: Set[str], internal_data: Sequence[DataRow], lengths: LengthTable) -> Sequence[DataRow]:
     ids = generate_ids(internal_nodes.union({root_node}))
 
     def augment(rec: DataRow) -> DataRow:
@@ -119,6 +131,8 @@ def assemble_internal_nodes(root_node: str, internal_nodes: Set[str], internal_d
         del rec['nodeLabels']
 
         rec['_key'] = ids[rec['label']]
+
+        rec['length'] = lengths[rec['label']]
 
         return rec
 
@@ -172,16 +186,18 @@ def main() -> int:
     # pprint(nodes)
     # print(len(nodes))
 
-    # pprint(edges)
-    # pprint(edge_lengths)
+    # pprint(len(edges))
+    # pprint(len(edge_lengths))
     # pprint(res)
     # pprint(leaf)
 
     partition = partition_tree(edges)
 
+    node_lengths = edge_length_table(edges, edge_lengths, partition['root'])
+
     # pprint(partition)
 
-    internal_data = assemble_internal_nodes(partition['root'], partition['internal'], res)
+    internal_data = assemble_internal_nodes(partition['root'], partition['internal'], res, node_lengths)
     leaf_data = assemble_leaf_nodes(partition['leaf'], leaf)
 
     # pprint(internal_data)
