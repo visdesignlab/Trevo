@@ -159,14 +159,10 @@ export function toolbarControl(toolbar, main, calculatedScales){
 export function updateCladeDrop(dropUl, cladeOptions){
 
     console.log(cladeOptions, dropUl)
-    
-     let options = dropUl.selectAll('li').data(cladeOptions).join('li')
-     let checkBox = options.selectAll('input').data(d=> [d]).join('input').attr('type', 'checkbox');
-     options.selectAll('text').data(d=> [d]).join('text').text(d=> ` ${d.field}`);
-
+    let options = dropUl.selectAll('li').data(cladeOptions).join('li')
+    let checkBox = options.selectAll('input').data(d=> [d]).join('input').attr('type', 'checkbox');
+    options.selectAll('text').data(d=> [d]).join('text').text(d=> ` ${d.field}`);
     // let checkedDefault = options.filter(f=> checkedAttributes.indexOf(f) > -1).select('input');
-
-
 }
 ////COLLAPSES THE NODES DOWN
 function toggleScrunch(button, main, calculatedScales){
