@@ -183,7 +183,24 @@ def assemble_leaf_nodes(ids: IdTable, leaf_data: Sequence[DataRow]) -> Sequence[
     return sorted([x for x in data if x is not None], key = lambda row: row['_key'])
 
 
+def eprint(*args: Any, **kwargs: Any) -> None:
+    kwargs['file'] = sys.stderr
+    print(*args, **kwargs)
+
+
 def main() -> int:
+    if len(sys.argv) < 3:
+        eprint('usage: json2csv.py BASENAME OUTNAME')
+        eprint()
+
+        eprint('BASENAME represents a collection of Arbor output files, including BASENAME-edges.json, BASENAME-edge-lengths.json, BASENAME-res.json, and BASENAME-leaf-data.csv.')
+        eprint()
+
+        eprint('OUTNAME names a collection of CSV output files, including OUTNAME_internal.csv, OUTNAME_leaf.csv, and OUTNAME_edges.csv.')
+
+        return 1
+
+    # Collect command line arguments
     basename = sys.argv[1]
     outname = sys.argv[2]
 
