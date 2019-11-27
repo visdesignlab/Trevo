@@ -1,6 +1,5 @@
 import csv
 import json
-from pprint import pprint
 import sys
 
 from typing import Any, TextIO, List, Sequence, Set, Optional, Dict, Mapping, Literal
@@ -169,7 +168,6 @@ def assemble_internal_nodes(ids: IdTable, internal_data: Sequence[DataRow], leng
 
 def assemble_leaf_nodes(ids: IdTable, leaf_data: Sequence[DataRow]) -> Sequence[DataRow]:
     def augment(rec: DataRow) -> Optional[DataRow]:
-        # pprint(rec)
         rec['label'] = rec['species']
         del rec['species']
 
@@ -207,28 +205,15 @@ def main() -> int:
 
     nodes = tree_nodes(edges)
 
-    # pprint(nodes)
-    # print(len(nodes))
-
-    # pprint(len(edges))
-    # pprint(len(edge_lengths))
-    # pprint(res)
-    # pprint(leaf)
-
     partition = partition_tree(edges)
 
     node_lengths = edge_length_table(edges, edge_lengths, partition['root'])
-
-    # pprint(partition)
 
     internalIds = generate_ids(partition['internal'].union({partition['root']}))
     internal_data = assemble_internal_nodes(internalIds, res, node_lengths)
 
     leafIds = generate_ids(partition['leaf'])
     leaf_data = assemble_leaf_nodes(leafIds, leaf)
-
-    # pprint(internal_data)
-    # pprint(leaf_data)
 
     edges = update_edges(edges, internalIds, leafIds, outname)
 
