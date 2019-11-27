@@ -147,8 +147,13 @@ export function renderTreeButtons(normedPaths, sidebar){
               }
               phenogramButton.text('View Phylogeny');
           }else{
-
-            renderTree(d3.select('#sidebar'), null, false, false);
+            ////ADD THE HIDE BUTTON HERE 
+            let view = d3.select('.dropdown.change-view').select('button').text();
+            console.log('what is the view',view)
+            if(view != "Pair View"){
+                d3.select('.dropdown.attr-drop').remove();
+            }
+            renderTree(d3.select('#sidebar'), null, true, false);
             phenogramButton.text('View Phenogram');
 
           }
