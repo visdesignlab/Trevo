@@ -19,7 +19,7 @@ export function findBrushedNodes(){
 export function toolbarControl(toolbar, main, calculatedScales){
 
 
-    let viewArray = [{'field':'Summary View'},{'field':'Path View'},{'field':'Pair View'}, {'field':'Clade View'}];
+    let viewArray = [{'field':'Summary View'},{'field':'Path View'},{'field':'Pair View'}, /*{'field':'Clade View'}*/ ];
 
     let viewDrop = dropDown(toolbar, viewArray, viewArray[0].field, 'change-view');
 
