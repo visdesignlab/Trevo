@@ -19,7 +19,10 @@ export function updateMainView(d, groups){
     main.selectAll('*').remove();
 
     let view = d3.select('#view-pheno').text()
-    console.log('view change', view);
+   
+    if(d != 'Pair View' && view === 'View Phenogram'){
+        d3.select('.dropdown.attr-drop').remove();
+    }
   
     if(d === 'Path View' || d === null){
         d3.select('#pair-rank').classed('hidden', true);
