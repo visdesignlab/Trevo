@@ -101,6 +101,7 @@ export function growSidebarRenderTree(){
             growSidebarRenderTree();
             let ul = d3.select('div#clade-show').selectAll('ul');
             updateCladeDrop(ul, cladeKeeper)
+            console.log('claade',cladeKeeper)
         });
         
     }

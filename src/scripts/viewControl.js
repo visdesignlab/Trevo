@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import { renderDistibutions, groupDistributions, renderDistStructure } from './distributionView';
+import { renderDistibutions, groupDistributions, renderDistStructure, binGroups } from './distributionView';
 import {drawPathsAndAttributes} from './renderPathView';
 import { getLatestData } from "./filterComponent";
 import { generatePairs, rankingControl } from "./pairView";
@@ -47,7 +47,8 @@ export function updateMainView(d, groups){
         if(groups){
             renderDistStructure(main, groups)
         }else{
-            groupDistributions(data, main, null);
+           // groupDistributions(data, main, null);
+           renderDistStructure(main, data);
         }
     }else if(d === 'Pair View'){
         rankingControl(data);
@@ -81,7 +82,12 @@ export function initialViewLoad(scales){
     main.selectAll('*').remove();
 
     if(data.length > 50){
-        groupDistributions(data, main, 'Clade');
+
+        let group = binGroups(data, 'All Paths', scales, 8);
+    
+        let groups = [{'label': 'All Paths', 'paths': data, 'groupBins': group}];
+        renderDistStructure(main, groups);
+        //groupDistributions(data, main, 'Clade');
         d3.select('#view-toggle').text('View Paths');
 
         document.getElementById("scrunch").disabled = true;
