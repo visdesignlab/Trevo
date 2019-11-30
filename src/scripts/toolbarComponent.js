@@ -25,7 +25,6 @@ export function toolbarControl(toolbar, main, calculatedScales){
 
     viewDrop.on('click', (d, i, n)=> {
         let group = chosenCladesGroup[chosenCladesGroup.length - 1];
-       
         updateMainView(d.field, group.groups);
         d3.select('.dropdown.change-view').select('button').node().value = d.field;
         d3.select('.dropdown.change-view').select('button').text(d.field)
@@ -142,7 +141,7 @@ export function toolbarControl(toolbar, main, calculatedScales){
     let dropContentClade = dropdivClade.append('div').attr('id', 'clade-show').classed('dropdown-content', true);
     let dropUlClade = dropContentClade.append('ul');
 
-    updateCladeDrop(dropUlClade, cladeOptions);
+    let options = updateCladeDrop(dropUlClade, cladeOptions);
     
     // checkedDefault.each((d, i, n) => n[i].checked = true);
 
@@ -166,6 +165,8 @@ export function updateCladeDrop(dropUl, cladeOptions){
     }else{
         d3.select('.dropdown.clade-show').select('button').classed('hidden', false);
     }
+
+    return options;
     
     // let checkedDefault = options.filter(f=> checkedAttributes.indexOf(f) > -1).select('input');
 }

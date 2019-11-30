@@ -60,21 +60,21 @@ export function updateMainView(d, groups){
         d3.select('#scrunch').classed('hidden', true);
         d3.select('#discrete-view').classed('hidden', true);
 
-    }else if(d === 'Clade View'){
-        d3.select('#pair-rank').classed('hidden', true);
-        createCladeView(main, scales);
+    // }else if(d === 'Clade View'){
+    //     d3.select('#pair-rank').classed('hidden', true);
+    //     createCladeView(main, scales);
 
-        document.getElementById("scrunch").disabled = true;
-        document.getElementById("discrete-view").disabled = true;
+    //     document.getElementById("scrunch").disabled = true;
+    //     document.getElementById("discrete-view").disabled = true;
 
-        d3.select('#scrunch').classed('hidden', true);
-        d3.select('#discrete-view').classed('hidden', true);
+    //     d3.select('#scrunch').classed('hidden', true);
+    //     d3.select('#discrete-view').classed('hidden', true);
 
     }else{
         console.error('field not found');
     }
 }
-export function initialViewLoad(scales){
+export function initialViewLoad(scales, dataName){
 
     let main = d3.select('#main');
     let data = getLatestData();
@@ -83,9 +83,8 @@ export function initialViewLoad(scales){
 
     if(data.length > 50){
 
-        let group = binGroups(data, 'All Paths', scales, 8);
-    
-        let groups = [{'label': 'All Paths', 'paths': data, 'groupBins': group}];
+        let group = binGroups(data, dataName, scales, 8);
+        let groups = [{'label': dataName, 'paths': data, 'groupBins': group}];
         renderDistStructure(main, groups);
         //groupDistributions(data, main, 'Clade');
         d3.select('#view-toggle').text('View Paths');

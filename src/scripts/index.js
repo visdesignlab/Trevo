@@ -71,7 +71,7 @@ async function appLaunch(){
 //         renderTreeButtons(centData[0], sidebar, false);
 //         renderTree(sidebar, null, true, false);
 //         /// LOWER ATTRIBUTE VISUALIZATION ///
-//         initialViewLoad(centData[1]);
+//         initialViewLoad(centData[1], 'Geospiza');
 //     });
 
     // dataLoadAndFormat('centrarchid-edges.json', 'centrarchid-edge-lengths.json', 'centrarchid-leaf-data.csv', 'centrarchid-res.json', 'Centrarchid').then((centData)=> {
@@ -81,7 +81,7 @@ async function appLaunch(){
     //         renderTreeButtons(centData[0], sidebar, false);
     //         renderTree(sidebar, null, true, false);
     //         /// LOWER ATTRIBUTE VISUALIZATION ///
-    //         initialViewLoad(centData[1]);
+    //         initialViewLoad(centData[1], 'Centrarchid');
     // });
 
     dataLoadAndFormat('anolis-edges.json', 'anolis-edge-lengths.json', 'anolis-leaf-data.csv', 'anolis-res.json', 'Anolis').then((centData)=> {
@@ -91,7 +91,7 @@ async function appLaunch(){
         renderTreeButtons(centData[0], sidebar, false);
         renderTree(sidebar, null, true, false);
         /// LOWER ATTRIBUTE VISUALIZATION ///
-        initialViewLoad(centData[1]);
+        initialViewLoad(centData[1], 'Anolis');
 });
 
 }
@@ -251,7 +251,7 @@ async function dataLoadAndFormat(edgeFile, edgeLengthFile, leafCharFile, resFile
                 let group = binGroups(normedPaths, dataName, calculatedScales, 8);
     
                 let chosenClade = addCladeGroup(dataName, ['Whole Set'], [{'label': dataName, 'paths': normedPaths, 'groupBins': group}]);
-                chosenCladesGroup.push(chosenClade)
+                chosenCladesGroup.push(chosenClade);
             }
         }
         
