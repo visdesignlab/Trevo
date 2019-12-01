@@ -36,7 +36,6 @@ export function growSidebarRenderTree(){
     .style('padding-right', '10px');
 
     x.on('click', ()=> {
-
         sidebar.transition()
         .duration(500)
         .style('width', '380px');
@@ -52,7 +51,7 @@ export function growSidebarRenderTree(){
     const dimensions =  {
         margin : {top: 10, right: 90, bottom: 50, left: 20},
         width : 400,
-        height : 400,
+        height : 600,
         lengthHeight: 500,
     }
    
@@ -316,7 +315,7 @@ export function renderCladeTree(sidebar, att, dimensions){
 
     // declares a tree layout and assigns the size
     var treemap = d3.tree()
-    .size([dimensions.height, dimensions.width]);
+    .size([dimensions.width, 800]);
 
     addingEdgeLength(0, nestedData[0]);
     
@@ -330,7 +329,7 @@ export function renderCladeTree(sidebar, att, dimensions){
     let treeSvg = sidebarTest.empty() ? sidebar.append("svg") : sidebarTest;
     treeSvg.classed('tree-svg', true);
     treeSvg.attr("width", dimensions.width + dimensions.margin.left + dimensions.margin.right)
-    .attr("height", dimensions.height + dimensions.margin.top + dimensions.margin.bottom);
+    .attr("height", dimensions.hieght + dimensions.margin.top + dimensions.margin.bottom);
 
     let gTest = treeSvg.select('g.tree-g');
     let g = gTest.empty() ? treeSvg.append("g").classed('tree-g', true) : gTest;
@@ -370,9 +369,9 @@ export function updateCladeTree(treenodes, dimensions, treeSvg, g, attrDraw, len
     let yScale = d3.scaleLinear().range([dimensions.height, 0]).domain([0, 1])
 
     if(length){   
-        g.attr('transform', 'translate(30, 370)');
+        g.attr('transform', 'translate(30, 390)');
         treeSvg.attr('height', 1000);
-        yScale.range([580, 0]).domain([0, test.length-10])
+        yScale.range([dimensions.height, 0]).domain([0, test.length-10])
         xScale.range([0, dimensions.width]);
     } 
 
