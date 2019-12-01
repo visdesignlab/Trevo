@@ -3,9 +3,10 @@ import * as d3 from "d3";
 import {drawPathsAndAttributes, drawDiscreteAtt, drawGroups} from './renderPathView';
 import {toggleFilters, getLatestData} from './filterComponent';
 import { updateMainView } from './viewControl';
-import { collapsed } from '.';
+import { collapsed, calculatedScalesKeeper } from '.';
 import { dropDown } from './buttonComponents';
 import { cladesGroupKeeper, groupDataByAttribute, addCladeGroup, chosenCladesGroup, growSidebarRenderTree, cladeKeeper } from './cladeMaker';
+import { binGroups, renderDistStructure } from './distributionView';
 
 
 export function findBrushedNodes(){
@@ -99,11 +100,11 @@ export function toolbarControl(toolbar, main, calculatedScales){
     let dropContent = dropdiv.append('div').attr('id', 'attribute-show').classed('dropdown-content', true);
     let dropUl = dropContent.append('ul');
     
-    let options = dropUl.selectAll('li').data(attributeOptions).join('li')
-    let checkBox = options.append('input').attr('type', 'checkbox');
-    options.append('text').text(d=> ` ${d}`);
+    let attoptions = dropUl.selectAll('li').data(attributeOptions).join('li')
+    let checkBox = attoptions.append('input').attr('type', 'checkbox');
+    attoptions.append('text').text(d=> ` ${d}`);
 
-    let checkedDefault = options.filter(f=> checkedAttributes.indexOf(f) > -1).select('input');
+    let checkedDefault = attoptions.filter(f=> checkedAttributes.indexOf(f) > -1).select('input');
     checkedDefault.each((d, i, n) => n[i].checked = true);
 
     button.on('click', (d, i, n)=> {
@@ -142,13 +143,31 @@ export function toolbarControl(toolbar, main, calculatedScales){
     let dropUlClade = dropContentClade.append('ul');
 
     let options = updateCladeDrop(dropUlClade, cladeOptions);
+
+   
     
     // checkedDefault.each((d, i, n) => n[i].checked = true);
 
     buttonClade.on('click', (d, i, n)=> {
         if(dropContentClade.classed('show')){
             dropContentClade.classed('show', false);
-           // updateMainView('Summary View', chosenCladesGroup[chosenCladesGroup.length - 1].groups)
+           
+           let test = d3.select('#clade-show').selectAll('li').selectAll('input').filter((f, j, li)=> {
+            return li[j].checked === true});
+          
+            let groups = test.data().map((m=> {
+            let names = m.nodes.map(path => path[path.length - 1].node);
+            let data = getLatestData().filter(path => names.indexOf(path[path.length - 1].node) > -1);
+             
+            let group = binGroups(data, m.field, calculatedScalesKeeper[0], 8);
+            return {'label': m.field, 'paths': data, 'groupBins': group};
+    
+           }));
+
+           d3.select('#summary-view').remove();
+           
+           renderDistStructure(main, groups);  
+
         }else{
             dropContentClade.classed('show', true);
         }

@@ -242,14 +242,12 @@ async function dataLoadAndFormat(edgeFile, edgeLengthFile, leafCharFile, resFile
             let attArray = calculatedScales.map(m=> m.field)
             if(attArray.indexOf('Clade') > -1){
                 let groupData = groupDataByAttribute(calculatedScales, normedPaths, 'Clade');
-    
                 let chosenClade = addCladeGroup('Clade Attribute', groupData.map(m=> m.label), groupData);
                 chosenCladesGroup.push(chosenClade)
     
             }else{
            
                 let group = binGroups(normedPaths, dataName, calculatedScales, 8);
-    
                 let chosenClade = addCladeGroup(dataName, ['Whole Set'], [{'label': dataName, 'paths': normedPaths, 'groupBins': group}]);
                 chosenCladesGroup.push(chosenClade);
             }
