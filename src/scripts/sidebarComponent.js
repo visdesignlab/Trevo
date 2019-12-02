@@ -139,7 +139,6 @@ export function renderTreeButtons(normedPaths, sidebar){
                     d3.select('.attr-drop.dropdown').select('button').attr('value', d.field);
                     d3.select('#attr-drop').classed('show', false);
                 });
-              
                 renderTree(d3.select('#sidebar'), null, true, d3.select('.attr-drop.dropdown').select('button').attr('value'))
               }else{
     

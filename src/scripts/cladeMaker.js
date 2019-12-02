@@ -51,7 +51,7 @@ export function growSidebarRenderTree(){
     const dimensions =  {
         margin : {top: 10, right: 90, bottom: 50, left: 20},
         width : 400,
-        height : 600,
+        height : (getLatestData().length * 7),
         lengthHeight: 500,
     }
    
@@ -105,7 +105,6 @@ export function growSidebarRenderTree(){
         
     }
    
-
     labelTree(leaf);
 
     leaf.on('click', (d, i, n)=> {
@@ -176,7 +175,7 @@ export async function drawTreeForGroups(div){
     const dimensions =  {
         margin : {top: 10, right: 90, bottom: 50, left: 20},
         width : 620,
-        height : 700,
+        height : (getLatestData().length * 7),
         lengthHeight: 800,
     }
 
@@ -313,28 +312,25 @@ export async function createCladeView(div, scales){
 
 export function renderCladeTree(sidebar, att, dimensions){
 
-    // declares a tree layout and assigns the size
-    var treemap = d3.tree()
-    .size([dimensions.width, 800]);
 
-    addingEdgeLength(0, nestedData[0]);
+     addingEdgeLength(0, nestedData[0]);
     
-    //  assigns the data to a hierarchy using parent-child relationships
-    var treenodes = d3.hierarchy(nestedData[0]);
+    let treeFun = data => {
+        const root = d3.hierarchy(data);
+        return d3.tree().size([dimensions.width, dimensions.height])(root);
+      }
 
-    // maps the node data to the tree layout
-    treenodes = treemap(treenodes);
+    let treenodes = treeFun(nestedData[0]);
 
     let sidebarTest = sidebar.select('svg');
     let treeSvg = sidebarTest.empty() ? sidebar.append("svg") : sidebarTest;
     treeSvg.classed('tree-svg', true);
-    treeSvg.attr("width", dimensions.width + dimensions.margin.left + dimensions.margin.right)
-    .attr("height", dimensions.hieght + dimensions.margin.top + dimensions.margin.bottom);
+
+    console.log(dimensions.height, dimensions.margin.top, dimensions.margin.bottom)
 
     let gTest = treeSvg.select('g.tree-g');
     let g = gTest.empty() ? treeSvg.append("g").classed('tree-g', true) : gTest;
-    g.attr("transform",
-      "translate(" + dimensions.margin.left + "," + dimensions.margin.top + ")");
+   
 
    
         ////Break this out into other nodes////
@@ -362,20 +358,14 @@ export function updateCladeTree(treenodes, dimensions, treeSvg, g, attrDraw, len
     
     assignPosition(treenodes, 0);
 
-   let test = getLatestData();
+    treeSvg.attr("width", dimensions.width + dimensions.margin.left + dimensions.margin.right)
+    .attr("height", dimensions.height + (dimensions.height / 1.5));
 
-    let branchCount = findDepth(treenodes, []);
+    findDepth(treenodes, []);
     let xScale = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, dimensions.width]).clamp(true);
-    let yScale = d3.scaleLinear().range([dimensions.height, 0]).domain([0, 1])
+    let yScale = d3.scaleLinear().range([dimensions.height, 0]).domain([0, getLatestData().length])
+    g.attr('transform', `translate(30, ${dimensions.height / 1.9})`);
 
-    if(length){   
-        g.attr('transform', 'translate(30, 390)');
-        treeSvg.attr('height', 1000);
-        yScale.range([dimensions.height, 0]).domain([0, test.length-10])
-        xScale.range([0, dimensions.width]);
-    } 
-
-    // adds the links between the nodes
     let link = g.selectAll(".link")
     .data( treenodes.descendants().slice(1))
     .join("path")

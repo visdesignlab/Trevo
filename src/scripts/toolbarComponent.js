@@ -144,10 +144,6 @@ export function toolbarControl(toolbar, main, calculatedScales){
 
     let options = updateCladeDrop(dropUlClade, cladeOptions);
 
-   
-    
-    // checkedDefault.each((d, i, n) => n[i].checked = true);
-
     buttonClade.on('click', (d, i, n)=> {
         if(dropContentClade.classed('show')){
             dropContentClade.classed('show', false);
@@ -179,6 +175,7 @@ export function updateCladeDrop(dropUl, cladeOptions){
     let options = dropUl.selectAll('li').data(cladeOptions).join('li')
     let checkBox = options.selectAll('input').data(d=> [d]).join('input').attr('type', 'checkbox');
     options.selectAll('text').data(d=> [d]).join('text').text(d=> ` ${d.field}`);
+    
     if(cladeOptions.length < 1){
         d3.select('.dropdown.clade-show').select('button').classed('hidden', true);
     }else{

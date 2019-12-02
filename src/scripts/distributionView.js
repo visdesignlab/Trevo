@@ -198,7 +198,6 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
                             });
                         
                     }else{
-                      
                         n.bins = nodeArray[i-1].bins;
                     }
                 }
