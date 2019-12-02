@@ -113,7 +113,7 @@ async function dataLoadAndFormatMultinet(edgeFile, internalFile, leafFile, dataN
         let internal = await loadData(d3.csv, `./data/${internalFile}`, '');
         let leaves = await loadData(d3.csv, `./data/${leafFile}`, '');
        
-        console.log(internal, leaves)
+        console.log(internal, leaves, edges)
     
         ///Creating attribute list to add estimated values in //
     
@@ -209,7 +209,7 @@ console.log(attributeList)
             return newEdge;
         });
 
-        console.log(matchedEdges)
+        console.log('matched edges',matchedEdges)
     
     
 
