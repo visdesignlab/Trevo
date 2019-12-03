@@ -94,10 +94,11 @@ async function appLaunch(){
 //         initialViewLoad(centData[1]);
 // });
 
+
+
 dataLoadAndFormatMultinet('anolis_edges.csv', 'anolis_internal.csv', 'anolis_leaf.csv', 'Anolis').then(centData=> {
-    console.log('centdata',centData)
+    
     toolbarControl(toolbarDiv, main, centData[1]);
-        
     renderTreeButtons(centData[0], sidebar, false);
     renderTree(sidebar, null, true, false);
     /// LOWER ATTRIBUTE VISUALIZATION ///
@@ -196,7 +197,7 @@ async function dataLoadAndFormatMultinet(edgeFile, internalFile, leafFile, dataN
             let attrib = edge._to.includes("internal") ? calculatedAtt[indexTo] : calcLeafAtt[indexTo];
             let fromNode = edge._from.includes("internal") ? calculatedAtt[indexFrom] : calcLeafAtt[indexFrom];
 
-            console.log('attr',attrib)
+           
 
             if(attrib){
                 Object.keys(attrib).filter(f=> (f != 'node') && (f != 'label') && (f != 'length') && (f != 'leaf')).map((att, i)=>{
