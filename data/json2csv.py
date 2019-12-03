@@ -166,7 +166,7 @@ def assemble_internal_nodes(ids: IdTable, internal_data: Sequence[DataRow], leng
     return data
 
 
-def assemble_leaf_nodes(ids: IdTable, leaf_data: Sequence[DataRow]) -> Sequence[DataRow]:
+def assemble_leaf_nodes(ids: IdTable, leaf_data: Sequence[DataRow], lengths: LengthTable) -> Sequence[DataRow]:
     def augment(rec: DataRow) -> Optional[DataRow]:
         rec['label'] = rec['species']
         del rec['species']
@@ -175,6 +175,8 @@ def assemble_leaf_nodes(ids: IdTable, leaf_data: Sequence[DataRow]) -> Sequence[
             rec['_key'] = ids[rec['label']]
         except KeyError:
             return None
+
+        rec['length'] = lengths[rec['label']]
 
         return rec
 
@@ -245,7 +247,7 @@ def main() -> int:
 
     # Do the same for the leaf data.
     leafIds = generate_ids(partition['leaf'])
-    leaf_data = assemble_leaf_nodes(leafIds, leaf)
+    leaf_data = assemble_leaf_nodes(leafIds, leaf, node_lengths)
 
     # Update the edge data with corrected ids (constructed from the table name
     # and the correct key value).
