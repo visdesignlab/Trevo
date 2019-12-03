@@ -390,7 +390,9 @@ export function filterKeeper(){
 
 export function formatAttributeData(pathData, scales, filterArray){
 
-    let keys = (filterArray == null)? Object.keys(pathData[0][0].attributes).filter(f=> f != 'node'): filterArray;
+    console.log('formatttt',pathData[0][0].attributes, scales, filterArray);
+
+    let keys = (filterArray == null)? Object.keys(pathData[0][0].attributes).filter(f=> f != 'node' && f != 'leaf' && f != 'length' && f != 'root'): filterArray;
    
     let newData = pathData.map(path=> {
         return keys.map((key)=> {
@@ -415,9 +417,9 @@ export function formatAttributeData(pathData, scales, filterArray){
                     m.attributes[key].leaf = m.leaf;
                     return m.attributes[key];
                 }else if(m.attributes[key].type === 'discrete'){
-                    if(m.leaf){
+                    if(m.leaf === true){
                         let states = d3.entries(m.attributes[key].values);
-                       
+                        console.log('discrete', m.attributes[key])
                         m.attributes[key].leaf = m.leaf;
                         let state = m.attributes[key];
                         state.states = {field: key, state: m.attributes[key].values[key]}
