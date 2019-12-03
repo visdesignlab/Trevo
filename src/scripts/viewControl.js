@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import { renderDistibutions, groupDistributions, renderDistStructure } from './distributionView';
+import { renderDistibutions, groupDistributions, renderDistStructure, binGroups } from './distributionView';
 import {drawPathsAndAttributes} from './renderPathView';
 import { getLatestData } from "./filterComponent";
 import { generatePairs, rankingControl } from "./pairView";
@@ -17,6 +17,12 @@ export function updateMainView(d, groups){
     let scales = calculatedScalesKeeper[0];
 
     main.selectAll('*').remove();
+
+    let view = d3.select('#view-pheno').text()
+   
+    if(d != 'Pair View' && view === 'View Phenogram'){
+        d3.select('.dropdown.attr-drop').remove();
+    }
   
     if(d === 'Path View' || d === null){
         d3.select('#pair-rank').classed('hidden', true);
@@ -29,6 +35,7 @@ export function updateMainView(d, groups){
         d3.select('#discrete-view').classed('hidden', false);
 
     }else if(d === 'Summary View'){
+
         d3.select('#pair-rank').classed('hidden', true);
 
         document.getElementById("scrunch").disabled = true;
@@ -40,7 +47,8 @@ export function updateMainView(d, groups){
         if(groups){
             renderDistStructure(main, groups)
         }else{
-            groupDistributions(data, main, null);
+           // groupDistributions(data, main, null);
+           renderDistStructure(main, data);
         }
     }else if(d === 'Pair View'){
         rankingControl(data);
@@ -52,21 +60,21 @@ export function updateMainView(d, groups){
         d3.select('#scrunch').classed('hidden', true);
         d3.select('#discrete-view').classed('hidden', true);
 
-    }else if(d === 'Clade View'){
-        d3.select('#pair-rank').classed('hidden', true);
-        createCladeView(main, scales);
+    // }else if(d === 'Clade View'){
+    //     d3.select('#pair-rank').classed('hidden', true);
+    //     createCladeView(main, scales);
 
-        document.getElementById("scrunch").disabled = true;
-        document.getElementById("discrete-view").disabled = true;
+    //     document.getElementById("scrunch").disabled = true;
+    //     document.getElementById("discrete-view").disabled = true;
 
-        d3.select('#scrunch').classed('hidden', true);
-        d3.select('#discrete-view').classed('hidden', true);
+    //     d3.select('#scrunch').classed('hidden', true);
+    //     d3.select('#discrete-view').classed('hidden', true);
 
     }else{
         console.error('field not found');
     }
 }
-export function initialViewLoad(scales){
+export function initialViewLoad(scales, dataName){
 
     let main = d3.select('#main');
     let data = getLatestData();
@@ -74,7 +82,11 @@ export function initialViewLoad(scales){
     main.selectAll('*').remove();
 
     if(data.length > 50){
-        groupDistributions(data, main, 'Clade');
+
+        let group = binGroups(data, dataName, scales, 8);
+        let groups = [{'label': dataName, 'paths': data, 'groupBins': group}];
+        renderDistStructure(main, groups);
+        //groupDistributions(data, main, 'Clade');
         d3.select('#view-toggle').text('View Paths');
 
         document.getElementById("scrunch").disabled = true;

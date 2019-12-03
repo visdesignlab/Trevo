@@ -3,9 +3,10 @@ import * as d3 from "d3";
 import {drawPathsAndAttributes, drawDiscreteAtt, drawGroups} from './renderPathView';
 import {toggleFilters, getLatestData} from './filterComponent';
 import { updateMainView } from './viewControl';
-import { collapsed } from '.';
+import { collapsed, calculatedScalesKeeper } from '.';
 import { dropDown } from './buttonComponents';
 import { cladesGroupKeeper, groupDataByAttribute, addCladeGroup, chosenCladesGroup, growSidebarRenderTree, cladeKeeper } from './cladeMaker';
+import { binGroups, renderDistStructure } from './distributionView';
 
 
 export function findBrushedNodes(){
@@ -19,13 +20,12 @@ export function findBrushedNodes(){
 export function toolbarControl(toolbar, main, calculatedScales){
 
 
-    let viewArray = [{'field':'Summary View'},{'field':'Path View'},{'field':'Pair View'}, {'field':'Clade View'}];
+    let viewArray = [{'field':'Summary View'},{'field':'Path View'},{'field':'Pair View'}, /*{'field':'Clade View'}*/ ];
 
     let viewDrop = dropDown(toolbar, viewArray, viewArray[0].field, 'change-view');
 
     viewDrop.on('click', (d, i, n)=> {
         let group = chosenCladesGroup[chosenCladesGroup.length - 1];
-       
         updateMainView(d.field, group.groups);
         d3.select('.dropdown.change-view').select('button').node().value = d.field;
         d3.select('.dropdown.change-view').select('button').text(d.field)
@@ -100,11 +100,11 @@ export function toolbarControl(toolbar, main, calculatedScales){
     let dropContent = dropdiv.append('div').attr('id', 'attribute-show').classed('dropdown-content', true);
     let dropUl = dropContent.append('ul');
     
-    let options = dropUl.selectAll('li').data(attributeOptions).join('li')
-    let checkBox = options.append('input').attr('type', 'checkbox');
-    options.append('text').text(d=> ` ${d}`);
+    let attoptions = dropUl.selectAll('li').data(attributeOptions).join('li')
+    let checkBox = attoptions.append('input').attr('type', 'checkbox');
+    attoptions.append('text').text(d=> ` ${d}`);
 
-    let checkedDefault = options.filter(f=> checkedAttributes.indexOf(f) > -1).select('input');
+    let checkedDefault = attoptions.filter(f=> checkedAttributes.indexOf(f) > -1).select('input');
     checkedDefault.each((d, i, n) => n[i].checked = true);
 
     button.on('click', (d, i, n)=> {
@@ -127,9 +127,9 @@ export function toolbarControl(toolbar, main, calculatedScales){
         d3.select('.dropdown.change-clade').select('button').text(d.field);
     }
 
-    let cladeButton = toolbar.append('button').attr('id', 'clade-maker');
-    cladeButton.attr('class', 'btn btn-outline-secondary').text('Add Clades');
-    cladeButton.on('click', ()=> growSidebarRenderTree());
+    // let cladeButton = toolbar.append('button').attr('id', 'clade-maker');
+    // cladeButton.attr('class', 'btn btn-outline-secondary').text('Add Clades');
+    // cladeButton.on('click', ()=> growSidebarRenderTree());
 
     /////ATTRIBUTE DROP DOWN
     let cladeOptions = cladeKeeper;
@@ -142,14 +142,28 @@ export function toolbarControl(toolbar, main, calculatedScales){
     let dropContentClade = dropdivClade.append('div').attr('id', 'clade-show').classed('dropdown-content', true);
     let dropUlClade = dropContentClade.append('ul');
 
-    updateCladeDrop(dropUlClade, cladeOptions);
-    
-    // checkedDefault.each((d, i, n) => n[i].checked = true);
+    let options = updateCladeDrop(dropUlClade, cladeOptions);
 
     buttonClade.on('click', (d, i, n)=> {
         if(dropContentClade.classed('show')){
             dropContentClade.classed('show', false);
-           // updateMainView('Summary View', chosenCladesGroup[chosenCladesGroup.length - 1].groups)
+           
+           let test = d3.select('#clade-show').selectAll('li').selectAll('input').filter((f, j, li)=> {
+            return li[j].checked === true});
+          
+            let groups = test.data().map((m=> {
+            let names = m.nodes.map(path => path[path.length - 1].node);
+            let data = getLatestData().filter(path => names.indexOf(path[path.length - 1].node) > -1);
+             
+            let group = binGroups(data, m.field, calculatedScalesKeeper[0], 8);
+            return {'label': m.field, 'paths': data, 'groupBins': group};
+    
+           }));
+
+           d3.select('#summary-view').remove();
+           
+           renderDistStructure(main, groups);  
+
         }else{
             dropContentClade.classed('show', true);
         }
@@ -158,15 +172,19 @@ export function toolbarControl(toolbar, main, calculatedScales){
 
 export function updateCladeDrop(dropUl, cladeOptions){
 
-    console.log(cladeOptions, dropUl)
+    let options = dropUl.selectAll('li').data(cladeOptions).join('li')
+    let checkBox = options.selectAll('input').data(d=> [d]).join('input').attr('type', 'checkbox');
+    options.selectAll('text').data(d=> [d]).join('text').text(d=> ` ${d.field}`);
     
-     let options = dropUl.selectAll('li').data(cladeOptions).join('li')
-     let checkBox = options.selectAll('input').data(d=> [d]).join('input').attr('type', 'checkbox');
-     options.selectAll('text').data(d=> [d]).join('text').text(d=> ` ${d.field}`);
+    if(cladeOptions.length < 1){
+        d3.select('.dropdown.clade-show').select('button').classed('hidden', true);
+    }else{
+        d3.select('.dropdown.clade-show').select('button').classed('hidden', false);
+    }
 
+    return options;
+    
     // let checkedDefault = options.filter(f=> checkedAttributes.indexOf(f) > -1).select('input');
-
-
 }
 ////COLLAPSES THE NODES DOWN
 function toggleScrunch(button, main, calculatedScales){

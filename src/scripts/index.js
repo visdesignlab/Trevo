@@ -71,7 +71,7 @@ async function appLaunch(){
 //         renderTreeButtons(centData[0], sidebar, false);
 //         renderTree(sidebar, null, true, false);
 //         /// LOWER ATTRIBUTE VISUALIZATION ///
-//         initialViewLoad(centData[1]);
+//         initialViewLoad(centData[1], 'Geospiza');
 //     });
 
     // dataLoadAndFormat('centrarchid-edges.json', 'centrarchid-edge-lengths.json', 'centrarchid-leaf-data.csv', 'centrarchid-res.json', 'Centrarchid').then((centData)=> {
@@ -81,7 +81,7 @@ async function appLaunch(){
     //         renderTreeButtons(centData[0], sidebar, false);
     //         renderTree(sidebar, null, true, false);
     //         /// LOWER ATTRIBUTE VISUALIZATION ///
-    //         initialViewLoad(centData[1]);
+    //         initialViewLoad(centData[1], 'Centrarchid');
     // });
 
 //     dataLoadAndFormat('anolis-edges.json', 'anolis-edge-lengths.json', 'anolis-leaf-data.csv', 'anolis-res.json', 'Anolis').then((centData)=> {
@@ -413,12 +413,12 @@ async function dataLoadAndFormat(edgeFile, edgeLengthFile, leafCharFile, resFile
     }
     
 
-calculatedScalesKeeper.push(calculatedScales);
-dataMaster.push(normedPaths);
-nestedData.push(buildTreeStructure(normedPaths, all.concat(matchedLeaves)));
-speciesTest.push(normedPaths.flatMap(m=> m.filter(f=> f.leaf === true)).map(l=> l.node));
+    calculatedScalesKeeper.push(calculatedScales);
+    dataMaster.push(normedPaths);
+    nestedData.push(buildTreeStructure(normedPaths, all.concat(matchedLeaves)));
+    speciesTest.push(normedPaths.flatMap(m=> m.filter(f=> f.leaf === true)).map(l=> l.node));
 
-return [normedPaths, calculatedScales];
+    return [normedPaths, calculatedScales];
 }
 
 

@@ -36,10 +36,9 @@ export function growSidebarRenderTree(){
     .style('padding-right', '10px');
 
     x.on('click', ()=> {
-
         sidebar.transition()
         .duration(500)
-        .style('width', '350px');
+        .style('width', '380px');
 
         sidebar.selectAll('*').remove();
 
@@ -52,7 +51,7 @@ export function growSidebarRenderTree(){
     const dimensions =  {
         margin : {top: 10, right: 90, bottom: 50, left: 20},
         width : 400,
-        height : 400,
+        height : (getLatestData().length * 7),
         lengthHeight: 500,
     }
    
@@ -96,38 +95,30 @@ export function growSidebarRenderTree(){
         let button = wrap.append('div').classed('input-group-append', true).append('button').attr('type', 'button').classed('btn btn-outline-secondary', true);
         button.text('Add Clade');
         button.on('click', ()=> {
-
             let name = textInput.node().value != "" ? textInput.node().value : `Clade-${cladeKeeper.length + 1}`
-           
             addClade(name, paths);
             growSidebarRenderTree();
             let ul = d3.select('div#clade-show').selectAll('ul');
-
-            console.log('ul',ul)
             updateCladeDrop(ul, cladeKeeper)
+            console.log('claade',cladeKeeper)
         });
         
     }
    
-
     labelTree(leaf);
 
     leaf.on('click', (d, i, n)=> {
-       
         d3.select(n[i]).select('circle').attr('fill', 'orange').attr('r', '5');
         if(cladeBool === null){
             cladeBool = d;
         }else{
-
             let dat1 = nodeData.filter(f=> f[f.length-1].node === cladeBool.data.node)[0];
             let dat2 = nodeData.filter(f=> f[f.length-1].node === d.data.node)[0];
 
             findCommonNode(dat1, dat2);
             cladeBool = null;
         }
-        
-    })
-
+    });
 
    sidebar.select('.tree-svg').classed('clade-view', true).append('g').classed('overlay-brush', true);
 
@@ -184,7 +175,7 @@ export async function drawTreeForGroups(div){
     const dimensions =  {
         margin : {top: 10, right: 90, bottom: 50, left: 20},
         width : 620,
-        height : 700,
+        height : (getLatestData().length * 7),
         lengthHeight: 800,
     }
 
@@ -321,28 +312,25 @@ export async function createCladeView(div, scales){
 
 export function renderCladeTree(sidebar, att, dimensions){
 
-    // declares a tree layout and assigns the size
-    var treemap = d3.tree()
-    .size([dimensions.height, dimensions.width]);
 
-    addingEdgeLength(0, nestedData[0]);
+     addingEdgeLength(0, nestedData[0]);
     
-    //  assigns the data to a hierarchy using parent-child relationships
-    var treenodes = d3.hierarchy(nestedData[0]);
+    let treeFun = data => {
+        const root = d3.hierarchy(data);
+        return d3.tree().size([dimensions.width, dimensions.height])(root);
+      }
 
-    // maps the node data to the tree layout
-    treenodes = treemap(treenodes);
+    let treenodes = treeFun(nestedData[0]);
 
     let sidebarTest = sidebar.select('svg');
     let treeSvg = sidebarTest.empty() ? sidebar.append("svg") : sidebarTest;
     treeSvg.classed('tree-svg', true);
-    treeSvg.attr("width", dimensions.width + dimensions.margin.left + dimensions.margin.right)
-    .attr("height", dimensions.height + dimensions.margin.top + dimensions.margin.bottom);
+
+    console.log(dimensions.height, dimensions.margin.top, dimensions.margin.bottom)
 
     let gTest = treeSvg.select('g.tree-g');
     let g = gTest.empty() ? treeSvg.append("g").classed('tree-g', true) : gTest;
-    g.attr("transform",
-      "translate(" + dimensions.margin.left + "," + dimensions.margin.top + ")");
+   
 
    
         ////Break this out into other nodes////
@@ -370,20 +358,14 @@ export function updateCladeTree(treenodes, dimensions, treeSvg, g, attrDraw, len
     
     assignPosition(treenodes, 0);
 
-   let test = getLatestData();
+    treeSvg.attr("width", dimensions.width + dimensions.margin.left + dimensions.margin.right)
+    .attr("height", dimensions.height + (dimensions.height / 1.5));
 
-    let branchCount = findDepth(treenodes, []);
+    findDepth(treenodes, []);
     let xScale = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, dimensions.width]).clamp(true);
-    let yScale = d3.scaleLinear().range([dimensions.height, 0]).domain([0, 1])
+    let yScale = d3.scaleLinear().range([dimensions.height, 0]).domain([0, getLatestData().length])
+    g.attr('transform', `translate(30, ${dimensions.height / 1.9})`);
 
-    if(length){   
-        g.attr('transform', 'translate(30, 370)');
-        treeSvg.attr('height', 1000);
-        yScale.range([580, 0]).domain([0, test.length-10])
-        xScale.range([0, dimensions.width]);
-    } 
-
-    // adds the links between the nodes
     let link = g.selectAll(".link")
     .data( treenodes.descendants().slice(1))
     .join("path")

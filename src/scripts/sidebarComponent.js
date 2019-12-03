@@ -7,7 +7,7 @@ import {getNested} from './pathCalc';
 import { dropDown } from './buttonComponents';
 import { updateRanking } from './pairView';
 import { pairPaths, maxTimeKeeper } from './dataFormat';
-import { cladesGroupKeeper, chosenCladesGroup } from './cladeMaker';
+import { cladesGroupKeeper, chosenCladesGroup, growSidebarRenderTree } from './cladeMaker';
 
 
 
@@ -123,7 +123,7 @@ export function renderTreeButtons(normedPaths, sidebar){
 
       ///BUTTON FOR PHENOGRAM VIEW. MAYBE MOVE THIS TO SIDEBAR
       let phenogramButton = d3.select('#sidebar').select('.button-wrap').append('button').text('View Phenogram');
-      phenogramButton.classed('btn btn-outline-secondary', true); 
+      phenogramButton.classed('btn btn-outline-secondary', true).attr('id', 'view-pheno'); 
       phenogramButton.on('click', ()=> {
           if(phenogramButton.text() === 'View Phenogram'){
             if(d3.select('.attr-drop.dropdown').select('button').empty()){
@@ -140,7 +140,6 @@ export function renderTreeButtons(normedPaths, sidebar){
                     d3.select('.attr-drop.dropdown').select('button').attr('value', d.field);
                     d3.select('#attr-drop').classed('show', false);
                 });
-              
                 renderTree(d3.select('#sidebar'), null, true, d3.select('.attr-drop.dropdown').select('button').attr('value'))
               }else{
     
@@ -148,12 +147,21 @@ export function renderTreeButtons(normedPaths, sidebar){
               }
               phenogramButton.text('View Phylogeny');
           }else{
-
-            renderTree(d3.select('#sidebar'), null, false, false);
+            ////ADD THE HIDE BUTTON HERE 
+            let view = d3.select('.dropdown.change-view').select('button').text();
+           
+            if(view != "Pair View"){
+                d3.select('.dropdown.attr-drop').remove();
+            }
+            renderTree(d3.select('#sidebar'), null, true, false);
             phenogramButton.text('View Phenogram');
 
           }
       })
+
+        let cladeButton = sidebar.append('button').attr('id', 'clade-maker');
+        cladeButton.attr('class', 'btn btn-outline-secondary').text('Clade View');
+        cladeButton.on('click', ()=> growSidebarRenderTree());
 }
 
 function treeFilter(data, selectedNodes){
@@ -453,6 +461,7 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, 
     node.selectAll('.triangle').remove();
 
     let branchNodes = node.filter(n=> n.branchPoint === true);
+
     branchNodes.each((b, i, n)=> {
         if(b.children === null){
             let triangle = d3.select(n[i]).append('path').classed('triangle', true).attr('d', d3.symbol().type(d3.symbolTriangle).size('400'))
