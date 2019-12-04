@@ -84,27 +84,27 @@ async function appLaunch(){
     //         initialViewLoad(centData[1], 'Centrarchid');
     // });
 
-//     dataLoadAndFormat('anolis-edges.json', 'anolis-edge-lengths.json', 'anolis-leaf-data.csv', 'anolis-res.json', 'Anolis').then((centData)=> {
+    dataLoadAndFormat('anolis-edges.json', 'anolis-edge-lengths.json', 'anolis-leaf-data.csv', 'anolis-res.json', 'Anolis').then((centData)=> {
       
-//         toolbarControl(toolbarDiv, main, centData[1]);
+        toolbarControl(toolbarDiv, main, centData[1]);
         
-//         renderTreeButtons(centData[0], sidebar, false);
-//         renderTree(sidebar, null, true, false);
-//         /// LOWER ATTRIBUTE VISUALIZATION ///
-//         initialViewLoad(centData[1]);
-// });
-
-
-
-dataLoadAndFormatMultinet('anolis_edges.csv', 'anolis_internal.csv', 'anolis_leaf.csv', 'Anolis').then(centData=> {
-    
-    toolbarControl(toolbarDiv, main, centData[1]);
-   
-    renderTree(sidebar, null, true, false);
-    renderTreeButtons(centData[0], sidebar, false);
-    /// LOWER ATTRIBUTE VISUALIZATION ///
-    initialViewLoad(centData[1]);
+        renderTreeButtons(centData[0], sidebar, false);
+        renderTree(sidebar, null, true, false);
+        /// LOWER ATTRIBUTE VISUALIZATION ///
+        initialViewLoad(centData[1]);
 });
+
+
+
+// dataLoadAndFormatMultinet('anolis_edges.csv', 'anolis_internal.csv', 'anolis_leaf.csv', 'Anolis').then(centData=> {
+    
+//     toolbarControl(toolbarDiv, main, centData[1]);
+   
+//     renderTree(sidebar, null, true, false);
+//     renderTreeButtons(centData[0], sidebar, false);
+//     /// LOWER ATTRIBUTE VISUALIZATION ///
+//     initialViewLoad(centData[1]);
+// });
 
 }
 
