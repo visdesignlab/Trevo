@@ -3,7 +3,7 @@ import { renderDistibutions, groupDistributions, renderDistStructure, binGroups 
 import {drawPathsAndAttributes} from './renderPathView';
 import { getLatestData } from "./filterComponent";
 import { generatePairs, rankingControl } from "./pairView";
-import { drawTreeForGroups, createCladeView } from "./cladeMaker";
+import { drawTreeForGroups, createCladeView, chosenCladesGroup } from "./cladeMaker";
 import { calculatedScalesKeeper } from ".";
 
 export let groupedView = false;
@@ -83,10 +83,8 @@ export function initialViewLoad(scales, dataName){
 
     if(data.length > 50){
 
-        let group = binGroups(data, dataName, scales, 8);
-        let groups = [{'label': dataName, 'paths': data, 'groupBins': group}];
-        renderDistStructure(main, groups);
-        //groupDistributions(data, main, 'Clade');
+        renderDistStructure(main, chosenCladesGroup[chosenCladesGroup.length - 1].groups);
+        
         d3.select('#view-toggle').text('View Paths');
 
         document.getElementById("scrunch").disabled = true;

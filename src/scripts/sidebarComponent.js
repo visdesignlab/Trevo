@@ -12,7 +12,7 @@ import { cladesGroupKeeper, chosenCladesGroup, growSidebarRenderTree } from './c
 
 
 export function buildTreeStructure(paths, edges){
-    console.log('nested',paths, edges)
+   
     let root = paths[0][0];
     let nestedData = getNested(root, edges);
     return nestedData;

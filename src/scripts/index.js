@@ -6,7 +6,7 @@ import {allPaths, pullPath, getPathRevised, getPath} from './pathCalc';
 import {renderTree, buildTreeStructure, renderTreeButtons} from './sidebarComponent';
 import {toolbarControl} from './toolbarComponent';
 import { initialViewLoad } from './viewControl';
-import { groupDataByClade, groupDataByAttribute, addCladeGroup, cladesGroupKeeper, chosenCladesGroup} from './cladeMaker';
+import { groupDataByClade, groupDataByAttribute, addCladeGroup, cladesGroupKeeper, chosenCladesGroup, cladeKeeper} from './cladeMaker';
 import { binGroups } from './distributionView';
 
 export const dataMaster = [];
@@ -98,6 +98,10 @@ async function appLaunch(){
 
 dataLoadAndFormatMultinet('anolis_edges.csv', 'anolis_internal.csv', 'anolis_leaf.csv', 'Anolis').then(centData=> {
     
+
+    console.log('clade keeper', chosenCladesGroup)
+
+
     toolbarControl(toolbarDiv, main, centData[1]);
     renderTreeButtons(centData[0], sidebar, false);
     renderTree(sidebar, null, true, false);
@@ -108,6 +112,8 @@ dataLoadAndFormatMultinet('anolis_edges.csv', 'anolis_internal.csv', 'anolis_lea
 }
 
 async function dataLoadAndFormatMultinet(edgeFile, internalFile, leafFile, dataName){
+
+    console.log('dataname',dataName)
 
         //helper function to create array of unique elements
         Array.prototype.unique = function() {
@@ -197,8 +203,6 @@ async function dataLoadAndFormatMultinet(edgeFile, internalFile, leafFile, dataN
             let attrib = edge._to.includes("internal") ? calculatedAtt[indexTo] : calcLeafAtt[indexTo];
             let fromNode = edge._from.includes("internal") ? calculatedAtt[indexFrom] : calcLeafAtt[indexFrom];
 
-           
-
             if(attrib){
                 Object.keys(attrib).filter(f=> (f != 'node') && (f != 'label') && (f != 'length') && (f != 'leaf')).map((att, i)=>{
                     let scales = calculatedScales.filter(f=> f.field=== att)[0]
@@ -244,10 +248,11 @@ async function dataLoadAndFormatMultinet(edgeFile, internalFile, leafFile, dataN
       
         let normedPaths = combineLength(paths);
 
+        console.log('before bin',dataName)
         let group = binGroups(normedPaths, dataName, calculatedScales, 8);
         let chosenClade = addCladeGroup(dataName, ['Whole Set'], [{'label': dataName, 'paths': normedPaths, 'groupBins': group}]);
         chosenCladesGroup.push(chosenClade)    
-        
+
         calculatedScalesKeeper.push(calculatedScales);
         dataMaster.push(normedPaths);
         nestedData.push(buildTreeStructure(normedPaths, matchedEdges));

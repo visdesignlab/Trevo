@@ -125,6 +125,7 @@ export function growSidebarRenderTree(){
 }
 
 export function addClade(name, nodes){
+    console.log('in add clade',name, nodes)
     cladeKeeper.push({field: name, nodes: nodes})
 }
 
