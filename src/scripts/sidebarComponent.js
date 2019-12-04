@@ -53,10 +53,8 @@ export function renderTreeButtons(normedPaths, sidebar){
     let scales = getScales();
 
     ///SIDBAR STUFF
-    sidebar = sidebar.append('div').classed('button-wrap', true);
-
-    traitColorDropDown(scales, sidebar, renderTree);
-
+    let buttonWrap = sidebar.append('div').classed('button-wrap', true);
+    traitColorDropDown(scales, buttonWrap, renderTree);
     let phenoOptions = reduce2DropArray(scales.filter(f=> f.type != 'discrete'));
  
       ///BUTTON FOR PHENOGRAM VIEW. MAYBE MOVE THIS TO SIDEBAR
@@ -80,7 +78,6 @@ export function renderTreeButtons(normedPaths, sidebar){
                 });
                 renderTree(d3.select('#sidebar'), null, true, d3.select('.attr-drop.dropdown').select('button').attr('value'))
               }else{
-    
                 renderTree(d3.select('#sidebar'), null, true, d3.select('.attr-drop.dropdown').select('button').attr('value'))
               }
               phenogramButton.text('View Phylogeny');
@@ -97,9 +94,9 @@ export function renderTreeButtons(normedPaths, sidebar){
           }
     })
 
-    let cladeButton = sidebar.append('button').attr('id', 'clade-maker');
+    let cladeButton = buttonWrap.append('button').attr('id', 'clade-maker');
     cladeButton.attr('class', 'btn btn-outline-secondary').text('Clade View');
-    cladeButton.on('click', ()=> growSidebarRenderTree());
+    cladeButton.on('click', ()=> growSidebarRenderTree(sidebar, null));
 }
 
 function uncollapseSub(d){

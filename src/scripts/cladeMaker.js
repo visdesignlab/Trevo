@@ -15,10 +15,11 @@ export const cladeKeeper = []
 
 
 
-export function growSidebarRenderTree(){
+export function growSidebarRenderTree(sidebar, attr){
+
+    console.log('ATTRIBUTE MAGIC', attr)
 
     let cladeBool = null;
-    let sidebar = d3.select('#sidebar');
 
     sidebar.classed('clade-view', true);
     d3.select('#main').classed('clade-view', true);
@@ -101,7 +102,7 @@ export function growSidebarRenderTree(){
             addClade(name, paths);
             growSidebarRenderTree();
             let ul = d3.select('div#clade-show').selectAll('ul');
-            updateCladeDrop(ul, cladeKeeper)
+            updateCladeDrop(ul, cladeKeeper);
         });
         
     }
@@ -277,14 +278,14 @@ export function renderCladeTree(sidebar, att, dimensions){
     let treeSvg = sidebarTest.empty() ? sidebar.append("svg") : sidebarTest;
     treeSvg.classed('tree-svg', true);
 
+    treeSvg.selectAll('*').remove();
+
     console.log(dimensions.height, dimensions.margin.top, dimensions.margin.bottom)
 
     let gTest = treeSvg.select('g.tree-g');
     let g = gTest.empty() ? treeSvg.append("g").classed('tree-g', true) : gTest;
    
-
-   
-        ////Break this out into other nodes////
+    ////Break this out into other nodes////
     updateCladeTree(treenodes, dimensions, treeSvg, g, att, true);
     
     /////END TREE STUFF
@@ -408,6 +409,7 @@ export function updateCladeTree(treenodes, dimensions, treeSvg, g, attrDraw, len
           .duration(500)
           .style("opacity", 0);
     });
+
     let leaves = node.filter(f=> f.data.children.length == 0);
 
     node.selectAll('text').remove();

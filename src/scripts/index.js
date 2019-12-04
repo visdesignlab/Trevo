@@ -109,8 +109,6 @@ async function appLaunch(){
 
 async function dataLoadAndFormatMultinet(edgeFile, internalFile, leafFile, dataName){
 
-    console.log('dataname',dataName)
-
         //helper function to create array of unique elements
         Array.prototype.unique = function() {
             return this.filter(function (value, index, self) { 
@@ -123,7 +121,6 @@ async function dataLoadAndFormatMultinet(edgeFile, internalFile, leafFile, dataN
         let edges = await loadData(d3.csv, `./data/${edgeFile}`, 'edge');
         let internal = await loadData(d3.csv, `./data/${internalFile}`, '');
         let leaves = await loadData(d3.csv, `./data/${leafFile}`, '');
-    
     
         ///Creating attribute list to add estimated values in //
     
