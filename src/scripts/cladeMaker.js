@@ -1,9 +1,9 @@
 import {dataMaster, nestedData, calculatedScalesKeeper} from './index';
 import { updateDropdown } from './buttonComponents';
 import * as d3 from "d3";
-import { addingEdgeLength, assignPosition, renderTree, renderTreeButtons } from './sidebarComponent';
+import { addingEdgeLength, assignPosition, renderTree, renderTreeButtons, traitColorDropDown } from './sidebarComponent';
 import { maxTimeKeeper } from './dataFormat';
-import { getLatestData } from './filterComponent';
+import { getLatestData, getScales } from './filterComponent';
 import { renderDistStructure, binGroups } from './distributionView';
 import { updateMainView } from './viewControl';
 import { pullPath } from './pathCalc';
@@ -20,11 +20,15 @@ export function growSidebarRenderTree(){
     let cladeBool = null;
     let sidebar = d3.select('#sidebar');
 
-    sidebar
-    .classed('clade-view', true);
+    sidebar.classed('clade-view', true);
+    d3.select('#main').classed('clade-view', true);
+
+    console.log('ths is firing')
 
     sidebar.select('.tree-svg').selectAll('*').remove();
     sidebar.select('.button-wrap').selectAll('*').remove();
+
+    traitColorDropDown(getScales(), sidebar.select('.button-wrap'), growSidebarRenderTree);
 
     let x = sidebar.select('.button-wrap').append('div')
     .style('position', 'absolute')
@@ -35,11 +39,9 @@ export function growSidebarRenderTree(){
     .style('padding-right', '10px');
 
     x.on('click', ()=> {
-        sidebar.transition()
-        .duration(500)
-        //.style('width', '380px');
-
+     
         sidebar.classed('clade-view', false);
+        d3.select('#main').classed('clade-view', false);
 
         sidebar.selectAll('*').remove();
 
@@ -101,7 +103,6 @@ export function growSidebarRenderTree(){
             growSidebarRenderTree();
             let ul = d3.select('div#clade-show').selectAll('ul');
             updateCladeDrop(ul, cladeKeeper)
-            console.log('claade',cladeKeeper)
         });
         
     }

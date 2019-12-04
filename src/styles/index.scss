@@ -1,8 +1,7 @@
-//$body-color: blue;
-
 body {
-  width:100%;
   font-family: 'Abel', sans-serif;
+  --structure-grey: #ddd;
+
 }
 
 h5, h6{
@@ -19,7 +18,6 @@ form button, form input{
 
 svg{
   width:100%;
-  //height:1000px;
 }
 
 ul {
@@ -34,29 +32,28 @@ ul {
   padding-top:10px;
 }
 
-// #wrapper, body{
-//   margin: 0;
-//   padding: 0;
-//   border: 0;
-//   outline: 0;
-// }
-
 #wrapper{
-  grid-template-columns: 3fr 1fr;
+  display: grid;
+  grid-template-rows: auto;
+  grid-template-columns: repeat(9, 1fr);
+  grid-template-areas: 
+    "header header header header header header header header header"
+    "main main main main main main main sidebar sidebar"
+    "m m m m m m expanded expanded expanded";
 }
 
 #toolbar{
-  width:100%;
+  position: sticky;
+  grid-area: header;
   height: 50px;
-  background-color: gainsboro;
+  background-color: var(--structure-grey);
   top:0;
-  position: fixed;
   border: 1px solid gray;
 }
 #pair-rank{
   width:100%;
   height: 80px;
-  background-color: gainsboro;
+  background-color: var(--structure-grey);
   top:50px;
   position: fixed;
   border: 1px solid gray;
@@ -80,7 +77,7 @@ ul {
 .clade-toolbar{
 height:80px;
 width:100%;
-background-color: gainsboro;
+background-color: var(--structure-grey);
 position:fixed;
 bottom:0;
 }
@@ -104,17 +101,25 @@ bottom:0;
 .dropdown-content.show {display:block;}
 
 #main{
+  grid-area: main;
+  margin-top: 50px;
+}
+
+#main.clade-view{
+  grid-area: m;
   margin-top: 50px;
 }
 
 #sidebar{
-  height: 100%;
-  position: fixed;
+  grid-area: sidebar;
+  height: calc(100vh - 50px);
+  position: sticky;
   top:50px;
-  right:0px;
-  background-color: gainsboro;
-  border-left: 1px solid gray;
   overflow-y: auto;
+
+  background-color: var(--structure-grey);
+  border-left: 1px solid gray;
+  
   -webkit-transition: all 2s linear;
   -moz-transition: all 2s linear;
   -o-transition: all 2s linear;
@@ -122,11 +127,17 @@ bottom:0;
 }
 
 #sidebar.clade-view{
+  grid-area: expanded;
+  height: calc(100vh - 50px);
+  position: sticky;
+  top:50px;
+  overflow-y: auto;
+
   -webkit-transition: all 2s linear;
   -moz-transition: all 2s linear;
   -o-transition: all 2s linear;
   transition: all 2s linear;
-  width: 600px;
+  //width: 600px;
 }
 
 #tooltip {
@@ -148,7 +159,7 @@ bottom:0;
   left:0px;
   right:300px;
   height:200px;
-  background-color:gainsboro;
+  background-color:var(--structure-grey);
   border-bottom: 1px solid gray;
   padding-top:10px;
 }

@@ -2,13 +2,12 @@ import '../styles/index.scss';
 import * as d3 from "d3";
 
 import {dataMaster, nestedData, collapsed} from './index';
-import {filterMaster, removeFilter, addFilter, getScales} from './filterComponent';
+import {getScales} from './filterComponent';
 import {getNested} from './pathCalc';
 import { dropDown } from './buttonComponents';
 import { updateRanking } from './pairView';
 import { pairPaths, maxTimeKeeper } from './dataFormat';
 import { cladesGroupKeeper, chosenCladesGroup, growSidebarRenderTree } from './cladeMaker';
-
 
 
 export function buildTreeStructure(paths, edges){
@@ -18,57 +17,36 @@ export function buildTreeStructure(paths, edges){
     return nestedData;
 }
 
-// function updateBrush(treeBrush, scales){
-    
-//     let sidebar = d3.select('#sidebar');
-//     let toolbarDiv = d3.select('#toolbar');
+export function traitColorDropDown(scales, sidebar, renderCallback){
 
-//     let data = filterMaster.length === 0 ? dataMaster[0] : dataMaster[0];
-//     let nodes = sidebar.select('svg').select('g').selectAll('.node');
-//     let selectedNodes = nodes.filter(n=> (n.y > d3.event.selection[0][0]) && (n.y < d3.event.selection[1][0]) && (n.x > d3.event.selection[0][1]) && (n.x < d3.event.selection[1][1])).classed('selected', true);
-//     let filterArray = selectedNodes.data().map(n=> n.data.node);
-//     let test = treeFilter(data, filterArray);
-//     let brushId = 'brush-'+ filterMaster.filter(f=> f.attributType === 'topology').length;
-//     let filterOb = addFilter('data-filter', 'topology', brushId, treeFilter, [...data], [...test], null);
+    let optionArray  = reduce2DropArray(scales);
 
-//     updateMainView('edgeLength');
-   
-//     ///DIMMING THE FILTERED OUT NODES//////
+    let dropOptions = dropDown(sidebar, optionArray, `Color By Value`,'show-drop-div-sidebar');
+    dropOptions.on('click', (d, i, n)=> {
+        if(d.type === 'discrete'){
+            //renderTree(sidebar, d, true, false);
+            renderCallback(sidebar, d, true, false)
+            d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Colored by ${d.field}`)
+        }else if(d.type === 'continuous'){
+           // renderTree(sidebar, d, true, false);
+            renderCallback(sidebar, d, true, false)
+            d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Colored by ${d.field}`);
+        }else{
+            renderCallback(sidebar, null, true, false)
+           // renderTree(sidebar, null, false, false);
+            d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Color By Value`);
+        }
+    sidebar.select('#show-drop-div-sidebar').classed('show', false);
+    });
 
-//     ////Class Tree Links////
-//     let treeLinks  = d3.select('#sidebar').selectAll('.link');
-//     let treeNode  = d3.select('#sidebar').selectAll('.node');
+}
 
-//     let nodeList = test.flatMap(path=> path.map(node => node.node));
-
-//     d3.selectAll('.link-not-there').classed('link-not-there', false);
-//     d3.selectAll('.node-not-there').classed('node-not-there', false);
-
-//     let missingLinks = treeLinks.filter(f=> nodeList.indexOf(f.data.node) === -1);
-//     missingLinks.classed('link-not-there', true);
-
-//     let missingNodes = treeNode.filter(f=> nodeList.indexOf(f.data.node) === -1);
-//     missingNodes.classed('node-not-there', true);
-
-//     ///END NODE DIMMING///////
-
-//     let button = toolbarDiv.append('button').classed('btn btn-info', true);
-//     let span = button.append('span').classed('badge badge-light', true);
-//     span.text(test.length);
-//     let label = button.append('h6').text('Tree Filter');
-
-//     let xSpan = label.append('i').classed('close fas fa-times', true);
-//     xSpan.on('click', async (d, i, n)=> {
-//         removeFilter(brushId);
-//         await updateMainView('edgeLength');
-//         d3.selectAll('.selected').classed('selected', false);
-//         d3.selectAll('.link-not-there').classed('link-not-there', false);
-//         d3.selectAll('.node-not-there').classed('node-not-there', false);
-//         button.remove();
-//         d3.select(this).call(treeBrush.move, null);
-//         d3.select('.tree-brush').remove();
-//     });
-// }
+export function reduce2DropArray(startArray){
+    return  startArray.reduce(function(array, scale){
+        array.push(scale);
+        return array; 
+    }, [{'field':'None'}]); 
+}
 
 export function renderTreeButtons(normedPaths, sidebar){
 
@@ -76,55 +54,15 @@ export function renderTreeButtons(normedPaths, sidebar){
 
     ///SIDBAR STUFF
     sidebar = sidebar.append('div').classed('button-wrap', true);
-    // let treeButton = sidebar.append('button').text('Filter by Tree').classed('btn btn-outline-secondary', true);  
-    // let treeBrush = d3.brush().extent([[0, 0], [400, 600]]).on('end', (d, i, n) => updateBrush(treeBrush, scales));
-    // treeButton.on('click', ()=> {
-    //     renderTree(sidebar, true, null, true);
-    //     let treeBrushG = sidebar.select('svg').append('g').classed('tree-brush', true).call(treeBrush);
-    // });
 
-        ///SIDBAR STUFF
-    let treeViewButton = sidebar.append('button').text('Hide Lengths').attr('id', 'length').classed('btn btn-outline-secondary', true);  
+    traitColorDropDown(scales, sidebar, renderTree);
 
-    treeViewButton.on('click', ()=> {
-       sidebar.select('svg').remove();
-       if(treeViewButton.text() === 'Show Lengths'){
-            renderTree(sidebar, null, true, false);
-            treeViewButton.text('Hide Lengths');
-       }else{
-            renderTree(sidebar, null, false, false);
-            treeViewButton.text('Show Lengths');
-       }
-    });
-
-    treeViewButton.style('opacity', 0).style('width', 0).style('padding', 0).style('margin', 0);
-
-    let optionArray = [{'field':'None'}];
-
-    scales.map(m=> optionArray.push(m));
-
-    let dropOptions = dropDown(sidebar, optionArray, `Color By Value`,'show-drop-div-sidebar');
-    dropOptions.on('click', (d, i, n)=> {
-        if(d.type === 'discrete'){
-            renderTree(sidebar, d, true, false);
-            d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Colored by ${d.field}`)
-        }else if(d.type === 'continuous'){
-            renderTree(sidebar, d, true, false);
-            d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Colored by ${d.field}`);
-        }else{
-            renderTree(sidebar, null, false, false);
-            d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Color By Value`);
-        }
-       sidebar.select('#show-drop-div-sidebar').classed('show', false);
-    });
-
-    let phenoOptions = [{'field':'None'}];
-    scales.filter(f=> f.type != 'discrete').map(m=> phenoOptions.push(m));
-
+    let phenoOptions = reduce2DropArray(scales.filter(f=> f.type != 'discrete'));
+ 
       ///BUTTON FOR PHENOGRAM VIEW. MAYBE MOVE THIS TO SIDEBAR
-      let phenogramButton = d3.select('#sidebar').select('.button-wrap').append('button').text('View Phenogram');
-      phenogramButton.classed('btn btn-outline-secondary', true).attr('id', 'view-pheno'); 
-      phenogramButton.on('click', ()=> {
+    let phenogramButton = d3.select('#sidebar').select('.button-wrap').append('button').text('View Phenogram');
+    phenogramButton.classed('btn btn-outline-secondary', true).attr('id', 'view-pheno'); 
+    phenogramButton.on('click', ()=> {
           if(phenogramButton.text() === 'View Phenogram'){
             if(d3.select('.attr-drop.dropdown').select('button').empty()){
                 let drop = dropDown(d3.select('#toolbar'), phenoOptions, `Trait: ${phenoOptions[1].field}`, 'attr-drop');
@@ -157,19 +95,11 @@ export function renderTreeButtons(normedPaths, sidebar){
             phenogramButton.text('View Phenogram');
 
           }
-      })
+    })
 
-        let cladeButton = sidebar.append('button').attr('id', 'clade-maker');
-        cladeButton.attr('class', 'btn btn-outline-secondary').text('Clade View');
-        cladeButton.on('click', ()=> growSidebarRenderTree());
-}
-
-function treeFilter(data, selectedNodes){
-    return data.filter(path=> {
-        let nodeNames = path.map(no=> no.node);
-        let booArray = nodeNames.map(id=> selectedNodes.indexOf(id) > -1);
-        return booArray.indexOf(true) > -1
-    });
+    let cladeButton = sidebar.append('button').attr('id', 'clade-maker');
+    cladeButton.attr('class', 'btn btn-outline-secondary').text('Clade View');
+    cladeButton.on('click', ()=> growSidebarRenderTree());
 }
 
 function uncollapseSub(d){
@@ -255,7 +185,8 @@ export function renderTree(sidebar, att, uncollapse, pheno){
         lengthHeight: 800,
     }
 
- 
+    let lengthBool = true;
+
     // declares a tree layout and assigns the size
     var treemap = d3.tree()
     .size([dimensions.height, dimensions.width]);
@@ -269,7 +200,6 @@ export function renderTree(sidebar, att, uncollapse, pheno){
     treenodes = treemap(treenodes);
 
     let groupedBool = d3.select('#show-drop-div-group').attr('value');
-    let lengthBool = d3.select('button#length').text() === 'Hide Lengths';
 
     let sidebarTest = sidebar.select('svg');
     let treeSvg = sidebarTest.empty() ? sidebar.append("svg") : sidebarTest;
@@ -300,7 +230,6 @@ export function renderTree(sidebar, att, uncollapse, pheno){
 }
 
 export function findDepth(node, array){
-
     function stepDown(n){
         if(n.children != null){
             n.children.forEach(child=> {
@@ -311,9 +240,7 @@ export function findDepth(node, array){
         }
     }
     stepDown(node);
-
     return array;
-    
 }
 
 export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, pheno, uncollapse){

@@ -5,7 +5,7 @@ import {toggleFilters, getLatestData} from './filterComponent';
 import { updateMainView } from './viewControl';
 import { collapsed, calculatedScalesKeeper } from '.';
 import { dropDown } from './buttonComponents';
-import { cladesGroupKeeper, groupDataByAttribute, addCladeGroup, chosenCladesGroup, growSidebarRenderTree, cladeKeeper } from './cladeMaker';
+import { cladesGroupKeeper, chosenCladesGroup, cladeKeeper } from './cladeMaker';
 import { binGroups, renderDistStructure } from './distributionView';
 
 
@@ -18,7 +18,6 @@ export function findBrushedNodes(){
     return nodes;
 }
 export function toolbarControl(toolbar, main, calculatedScales){
-
 
     let viewArray = [{'field':'Summary View'},{'field':'Path View'},{'field':'Pair View'}, /*{'field':'Clade View'}*/ ];
 
@@ -116,20 +115,16 @@ export function toolbarControl(toolbar, main, calculatedScales){
         }
     });
 
-    /////CLADE VIEW////
-    let cladePickerDrop = dropDown(toolbar, cladesGroupKeeper, `Clades Shown: ${cladesGroupKeeper[0].field}`, 'change-clade');
-    d3.select('#change-clade').selectAll('a').on('click', (d, i, n)=> {
-        d3.select('.dropdown.change-clade').select('button').text(`Clades Shown: ${d.field}`)
-        chosenCladesGroup.push(d)
-        updateMainView('Summary View', d.groups);
-    });
-    if(cladesGroupKeeper.length === 0){
-        d3.select('.dropdown.change-clade').select('button').text(d.field);
-    }
-
-    // let cladeButton = toolbar.append('button').attr('id', 'clade-maker');
-    // cladeButton.attr('class', 'btn btn-outline-secondary').text('Add Clades');
-    // cladeButton.on('click', ()=> growSidebarRenderTree());
+    // /////CLADE VIEW////
+    // let cladePickerDrop = dropDown(toolbar, cladesGroupKeeper, `Clades Shown: ${cladesGroupKeeper[0].field}`, 'change-clade');
+    // d3.select('#change-clade').selectAll('a').on('click', (d, i, n)=> {
+    //     d3.select('.dropdown.change-clade').select('button').text(`Clades Shown: ${d.field}`)
+    //     chosenCladesGroup.push(d)
+    //     updateMainView('Summary View', d.groups);
+    // });
+    // if(cladesGroupKeeper.length === 0){
+    //     d3.select('.dropdown.change-clade').select('button').text(d.field);
+    // }
 
     /////ATTRIBUTE DROP DOWN
     let cladeOptions = cladeKeeper;
