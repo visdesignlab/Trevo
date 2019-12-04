@@ -127,7 +127,6 @@ export function toolbarControl(toolbar, main, calculatedScales){
     // }
 
     /////ATTRIBUTE DROP DOWN
-    console.log('cladeKeeper',cladeKeeper)
     let cladeOptions = cladeKeeper;
    // let checkedClades = attributeOptions.length > 11 ? attributeOptions.slice(0, 2) : attributeOptions;
 

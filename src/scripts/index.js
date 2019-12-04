@@ -87,15 +87,13 @@ async function appLaunch(){
     dataLoadAndFormat('anolis-edges.json', 'anolis-edge-lengths.json', 'anolis-leaf-data.csv', 'anolis-res.json', 'Anolis').then((centData)=> {
       
         toolbarControl(toolbarDiv, main, centData[1]);
-        
-        
+        d3.select('#clade-show').selectAll('li').select('input').node().checked = true
+  
         renderTree(sidebar, null, true, false);
         renderTreeButtons(centData[0], sidebar, false);
         /// LOWER ATTRIBUTE VISUALIZATION ///
         initialViewLoad(centData[1]);
 });
-
-
 
 // dataLoadAndFormatMultinet('anolis_edges.csv', 'anolis_internal.csv', 'anolis_leaf.csv', 'Anolis').then(centData=> {
     
@@ -203,7 +201,7 @@ async function dataLoadAndFormatMultinet(edgeFile, internalFile, leafFile, dataN
 
             if(attrib){
                 Object.keys(attrib).filter(f=> (f != 'node') && (f != 'label') && (f != 'length') && (f != 'leaf')).map((att, i)=>{
-                    let scales = calculatedScales.filter(f=> f.field=== att)[0]
+                    let scales = calculatedScales.filter(f=> f.field=== att)[0];
                     attrib[att].scales = scales;
                     return att;
                 })
@@ -246,10 +244,9 @@ async function dataLoadAndFormatMultinet(edgeFile, internalFile, leafFile, dataN
       
         let normedPaths = combineLength(paths);
 
-        console.log('before bin',dataName)
         let group = binGroups(normedPaths, dataName, calculatedScales, 8);
         let chosenClade = addCladeGroup(dataName, ['Whole Set'], [{'label': dataName, 'paths': normedPaths, 'groupBins': group}]);
-        chosenCladesGroup.push(chosenClade)    
+        chosenCladesGroup.push(chosenClade);    
 
         calculatedScalesKeeper.push(calculatedScales);
         dataMaster.push(normedPaths);
@@ -403,9 +400,8 @@ async function dataLoadAndFormat(edgeFile, edgeLengthFile, leafCharFile, resFile
     let normedPaths = combineLength(addedRoot);
 
     let group = binGroups(normedPaths, dataName, calculatedScales, 8);
-    let chosenClade = addCladeGroup(dataName, ['Whole Set'], [{'label': dataName, 'paths': normedPaths, 'groupBins': group}]);
+    let chosenClade = addCladeGroup(`All ${dataName}`, ['Whole Set'], [{'label': `All ${dataName}`, 'paths': normedPaths, 'groupBins': group}]);
     chosenCladesGroup.push(chosenClade)    
-    //cladeKeeper.push(chosenClade);
     
     addClade(`All ${dataName}`, normedPaths);
 

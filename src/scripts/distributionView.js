@@ -373,7 +373,6 @@ export function renderDistStructure(mainDiv, pathGroups){
         group.append('text').text(` : ${d.paths.length} Paths` );
 
         //////Starting something new/////
-      
         let svg = group.append('svg');
         svg.attr('class', 'main-summary-view');
         svg.attr('id', `${d.label}-svg`);
