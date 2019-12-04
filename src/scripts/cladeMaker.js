@@ -20,9 +20,8 @@ export function growSidebarRenderTree(){
     let cladeBool = null;
     let sidebar = d3.select('#sidebar');
 
-    sidebar.transition()
-    .duration(500)
-    .style('width', '600px');
+    sidebar
+    .classed('clade-view', true);
 
     sidebar.select('.tree-svg').selectAll('*').remove();
     sidebar.select('.button-wrap').selectAll('*').remove();
@@ -38,7 +37,9 @@ export function growSidebarRenderTree(){
     x.on('click', ()=> {
         sidebar.transition()
         .duration(500)
-        .style('width', '380px');
+        //.style('width', '380px');
+
+        sidebar.classed('clade-view', false);
 
         sidebar.selectAll('*').remove();
 
