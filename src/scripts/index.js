@@ -98,13 +98,10 @@ async function appLaunch(){
 
 dataLoadAndFormatMultinet('anolis_edges.csv', 'anolis_internal.csv', 'anolis_leaf.csv', 'Anolis').then(centData=> {
     
-
-    console.log('clade keeper', chosenCladesGroup)
-
-
     toolbarControl(toolbarDiv, main, centData[1]);
-    renderTreeButtons(centData[0], sidebar, false);
+   
     renderTree(sidebar, null, true, false);
+    renderTreeButtons(centData[0], sidebar, false);
     /// LOWER ATTRIBUTE VISUALIZATION ///
     initialViewLoad(centData[1]);
 });

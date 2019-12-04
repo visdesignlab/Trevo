@@ -74,40 +74,13 @@ ul {
  // pointer-events: none;
 }
 
-.clade-toolbar{
-height:80px;
-width:100%;
-background-color: var(--structure-grey);
-position:fixed;
-bottom:0;
-}
-
-.dropdown-content {
-  display: none;
-  position: absolute;
-  background-color: #f1f1f1;
-  min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  z-index: 1;
-}
-.dropdown-content a {
-  color: black;
-  padding: 5px 10px;
-  text-decoration: none;
-  font-size: 12px;
-  display: block;
-}
-.dropdown-content a:hover {background-color: #ddd}
-.dropdown-content.show {display:block;}
-
 #main{
   grid-area: main;
-  margin-top: 50px;
+  margin-top: 20px;
 }
 
 #main.clade-view{
   grid-area: m;
-  margin-top: 50px;
 }
 
 #sidebar{
@@ -124,6 +97,12 @@ bottom:0;
   -moz-transition: all 2s linear;
   -o-transition: all 2s linear;
   transition: all 2s linear;
+
+  display: grid;
+  grid-template-rows: 50px auto;
+  grid-template-columns: auto;
+  grid-template-areas: 
+    "buttonwrap" "tree";
 }
 
 #sidebar.clade-view{
@@ -137,7 +116,6 @@ bottom:0;
   -moz-transition: all 2s linear;
   -o-transition: all 2s linear;
   transition: all 2s linear;
-  //width: 600px;
 }
 
 #tooltip {
@@ -165,7 +143,6 @@ bottom:0;
 }
 #filter-toolbar{
   width:100%;
-
   top:50px;
   position:fixed;
 }
@@ -177,6 +154,40 @@ bottom:0;
   height:0;
   opacity:0;
 }
+
+.button-wrap{
+  grid-area: buttonwrap;
+  position: sticky;
+  background-color: var(--structure-grey);
+  top:0px;
+}
+
+.clade-toolbar{
+  height:80px;
+  width:100%;
+  background-color: var(--structure-grey);
+  position:fixed;
+  bottom:0;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f1f1f1;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+.dropdown-content a {
+  color: black;
+  padding: 5px 10px;
+  text-decoration: none;
+  font-size: 12px;
+  display: block;
+}
+.dropdown-content a:hover {background-color: #ddd}
+.dropdown-content.show {display:block;}
+
 
 button.hidden{
   height:0;
