@@ -24,16 +24,13 @@ export function traitColorDropDown(scales, sidebar, renderCallback){
     let dropOptions = dropDown(sidebar, optionArray, `Color By Value`,'show-drop-div-sidebar');
     dropOptions.on('click', (d, i, n)=> {
         if(d.type === 'discrete'){
-            //renderTree(sidebar, d, true, false);
-            renderCallback(sidebar, d, true, false)
+            renderCallback(d3.select('#sidebar'), d, true, false)
             d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Colored by ${d.field}`)
         }else if(d.type === 'continuous'){
-           // renderTree(sidebar, d, true, false);
-            renderCallback(sidebar, d, true, false)
+            renderCallback(d3.select('#sidebar'), d, true, false)
             d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Colored by ${d.field}`);
         }else{
-            renderCallback(sidebar, null, true, false)
-           // renderTree(sidebar, null, false, false);
+             renderCallback(d3.select('#sidebar'), null, true, false)
             d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Color By Value`);
         }
     sidebar.select('#show-drop-div-sidebar').classed('show', false);

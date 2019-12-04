@@ -24,7 +24,7 @@ export function growSidebarRenderTree(sidebar, attr){
     sidebar.classed('clade-view', true);
     d3.select('#main').classed('clade-view', true);
 
-    sidebar.select('.tree-svg').selectAll('*').remove();
+    sidebar.select('.tree-svg').remove();
     sidebar.select('.button-wrap').selectAll('*').remove();
 
     traitColorDropDown(getScales(), sidebar.select('.button-wrap'), growSidebarRenderTree);
@@ -264,7 +264,6 @@ export async function createCladeView(div, scales){
 
 export function renderCladeTree(sidebar, att, dimensions){
 
-
      addingEdgeLength(0, nestedData[0]);
     
     let treeFun = data => {
@@ -274,16 +273,8 @@ export function renderCladeTree(sidebar, att, dimensions){
 
     let treenodes = treeFun(nestedData[0]);
 
-    let sidebarTest = sidebar.select('svg');
-    let treeSvg = sidebarTest.empty() ? sidebar.append("svg") : sidebarTest;
-    treeSvg.classed('tree-svg', true);
-
-    treeSvg.selectAll('*').remove();
-
-    console.log(dimensions.height, dimensions.margin.top, dimensions.margin.bottom)
-
-    let gTest = treeSvg.select('g.tree-g');
-    let g = gTest.empty() ? treeSvg.append("g").classed('tree-g', true) : gTest;
+    let treeSvg = sidebar.append("svg").classed('tree-svg', true);
+    let g = treeSvg.append("g").classed('tree-g', true);
    
     ////Break this out into other nodes////
     updateCladeTree(treenodes, dimensions, treeSvg, g, att, true);
@@ -433,7 +424,7 @@ export function updateCladeTree(treenodes, dimensions, treeSvg, g, attrDraw, len
             collapseSub(d);
         }
         let lengthBool = d3.select('button#length').text() === 'Hide Lengths';
-        updateCladeTree(treenodes, dimensions, treeSvg, g, attrDraw, lengthBool);
+        updateCladeTree(treenodes, dimensions, treeSvg, treeSvg.select('g'), attrDraw, lengthBool);
       
     });
 
