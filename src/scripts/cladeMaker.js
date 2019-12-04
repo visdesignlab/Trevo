@@ -81,6 +81,7 @@ export function growSidebarRenderTree(){
         })
 
         let paths = pullPath([subtreeFinder[subtreeFinder.length - 1]], subtreeFinder[subtreeFinder.length - 1].children, [], [], 0);
+        console.log('addClade',paths)
         let nodeNames = paths.flatMap(path => path.map(p=> p.node))
         nodes.filter(f=> nodeNames.indexOf(f.data.node) > -1).select('circle').attr('fill', 'orange');
         link.filter(f=> nodeNames.filter((n)=> n != common[common.length - 1].node).indexOf(f.data.node) > -1).style('stroke', 'orange');
@@ -100,6 +101,7 @@ export function growSidebarRenderTree(){
         button.on('click', ()=> {
             let name = textInput.node().value != "" ? textInput.node().value : `Clade-${cladeKeeper.length + 1}`
             addClade(name, paths);
+            console.log('adding cladesss', cladeKeeper)
             growSidebarRenderTree();
             let ul = d3.select('div#clade-show').selectAll('ul');
             updateCladeDrop(ul, cladeKeeper)
@@ -142,7 +144,6 @@ export function removeCladeGroup(clades){
 
 export function groupDataByAttribute(scales, data, groupAttr){
 
-
     let groupKeys = scales.filter(f=> f.field === groupAttr)[0].scales.map(s=> s.scaleName);
 
     let branchBinCount = d3.median(data.map(m=> m.length)) - d3.min(data.map(m=> m.length))
@@ -173,24 +174,24 @@ export function groupDataByClade(scales, data, cladeInfo){
     
 }
 
-export async function drawTreeForGroups(div){
+// export async function drawTreeForGroups(div){
 
-    const dimensions =  {
-        margin : {top: 10, right: 90, bottom: 50, left: 20},
-        width : 620,
-        height : (getLatestData().length * 7),
-        lengthHeight: 800,
-    }
-
-   
-    renderCladeTree(div, null, dimensions);
-
-    let leaf = div.select('.tree-svg').selectAll('.node--leaf');
-    labelTree(leaf);
+//     const dimensions =  {
+//         margin : {top: 10, right: 90, bottom: 50, left: 20},
+//         width : 620,
+//         height : (getLatestData().length * 7),
+//         lengthHeight: 800,
+//     }
 
    
-    div.select('.tree-svg').classed('clade-view', true).append('g').classed('overlay-brush', true);
-}
+//     renderCladeTree(div, null, dimensions);
+
+//     let leaf = div.select('.tree-svg').selectAll('.node--leaf');
+//     labelTree(leaf);
+
+   
+//     div.select('.tree-svg').classed('clade-view', true).append('g').classed('overlay-brush', true);
+// }
 
 function createNewCladeGroup(div, scales){
     let cladeNames = []

@@ -6,7 +6,7 @@ import {allPaths, pullPath, getPathRevised, getPath} from './pathCalc';
 import {renderTree, buildTreeStructure, renderTreeButtons} from './sidebarComponent';
 import {toolbarControl} from './toolbarComponent';
 import { initialViewLoad } from './viewControl';
-import { groupDataByClade, groupDataByAttribute, addCladeGroup, cladesGroupKeeper, chosenCladesGroup, cladeKeeper} from './cladeMaker';
+import { groupDataByClade, groupDataByAttribute, addCladeGroup, cladesGroupKeeper, chosenCladesGroup, cladeKeeper, addClade} from './cladeMaker';
 import { binGroups } from './distributionView';
 
 export const dataMaster = [];
@@ -88,8 +88,9 @@ async function appLaunch(){
       
         toolbarControl(toolbarDiv, main, centData[1]);
         
-        renderTreeButtons(centData[0], sidebar, false);
+        
         renderTree(sidebar, null, true, false);
+        renderTreeButtons(centData[0], sidebar, false);
         /// LOWER ATTRIBUTE VISUALIZATION ///
         initialViewLoad(centData[1]);
 });
@@ -401,20 +402,12 @@ async function dataLoadAndFormat(edgeFile, edgeLengthFile, leafCharFile, resFile
 
     let normedPaths = combineLength(addedRoot);
 
-    if(cladesGroupKeeper.length === 0){
-        let attArray = calculatedScales.map(m=> m.field)
-        if(attArray.indexOf('Clade') > -1){
-            let groupData = groupDataByAttribute(calculatedScales, normedPaths, 'Clade');
-            let chosenClade = addCladeGroup('Clade Attribute', groupData.map(m=> m.label), groupData);
-            chosenCladesGroup.push(chosenClade)
-
-        }else{
-            let group = binGroups(normedPaths, dataName, calculatedScales, 8);
-            let chosenClade = addCladeGroup(dataName, ['Whole Set'], [{'label': dataName, 'paths': normedPaths, 'groupBins': group}]);
-            chosenCladesGroup.push(chosenClade)
-        }
-    }
+    let group = binGroups(normedPaths, dataName, calculatedScales, 8);
+    let chosenClade = addCladeGroup(dataName, ['Whole Set'], [{'label': dataName, 'paths': normedPaths, 'groupBins': group}]);
+    chosenCladesGroup.push(chosenClade)    
+    //cladeKeeper.push(chosenClade);
     
+    addClade(`All ${dataName}`, normedPaths);
 
     calculatedScalesKeeper.push(calculatedScales);
     dataMaster.push(normedPaths);

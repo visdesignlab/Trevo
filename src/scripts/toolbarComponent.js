@@ -90,7 +90,7 @@ export function toolbarControl(toolbar, main, calculatedScales){
     });
 
     /////ATTRIBUTE DROP DOWN
-    let attributeOptions = calculatedScales.map(m=> m.field);
+    let attributeOptions = calculatedScales.map(m=> m.field).filter(f=> f != "Clade");
     let checkedAttributes = attributeOptions.length > 11 ? attributeOptions.slice(0, 8) : attributeOptions;
 
     let dropdiv = toolbar.append('div').classed(`dropdown attribute-show`, true);
@@ -127,6 +127,7 @@ export function toolbarControl(toolbar, main, calculatedScales){
     // }
 
     /////ATTRIBUTE DROP DOWN
+    console.log('cladeKeeper',cladeKeeper)
     let cladeOptions = cladeKeeper;
    // let checkedClades = attributeOptions.length > 11 ? attributeOptions.slice(0, 2) : attributeOptions;
 
