@@ -49,7 +49,7 @@ export function groupDistributions(pathData, mainDiv, groupAttr){
 }
 export function binGroups(pathData, groupLabel, scales, branchCount){
 
-    console.log('bin groups', pathData, groupLabel, scales, branchCount)
+  
 
     let attrHide = filterMaster.filter(f=> f.type === 'hide-attribute').map(m=> m.attribute);
     
@@ -296,6 +296,11 @@ export function drawBranchPointDistribution(data, svg){
 
 export function drawGroupLabels(pathData, svg, groupLabel){
 
+    let leafNames = pathData[0].leafData.data.map(m=> m.node);
+    let nodeNames = getLatestData().filter(f=> leafNames.indexOf(f[f.length - 1].node) > -1).flatMap(fl=> fl.map(m=> m.node))
+
+    console.log('pathdata', leafNames, nodeNames)
+
     let shownAttributes = d3.select('#attribute-show').selectAll('input').filter((f, i, n)=> n[i].checked === true).data();
 
     let cladeLabel = svg.append('g').classed('clade-label', true).attr('transform', 'translate(10, 0)');
@@ -308,32 +313,13 @@ export function drawGroupLabels(pathData, svg, groupLabel){
             let treeNode  = d3.select('#sidebar').selectAll('.node');
             let treeLinks  = d3.select('#sidebar').selectAll('.link');
             treeNode.filter(f=> {
-                if(f.data.leaf){
-                    let test = d3.entries(f.data.attributes).filter(f=> groupLabel.includes(f.key))[0].value;
-                    return groupLabel.includes(test.states.state);
-                }else{
-                    let test = d3.entries(f.data.attributes).filter(f=> groupLabel.includes(f.key))[0];
-                    let testest = d3.entries(test.value.values).filter((f, i, n)=> {
-                        let max = d3.max(n.map(m=> m.value));
-                        return f.value === max;
-                    })[0];
-                    return groupLabel == testest.key;
-                }
+                return nodeNames.indexOf(f.data.node) > -1;
             }).classed('hover clade', true);
         
         treeLinks.filter(f=> {
-            if(f.data.leaf){
-                let test = d3.entries(f.data.attributes).filter(f=> groupLabel.includes(f.key))[0].value;
-                return groupLabel.includes(test.states.state);
-            }else{
-                let test = d3.entries(f.data.attributes).filter(f=> groupLabel.includes(f.key))[0]
-                let testest = d3.entries(test.value.values).filter((f, i, n)=> {
-                    let max = d3.max(n.map(m=> m.value));
-                    return f.value === max;
-                })[0];
-                return groupLabel == testest.key;
-            }
+            return nodeNames.indexOf(f.data.node) > -1;
         }).classed('hover clade', true);
+
         let species = d.paths.map(m=> m[m.length - 1].label);
         }).on('mouseout', (d, i)=> {
             let treeNode  = d3.select('#sidebar').selectAll('.node');
@@ -439,12 +425,13 @@ export function renderDistStructure(mainDiv, pathGroups){
                         compareTooltipFlag = false;
                         d3.select("#compare-tooltip").classed("hidden", true);
                         d3.select(n[i]).select('rect').attr('fill', '#F5B041');
+
                         selectedClades[selectedClades.length - 1].push(Object.assign({},d));
                         if(selectedClades[selectedClades.length - 1].length > 1){
                 
                             mainDiv.selectAll('*').remove();
                             mainDiv.select('#compare-wrap').remove();
-                            renderDistributionComparison(mainDiv, selectedClades[selectedClades.length - 1], branchScale, pathGroups);
+                            renderDistributionComparison(mainDiv, selectedClades[selectedClades.length - 1], branchScale);
                                 //renderDistStructure(mainDiv, pathGroups.filter(p=> p.label != d.label))
                         }
                     });
@@ -456,7 +443,8 @@ export function renderDistStructure(mainDiv, pathGroups){
     });
 }
 
-function renderDistributionComparison(div, data, branchScale, pathGroups){
+function renderDistributionComparison(div, data, branchScale){
+
 
     let shownAttributes = d3.select('#attribute-show').selectAll('input').filter((f, i, n)=> n[i].checked === true).data();
   
@@ -543,7 +531,7 @@ function renderDistributionComparison(div, data, branchScale, pathGroups){
 
     ////COMBINEDATA///
     if(data.length > 1){
-        console.log('data',data)
+       
         let startBins = data[0].groupBins.filter(f=> shownAttributes.indexOf(f.key) > -1);
         let mapBins = data[1].groupBins.filter(f=> shownAttributes.indexOf(f.key) > -1);
         let combined = startBins.map((d, i, n)=> {
@@ -1689,7 +1677,7 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
         var s = d3.event.selection;
         var zero = d3.format(".3n");
 
-       // console.log(d3.sum(data.bins.map(m=> m.length)))
+       
     
         let index = d3.select('#toolbar').selectAll('.brush-span').size();
         let classLabel = index === 0 ? 'one' : 'two';
@@ -1715,7 +1703,6 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
            
             let test = continuousHistogram(nodes);
 
-           // console.log(test, )
            
             test.maxCount = d3.sum(data.bins.map(m=> m.length));
 
