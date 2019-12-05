@@ -24,13 +24,13 @@ export function traitColorDropDown(scales, sidebar, renderCallback){
     let dropOptions = dropDown(sidebar, optionArray, `Color By Value`,'show-drop-div-sidebar');
     dropOptions.on('click', (d, i, n)=> {
         if(d.type === 'discrete'){
-            renderCallback(d3.select('#sidebar'), d, true, false)
+            renderCallback(d, true, false)
             d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Colored by ${d.field}`)
         }else if(d.type === 'continuous'){
-            renderCallback(d3.select('#sidebar'), d, true, false)
+            renderCallback(d, true, false)
             d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Colored by ${d.field}`);
         }else{
-             renderCallback(d3.select('#sidebar'), null, true, false)
+             renderCallback(null, true, false)
             d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Color By Value`);
         }
     sidebar.select('#show-drop-div-sidebar').classed('show', false);
@@ -45,9 +45,10 @@ export function reduce2DropArray(startArray){
     }, [{'field':'None'}]); 
 }
 
-export function renderTreeButtons(normedPaths, sidebar){
+export function renderTreeButtons(normedPaths){
 
     let scales = getScales();
+    let sidebar = d3.select('#sidebar');
 
     ///SIDBAR STUFF
     let buttonWrap = sidebar.append('div').classed('button-wrap', true);
@@ -67,15 +68,15 @@ export function renderTreeButtons(normedPaths, sidebar){
                     if(d3.select('.dropdown.change-view').select('button').node().value === "View Pairs"){
                         updateRanking(pairPaths(normedPaths), d.field);
                     }
-                    renderTree(d3.select('#sidebar'), null, true, d.field);
+                    renderTree(true, d.field);
                     d3.select('.attr-drop.dropdown').select('button').text(`Trait: ${d.field}`);
                     d3.select('.attr-drop.dropdown').select('button').attr('value')
                     d3.select('.attr-drop.dropdown').select('button').attr('value', d.field);
                     d3.select('#attr-drop').classed('show', false);
                 });
-                renderTree(d3.select('#sidebar'), null, true, d3.select('.attr-drop.dropdown').select('button').attr('value'))
+                renderTree(null, true, d3.select('.attr-drop.dropdown').select('button').attr('value'))
               }else{
-                renderTree(d3.select('#sidebar'), null, true, d3.select('.attr-drop.dropdown').select('button').attr('value'))
+                renderTree(null, true, d3.select('.attr-drop.dropdown').select('button').attr('value'))
               }
               phenogramButton.text('View Phylogeny');
           }else{
@@ -85,7 +86,7 @@ export function renderTreeButtons(normedPaths, sidebar){
             if(view != "Pair View"){
                 d3.select('.dropdown.attr-drop').remove();
             }
-            renderTree(d3.select('#sidebar'), null, true, false);
+            renderTree(null, true, false);
             phenogramButton.text('View Phenogram');
 
           }
@@ -93,7 +94,7 @@ export function renderTreeButtons(normedPaths, sidebar){
 
     let cladeButton = buttonWrap.append('button').attr('id', 'clade-maker');
     cladeButton.attr('class', 'btn btn-outline-secondary').text('Clade View');
-    cladeButton.on('click', ()=> growSidebarRenderTree(sidebar, null));
+    cladeButton.on('click', ()=> growSidebarRenderTree(null));
 }
 
 function uncollapseSub(d){
@@ -170,7 +171,9 @@ export function addingEdgeLength(edge, data){
     }
 }
 
-export function renderTree(sidebar, att, uncollapse, pheno){
+export function renderTree(att, uncollapse, pheno){
+
+    let sidebar = d3.select('#sidebar');
 
     const dimensions =  {
         margin : {top: 10, right: 90, bottom: 50, left: 20},
@@ -200,7 +203,6 @@ export function renderTree(sidebar, att, uncollapse, pheno){
     treeSvg.classed('tree-svg', true);
     treeSvg.attr("width", dimensions.width + dimensions.margin.left + dimensions.margin.right)
     .attr("height", dimensions.height + dimensions.margin.top + dimensions.margin.bottom);
-
 
     let gTest = treeSvg.select('g.tree-g');
     let g = gTest.empty() ? treeSvg.append("g").classed('tree-g', true) : gTest;

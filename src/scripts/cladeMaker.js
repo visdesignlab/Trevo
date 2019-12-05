@@ -15,9 +15,9 @@ export const cladeKeeper = []
 
 
 
-export function growSidebarRenderTree(sidebar, attrDraw){
+export function growSidebarRenderTree(attrDraw){
 
-    console.log('ATTRIBUTE MAGIC', attrDraw)
+    let sidebar = d3.select('#sidebar');
 
     let cladeBool = null;
 
@@ -100,7 +100,7 @@ export function growSidebarRenderTree(sidebar, attrDraw){
         button.on('click', ()=> {
             let name = textInput.node().value != "" ? textInput.node().value : `Clade-${cladeKeeper.length}`
             addClade(name, paths);
-            growSidebarRenderTree();
+            growSidebarRenderTree(null);
             let ul = d3.select('div#clade-show').selectAll('ul');
             updateCladeDrop(ul, cladeKeeper);
         });

@@ -68,8 +68,8 @@ async function appLaunch(){
       
 //         toolbarControl(toolbarDiv, main, centData[1]);
 //         wrap.select('#filter-tab').classed('hidden', true);
-//         renderTreeButtons(centData[0], sidebar, false);
-//         renderTree(sidebar, null, true, false);
+//         renderTreeButtons(centData[0], false);
+//         renderTree(null, true, false);
 //         /// LOWER ATTRIBUTE VISUALIZATION ///
 //         initialViewLoad(centData[1], 'Geospiza');
 //     });
@@ -78,8 +78,8 @@ async function appLaunch(){
       
     //         toolbarControl(toolbarDiv, main, centData[1]);
     //         wrap.select('#filter-tab').classed('hidden', true);
-    //         renderTreeButtons(centData[0], sidebar, false);
-    //         renderTree(sidebar, null, true, false);
+    //         renderTreeButtons(centData[0]);
+    //         renderTree(null, true, false);
     //         /// LOWER ATTRIBUTE VISUALIZATION ///
     //         initialViewLoad(centData[1], 'Centrarchid');
     // });
@@ -89,8 +89,8 @@ async function appLaunch(){
         toolbarControl(toolbarDiv, main, centData[1]);
         d3.select('#clade-show').selectAll('li').select('input').node().checked = true
   
-        renderTree(sidebar, null, true, false);
-        renderTreeButtons(centData[0], sidebar, false);
+        renderTree(null, true, false);
+        renderTreeButtons(centData[0]);
         /// LOWER ATTRIBUTE VISUALIZATION ///
         initialViewLoad(centData[1]);
 });
@@ -99,8 +99,8 @@ async function appLaunch(){
     
 //     toolbarControl(toolbarDiv, main, centData[1]);
    
-//     renderTree(sidebar, null, true, false);
-//     renderTreeButtons(centData[0], sidebar, false);
+//     renderTree(null, true, false);
+//     renderTreeButtons(centData[0], false);
 //     /// LOWER ATTRIBUTE VISUALIZATION ///
 //     initialViewLoad(centData[1]);
 // });
