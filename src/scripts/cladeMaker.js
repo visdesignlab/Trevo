@@ -15,9 +15,9 @@ export const cladeKeeper = []
 
 
 
-export function growSidebarRenderTree(sidebar, attr){
+export function growSidebarRenderTree(sidebar, attrDraw){
 
-    console.log('ATTRIBUTE MAGIC', attr)
+    console.log('ATTRIBUTE MAGIC', attrDraw)
 
     let cladeBool = null;
 
@@ -109,6 +109,30 @@ export function growSidebarRenderTree(sidebar, attr){
    
     labelTree(leaf);
 
+    if(attrDraw != null){
+       // let leaves = node.filter(n=> n.data.leaf === true);
+        let notleaves = nodes.filter(n=> n.data.leaf != true);
+
+        if(attrDraw.type === 'discrete'){
+            attrDraw.stateColors.forEach(att=> {
+                let circ = leaf.filter(f=> {
+                    return att.state.includes(f.data.attributes[attrDraw.field].states.state)
+                }).select('circle');
+                circ.attr('fill', att.color);
+                notleaves.selectAll('circle').attr('fill', 'gray');
+            });
+        }else{
+            let scale = attrDraw.yScale;
+            scale.range(['#fff', '#E74C3C']);
+            leaf.select('circle').attr('fill', (d, i)=> {
+                return scale(d.data.attributes[attrDraw.field].values.realVal);
+            });
+        }
+    }else{
+        nodes.selectAll('circle').attr('fill', 'gray');
+    }
+
+    
     leaf.on('click', (d, i, n)=> {
         d3.select(n[i]).select('circle').attr('fill', 'orange').attr('r', '5');
         if(cladeBool === null){
