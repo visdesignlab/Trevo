@@ -30,6 +30,8 @@ const selectedClades = [[]];
 
 export function groupDistributions(pathData, mainDiv, groupAttr){
 
+    console.log('groupin distrib', pathData, mainDiv, groupAttr)
+
     let scales = getScales();
 
     let groupKeys = scales.filter(f=> f.field === groupAttr)[0].scales.map(s=> s.scaleName)
@@ -48,8 +50,6 @@ export function groupDistributions(pathData, mainDiv, groupAttr){
     renderDistStructure(mainDiv, pathGroups);
 }
 export function binGroups(pathData, groupLabel, scales, branchCount){
-
-  
 
     let attrHide = filterMaster.filter(f=> f.type === 'hide-attribute').map(m=> m.attribute);
     
@@ -293,13 +293,10 @@ export function drawBranchPointDistribution(data, svg){
 
     return branchBar;
 }
-
 export function drawGroupLabels(pathData, svg, groupLabel){
 
     let leafNames = pathData[0].leafData.data.map(m=> m.node);
     let nodeNames = getLatestData().filter(f=> leafNames.indexOf(f[f.length - 1].node) > -1).flatMap(fl=> fl.map(m=> m.node))
-
-    console.log('pathdata', leafNames, nodeNames)
 
     let shownAttributes = d3.select('#attribute-show').selectAll('input').filter((f, i, n)=> n[i].checked === true).data();
 
@@ -406,37 +403,36 @@ export function renderDistStructure(mainDiv, pathGroups){
     
         let groupLabelBars = drawGroupLabels(d.groupBins, svg, d.label);
 
-            groupLabelBars.on('click', (d, i, n)=> {
-                if(compareTooltipFlag){
-                    compareTooltipFlag = false;
-                    d3.select("#compare-tooltip").classed("hidden", true);
-                }else{
+        groupLabelBars.on('click', (d, i, n)=> {
+            if(compareTooltipFlag){
+                compareTooltipFlag = false;
+                d3.select("#compare-tooltip").classed("hidden", true);
+            }else{
                    
-                    compareTooltipFlag = true;
-                    d3.select("#compare-tooltip")
+                compareTooltipFlag = true;
+                d3.select("#compare-tooltip")
                     .style("left", (d3.event.pageX) + "px")
                     .style("top", (d3.event.pageY - 28) + "px")
                     .select("#value")
                     .text(d.node);
-                    d3.select("#compare-tooltip").classed("hidden", false);
-        
-                    d3.select('#select-for-compare').on('click', ()=> {
 
-                        compareTooltipFlag = false;
-                        d3.select("#compare-tooltip").classed("hidden", true);
-                        d3.select(n[i]).select('rect').attr('fill', '#F5B041');
+                d3.select("#compare-tooltip").classed("hidden", false);
+                d3.select('#select-for-compare').on('click', ()=> {
 
-                        selectedClades[selectedClades.length - 1].push(Object.assign({},d));
-                        if(selectedClades[selectedClades.length - 1].length > 1){
-                
-                            mainDiv.selectAll('*').remove();
-                            mainDiv.select('#compare-wrap').remove();
-                            renderDistributionComparison(mainDiv, selectedClades[selectedClades.length - 1], branchScale);
-                                //renderDistStructure(mainDiv, pathGroups.filter(p=> p.label != d.label))
-                        }
-                    });
-                 }
-            });
+                    compareTooltipFlag = false;
+                    d3.select("#compare-tooltip").classed("hidden", true);
+                    d3.select(n[i]).select('rect').attr('fill', '#F5B041');
+
+                    selectedClades[selectedClades.length - 1].push(Object.assign({},d));
+                    if(selectedClades[selectedClades.length - 1].length > 1){
+                        mainDiv.selectAll('*').remove();
+                        mainDiv.select('#compare-wrap').remove();
+                        console.log('rendering',mainDiv, selectedClades[selectedClades.length - 1], branchScale)
+                        renderDistributionComparison(mainDiv, selectedClades[selectedClades.length - 1], branchScale);
+                    }
+                });
+            }
+        });
            
        // });
         renderDistibutions(binnedWrap, branchScale, pointGroups);
@@ -480,8 +476,8 @@ function renderDistributionComparison(div, data, branchScale){
     });
 
     if(data.length > 1){
-
-        renderTree(d3.select('#sidebar'), null, true);
+//ADD THIS BACK IN//
+       // renderTree(d3.select('#sidebar'), null, true);
 
         d3.select('#toolbar').selectAll('.brush-span').remove();
        
