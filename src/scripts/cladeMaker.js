@@ -18,7 +18,6 @@ export const cladeKeeper = []
 export function growSidebarRenderTree(attrDraw){
 
     let sidebar = d3.select('#sidebar');
-
     let cladeBool = null;
 
     sidebar.classed('clade-view', true);
@@ -68,7 +67,6 @@ export function growSidebarRenderTree(attrDraw){
     function  findCommonNode(path1, path2){
 
         let common = path1.filter(f=> path2.map(m=> m.node).indexOf(f.node) > -1);
-
         let subtreeFinder = [nestedData[0]];
 
         common.map(m=> m.node).map((m, i)=> {
@@ -85,15 +83,12 @@ export function growSidebarRenderTree(attrDraw){
         nodes.filter(f=> nodeNames.indexOf(f.data.node) > -1).select('circle').attr('fill', 'orange');
         link.filter(f=> nodeNames.filter((n)=> n != common[common.length - 1].node).indexOf(f.data.node) > -1).style('stroke', 'orange');
 
-        let wrap = sidebar.select('.button-wrap').append('div').classed("input-group mb-3", true).style('width', '300px');
+        let wrap = sidebar.select('.button-wrap').append('form').classed("form-inline", true)
+        .append('div').classed("form-group", true).style('width', '300px');
         
         let textInput = wrap.append('input').attr('type', 'text')
         .classed('form-control', true)
-        .attr('placeholder', 'Clade Name')
-        .style('margin-right', 0)
-        .style('margin-left', '5px')
-        .style('margin-top', '5px')
-        .property('aria-describedby', "basic-addon2");
+        .attr('placeholder', 'Clade Name');
 
         let button = wrap.append('div').classed('input-group-append', true).append('button').attr('type', 'button').classed('btn btn-outline-secondary', true);
         button.text('Add Clade');
@@ -104,7 +99,6 @@ export function growSidebarRenderTree(attrDraw){
             let ul = d3.select('div#clade-show').selectAll('ul');
             updateCladeDrop(ul, cladeKeeper);
         });
-        
     }
    
     labelTree(leaf);

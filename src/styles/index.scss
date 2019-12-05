@@ -160,6 +160,12 @@ ul {
   position: sticky;
   background-color: var(--structure-grey);
   top:0px;
+
+  display: grid;
+  grid-template-rows: 50px auto;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-areas: 
+    "left" "middle" "right";
 }
 
 .clade-toolbar{
@@ -188,6 +194,9 @@ ul {
 .dropdown-content a:hover {background-color: #ddd}
 .dropdown-content.show {display:block;}
 
+.input-wrap{
+  display: inline;
+}
 
 button.hidden{
   height:0;
