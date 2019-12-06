@@ -94,10 +94,10 @@ ul {
   background-color: var(--structure-grey);
   border-left: 1px solid gray;
   
-  -webkit-transition: all 2s linear;
-  -moz-transition: all 2s linear;
-  -o-transition: all 2s linear;
-  transition: all 2s linear;
+  // -webkit-transition: all 2s linear;
+  // -moz-transition: all 2s linear;
+  // -o-transition: all 2s linear;
+  // transition: all 2s linear;
 
   display: grid;
   grid-template-rows: 50px auto;
@@ -113,10 +113,10 @@ ul {
   top:50px;
   overflow-y: auto;
 
-  -webkit-transition: all 2s linear;
-  -moz-transition: all 2s linear;
-  -o-transition: all 2s linear;
-  transition: all 2s linear;
+  // -webkit-transition: all 2s linear;
+  // -moz-transition: all 2s linear;
+  // -o-transition: all 2s linear;
+  // transition: all 2s linear;
 }
 
 #tooltip {
@@ -428,9 +428,7 @@ line.half{
 }
 
 .range-rect{
-  // width:20px;
   fill:#32C1FE;
-  //opacity:0.4;
 }
 
 .inner-line{
@@ -565,16 +563,13 @@ g.node.low circle{
 }
 
 .node.hover.clade circle {
-  //fill: #fff;
   fill: #FF5733 !important;
   opacity: 1 !important;
-  //r: 4.5px;
   stroke-width: 1px;
   stroke: gainsboro;
 }
 
 .node.hover.one circle {
-  //fill: #fff;
   fill: #FF5733 !important;
   opacity: 1 !important;
   r: 4px;
