@@ -1,3 +1,4 @@
+import * as d3 from "d3";
 /* Multinet data importer */
 // Define local variables that will store the api url and the responses from the database
 let multinet = {
@@ -35,20 +36,20 @@ async function load_tables(workspace, graph) {
 
 
 async function load_nodes(workspace, node_table) {
-    nodes_call = multinet.api_root + "/workspaces/" + workspace + "/tables/" + node_table + "?limit=1000"
-    table = await d3.json(nodes_call);
+    let nodes_call = multinet.api_root + "/workspaces/" + workspace + "/tables/" + node_table + "?limit=1000"
+    let table = await d3.json(nodes_call);
     multinet.nodes = [].concat(multinet.nodes, table)
 };
 
 
 async function load_links(workspace, edge_table) {
-    links_call = multinet.api_root + "/workspaces/" + workspace + "/tables/" + edge_table + "?limit=1000"
-    table = await d3.json(links_call);
+    let links_call = multinet.api_root + "/workspaces/" + workspace + "/tables/" + edge_table + "?limit=1000"
+    let table = await d3.json(links_call);
     multinet.links = [].concat(multinet.links, table)
 };
 
 function rename_link_vars(links) {
-    for (row of links) {
+    for (let row of links) {
         row.id = row._id;
         row.source = row._from;
         row.target = row._to;
@@ -62,7 +63,7 @@ function rename_link_vars(links) {
 }
 
 function rename_node_vars(nodes) {
-    for (row of nodes) {
+    for (let row of nodes) {
         row.id = row._id;
 
         delete row._id;
