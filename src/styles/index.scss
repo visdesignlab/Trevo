@@ -76,7 +76,7 @@ ul {
 
 #main{
   grid-area: main;
-  margin-top: 20px;
+
 }
 
 #main.clade-view{
@@ -287,6 +287,9 @@ g.selected circle, circle.selected{
   fill:orange !important;
   opacity:1.0;
 
+}
+circle.selected-hover{
+  fill:orangered;
 }
 
 .paths.low rect.path-rect{

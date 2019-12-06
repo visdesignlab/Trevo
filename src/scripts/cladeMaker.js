@@ -64,11 +64,12 @@ export function growSidebarRenderTree(attrDraw){
 
     let nodeData = getLatestData();
   
-    function  findCommonNode(path1, path2){
+    function  findCommonNode(path1, path2, className){
 
         let common = path1.filter(f=> path2.map(m=> m.node).indexOf(f.node) > -1);
         let subtreeFinder = [nestedData[0]];
-
+        let commonNodeMark = nodes.filter(f=> f.data.node === common[common.length - 1].node);
+      
         common.map(m=> m.node).map((m, i)=> {
             if(i > 0){
                 let child = subtreeFinder[subtreeFinder.length - 1].children.filter(f=> {
@@ -80,25 +81,11 @@ export function growSidebarRenderTree(attrDraw){
         let paths = pullPath([subtreeFinder[subtreeFinder.length - 1]], subtreeFinder[subtreeFinder.length - 1].children, [], [], 0);
         
         let nodeNames = paths.flatMap(path => path.map(p=> p.node))
-        nodes.filter(f=> nodeNames.indexOf(f.data.node) > -1).select('circle').attr('fill', 'orange');
-        link.filter(f=> nodeNames.filter((n)=> n != common[common.length - 1].node).indexOf(f.data.node) > -1).style('stroke', 'orange');
+        nodes.filter(f=> nodeNames.indexOf(f.data.node) > -1).select('circle').classed(className, true);//.attr('fill', 'orange');
+        link.filter(f=> nodeNames.filter((n)=> n != common[common.length - 1].node).indexOf(f.data.node) > -1).classed(className, true);//.style('stroke', 'orange');
 
-        let wrap = sidebar.select('.button-wrap').append('form').classed("form-inline", true)
-        .append('div').classed("form-group", true).style('width', '300px');
-        
-        let textInput = wrap.append('input').attr('type', 'text')
-        .classed('form-control', true)
-        .attr('placeholder', 'Clade Name');
+        return paths;
 
-        let button = wrap.append('div').classed('input-group-append', true).append('button').attr('type', 'button').classed('btn btn-outline-secondary', true);
-        button.text('Add Clade');
-        button.on('click', ()=> {
-            let name = textInput.node().value != "" ? textInput.node().value : `Clade-${cladeKeeper.length}`
-            addClade(name, paths);
-            growSidebarRenderTree(null);
-            let ul = d3.select('div#clade-show').selectAll('ul');
-            updateCladeDrop(ul, cladeKeeper);
-        });
     }
    
     labelTree(leaf);
@@ -126,18 +113,44 @@ export function growSidebarRenderTree(attrDraw){
         nodes.selectAll('circle').attr('fill', 'gray');
     }
 
-    
     leaf.on('click', (d, i, n)=> {
+   
         d3.select(n[i]).select('circle').attr('fill', 'orange').attr('r', '5');
         if(cladeBool === null){
             cladeBool = d;
         }else{
             let dat1 = nodeData.filter(f=> f[f.length-1].node === cladeBool.data.node)[0];
             let dat2 = nodeData.filter(f=> f[f.length-1].node === d.data.node)[0];
+            let paths = findCommonNode(dat1, dat2, 'selected');
+            
+            let wrap = sidebar.select('.button-wrap').append('form').classed("form-inline", true)
+            .append('div').classed("form-group", true).style('width', '300px');
+            
+            let textInput = wrap.append('input').attr('type', 'text')
+            .classed('form-control', true)
+            .attr('placeholder', 'Clade Name');
 
-            findCommonNode(dat1, dat2);
+            let button = wrap.append('div').classed('input-group-append', true).append('button').attr('type', 'button').classed('btn btn-outline-secondary', true);
+            button.text('Add Clade');
+            button.on('click', ()=> {
+                let name = textInput.node().value != "" ? textInput.node().value : `Clade-${cladeKeeper.length}`
+                addClade(name, paths);
+                growSidebarRenderTree(null);
+                let ul = d3.select('div#clade-show').selectAll('ul');
+                updateCladeDrop(ul, cladeKeeper);
+            });
             cladeBool = null;
         }
+    });
+    leaf.on('mouseover', (d, i, n)=> {
+        if(cladeBool!=null){
+            let dat1 = nodeData.filter(f=> f[f.length-1].node === cladeBool.data.node)[0];
+            let dat2 = nodeData.filter(f=> f[f.length-1].node === d.data.node)[0];
+            findCommonNode(dat1, dat2, 'selected-hover');
+        }
+
+    }).on('mouseout', ()=> {
+        sidebar.selectAll('.selected-hover').classed('selected-hover', false);
     });
 
    sidebar.select('.tree-svg').classed('clade-view', true).append('g').classed('overlay-brush', true);
