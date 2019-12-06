@@ -8,6 +8,7 @@ import {toolbarControl} from './toolbarComponent';
 import { initialViewLoad } from './viewControl';
 import { groupDataByClade, groupDataByAttribute, addCladeGroup, cladesGroupKeeper, chosenCladesGroup, cladeKeeper, addClade} from './cladeMaker';
 import { binGroups } from './distributionView';
+import { load_data } from './multinetLoad';
 
 export const dataMaster = [];
 export const savedSelected = [];
@@ -59,6 +60,8 @@ let tooltip = wrap.append("div")
 .style("opacity", 0);
 
 ////DATA LOADING////
+let test = load_data('evobio', 'anolis');
+console.log('test',test)
 
 appLaunch();
 
@@ -252,7 +255,6 @@ async function dataLoadAndFormatMultinet(edgeFile, internalFile, leafFile, dataN
     
         return [normedPaths, calculatedScales];
 }
-
 
 async function dataLoadAndFormat(edgeFile, edgeLengthFile, leafCharFile, resFile, dataName){
 
