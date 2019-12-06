@@ -94,6 +94,7 @@ export function initialViewLoad(scales, dataName){
         d3.select('#discrete-view').classed('hidden', true);
 
     }else{
+        
         drawPathsAndAttributes(data, main);
         d3.select('#view-toggle').text('View Summary');
 

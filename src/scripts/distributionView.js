@@ -21,7 +21,7 @@ const brushColors = [
     ['#6A1B9A', '#FDD835'],
 ]
 
-const compareColors = ['#546E7A', '#5D4037']
+const compareColors = [{light: '#F8C471', dark: '#F39C12'}, {light: '#A3E4D7', dark: '#17A589'}]
 
 const defaultBarColor = '#baaaaa'//#DCD4D4';
 
@@ -29,8 +29,6 @@ let colorBool = 0;
 const selectedClades = [[]];
 
 export function groupDistributions(pathData, mainDiv, groupAttr){
-
-    console.log('groupin distrib', pathData, mainDiv, groupAttr)
 
     let scales = getScales();
 
@@ -455,7 +453,9 @@ function renderDistributionComparison(div, data, branchScale){
     let branchBar = drawBranchPointDistribution(pointData, branchPointSvg);
     branchBar.attr('transform', 'translate(-30, 10)')
 
-    branchBar.selectAll('rect.bin').attr('stroke', '#DCD4D4').attr('stroke-width', '3px');
+    //'#DCD4D4'
+
+    branchBar.selectAll('rect.bin').attr('stroke', '#fff').attr('stroke-width', '3px');
     let pointGroups = branchBar.selectAll('g.branch-points');
   
     let xOut = groupHeader.append('div')
@@ -495,15 +495,14 @@ function renderDistributionComparison(div, data, branchScale){
         let testNodesOne = d3.select('#sidebar').selectAll('.node').filter(f=> pathsListOne.indexOf(f.data.node) > -1);
         let testLinksOne = d3.select('#sidebar').selectAll('.link').filter(f=> pathsListOne.indexOf(f.data.node) > -1);
 
-        testNodesOne.attr('opacity', .8).selectAll('circle').attr('fill', compareColors[0])
-        testLinksOne.attr('opacity', .8).style('stroke', compareColors[0])
+        testNodesOne.attr('opacity', .8).selectAll('circle').attr('fill', compareColors[0].dark)
+        testLinksOne.attr('opacity', .8).style('stroke', compareColors[0].dark)
 
         let testNodesTwo = d3.select('#sidebar').selectAll('.node').filter(f=> pathsListTwo.indexOf(f.data.node) > -1);
         let testLinksTwo = d3.select('#sidebar').selectAll('.link').filter(f=> pathsListTwo.indexOf(f.data.node) > -1);
 
-        testNodesTwo.attr('opacity', .8).selectAll('circle').attr('fill', compareColors[1])
-        testLinksTwo.attr('opacity', .8).style('stroke', compareColors[1])
-
+        testNodesTwo.attr('opacity', .8).selectAll('circle').attr('fill', compareColors[1].dark)
+        testLinksTwo.attr('opacity', .8).style('stroke', compareColors[1].dark)
 
         textDiv.append('i')
         .classed('fas fa-arrow-left', true)
@@ -515,7 +514,7 @@ function renderDistributionComparison(div, data, branchScale){
             .classed('badge badge-secondary', true)
             .style('padding', '5px')
             .style('margin-bottom', '7px')
-            .style('background', compareColors[i])
+            .style('background', compareColors[i].light)
         });
 
         textDiv.append('i')
@@ -606,7 +605,6 @@ function renderDistributionComparison(div, data, branchScale){
                 ];
 
            }
-           
            
             return d;
         });
@@ -901,7 +899,7 @@ function renderDistributionComparison(div, data, branchScale){
             path.attr("fill", (v, i, n)=> {
                 return defaultBarColor})
             .attr('opacity', 0.4)
-            .style('stroke', compareColors[d.index]);
+            .style('stroke', compareColors[d.index].dark);
         });
 
         let contRect = continBinGroups.append('rect')
@@ -941,7 +939,7 @@ function renderDistributionComparison(div, data, branchScale){
         }else{
             return 'translate(0,0)';
         }
-    }).attr('fill', (d)=>compareColors[d.index]);
+    }).attr('fill', (d)=>compareColors[d.index].dark);
 
      //////START BRANCH EXPERIMENT
      let brush = d3.brushY().extent([[0, 0], [20, dimensions.height]])
@@ -1005,8 +1003,8 @@ function renderDistributionComparison(div, data, branchScale){
 
                     groupDis.append('path')
                     .attr('d', i === 0 ? mirrorlineGen : lineGen)
-                    .style('stroke', compareColors[i])
-                    .style('fill', compareColors[i])
+                    .style('stroke', compareColors[i].dark)
+                    .style('fill', compareColors[i].light)
                     .style('fill-opacity', 0.8);
 
                     groupDis.attr('transform', i === 0 ? 'translate(0, 0) rotate(90)' : `translate(11, ${dimensions.height}) rotate(-90)`);
@@ -1018,8 +1016,8 @@ function renderDistributionComparison(div, data, branchScale){
                         oDist.data([oHisto])
                         .append('path')
                         .attr('d', i === 0 ? mirrorlineGen : lineGen)
-                        .style('stroke', compareColors[i])
-                        .style('fill', compareColors[i])
+                        .style('stroke', compareColors[i].dark)
+                        .style('fill', compareColors[i].light)
                         .style('fill-opacity', 0.8);
                         oDist.attr('transform', i === 0 ? 'translate(0, 0) rotate(90)' : `translate(11, ${dimensions.height}) rotate(-90)`);
                     });
@@ -1035,8 +1033,8 @@ function renderDistributionComparison(div, data, branchScale){
                         oDist.data([oHisto])
                         .append('path')
                         .attr('d', i === 0 ? mirrorlineGen : lineGen)
-                        .style('stroke', compareColors[i])
-                        .style('fill', compareColors[i])
+                        .style('stroke', compareColors[i].dark)
+                        .style('fill', compareColors[i].light)
                         .style('fill-opacity', 0.8);
                         oDist.attr('transform', i === 0 ? 'translate(0, 0) rotate(90)' : `translate(11, ${dimensions.height}) rotate(-90)`);
 
@@ -1226,7 +1224,7 @@ function renderDistributionComparison(div, data, branchScale){
         let y = d3.scaleLinear().domain([0, Object.keys(d).length]).range([(dimensions.height - dimensions.margin), 0])
         return y(Object.keys(d).length - 2)
     })
-    .attr('fill', d=> compareColors[d.index]).attr('fill-opacity', .4);
+    .attr('fill', d=> compareColors[d.index].light).attr('fill-opacity', .4);
 
     contBars.attr('transform', (d, i, n)=> {
         let movex = dimensions.observedWidth / n.length;

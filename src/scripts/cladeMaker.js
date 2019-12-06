@@ -122,7 +122,7 @@ export function growSidebarRenderTree(attrDraw){
             let dat1 = nodeData.filter(f=> f[f.length-1].node === cladeBool.data.node)[0];
             let dat2 = nodeData.filter(f=> f[f.length-1].node === d.data.node)[0];
             let paths = findCommonNode(dat1, dat2, 'selected');
-            
+
             let wrap = sidebar.select('.button-wrap').append('form').classed("form-inline", true)
             .append('div').classed("form-group", true).style('width', '300px');
             
@@ -132,6 +132,7 @@ export function growSidebarRenderTree(attrDraw){
 
             let button = wrap.append('div').classed('input-group-append', true).append('button').attr('type', 'button').classed('btn btn-outline-secondary', true);
             button.text('Add Clade');
+            
             button.on('click', ()=> {
                 let name = textInput.node().value != "" ? textInput.node().value : `Clade-${cladeKeeper.length}`
                 addClade(name, paths);

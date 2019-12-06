@@ -246,8 +246,6 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, 
     
     assignPosition(treenodes, 0);
 
-   // console.log('treeNodes', treenodes)
-
     let branchCount = findDepth(treenodes, []);
     let xScale = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, dimensions.width]).clamp(true);
     let yScale = d3.scaleLinear().range([dimensions.height, 0]).domain([0, 1])
