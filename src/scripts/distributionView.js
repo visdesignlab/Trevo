@@ -425,7 +425,7 @@ export function renderDistStructure(mainDiv, pathGroups){
                     if(selectedClades[selectedClades.length - 1].length > 1){
                         mainDiv.selectAll('*').remove();
                         mainDiv.select('#compare-wrap').remove();
-                        console.log('rendering',mainDiv, selectedClades[selectedClades.length - 1], branchScale)
+                      
                         renderDistributionComparison(mainDiv, selectedClades[selectedClades.length - 1], branchScale);
                     }
                 });
@@ -1454,7 +1454,7 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
               .attr('opacity', 0.3);
 
     let probabilityTicks = stateBarsPredicted.selectAll('.prob-tick').data(d=> {
-        console.log('d',d)
+    
         return d.state;
     }).join('rect').classed('prob-tick', true)
 

@@ -111,7 +111,7 @@ dataLoadAndFormatMultinet('anolis_edges.csv', 'anolis_internal.csv', 'anolis_lea
 
 async function dataLoadAndFormatMultinet(edgeFile, internalFile, leafFile, dataName){
 
-        let data = await load_data('evobio', 'anolis');
+        let data = await load_data('evobio', 'anolis-test');
        
         //helper function to create array of unique elements
         Array.prototype.unique = function() {
@@ -126,9 +126,7 @@ async function dataLoadAndFormatMultinet(edgeFile, internalFile, leafFile, dataN
         let internal = data.nodes.filter(f=> f.id.includes('internal'));
         let leaves = data.nodes.filter(f=> f.id.includes('leaf'));
 
-        console.log(edges, internal, leaves, 'test', data);
-       
-        let notAttributeList = ["id", "label", "_key", "_rev"];
+        let notAttributeList = ["id", "label", "_key", "_rev", "key", "length"];
     
         ///Creating attribute list to add estimated values in //
         d3.keys(leaves[0]).filter(f=> notAttributeList.indexOf(f) === -1).forEach((d, i)=> {
@@ -167,7 +165,7 @@ async function dataLoadAndFormatMultinet(edgeFile, internalFile, leafFile, dataN
             });
             newRow.node = row.label;
             newRow.key = row.id;
-            newRow.length = row.length;
+            newRow.length = +row.length;
             newRow.leaf = false;
             return newRow;
         });
@@ -190,7 +188,7 @@ async function dataLoadAndFormatMultinet(edgeFile, internalFile, leafFile, dataN
             });
             newRow.node = row.label;
             newRow.label = row.label;
-            newRow.length = row.length;
+            newRow.length = +row.length;
             newRow.key = row.id;
             newRow.leaf = true;
             return newRow;
@@ -198,15 +196,13 @@ async function dataLoadAndFormatMultinet(edgeFile, internalFile, leafFile, dataN
 
         let calculatedScales = calculateNewScales(calculatedAtt, attributeList.map(m=> m.field), colorKeeper);
 
-        console.log(edges, internal, calculatedAtt, 'ddddata')
-    
         let matchedEdges = edges.map((edge, i)=> {
 
             let attrib = edge.target.includes("internal") ? calculatedAtt.filter(f=> f.key === edge.target)[0] : calcLeafAtt.filter(f=> f.key === edge.target)[0];
             let fromNode = edge.source.includes("internal") ? calculatedAtt.filter(f=> f.key === edge.source)[0] : calcLeafAtt.filter(f=> f.key === edge.source)[0];
 
             if(attrib){
-                console.log('attrib',attrib)
+               
                 Object.keys(attrib).filter(f=> (f != 'node') && (f != 'label') && (f != 'length') && (f != 'leaf') && (f != 'key')).map((att, i)=>{
                     let scales = calculatedScales.filter(f=> f.field=== att)[0];
                     attrib[att].scales = scales;
@@ -229,7 +225,8 @@ async function dataLoadAndFormatMultinet(edgeFile, internalFile, leafFile, dataN
                 let root = path[0];
                 let attrib = calculatedAtt.filter(f=> f.node === root.node)[0];
                 if(attrib){
-                    Object.keys(attrib).filter(f=> (f != 'node') && (f != 'label') && (f != 'length') && (f != 'leaf')).map((att, i)=>{
+                   
+                    Object.keys(attrib).filter(f=> (f != 'node') && (f != 'label') && (f != 'length') && (f != 'leaf') && (f != 'key')).map((att, i)=>{
                         let scales = calculatedScales.filter(f=> f.field=== att)[0]
                         attrib[att].scales = scales;
                         return att;
@@ -248,7 +245,6 @@ async function dataLoadAndFormatMultinet(edgeFile, internalFile, leafFile, dataN
                 return path;
             });
 
-      
         let normedPaths = combineLength(paths);
 
         let group = binGroups(normedPaths, dataName, calculatedScales, 8);
