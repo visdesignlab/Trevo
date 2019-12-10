@@ -3,12 +3,11 @@ import * as d3 from "d3";
 import {calculateNewScales, rootAttribute, combineLength, dataLoadAndFormatMultinet} from './dataFormat';
 import {allPaths} from './pathCalc';
 import {renderTree, buildTreeStructure, renderTreeButtons} from './sidebarComponent';
-import {toolbarControl} from './toolbarComponent';
+import {toolbarControl, toolbarDataControl} from './toolbarComponent';
 import { initialViewLoad } from './viewControl';
 import { addCladeGroup, chosenCladesGroup, addClade} from './cladeMaker';
 import { binGroups } from './distributionView';
 import { getGraphNames } from './multinetLoad';
-
 
 export const dataMaster = [];
 export const savedSelected = [];
@@ -45,14 +44,17 @@ export const colorKeeper = [
 ]
 
 export const attributeList = [];
+export let discreteTraitList = ['Clade', 'Group', 'island/mainland'];
 
-export let discreteTraitList = ['Clade', 'Group', 'island/mainland']
+const workspace = 'evobio';
 
 let wrap = d3.select('#wrapper');
 let main = wrap.select('#main');
 wrap.select('#selected').classed('hidden', true);
 let sidebar = wrap.select('#sidebar');
 let toolbarDiv = wrap.select('#toolbar');
+let toolbarDataWrap = toolbarDiv.append('div').classed('toolbar-data-button', true);
+let toolbarButtonWrap = toolbarDiv.append('div').classed('toolbar-button-wrap', true);
 wrap.select('#filter-tab').classed('hidden', true);
 
 let tooltip = wrap.append("div")
@@ -65,32 +67,30 @@ appLaunch();
 
 async function appLaunch(){
 
-// dataLoadAndFormatMultinet('Anolis', 'evobio', 'anolis-test').then(centData=> {
+    let graphList = await getGraphNames(workspace);
+    graphList = graphList.map(name=> {
+        return {field: name, text: `Data: ${name}`}
+    })
+
+    toolbarDataControl(toolbarDataWrap, graphList, graphList[1]);
+
+    loadApp(workspace, graphList[1].field);
+
+}
+
+async function loadApp(workspace, graphName){
+
+    dataLoadAndFormatMultinet(workspace, graphName).then(centData=> {
     
-//     toolbarControl(toolbarDiv, main, centData[1]);
-
-//     d3.select('#clade-show').selectAll('li').select('input').node().checked = true
-   
-//     renderTree(null, true, false);
-//     renderTreeButtons(centData[0], false);
-//     /// LOWER ATTRIBUTE VISUALIZATION ///
-//     initialViewLoad(centData[1]);
-// });
-let graphList = await getGraphNames('evobio');
-console.log(graphList)
-
-dataLoadAndFormatMultinet('Geospiza', 'evobio', 'geospiza').then(centData=> {
+        toolbarControl(toolbarButtonWrap, main, centData[1]);
     
-    toolbarControl(toolbarDiv, main, centData[1]);
-
-    d3.select('#clade-show').selectAll('li').select('input').node().checked = true
-   
-    renderTree(null, true, false);
-    renderTreeButtons(centData[0], false);
-    /// LOWER ATTRIBUTE VISUALIZATION ///
-    initialViewLoad(centData[1]);
-});
-
+        d3.select('#clade-show').selectAll('li').select('input').node().checked = true
+       
+        renderTree(null, true, false);
+        renderTreeButtons(centData[0], false);
+        /// LOWER ATTRIBUTE VISUALIZATION ///
+        initialViewLoad(centData[1]);
+    });
 }
 
 

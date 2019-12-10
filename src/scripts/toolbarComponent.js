@@ -17,9 +17,20 @@ export function findBrushedNodes(){
     let nodes = brushData.flatMap(m=> m.nodes);
     return nodes;
 }
+export function toolbarDataControl(toolbar, graphList, chosenGraph){
+
+    let dataDrop = dropDown(toolbar, graphList, chosenGraph.text, 'change-data');
+    d3.select('.dropdown.change-data').select('button').node().value = chosenGraph.field;
+    dataDrop.on('click', (d, i, n)=> {
+        d3.select('.dropdown.change-data').select('button').node().value = d.field;
+        d3.select('.dropdown.change-data').select('button').text(d.text)
+        d3.select('#change-data').classed('show', false);
+    });
+
+}
 export function toolbarControl(toolbar, main, calculatedScales){
 
-    let viewArray = [{'field':'Summary View'},{'field':'Path View'},{'field':'Pair View'}, /*{'field':'Clade View'}*/ ];
+    let viewArray = [{'field':'Summary View'},{'field':'Path View'},{'field':'Pair View'}];
 
     let viewDrop = dropDown(toolbar, viewArray, viewArray[0].field, 'change-view');
 

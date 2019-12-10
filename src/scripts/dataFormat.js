@@ -417,7 +417,9 @@ export function formatAttributeData(pathData, scales, filterArray){
     return newData;
 }
 
-export async function dataLoadAndFormatMultinet(dataName, worskpace, graphName){
+export async function dataLoadAndFormatMultinet(worskpace, graphName){
+
+    let dataName = graphName;
 
     let data = await load_data(worskpace, graphName);
    
