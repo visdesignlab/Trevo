@@ -96,7 +96,7 @@ async function appLaunch(){
 //         initialViewLoad(centData[1]);
 // });
 
-dataLoadAndFormatMultinet('anolis_edges.csv', 'anolis_internal.csv', 'anolis_leaf.csv', 'Anolis').then(centData=> {
+dataLoadAndFormatMultinet('Anolis').then(centData=> {
     
     toolbarControl(toolbarDiv, main, centData[1]);
    
@@ -108,7 +108,7 @@ dataLoadAndFormatMultinet('anolis_edges.csv', 'anolis_internal.csv', 'anolis_lea
 
 }
 
-async function dataLoadAndFormatMultinet(edgeFile, internalFile, leafFile, dataName){
+async function dataLoadAndFormatMultinet(dataName){
 
         let data = await load_data('evobio', 'anolis-test');
        
