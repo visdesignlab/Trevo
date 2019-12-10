@@ -1,6 +1,5 @@
 import '../styles/index.scss';
 import * as d3 from "d3";
-import {loadData} from './dataLoad';
 import {calculateNewScales, rootAttribute, combineLength, dataLoadAndFormatMultinet} from './dataFormat';
 import {allPaths} from './pathCalc';
 import {renderTree, buildTreeStructure, renderTreeButtons} from './sidebarComponent';
@@ -8,6 +7,7 @@ import {toolbarControl} from './toolbarComponent';
 import { initialViewLoad } from './viewControl';
 import { addCladeGroup, chosenCladesGroup, addClade} from './cladeMaker';
 import { binGroups } from './distributionView';
+import { getGraphNames } from './multinetLoad';
 
 
 export const dataMaster = [];
@@ -65,17 +65,6 @@ appLaunch();
 
 async function appLaunch(){
 
-//     dataLoadAndFormat('geospiza-edges.json', 'geospiza-edge-lengths.json', 'geospiza-leaf-data.csv', 'geospiza-res.json', 'Geospiza').then((centData)=> {
-      
-//         toolbarControl(toolbarDiv, main, centData[1]);
-//         wrap.select('#filter-tab').classed('hidden', true);
-//         renderTreeButtons(centData[0], false);
-//         renderTree(null, true, false);
-//         /// LOWER ATTRIBUTE VISUALIZATION ///
-//         initialViewLoad(centData[1], 'Geospiza');
-//     });
-
-
 // dataLoadAndFormatMultinet('Anolis', 'evobio', 'anolis-test').then(centData=> {
     
 //     toolbarControl(toolbarDiv, main, centData[1]);
@@ -87,6 +76,8 @@ async function appLaunch(){
 //     /// LOWER ATTRIBUTE VISUALIZATION ///
 //     initialViewLoad(centData[1]);
 // });
+let graphList = await getGraphNames('evobio');
+console.log(graphList)
 
 dataLoadAndFormatMultinet('Geospiza', 'evobio', 'geospiza').then(centData=> {
     
@@ -103,7 +94,15 @@ dataLoadAndFormatMultinet('Geospiza', 'evobio', 'geospiza').then(centData=> {
 }
 
 
-
+//     dataLoadAndFormat('geospiza-edges.json', 'geospiza-edge-lengths.json', 'geospiza-leaf-data.csv', 'geospiza-res.json', 'Geospiza').then((centData)=> {
+      
+//         toolbarControl(toolbarDiv, main, centData[1]);
+//         wrap.select('#filter-tab').classed('hidden', true);
+//         renderTreeButtons(centData[0], false);
+//         renderTree(null, true, false);
+//         /// LOWER ATTRIBUTE VISUALIZATION ///
+//         initialViewLoad(centData[1], 'Geospiza');
+//     });
 async function dataLoadAndFormat(edgeFile, edgeLengthFile, leafCharFile, resFile, dataName){
 
     //helper function to create array of unique elements

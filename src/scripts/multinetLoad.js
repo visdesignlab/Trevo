@@ -12,6 +12,11 @@ let multinet = {
 
 const api = multinetApi(multinet.api_root);
 
+export async function getGraphNames(workspace){
+  
+    return await api.graphs(workspace);
+}
+
 export async function load_data(workspace, graph) {
     // Fetch the names of all the node and edge tables 
     await load_tables(workspace, graph);
@@ -40,7 +45,6 @@ async function load_nodes(workspace, node_table) {
     });
     multinet.nodes = [].concat(multinet.nodes, table);
 };
-
 
 async function load_links(workspace, edge_table) {
     const table = await api.table(workspace, edge_table, {

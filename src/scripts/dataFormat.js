@@ -8,6 +8,11 @@ import { buildTreeStructure } from "./sidebarComponent";
 
 export const maxTimeKeeper = []
 
+export async function loadData(readFunction, fileString, type){
+    let data = await readFunction(fileString);
+    data.type = String(type);
+    return data;
+}
 
 export function pairPaths(pathData, field){
 
@@ -413,7 +418,7 @@ export function formatAttributeData(pathData, scales, filterArray){
 }
 
 export async function dataLoadAndFormatMultinet(dataName, worskpace, graphName){
-speciesTest
+
     let data = await load_data(worskpace, graphName);
    
     //helper function to create array of unique elements
