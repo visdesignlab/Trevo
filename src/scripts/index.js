@@ -60,8 +60,7 @@ let tooltip = wrap.append("div")
 .style("opacity", 0);
 
 ////DATA LOADING////
-let test = load_data('evobio', 'anolis');
-console.log('test',test)
+
 
 appLaunch();
 
@@ -87,31 +86,33 @@ async function appLaunch(){
     //         initialViewLoad(centData[1], 'Centrarchid');
     // });
 
-    dataLoadAndFormat('anolis-edges.json', 'anolis-edge-lengths.json', 'anolis-leaf-data.csv', 'anolis-res.json', 'Anolis').then((centData)=> {
+//     dataLoadAndFormat('anolis-edges.json', 'anolis-edge-lengths.json', 'anolis-leaf-data.csv', 'anolis-res.json', 'Anolis').then((centData)=> {
       
-        toolbarControl(toolbarDiv, main, centData[1]);
-        d3.select('#clade-show').selectAll('li').select('input').node().checked = true
+//         toolbarControl(toolbarDiv, main, centData[1]);
+//         d3.select('#clade-show').selectAll('li').select('input').node().checked = true
   
-        renderTree(null, true, false);
-        renderTreeButtons(centData[0]);
-        /// LOWER ATTRIBUTE VISUALIZATION ///
-        initialViewLoad(centData[1]);
-});
-
-// dataLoadAndFormatMultinet('anolis_edges.csv', 'anolis_internal.csv', 'anolis_leaf.csv', 'Anolis').then(centData=> {
-    
-//     toolbarControl(toolbarDiv, main, centData[1]);
-   
-//     renderTree(null, true, false);
-//     renderTreeButtons(centData[0], false);
-//     /// LOWER ATTRIBUTE VISUALIZATION ///
-//     initialViewLoad(centData[1]);
+//         renderTree(null, true, false);
+//         renderTreeButtons(centData[0]);
+//         /// LOWER ATTRIBUTE VISUALIZATION ///
+//         initialViewLoad(centData[1]);
 // });
+
+dataLoadAndFormatMultinet('anolis_edges.csv', 'anolis_internal.csv', 'anolis_leaf.csv', 'Anolis').then(centData=> {
+    
+    toolbarControl(toolbarDiv, main, centData[1]);
+   
+    renderTree(null, true, false);
+    renderTreeButtons(centData[0], false);
+    /// LOWER ATTRIBUTE VISUALIZATION ///
+    initialViewLoad(centData[1]);
+});
 
 }
 
 async function dataLoadAndFormatMultinet(edgeFile, internalFile, leafFile, dataName){
 
+        let data = await load_data('evobio', 'anolis');
+       
         //helper function to create array of unique elements
         Array.prototype.unique = function() {
             return this.filter(function (value, index, self) { 
@@ -121,13 +122,16 @@ async function dataLoadAndFormatMultinet(edgeFile, internalFile, leafFile, dataN
 
         let attributeList = []
 
-        let edges = await loadData(d3.csv, `./data/${edgeFile}`, 'edge');
-        let internal = await loadData(d3.csv, `./data/${internalFile}`, '');
-        let leaves = await loadData(d3.csv, `./data/${leafFile}`, '');
+        let edges = data.links;
+        let internal = data.nodes.filter(f=> f.id.includes('internal'));
+        let leaves = data.nodes.filter(f=> f.id.includes('leaf'));
+
+        console.log(edges, internal, leaves, 'test', data);
+       
+        let notAttributeList = ["id", "label", "_key", "_rev"];
     
         ///Creating attribute list to add estimated values in //
-    
-        leaves.columns.filter(f=> (f != 'species') && (f != 'label') && (f != '_key') && (f != 'length')).forEach((d, i)=> {
+        d3.keys(leaves[0]).filter(f=> notAttributeList.indexOf(f) === -1).forEach((d, i)=> {
     
             if(discreteTraitList.indexOf(d) > -1){
                 attributeList.push({field: d, type: 'discrete'});
@@ -138,6 +142,7 @@ async function dataLoadAndFormatMultinet(edgeFile, internalFile, leafFile, dataN
         });
     
         let calculatedAtt = internal.map((row, i)=> {
+    
             let newRow = {};
             attributeList.forEach((att)=>{
                 newRow[att.field] = {};
@@ -161,6 +166,7 @@ async function dataLoadAndFormatMultinet(edgeFile, internalFile, leafFile, dataN
                 newRow[att.field].values = values;
             });
             newRow.node = row.label;
+            newRow.key = row.id;
             newRow.length = row.length;
             newRow.leaf = false;
             return newRow;
@@ -185,22 +191,23 @@ async function dataLoadAndFormatMultinet(edgeFile, internalFile, leafFile, dataN
             newRow.node = row.label;
             newRow.label = row.label;
             newRow.length = row.length;
+            newRow.key = row.id;
             newRow.leaf = true;
             return newRow;
         })
 
         let calculatedScales = calculateNewScales(calculatedAtt, attributeList.map(m=> m.field), colorKeeper);
+
+        console.log(edges, internal, calculatedAtt, 'ddddata')
     
         let matchedEdges = edges.map((edge, i)=> {
 
-            let indexTo = +edge._to.match(/(\d+)/)[0];
-            let indexFrom = +edge._from.match(/(\d+)/)[0];
-
-            let attrib = edge._to.includes("internal") ? calculatedAtt[indexTo] : calcLeafAtt[indexTo];
-            let fromNode = edge._from.includes("internal") ? calculatedAtt[indexFrom] : calcLeafAtt[indexFrom];
+            let attrib = edge.target.includes("internal") ? calculatedAtt.filter(f=> f.key === edge.target)[0] : calcLeafAtt.filter(f=> f.key === edge.target)[0];
+            let fromNode = edge.source.includes("internal") ? calculatedAtt.filter(f=> f.key === edge.source)[0] : calcLeafAtt.filter(f=> f.key === edge.source)[0];
 
             if(attrib){
-                Object.keys(attrib).filter(f=> (f != 'node') && (f != 'label') && (f != 'length') && (f != 'leaf')).map((att, i)=>{
+                console.log('attrib',attrib)
+                Object.keys(attrib).filter(f=> (f != 'node') && (f != 'label') && (f != 'length') && (f != 'leaf') && (f != 'key')).map((att, i)=>{
                     let scales = calculatedScales.filter(f=> f.field=== att)[0];
                     attrib[att].scales = scales;
                     return att;
