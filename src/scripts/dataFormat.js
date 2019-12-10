@@ -417,11 +417,13 @@ export function formatAttributeData(pathData, scales, filterArray){
     return newData;
 }
 
-export async function dataLoadAndFormatMultinet(worskpace, graphName){
+export async function dataLoadAndFormatMultinet(workspace, graphName){
 
     let dataName = graphName;
 
-    let data = await load_data(worskpace, graphName);
+    let data = await load_data(workspace, graphName);
+
+    console.log('data', workspace, graphName, data)
    
     //helper function to create array of unique elements
     Array.prototype.unique = function() {

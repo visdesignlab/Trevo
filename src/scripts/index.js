@@ -46,7 +46,7 @@ export const colorKeeper = [
 export const attributeList = [];
 export let discreteTraitList = ['Clade', 'Group', 'island/mainland'];
 
-const workspace = 'evobio';
+export const workspace = 'evobio';
 
 let wrap = d3.select('#wrapper');
 let main = wrap.select('#main');
@@ -78,7 +78,7 @@ async function appLaunch(){
 
 }
 
-async function loadApp(workspace, graphName){
+export async function loadApp(workspace, graphName){
 
     dataLoadAndFormatMultinet(workspace, graphName).then(centData=> {
     
@@ -93,16 +93,6 @@ async function loadApp(workspace, graphName){
     });
 }
 
-
-//     dataLoadAndFormat('geospiza-edges.json', 'geospiza-edge-lengths.json', 'geospiza-leaf-data.csv', 'geospiza-res.json', 'Geospiza').then((centData)=> {
-      
-//         toolbarControl(toolbarDiv, main, centData[1]);
-//         wrap.select('#filter-tab').classed('hidden', true);
-//         renderTreeButtons(centData[0], false);
-//         renderTree(null, true, false);
-//         /// LOWER ATTRIBUTE VISUALIZATION ///
-//         initialViewLoad(centData[1], 'Geospiza');
-//     });
 async function dataLoadAndFormat(edgeFile, edgeLengthFile, leafCharFile, resFile, dataName){
 
     //helper function to create array of unique elements

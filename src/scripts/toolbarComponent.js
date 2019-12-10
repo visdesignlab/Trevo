@@ -3,7 +3,7 @@ import * as d3 from "d3";
 import {drawPathsAndAttributes, drawDiscreteAtt, drawGroups} from './renderPathView';
 import {toggleFilters, getLatestData} from './filterComponent';
 import { updateMainView } from './viewControl';
-import { collapsed, calculatedScalesKeeper } from '.';
+import { collapsed, calculatedScalesKeeper, workspace, loadApp } from '.';
 import { dropDown } from './buttonComponents';
 import { cladesGroupKeeper, chosenCladesGroup, cladeKeeper } from './cladeMaker';
 import { binGroups, renderDistStructure } from './distributionView';
@@ -25,6 +25,18 @@ export function toolbarDataControl(toolbar, graphList, chosenGraph){
         d3.select('.dropdown.change-data').select('button').node().value = d.field;
         d3.select('.dropdown.change-data').select('button').text(d.text)
         d3.select('#change-data').classed('show', false);
+        let main = d3.select('#main');
+        let sidebar = d3.select('#sidebar');
+        let toolbarDiv = d3.select('#toolbar');
+        let toolbarButtonWrap = toolbarDiv.select('.toolbar-button-wrap');
+
+        main.selectAll('*').remove();
+        sidebar.selectAll('*').remove();
+        toolbarButtonWrap.selectAll('*').remove();
+
+        loadApp(workspace, d.field);
+
+
     });
 
 }

@@ -9,6 +9,19 @@ let multinet = {
     graph_structure: {},
     api_root: "https://multinet.app/api"
 };
+class Multinet {
+
+    constructor(){
+
+        this.tables = {},
+        this.nodes = [],
+        this.links = [],
+        this.graph_structure = {},
+        this.api_root = "https://multinet.app/api"
+
+    }
+   
+}
 
 const api = multinetApi(multinet.api_root);
 
