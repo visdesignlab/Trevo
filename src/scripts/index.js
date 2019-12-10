@@ -60,8 +60,8 @@ let tooltip = wrap.append("div")
 .style("opacity", 0);
 
 ////DATA LOADING////
-let test = load_data('evobio', 'anolis');
-console.log('test',test)
+//let test = load_data('evobio', 'anolis');
+//console.log('test',test)
 
 appLaunch();
 

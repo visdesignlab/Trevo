@@ -24,16 +24,13 @@ export async function load_data(workspace, graph) {
 
     // Set the graph structure
     multinet.graph_structure = { "nodes": rename_node_vars(multinet.nodes), "links": rename_link_vars(multinet.links) }
-
     return JSON.parse(JSON.stringify(multinet.graph_structure))
-
 };
 
 async function load_tables(workspace, graph) {
     var tables_call = multinet.api_root + "/workspaces/" + workspace + "/graphs/" + graph
     multinet.tables = await d3.json(tables_call);
 };
-
 
 async function load_nodes(workspace, node_table) {
     let nodes_call = multinet.api_root + "/workspaces/" + workspace + "/tables/" + node_table + "?limit=1000"

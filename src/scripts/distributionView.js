@@ -194,7 +194,7 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
                                 return h;
                              });
                              let states = [{'state': m.key, 'value':m.value}];
-                             return {state: states, branchCount:branchCount, histogram: histo, color : colors.filter(f=> f.state === m.key)[0], max:80};
+                             return {state: states, branchCount:branchCount, histogram: histo, color:colors.filter(f=> f.state === m.key)[0], max:80};
                             });
                         
                     }else{
@@ -406,7 +406,6 @@ export function renderDistStructure(mainDiv, pathGroups){
                 compareTooltipFlag = false;
                 d3.select("#compare-tooltip").classed("hidden", true);
             }else{
-                   
                 compareTooltipFlag = true;
                 d3.select("#compare-tooltip")
                     .style("left", (d3.event.pageX) + "px")
@@ -425,7 +424,6 @@ export function renderDistStructure(mainDiv, pathGroups){
                     if(selectedClades[selectedClades.length - 1].length > 1){
                         mainDiv.selectAll('*').remove();
                         mainDiv.select('#compare-wrap').remove();
-                        console.log('rendering',mainDiv, selectedClades[selectedClades.length - 1], branchScale)
                         renderDistributionComparison(mainDiv, selectedClades[selectedClades.length - 1], branchScale);
                     }
                 });
@@ -1454,11 +1452,18 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
               .attr('opacity', 0.3);
 
     let probabilityTicks = stateBarsPredicted.selectAll('.prob-tick').data(d=> {
-        console.log('d',d)
         return d.state;
     }).join('rect').classed('prob-tick', true)
 
-    probabilityTicks.attr('width', 3).attr('height', dimensions.squareDim)
+    probabilityTicks
+    .attr('width', 2)
+    .attr('height', dimensions.squareDim)
+    .attr('opacity', 0.2)
+    .attr('fill', 'gray');
+
+    probabilityTicks.attr('transform', (d, i, n)=> {
+        let scale = d3.scaleLinear().domain([0, 1]).range([0, (80 - 2)]);
+        return `translate(${scale(d.value)},0)`})
 
     /////////END XPERIMENT////////
 
@@ -1522,12 +1527,29 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
                 return f.color.state === maxState;
             }).classed('win', true);
 
+           
+        let winStateTicks = d3.select(node[i]).selectAll('g.histo-bars')
+            .filter((f, j, n)=>{
+                return f.color.state === maxState;
+            }).classed('win', true);
+        
+        console.log(winStateTicks)
+
         winStates.select('rect.state-rect').attr('fill', (c)=> {
                 return c.color.color;
             }).attr('opacity', (c)=>{
                 let sum = d3.sum(c.state.flatMap(s=> s.value));
                 return sum/c.state.length;
-            })
+            });
+        winStateTicks.selectAll('rect.prob-ticks').attr('fill', (c)=> {
+            console.log('c',c)
+                return c.color.color;
+            }).attr('opacity', (c)=>{
+                let sum = d3.sum(c.state.flatMap(s=> s.value));
+                return sum/c.state.length;
+            });
+            
+       // console.log('node',node[i])
     });
 
     let disWrap = predictedWrap.filter(f=> f.type === 'discrete')
