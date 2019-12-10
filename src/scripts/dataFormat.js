@@ -1,4 +1,10 @@
 import * as d3 from "d3";
+import { load_data } from "./multinetLoad";
+import { discreteTraitList, colorKeeper, calculatedScalesKeeper, dataMaster, nestedData, speciesTest } from ".";
+import { allPaths } from "./pathCalc";
+import { binGroups } from "./distributionView";
+import { addCladeGroup, chosenCladesGroup, addClade } from "./cladeMaker";
+import { buildTreeStructure } from "./sidebarComponent";
 
 export const maxTimeKeeper = []
 
@@ -316,63 +322,6 @@ export function combineLength(paths){
 
 }
 
-// export function normPaths(paths, calculatedAtt, calculatedScales){
-//     paths.forEach((p, i)=> {
-//         p[0].attributes = {};
-//         Object.keys(calculatedAtt).map(att=> { 
-//             if(calculatedAtt[att].type == 'continuous'){
-//                 let root = calculatedAtt[att].rows.filter(f=> (f.nodeLabels == p[0].node) || (f.nodeLabels == ('node ' + p[0].node)))[0];
-//                 p[0].attributes[att] = {};
-                
-//                 let scale = calculatedScales.filter(f=> f.field == att)[0].yScale;
-            
-//                 p[0].attributes[att].realVal = root.estimate;
-//                 p[0].attributes[att].upperCI95 = root.upperCI95;
-//                 p[0].attributes[att].lowerCI95 = root.lowerCI95;
-//                 p[0].attributes[att].scale = scale;
-//                 p[0].attributes[att].type = 'continuous';
-//             }else if(calculatedAtt[att].type == 'discrete'){
-//                 let root = calculatedAtt[att].rows.filter(f=> f.nodeLabels == p[0].node)[0];
-//                 let scales = calculatedScales.filter(f=> f.field == att)[0].scales;
-//                 let rootAttr = scales.map(s=> {
-//                     //return {'state': s.scaleName,  scaleVal: s.yScale(root[s.scaleName]), realVal: root[s.scaleName]};
-//                     return {'state': s.scaleName, realVal: root[s.scaleName]};
-//                 });
-//                 p[0].attributes[att] = {'states':rootAttr, 'type': 'discrete'};
-               
-//             }else{
-//                 console.error('type not found');
-//             }
-//         });
-//     });
-    
-//     let maxBranch = d3.max(paths.map(r=> r.length));
-
-//     //SCALES for X, Y /////
-//     let xScale = d3.scaleLinear().range([0, 1000]).clamp(true);
- 
-//     let normedPaths = paths.map((p, i)=> {
-//         p.xScale = xScale.domain([0, maxBranch - 1]);
-     
-//         let leafIndex = p.length - 1;
-//         let lengths = p.map(l=> l.edgeLength);
-//         let prevStep = 0;
-//         return p.map((m, j)=> {
-//             let node = Object.assign({}, m);
-//             //INTEGRATE THE DISTNACES HERE WHEN THEY WORK
-//             let step = node.edgeLength + prevStep;
-//             node.edgeMove = (j < leafIndex) ? step : 1;
-//             prevStep = prevStep + node.edgeLength;
-         
-//             node.move = (j < leafIndex) ? p.xScale(j) : p.xScale(maxBranch - 1);
-        
-//             return node;
-//         });
-//     });
-
-//     return normedPaths;
-// }
-
 export function filterKeeper(){
 
     this.filterArray = new Array();
@@ -389,8 +338,6 @@ export function filterKeeper(){
 }
 
 export function formatAttributeData(pathData, scales, filterArray){
-
-
 
     let keys = (filterArray == null)? Object.keys(pathData[0][0].attributes).filter(f=> f != 'node' && f != 'leaf' && f != 'length' && f != 'root' && f != 'key'): filterArray;
    
@@ -463,4 +410,156 @@ export function formatAttributeData(pathData, scales, filterArray){
         });
     });
     return newData;
+}
+
+export async function dataLoadAndFormatMultinet(dataName, worskpace, graphName){
+speciesTest
+    let data = await load_data(worskpace, graphName);
+   
+    //helper function to create array of unique elements
+    Array.prototype.unique = function() {
+        return this.filter(function (value, index, self) { 
+            return self.indexOf(value) === index;
+        });
+    }
+
+    let attributeList = []
+
+    let edges = data.links;
+    let internal = data.nodes.filter(f=> f.id.includes('internal'));
+    let leaves = data.nodes.filter(f=> f.id.includes('leaf'));
+
+    let notAttributeList = ["id", "label", "_key", "_rev", "key", "length"];
+
+    ///Creating attribute list to add estimated values in //
+    d3.keys(leaves[0]).filter(f=> notAttributeList.indexOf(f) === -1).forEach((d, i)=> {
+
+        if(discreteTraitList.indexOf(d) > -1){
+            attributeList.push({field: d, type: 'discrete'});
+        }else{
+            attributeList.push({field: d, type:'continuous'});
+        }
+
+    });
+
+    let calculatedAtt = internal.map((row, i)=> {
+
+        let newRow = {};
+        attributeList.forEach((att)=>{
+            newRow[att.field] = {};
+            newRow[att.field].field = att.field;
+            newRow[att.field].type = att.type;
+            let values = {}
+            d3.entries(row).filter(f=> f.key.includes(att.field)).map(m=> {
+                if(att.type === 'continuous'){
+                   
+                    if(m.key.includes('upperCI')){
+                        values.upperCI95 = +m.value;
+                    }else if(m.key.includes('lowerCI')){
+                        values.lowerCI95 = +m.value;
+                    }else{
+                        values.realVal = +m.value;
+                    }
+                }else{
+                     values[m.key] = m.value;   
+                }
+            });
+            newRow[att.field].values = values;
+        });
+        newRow.node = row.label;
+        newRow.key = row.id;
+        newRow.length = +row.length;
+        newRow.leaf = false;
+        return newRow;
+    });
+
+    let calcLeafAtt = leaves.map((row, i)=> {
+        let newRow = {};
+        attributeList.forEach((att)=>{
+            newRow[att.field] = {};
+            newRow[att.field].field = att.field;
+            newRow[att.field].type = att.type;
+            let values = {}
+            d3.entries(row).filter(f=> f.key.includes(att.field)).map(m=> {
+                if(att.type === 'continuous'){
+                    values.realVal = +m.value;
+                }else{
+                    values[m.key] = m.value;   
+                }
+            });
+            newRow[att.field].values = values;
+        });
+        newRow.node = row.label;
+        newRow.label = row.label;
+        newRow.length = +row.length;
+        newRow.key = row.id;
+        newRow.leaf = true;
+        return newRow;
+    });
+
+    let calculatedScales = calculateNewScales(calculatedAtt, attributeList.map(m=> m.field), colorKeeper);
+
+    let matchedEdges = edges.map((edge, i)=> {
+
+        let attrib = edge.target.includes("internal") ? calculatedAtt.filter(f=> f.key === edge.target)[0] : calcLeafAtt.filter(f=> f.key === edge.target)[0];
+        let fromNode = edge.source.includes("internal") ? calculatedAtt.filter(f=> f.key === edge.source)[0] : calcLeafAtt.filter(f=> f.key === edge.source)[0];
+
+        if(attrib){
+           
+            Object.keys(attrib).filter(f=> (f != 'node') && (f != 'label') && (f != 'length') && (f != 'leaf') && (f != 'key')).map((att, i)=>{
+                let scales = calculatedScales.filter(f=> f.field=== att)[0];
+                attrib[att].scales = scales;
+                return att;
+            })
+        }
+        let newEdge = {
+            V1: fromNode.node,
+            V2: attrib.node,
+            node: attrib.node,
+            leaf: attrib.leaf,
+            edgeLength: +attrib.length,
+            attributes: attrib ? attrib : null
+        }
+        return newEdge;
+    });
+
+    let paths = allPaths(matchedEdges, matchedEdges.filter(f=> f.leaf === true), "V1", "V2")
+        .map((path, i)=> {
+            let root = path[0];
+            let attrib = calculatedAtt.filter(f=> f.node === root.node)[0];
+            if(attrib){
+               
+                Object.keys(attrib).filter(f=> (f != 'node') && (f != 'label') && (f != 'length') && (f != 'leaf') && (f != 'key')).map((att, i)=>{
+                    let scales = calculatedScales.filter(f=> f.field=== att)[0]
+                    attrib[att].scales = scales;
+                    return att;
+                })
+            }
+            let rooted = {
+                V1: null,
+                V2: attrib.node,
+                node: attrib.node,
+                leaf: attrib.leaf,
+                root: true,
+                edgeLength: 0,
+                attributes: attrib ? attrib : null
+            }
+            path[0] = rooted;
+            return path;
+        });
+
+    let normedPaths = combineLength(paths);
+
+    let group = binGroups(normedPaths, dataName, calculatedScales, 8);
+    let chosenClade = addCladeGroup(`All ${dataName}`, ['Whole Set'], [{'label': `All ${dataName}`, 'paths': normedPaths, 'groupBins': group}]);
+    chosenCladesGroup.push(chosenClade)    
+    
+    addClade(`All ${dataName}`, normedPaths);
+
+    calculatedScalesKeeper.push(calculatedScales);
+    dataMaster.push(normedPaths);
+    nestedData.push(buildTreeStructure(normedPaths, matchedEdges));
+    speciesTest.push(normedPaths.flatMap(m=> m.filter(f=> f.leaf === true)).map(l=> l.node));
+
+    return [normedPaths, calculatedScales];
 }

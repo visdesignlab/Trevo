@@ -1,14 +1,14 @@
 import '../styles/index.scss';
 import * as d3 from "d3";
 import {loadData} from './dataLoad';
-import {calculateNewScales, rootAttribute, combineLength} from './dataFormat';
-import {allPaths, pullPath, getPathRevised, getPath} from './pathCalc';
+import {calculateNewScales, rootAttribute, combineLength, dataLoadAndFormatMultinet} from './dataFormat';
+import {allPaths} from './pathCalc';
 import {renderTree, buildTreeStructure, renderTreeButtons} from './sidebarComponent';
 import {toolbarControl} from './toolbarComponent';
 import { initialViewLoad } from './viewControl';
-import { groupDataByClade, groupDataByAttribute, addCladeGroup, cladesGroupKeeper, chosenCladesGroup, cladeKeeper, addClade} from './cladeMaker';
+import { addCladeGroup, chosenCladesGroup, addClade} from './cladeMaker';
 import { binGroups } from './distributionView';
-import { load_data } from './multinetLoad';
+
 
 export const dataMaster = [];
 export const savedSelected = [];
@@ -46,7 +46,7 @@ export const colorKeeper = [
 
 export const attributeList = [];
 
-let discreteTraitList = ['Clade', 'Group', 'island/mainland']
+export let discreteTraitList = ['Clade', 'Group', 'island/mainland']
 
 let wrap = d3.select('#wrapper');
 let main = wrap.select('#main');
@@ -75,28 +75,20 @@ async function appLaunch(){
 //         initialViewLoad(centData[1], 'Geospiza');
 //     });
 
-    // dataLoadAndFormat('centrarchid-edges.json', 'centrarchid-edge-lengths.json', 'centrarchid-leaf-data.csv', 'centrarchid-res.json', 'Centrarchid').then((centData)=> {
-      
-    //         toolbarControl(toolbarDiv, main, centData[1]);
-    //         wrap.select('#filter-tab').classed('hidden', true);
-    //         renderTreeButtons(centData[0]);
-    //         renderTree(null, true, false);
-    //         /// LOWER ATTRIBUTE VISUALIZATION ///
-    //         initialViewLoad(centData[1], 'Centrarchid');
-    // });
 
-//     dataLoadAndFormat('anolis-edges.json', 'anolis-edge-lengths.json', 'anolis-leaf-data.csv', 'anolis-res.json', 'Anolis').then((centData)=> {
-      
-//         toolbarControl(toolbarDiv, main, centData[1]);
-//         d3.select('#clade-show').selectAll('li').select('input').node().checked = true
-  
-//         renderTree(null, true, false);
-//         renderTreeButtons(centData[0]);
-//         /// LOWER ATTRIBUTE VISUALIZATION ///
-//         initialViewLoad(centData[1]);
+// dataLoadAndFormatMultinet('Anolis', 'evobio', 'anolis-test').then(centData=> {
+    
+//     toolbarControl(toolbarDiv, main, centData[1]);
+
+//     d3.select('#clade-show').selectAll('li').select('input').node().checked = true
+   
+//     renderTree(null, true, false);
+//     renderTreeButtons(centData[0], false);
+//     /// LOWER ATTRIBUTE VISUALIZATION ///
+//     initialViewLoad(centData[1]);
 // });
 
-dataLoadAndFormatMultinet('Anolis').then(centData=> {
+dataLoadAndFormatMultinet('Geospiza', 'evobio', 'geospiza').then(centData=> {
     
     toolbarControl(toolbarDiv, main, centData[1]);
 
@@ -110,157 +102,7 @@ dataLoadAndFormatMultinet('Anolis').then(centData=> {
 
 }
 
-async function dataLoadAndFormatMultinet(dataName){
 
-        let data = await load_data('evobio', 'anolis-test');
-       
-        //helper function to create array of unique elements
-        Array.prototype.unique = function() {
-            return this.filter(function (value, index, self) { 
-                return self.indexOf(value) === index;
-            });
-        }
-
-        let attributeList = []
-
-        let edges = data.links;
-        let internal = data.nodes.filter(f=> f.id.includes('internal'));
-        let leaves = data.nodes.filter(f=> f.id.includes('leaf'));
-
-        let notAttributeList = ["id", "label", "_key", "_rev", "key", "length"];
-    
-        ///Creating attribute list to add estimated values in //
-        d3.keys(leaves[0]).filter(f=> notAttributeList.indexOf(f) === -1).forEach((d, i)=> {
-    
-            if(discreteTraitList.indexOf(d) > -1){
-                attributeList.push({field: d, type: 'discrete'});
-            }else{
-                attributeList.push({field: d, type:'continuous'});
-            }
-    
-        });
-    
-        let calculatedAtt = internal.map((row, i)=> {
-    
-            let newRow = {};
-            attributeList.forEach((att)=>{
-                newRow[att.field] = {};
-                newRow[att.field].field = att.field;
-                newRow[att.field].type = att.type;
-                let values = {}
-                d3.entries(row).filter(f=> f.key.includes(att.field)).map(m=> {
-                    if(att.type === 'continuous'){
-                       
-                        if(m.key.includes('upperCI')){
-                            values.upperCI95 = +m.value;
-                        }else if(m.key.includes('lowerCI')){
-                            values.lowerCI95 = +m.value;
-                        }else{
-                            values.realVal = +m.value;
-                        }
-                    }else{
-                         values[m.key] = m.value;   
-                    }
-                });
-                newRow[att.field].values = values;
-            });
-            newRow.node = row.label;
-            newRow.key = row.id;
-            newRow.length = +row.length;
-            newRow.leaf = false;
-            return newRow;
-        });
-
-        let calcLeafAtt = leaves.map((row, i)=> {
-            let newRow = {};
-            attributeList.forEach((att)=>{
-                newRow[att.field] = {};
-                newRow[att.field].field = att.field;
-                newRow[att.field].type = att.type;
-                let values = {}
-                d3.entries(row).filter(f=> f.key.includes(att.field)).map(m=> {
-                    if(att.type === 'continuous'){
-                        values.realVal = +m.value;
-                    }else{
-                        values[m.key] = m.value;   
-                    }
-                });
-                newRow[att.field].values = values;
-            });
-            newRow.node = row.label;
-            newRow.label = row.label;
-            newRow.length = +row.length;
-            newRow.key = row.id;
-            newRow.leaf = true;
-            return newRow;
-        });
-
-        let calculatedScales = calculateNewScales(calculatedAtt, attributeList.map(m=> m.field), colorKeeper);
-
-        let matchedEdges = edges.map((edge, i)=> {
-
-            let attrib = edge.target.includes("internal") ? calculatedAtt.filter(f=> f.key === edge.target)[0] : calcLeafAtt.filter(f=> f.key === edge.target)[0];
-            let fromNode = edge.source.includes("internal") ? calculatedAtt.filter(f=> f.key === edge.source)[0] : calcLeafAtt.filter(f=> f.key === edge.source)[0];
-
-            if(attrib){
-               
-                Object.keys(attrib).filter(f=> (f != 'node') && (f != 'label') && (f != 'length') && (f != 'leaf') && (f != 'key')).map((att, i)=>{
-                    let scales = calculatedScales.filter(f=> f.field=== att)[0];
-                    attrib[att].scales = scales;
-                    return att;
-                })
-            }
-            let newEdge = {
-                V1: fromNode.node,
-                V2: attrib.node,
-                node: attrib.node,
-                leaf: attrib.leaf,
-                edgeLength: +attrib.length,
-                attributes: attrib ? attrib : null
-            }
-            return newEdge;
-        });
-    
-        let paths = allPaths(matchedEdges, matchedEdges.filter(f=> f.leaf === true), "V1", "V2")
-            .map((path, i)=> {
-                let root = path[0];
-                let attrib = calculatedAtt.filter(f=> f.node === root.node)[0];
-                if(attrib){
-                   
-                    Object.keys(attrib).filter(f=> (f != 'node') && (f != 'label') && (f != 'length') && (f != 'leaf') && (f != 'key')).map((att, i)=>{
-                        let scales = calculatedScales.filter(f=> f.field=== att)[0]
-                        attrib[att].scales = scales;
-                        return att;
-                    })
-                }
-                let rooted = {
-                    V1: null,
-                    V2: attrib.node,
-                    node: attrib.node,
-                    leaf: attrib.leaf,
-                    root: true,
-                    edgeLength: 0,
-                    attributes: attrib ? attrib : null
-                }
-                path[0] = rooted;
-                return path;
-            });
-
-        let normedPaths = combineLength(paths);
-
-        let group = binGroups(normedPaths, dataName, calculatedScales, 8);
-        let chosenClade = addCladeGroup(`All ${dataName}`, ['Whole Set'], [{'label': `All ${dataName}`, 'paths': normedPaths, 'groupBins': group}]);
-        chosenCladesGroup.push(chosenClade)    
-        
-        addClade(`All ${dataName}`, normedPaths);
-    
-        calculatedScalesKeeper.push(calculatedScales);
-        dataMaster.push(normedPaths);
-        nestedData.push(buildTreeStructure(normedPaths, matchedEdges));
-        speciesTest.push(normedPaths.flatMap(m=> m.filter(f=> f.leaf === true)).map(l=> l.node));
-    
-        return [normedPaths, calculatedScales];
-}
 
 async function dataLoadAndFormat(edgeFile, edgeLengthFile, leafCharFile, resFile, dataName){
 
