@@ -425,7 +425,7 @@ export function renderDistStructure(mainDiv, pathGroups){
                     if(selectedClades[selectedClades.length - 1].length > 1){
                         mainDiv.selectAll('*').remove();
                         mainDiv.select('#compare-wrap').remove();
-                        console.log('rendering',mainDiv, selectedClades[selectedClades.length - 1], branchScale)
+                      
                         renderDistributionComparison(mainDiv, selectedClades[selectedClades.length - 1], branchScale);
                     }
                 });
@@ -1448,39 +1448,17 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
 
     let bars = stateBarsPredicted.append('rect')
               .attr('height', dimensions.squareDim)
-              .attr('width', (d, i, n)=> {
-                let dev = d3.deviation(d.state.map(m=> m.value));
-                let mean = d3.mean(d.state.map(m=> m.value));
-                let x = d3.scaleLinear().domain([0, 1]).range([0, 40]);
-                return x(mean)
-              })
-              .attr('fill', d=> d.color.color)
-              .attr('opacity', 0.3)
+              .attr('width', 80)
+              .attr('stroke', 'black')
+              .attr('fill', '#fff')
+              .attr('opacity', 0.3);
 
-    // let devDotHigh = stateBarsPredicted.append('circle')
-    //           .attr('cy', dimensions.squareDim / 2)
-    //           .attr('cx', (d, i, n)=> {
-    //             let dev = d3.deviation(d.state.map(m=> m.value));
-    //             let mean = d3.mean(d.state.map(m=> m.value));
-    //             let x = d3.scaleLinear().domain([0, 1]).range([0, 40]);
-    //             return x(mean + dev)
-    //           })
-    //           .attr('r', 2)
-    //           .attr('fill', d=> d.color.color)
-    //           .attr('opacity', 1)
+    let probabilityTicks = stateBarsPredicted.selectAll('.prob-tick').data(d=> {
+    
+        return d.state;
+    }).join('rect').classed('prob-tick', true)
 
-    // let devDotLow = stateBarsPredicted.append('circle')
-    //           .attr('cy', dimensions.squareDim / 2)
-    //           .attr('cx', (d, i, n)=> {
-    //             let dev = d3.deviation(d.state.map(m=> m.value));
-                
-    //             let mean = d3.mean(d.state.map(m=> m.value));
-    //             let x = d3.scaleLinear().domain([0, 1]).range([0, 40]);
-    //             return x(mean - dev)
-    //           })
-    //           .attr('r', 2)
-    //           .attr('fill', d=> d.color.color)
-    //           .attr('opacity', 1)
+    probabilityTicks.attr('width', 3).attr('height', dimensions.squareDim)
 
     /////////END XPERIMENT////////
 
