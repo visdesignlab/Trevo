@@ -99,6 +99,8 @@ async function appLaunch(){
 dataLoadAndFormatMultinet('Anolis').then(centData=> {
     
     toolbarControl(toolbarDiv, main, centData[1]);
+
+    d3.select('#clade-show').selectAll('li').select('input').node().checked = true
    
     renderTree(null, true, false);
     renderTreeButtons(centData[0], false);
@@ -191,7 +193,7 @@ async function dataLoadAndFormatMultinet(dataName){
             newRow.key = row.id;
             newRow.leaf = true;
             return newRow;
-        })
+        });
 
         let calculatedScales = calculateNewScales(calculatedAtt, attributeList.map(m=> m.field), colorKeeper);
 
@@ -247,9 +249,11 @@ async function dataLoadAndFormatMultinet(dataName){
         let normedPaths = combineLength(paths);
 
         let group = binGroups(normedPaths, dataName, calculatedScales, 8);
-        let chosenClade = addCladeGroup(dataName, ['Whole Set'], [{'label': dataName, 'paths': normedPaths, 'groupBins': group}]);
-        chosenCladesGroup.push(chosenClade);    
-
+        let chosenClade = addCladeGroup(`All ${dataName}`, ['Whole Set'], [{'label': `All ${dataName}`, 'paths': normedPaths, 'groupBins': group}]);
+        chosenCladesGroup.push(chosenClade)    
+        
+        addClade(`All ${dataName}`, normedPaths);
+    
         calculatedScalesKeeper.push(calculatedScales);
         dataMaster.push(normedPaths);
         nestedData.push(buildTreeStructure(normedPaths, matchedEdges));
