@@ -2,27 +2,16 @@ import { multinetApi } from "multinet";
 
 /* Multinet data importer */
 // Define local variables that will store the api url and the responses from the database
-// let multinet = {
-//     tables: {},
-//     nodes: [],
-//     links: [],
-//     graph_structure: {},
-//     api_root: "https://multinet.app/api"
-// };
 const api_root = "https://multinet.app/api";
 
 class Multinet {
-
     constructor(){
-
         this.tables = {},
         this.nodes = [],
         this.links = [],
         this.graph_structure = {},
         this.api_root = api_root
-
     }
-   
 }
 
 const api = multinetApi(api_root);
