@@ -36,7 +36,6 @@ export function toolbarDataControl(toolbar, graphList, chosenGraph){
 
         loadApp(workspace, d.field);
 
-
     });
 
 }

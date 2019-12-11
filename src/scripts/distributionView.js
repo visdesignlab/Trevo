@@ -984,8 +984,7 @@ function renderDistributionComparison(div, data, branchScale){
             let descendBins = continDist.filter(f=> {
                 return (f.index > data.index) && (f.key === data.key)});
                 
-            
-
+    
             nodes.forEach((n, i)=> {
                
                 if(n.length > 0){
@@ -1167,7 +1166,7 @@ function renderDistributionComparison(div, data, branchScale){
 
                         doesItExist.datum({brush: this, nodes: nodes})
     
-                    brushedNodes(nodes, notNodes, data, brushedVal, label);
+                        brushedNodes(nodes, notNodes, data, brushedVal, label);
                     
                 }
     
@@ -1452,14 +1451,24 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
               .attr('fill', '#fff')
               .attr('opacity', 0.3);
 
-    let probabilityTicks = stateBarsPredicted.selectAll('.prob-tick').data(d=> {
-        return d.state;
-    }).join('rect').classed('prob-tick', true)
+    let probabilityTicks = stateBarsPredicted
+        .selectAll('.prob-tick')
+        .data(d=> {
+           
+            let state = d.state.map(m=> {
+                let newstate = m;
+                newstate.color = d.color.color;
+                return newstate
+            });
+            state.color = d.color.color;
+            //console.log('state',state)
+            return state;
+        }).join('rect').classed('prob-tick', true)
 
     probabilityTicks
     .attr('width', 2)
     .attr('height', dimensions.squareDim)
-    .attr('opacity', 0.2)
+    .attr('opacity', 0.05)
     .attr('fill', 'gray');
 
     probabilityTicks.attr('transform', (d, i, n)=> {
@@ -1528,13 +1537,14 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
                 return f.color.state === maxState;
             }).classed('win', true);
 
+      //  console.log('nodeesss',node[i])
            
         let winStateTicks = d3.select(node[i]).selectAll('g.histo-bars')
             .filter((f, j, n)=>{
                 return f.color.state === maxState;
             }).classed('win', true);
         
-        console.log(winStateTicks)
+      //  console.log('win state ticks',winStateTicks)
 
         winStates.select('rect.state-rect').attr('fill', (c)=> {
                 return c.color.color;
@@ -1542,13 +1552,14 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
                 let sum = d3.sum(c.state.flatMap(s=> s.value));
                 return sum/c.state.length;
             });
-        winStateTicks.selectAll('rect.prob-ticks').attr('fill', (c)=> {
+        winStateTicks.selectAll('rect.prob-tick').attr('fill', (c)=> {
             console.log('c',c)
-                return c.color.color;
-            }).attr('opacity', (c)=>{
-                let sum = d3.sum(c.state.flatMap(s=> s.value));
-                return sum/c.state.length;
-            });
+                return c.color;
+            })
+            // .attr('opacity', (c)=>{
+            //     let sum = d3.sum(c.state.flatMap(s=> s.value));
+            //     return sum/c.state.length;
+            // });
             
        // console.log('node',node[i])
     });
