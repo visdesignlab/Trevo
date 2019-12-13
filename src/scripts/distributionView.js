@@ -1461,7 +1461,6 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
                 return newstate
             });
             state.color = d.color.color;
-            //console.log('state',state)
             return state;
         }).join('rect').classed('prob-tick', true)
 
@@ -1473,7 +1472,28 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
 
     probabilityTicks.attr('transform', (d, i, n)=> {
         let scale = d3.scaleLinear().domain([0, 1]).range([0, (80 - 2)]);
-        return `translate(${scale(d.value)},0)`})
+        return `translate(${scale(d.value)},0)`});
+
+    probabilityTicks.on('mouseover', (d, i, n)=> {
+     
+        let tool = d3.select('#tooltip');
+        tool.transition()
+            .duration(200)
+            .style("opacity", .9);
+        
+        let f = d3.format(".3f");
+          
+        tool.html(`${d.state} : ${f(d.value)}`)
+            .style("left", (d3.event.pageX - 40) + "px")
+            .style("top", (d3.event.pageY - 28) + "px");
+        tool.style('height', 'auto');
+
+    }).on('mouseout', ()=>{
+        let tool = d3.select('#tooltip');
+        tool.transition()
+          .duration(500)
+          .style("opacity", 0);
+    });
 
     /////////END XPERIMENT////////
 
