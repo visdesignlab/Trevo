@@ -130,7 +130,7 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
             //Histogram for observed////
             let maxO = d3.max(leafAttr.flatMap(v=> +v.values.realVal));
             let minO = d3.min(leafAttr.flatMap(v=> +v.values.realVal));
-            let xO = d3.scaleLinear().domain([minO, maxO]).range([0, dimensions.height])
+            let xO = d3.scaleLinear().domain([minO, maxO]).range([0, dimensions.height]);
 
             let histogramO = d3.histogram()
             .value(function(d) { 
@@ -152,7 +152,7 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
             //HANDLING DISCRETE//
             let states = leafAttr[0].scales.scales;
            
-            let stateKeys = states[0].state? states.map(s=> s.state) : states.map(s=> s.scaleName)
+            let stateKeys = states[0].state? states.map(s=> s.state) : states.map(s=> s.scaleName);
           
             let rootNode = rootNodes[0].attributes[key]
             rootNode.bins = d3.entries(rootNodes[0].attributes[key].values).map(m=> {       
@@ -160,7 +160,7 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
                 return {state: states, branchCount:branchCount, color : scale.stateColors.filter(f=> f.state === m.key)[0], max:80};
                });
             
-            mapNorm.bins = null
+            mapNorm.bins = null;
             leafData.bins = states.map(s=> {
                 return leafAttr.filter(f=> s.scaleName.includes(f.states.state))});
    
@@ -178,7 +178,7 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
                 n.bins = stateKeys.map(state=> {
                     let test = n.data.flatMap(m=> Object.entries(m.values).filter(f=> f[0] === state))
                     .map(m=> {
-                        return {'state': m[0], 'value':m[1]}
+                        return {'state': m[0], 'value':m[1]};
                     });
                     
                     return {state: test, branchCount:branchCount, histogram: histogram(test), color : colors.filter(f=> f.state === state)[0], max:80};
@@ -212,7 +212,7 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
                         'leafData': leafData, 
                         'rootData': rootNodes.map(m=> m.attributes[key])[0],
                         'stateKeys': stateKeys,
-                        'maxCount': d3.max(mapNorm.map(n=> n.data.length))
+                        'maxCount': d3.max(mapNorm.map(n=> n.data.length)),
                     }
             return newK;
         }
@@ -226,11 +226,12 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
 export function drawBranchPointDistribution(data, svg){
 
     let branchBar = svg.append('g').classed('branch-bar', true);
+
     branchBar.append('rect').classed('point-dis-rect', true)
         .attr('height', 25)
         .attr('x', -10)
         .attr('y', -10)
-       .attr('fill', 'none')
+       .attr('fill', 'none');
 
     let binWrap = branchBar.append('g').attr('transform', 'translate(102, -10)');
 
@@ -247,7 +248,7 @@ export function drawBranchPointDistribution(data, svg){
     leafLabel.append('text').text('Leaves');
 
     let nodeLengthArray = [];
-    let nodeDuplicateCheck = []
+    let nodeDuplicateCheck = [];
 
     data.paths.map(path=> {
         path.filter(n=> n.leaf != true).map(node=> {
@@ -285,7 +286,7 @@ export function drawBranchPointDistribution(data, svg){
     binsRects.attr('fill', 'gray').attr('stroke-width', 2).attr('stroke', 'white');
 
     let axis = d3.axisBottom(x);
-    let axGroup = branchBar.append('g').call(axis)
+    let axGroup = branchBar.append('g').call(axis);
     axGroup.attr('transform', 'translate(103, 10)');
     axGroup.select('path').attr('stroke-width', 0);
 
@@ -294,7 +295,7 @@ export function drawBranchPointDistribution(data, svg){
 export function drawGroupLabels(pathData, svg, groupLabel){
 
     let leafNames = pathData[0].leafData.data.map(m=> m.node);
-    let nodeNames = getLatestData().filter(f=> leafNames.indexOf(f[f.length - 1].node) > -1).flatMap(fl=> fl.map(m=> m.node))
+    let nodeNames = getLatestData().filter(f=> leafNames.indexOf(f[f.length - 1].node) > -1).flatMap(fl=> fl.map(m=> m.node));
 
     let shownAttributes = d3.select('#attribute-show').selectAll('input').filter((f, i, n)=> n[i].checked === true).data();
 
@@ -448,9 +449,9 @@ function renderDistributionComparison(div, data, branchScale){
     let textDiv = groupHeader.append('div').attr('height', 50).attr('width', 200).style('margin-left', '460px');
     let branchPointSvg  = groupHeader.append('svg');
 
-    let pointData = {paths: data[0].paths.concat(data[1].paths), groupBins: data[0].groupBins}
+    let pointData = {paths: data[0].paths.concat(data[1].paths), groupBins: data[0].groupBins};
     let branchBar = drawBranchPointDistribution(pointData, branchPointSvg);
-    branchBar.attr('transform', 'translate(-30, 10)')
+    branchBar.attr('transform', 'translate(-30, 10)');
 
     //'#DCD4D4'
 
@@ -1355,18 +1356,18 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
         .attr('width', 12)
         .attr('fill', '#fff')
         .style('stroke-width', '0.5px')
-        .style('stroke', 'black')
+        .style('stroke', 'black');
 
     let rootRange = contRoot.append('rect')
         .attr('width', 12)
         .attr('height', d=> {
             let newy = d.scales.yScale;
             newy.range([(dimensions.height - 5), 0]);
-            return newy(d.values.lowerCI95) - newy(+d.values.upperCI95)
+            return newy(d.values.lowerCI95) - newy(+d.values.upperCI95);
         }).attr('transform', (d, i) => {
             let newy = d.scales.yScale;
             newy.range([(dimensions.height - 5), 0]);
-            return 'translate(0,'+newy(+d.values.upperCI95)+')'
+            return 'translate(0,'+newy(+d.values.upperCI95)+')';
         }).style('opacity', 0.5).attr('fill', defaultBarColor);
 
     let rootAv = contRoot.append('rect').attr('width', 12).attr('height', 3);
@@ -1424,8 +1425,8 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
         return d.branches}).join('g').classed('branch-bin', true);
 
     branchGroup.attr('transform', (d, i, n)=> {
-        let step = n.length < 11 ? (d.range[1] - d.range[0]) / 5 : 0
-        let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, dimensions.timeRange])
+        let step = n.length < 11 ? (d.range[1] - d.range[0]) / 5 : 0;
+        let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, dimensions.timeRange]);
             return 'translate('+(100 + (branchScale(i)) + x(step)) +', 0)'});
 
     let discreteDist = branchGroup.filter(f=> f.type === 'discrete');
@@ -1557,31 +1558,22 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
                 return f.color.state === maxState;
             }).classed('win', true);
 
-      //  console.log('nodeesss',node[i])
-           
         let winStateTicks = d3.select(node[i]).selectAll('g.histo-bars')
             .filter((f, j, n)=>{
                 return f.color.state === maxState;
             }).classed('win', true);
         
-      //  console.log('win state ticks',winStateTicks)
-
         winStates.select('rect.state-rect').attr('fill', (c)=> {
                 return c.color.color;
             }).attr('opacity', (c)=>{
                 let sum = d3.sum(c.state.flatMap(s=> s.value));
                 return sum/c.state.length;
             });
-        winStateTicks.selectAll('rect.prob-tick').attr('fill', (c)=> {
-            console.log('c',c)
-                return c.color;
-            })
+        winStateTicks.selectAll('rect.prob-tick').attr('fill', (c)=> c.color);
             // .attr('opacity', (c)=>{
             //     let sum = d3.sum(c.state.flatMap(s=> s.value));
             //     return sum/c.state.length;
             // });
-            
-       // console.log('node',node[i])
     });
 
     let disWrap = predictedWrap.filter(f=> f.type === 'discrete')

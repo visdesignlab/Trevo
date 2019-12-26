@@ -21,7 +21,7 @@ export function traitColorDropDown(scales, sidebar, renderCallback){
 
     let optionArray  = reduce2DropArray(scales);
 
-    let dropOptions = dropDown(sidebar, optionArray, `Color By Value`,'show-drop-div-sidebar');
+    let dropOptions = dropDown(sidebar, optionArray, `Color By Trait`,'show-drop-div-sidebar');
     dropOptions.on('click', (d, i, n)=> {
         if(d.type === 'discrete'){
             renderCallback(d, true, false)

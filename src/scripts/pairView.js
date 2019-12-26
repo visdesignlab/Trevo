@@ -5,6 +5,8 @@ import * as slide from 'd3-simple-slider';
 import { renderTree } from "./sidebarComponent";
 import { speciesTest, dataMaster } from ".";
 import { findBrushedNodes } from "./toolbarComponent";
+import { getScales } from "./filterComponent";
+import { allPaths } from "./pathCalc";
 
 export function rankingControl(data){
     let rankDiv = d3.select('#pair-rank').classed('hidden', false);
@@ -37,7 +39,6 @@ export function rankingControl(data){
     .attr('y', 10)
     .attr('x', (d, i)=> (300+(260 * i)));
 
-  
     defaultW.forEach((color, i) => {
       var slider = slide
         .sliderBottom()
@@ -49,9 +50,11 @@ export function rankingControl(data){
         .displayValue(false)
         .fill('#7FB3D5')
         .on('end', num => {
-         defaultW[i] = num;
+          defaultW[i] = num;
+          let mappedPairs = updateRanking(pairPaths(data), d3.select('.attr-drop.dropdown').select('button').attr('value'), defaultW);
        
-         updateRanking(pairPaths(data), d3.select('.attr-drop.dropdown').select('button').attr('value'), defaultW);
+          drawSorted(mappedPairs.top20, d3.select('.attr-drop.dropdown').select('button').attr('value'));
+          topPairSearch(mappedPairs.top20, mappedPairs.pairs, d3.select('.attr-drop.dropdown').select('button').attr('value'), defaultW);
         });
   
       weightPicker
@@ -60,14 +63,14 @@ export function rankingControl(data){
         .call(slider);
 
       weightPicker.selectAll('.tick')
-      .filter(f=> f < 0).select('text')
-      .attr('fill', 'red')
-      .attr('opacity', 0.6);
+        .filter(f=> f < 0).select('text')
+        .attr('fill', 'red')
+        .attr('opacity', 0.6);
     });
 }
-export function generatePairs(data){
+export async function generatePairs(data){
 
-        let pairs = pairPaths(data);
+        let pairs = await pairPaths(data);
      
         let weights = [1, 1, 1];
 
@@ -78,44 +81,60 @@ export function generatePairs(data){
                     });
         
         let drop = d3.select('.attr-drop.dropdown')
-          .selectAll('a').empty() ? dropDown(d3.select('#toolbar'), attKeys, `Trait: ${attKeys[0].field}`, 'attr-drop') : d3.select('.attr-drop.dropdown').selectAll('a');
+          .selectAll('a').empty() ? dropDown(d3.select('#toolbar'), attKeys, `Trait: ${attKeys[1].field}`, 'attr-drop') : d3.select('.attr-drop.dropdown').selectAll('a');
         
-        d3.select('.attr-drop.dropdown').select('button').attr('value', attKeys[0].field);
+        d3.select('.attr-drop.dropdown').select('button').attr('value', attKeys[1].field);
 
         drop.on('click', (d, i, n)=> {
-            updateRanking(pairPaths(data), d.field, weights);
-            renderTree(d3.select('#sidebar'), null, true, d.field);
-            d3.select('.attr-drop.dropdown').select('button').attr('value', d.field);
-            d3.select('.attr-drop.dropdown').select('button').text(`Trait: ${d.field}`);
-            d3.select('#attr-drop').classed('show', false);
+
+          let mappedPairs = updateRanking(pairPaths(data), d.field, weights);
+       
+          drawSorted(mappedPairs.top20, d.field);
+          topPairSearch(mappedPairs.top20, mappedPairs.pairs, d.field, weights);
+
+           // renderTree(d3.select('#sidebar'), null, true, d.field);
+          d3.select('.attr-drop.dropdown').select('button').attr('value', d.field);
+          d3.select('.attr-drop.dropdown').select('button').text(`Trait: ${d.field}`);
+          d3.select('#attr-drop').classed('show', false);
         });
 
-        updateRanking([...pairs], attKeys[0].field, weights);
+        let mappedPairs = updateRanking([...pairs], attKeys[0].field, weights);
+       
+        drawSorted(mappedPairs.top20, attKeys[0].field);
+        topPairSearch(mappedPairs.top20, mappedPairs.pairs, attKeys[0].field, weights);
 }
-export function updateRanking(pairs, field, weights){
 
-  console.log('pairs',pairs, field)
-  
-    let deltaMax = d3.max([...pairs].map(m=> m.deltas.filter(f=> f.key === field)[0]).map(m=> m.value));
-    let closeMax = d3.max([...pairs].map(m=> m.closeness.filter(f=> f.key === field)[0]).map(m=> m.value));
-    let distMax = d3.max([...pairs].map(d=> d.distance))
-    let deltaScale = d3.scaleLinear().domain([0, deltaMax]).range([0, 1]);
-    let closeScale = d3.scaleLinear().domain([closeMax, 0]).range([0, 1]);
-    let distScale = d3.scaleLinear().domain([0, distMax]).range([0, 1]);
+function getWeightScales(pairs, field){
+ 
+  let deltaMax = d3.max([...pairs].map(m=> m.deltas.filter(f=> f.key === field)[0]).map(m=> m.value));
+  let closeMax = d3.max([...pairs].map(m=> m.closeAll.filter(f=> f.key === field)[0]).map(m=> m.value));
+  let distMax = d3.max([...pairs].map(d=> d.distance));
+  let deltaScale = d3.scaleLinear().domain([0, deltaMax]).range([0, 1]);
+  let closeScale = d3.scaleLinear().domain([closeMax, 0]).range([0, 1]);
+  let distScale = d3.scaleLinear().domain([0, distMax]).range([0, 1]);
+  return {delta: deltaScale, close:closeScale, distance: distScale};
+}
+
+export function updateRanking(pairs, field, weights){
+    
+    let weightScales = getWeightScales(pairs, field);
 
     let pickedPairs = [...pairs].map(p=> {
-        p.delta = p.deltas.filter(d=> d.key === field)[0];
-        p.closeness = p.closeness.filter(d=> d.key === field)[0];
-        p.deltaRank = deltaScale(p.delta.value);
-        p.closenessRank = closeScale(p.closeness.value);
-        p.distanceRank = distScale(p.distance);
-        p.totalRank = (weights[0] * p.distanceRank) + (weights[1] * p.deltaRank) + (weights[2] * p.closenessRank);
-        return p;
-    })
+      
+        let newP = Object.assign({}, p);
+      
+        newP.delta = p.deltas.filter(d=> d.key === field)[0];
+        newP.closeness = p.closeAll.filter(d=> d.key === field)[0];
+        newP.deltaRank = weightScales.delta(newP.delta.value);
+        newP.closenessRank = weightScales.close(newP.closeness.value);
+        newP.distanceRank = weightScales.distance(p.distance);
+        newP.totalRank = (weights[0] * newP.distanceRank) + (weights[1] * newP.deltaRank) + (weights[2] * newP.closenessRank);
+        return newP;
+    });
 
-    let sortedPairs = pickedPairs.sort((a, b)=> b.totalRank - a.totalRank).slice(0, 40);
-    sortedPairs = sortedPairs.filter((f, i)=> i%2 === 0)
-    drawSorted(sortedPairs, field);
+    let sortedPairs = pickedPairs.sort((a, b)=> b.totalRank - a.totalRank).slice(0, 20);
+
+    return {top20: sortedPairs, 'pairs': pickedPairs};
 }
 
 function drawSorted(pairs, field){
@@ -123,27 +142,28 @@ function drawSorted(pairs, field){
   let pairColor = ['#FF5733', '#129BF5'];
 
   let nodes = findBrushedNodes();
-  //console.log('nodes from brush',nodes.map(m=> m.species))
-   
-    let width = 600;
-    let height = 100;
-    let xScale = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, width]);
+ 
 
-    d3.select('#main').selectAll('*').remove()
-    let svg = d3.select('#main').append('svg');
-    svg.attr('height', pairs.length * 150)
-    let wrap = svg.append('g');
-    wrap.attr('transform', 'translate(20, 100)')
-    let pairWraps = wrap.selectAll('g.pair-wrap').data(pairs).join('g').classed('pair-wrap', true);
-    pairWraps.attr('transform', (d, i)=> `translate(50,${i*150})`);
-    pairWraps.append('rect')
-        .attr('width', (d, i)=> {
-            return width - xScale(d.common.combLength);
-        })
-        .attr('height', height)
-        .attr('x', d=> xScale(d.common.combLength))
-        .attr('stroke-width', 1).attr('stroke', 'black')
-        .attr('fill', '#fff');
+  d3.select('#main').selectAll('*').remove();
+   
+  let width = 600;
+  let height = 100;
+  let xScale = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, width]);
+    
+  let svg = d3.select('#main').append('svg');
+  svg.attr('height', pairs.length * (height * 1.9))
+  let wrap = svg.append('g');
+  wrap.attr('transform', 'translate(20, 120)')
+  let pairWraps = wrap.selectAll('g.pair-wrap').data(pairs).join('g').classed('pair-wrap', true);
+  pairWraps.attr('transform', (d, i)=> `translate(50,${i*(height * 1.8)})`);
+  pairWraps.append('rect')
+    .attr('width', (d, i)=> {
+    return width - xScale(d.common.combLength);
+  })
+    .attr('height', height)
+    .attr('x', d=> xScale(d.common.combLength))
+    .attr('stroke-width', 1).attr('stroke', 'black')
+    .attr('fill', '#fff');
 
     pairWraps.append('text').text((d, i)=> {
         return `${d.p1[d.p1.length - 1].node} + ${d.p2[d.p2.length - 1].node}`
@@ -170,6 +190,7 @@ function drawSorted(pairs, field){
        return  i === 0 ? `translate(${(670)},0)` : 
        `translate(${(660+(d3.sum(d3.selectAll(n).filter((f, j)=> i > j).data().map(m=> m.label.length * 6)))+ (i*30))},0)`;
     });
+
     var zero = d3.format(".3n");
     scoreGroups.append('text').text((d, i)=>  d.label).style('font-size', 10).attr('y', 10);;
     scoreGroups.append('text').text((d, i)=> zero(d.score)).style('font-size', 10).attr('y', 30);
@@ -195,7 +216,6 @@ function drawSorted(pairs, field){
       let species1 = d.p1.map(n=> n.node);
       let species2 = d.p2.map(n=> n.node);
       let labels = [...d.p1.filter(n=> n.leaf === true).map(m=> m.node)].concat(d.p2.filter(n=> n.leaf === true).map(m=> m.node));
-
 
       let neighbors = labels.flatMap(m=> {
           let start = speciesTest[0].indexOf(m);
@@ -266,9 +286,6 @@ function drawSorted(pairs, field){
         let y = d.attributes[field].scales.yScale;
         return (y(d.attributes[field].values.realVal) - 4);
         }).attr('x', 3).style('font-size', 10);
-
-
-
 
 ////////////////////////////END EXPERIMENT///////
 
@@ -350,7 +367,7 @@ function drawSorted(pairs, field){
         treeLinks.filter(f=> (neighNodes.indexOf(f.data.node) === -1) && (species1.concat(species2).indexOf(f.data.node) === -1)).classed('hover-not', true);
         
         let speciesNames = [species1[species1.length-1], species2[species2.length-1]]
-       // d3.select(n[i]).selectAll('.pair-neighbor').attr('opacity', 1);
+      
         return d3.select(this).classed('hover', true);
     })
     .on('mouseleave', (d, i, n)=>{
@@ -379,7 +396,7 @@ function drawSorted(pairs, field){
         d3.select(n[i]).call(d3.axisLeft(scale).ticks(5));
     });
 
-    let mouseG = pairWraps.append("g")
+  let mouseG = pairWraps.append("g")
     .attr("class", "mouse-over-effects");
 
   mouseG.append("path") // this is the black vertical line to follow mouse
@@ -395,7 +412,7 @@ function drawSorted(pairs, field){
    .join("g")
    .attr("class", "mouse-per-line");
 
- mousePerLine.append("circle")
+mousePerLine.append("circle")
    .attr("r", 7)
    .style("stroke", function(d) {
      return 'red';
@@ -404,10 +421,10 @@ function drawSorted(pairs, field){
    .style("stroke-width", "1px")
    .style("opacity", "0");
 
-  mousePerLine.append("text").attr('class', 'value')
+mousePerLine.append("text").attr('class', 'value')
    .attr("transform", "translate(10,3)");
 
-  mousePerLine.append("text").attr('class', 'species')
+mousePerLine.append("text").attr('class', 'species')
    .attr("transform", "translate(10,3)");
 
 mouseG.append('svg:rect') // append a rect to catch mouse movements on canvas
@@ -488,4 +505,54 @@ mouseG.append('svg:rect') // append a rect to catch mouse movements on canvas
 
 
    
+}
+
+function topPairSearch(topPairs, allPairs, field, weights){
+
+  let matchKeeper = [];
+  let nameArray = topPairs.map(m=> m.key);
+  let otherFields = getScales().filter(f=> f.field != field && f.type === 'continuous').map(m=> m.field);
+
+  otherFields.map(m => {
+  
+    let mappedPairs = updateRanking([...allPairs], m, weights);
+
+    let test = mappedPairs.top20.map((m, i)=> {
+      let newPair = m.key
+      if(nameArray.indexOf(m.key) > -1){
+      
+        let check = matchKeeper.map(m=> m.key);
+        if(check.indexOf(newPair) > -1){
+          let index = check.indexOf(newPair);
+          matchKeeper[index].value.push([newPair, i+1, m]);
+        }else{
+          matchKeeper.push({key: newPair, value: [[newPair, i+1, m]]})
+        }
+      }
+    });
+  });
+
+  matchKeeper.map((m, i)=> {
+   
+    let group = d3.selectAll('.pair-wrap').filter(f=> {
+      return (m.key === f.key);
+    }).append('g').classed('other-rank', true);
+
+    let rankSet = [...new Set(m.value.map(v=> v[1]).sort())]
+    let groupedRanks = rankSet.map(f=> {
+      let ranked = m.value.filter(va=> va[1]===f);
+      return {rank:f, value:ranked}
+    }).sort((a, b)=> a.rank - b.rank);
+
+    group.attr('transform', 'translate(860, 0)');
+    group.append('rect').attr('width', 300).attr('height', groupedRanks.length * 20).attr('opacity', 0.1);
+    let textGrp = group.selectAll('g.text-group').data(groupedRanks).join('g').classed('text-group', true);
+    let text = textGrp.append('text').text(d=> {
+      let traits = d.value.map(v=>v[2].delta.key).join(', ');
+      return `Ranking: ${d.rank} Traits: ${traits},  `});
+    text.style('font-size', '10px')
+    text.attr('transform', (d, i)=> `translate(20, ${(i*20)+11})`);
+  });
+
+
 }

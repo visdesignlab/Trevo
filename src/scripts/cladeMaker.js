@@ -159,7 +159,6 @@ export function growSidebarRenderTree(attrDraw){
 }
 
 export function addClade(name, nodes){
-    console.log('in add clade',name, nodes)
     cladeKeeper.push({field: name, nodes: nodes})
 }
 
@@ -174,8 +173,8 @@ export function removeCladeGroup(clades){
 
 
 function createNewCladeGroup(div, scales){
-    let cladeNames = []
-    let clades = []
+    let cladeNames = [];
+    let clades = [];
     d3.selectAll('.clade-name').each((e, i, n)=> {
        cladeNames.push(n[i].value);
        let rectTest = d3.select(`.rect-${i + 1}`).node().getBoundingClientRect();
@@ -184,7 +183,7 @@ function createNewCladeGroup(div, scales){
            return circPos.y >= rectTest.y-4 && circPos.y <= ((rectTest.y + rectTest.height) - 4);
        })
        nodes.select('circle').attr('fill', 'red');
-       clades.push({'clade': n[i].value , 'nodes': nodes.data().map(m=> m.data)})
+       clades.push({'clade': n[i].value , 'nodes': nodes.data().map(m=> m.data)});
     });
  
     let groupName = d3.select('.group-name').node().value;
@@ -195,7 +194,7 @@ function createNewCladeGroup(div, scales){
     d3.select('.dropdown.change-clade').select('button').text(`Clades Shown: ${chosenGroup.field}`);
 
     updateMainView('Summary View', groups);
-    renderTree(d3.select('#sidebar'), null, true, false)
+    renderTree(d3.select('#sidebar'), null, true, false);
 }
 
 // function cladeToolbar(div, scales){
@@ -286,7 +285,7 @@ function labelTree(nodes){
     .text(d=> d.data.node)
     .attr('font-size', 9)
     .attr('x', 4)
-    .attr('y', 2)
+    .attr('y', 2);
 }
 
 export async function createCladeView(div, scales){

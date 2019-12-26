@@ -12,8 +12,7 @@ import { binGroups, renderDistStructure } from './distributionView';
 export function findBrushedNodes(){
     let brushes = d3.select('#toolbar').selectAll('.brush-span');
     let brushData =  [];
-    brushes.each(e => brushData.push(e))
-  
+    brushes.each(e => brushData.push(e));
     let nodes = brushData.flatMap(m=> m.nodes);
     return nodes;
 }
@@ -23,7 +22,7 @@ export function toolbarDataControl(toolbar, graphList, chosenGraph){
     d3.select('.dropdown.change-data').select('button').node().value = chosenGraph.field;
     dataDrop.on('click', (d, i, n)=> {
         d3.select('.dropdown.change-data').select('button').node().value = d.field;
-        d3.select('.dropdown.change-data').select('button').text(d.text)
+        d3.select('.dropdown.change-data').select('button').text(d.text);
         d3.select('#change-data').classed('show', false);
         let main = d3.select('#main');
         let sidebar = d3.select('#sidebar');
@@ -49,7 +48,7 @@ export function toolbarControl(toolbar, main, calculatedScales){
         let group = chosenCladesGroup[chosenCladesGroup.length - 1];
         updateMainView(d.field, group.groups);
         d3.select('.dropdown.change-view').select('button').node().value = d.field;
-        d3.select('.dropdown.change-view').select('button').text(d.field)
+        d3.select('.dropdown.change-view').select('button').text(d.field);
         d3.select('#change-view').classed('show', false);
     });
     
@@ -116,7 +115,7 @@ export function toolbarControl(toolbar, main, calculatedScales){
     let checkedAttributes = attributeOptions.length > 11 ? attributeOptions.slice(0, 8) : attributeOptions;
 
     let dropdiv = toolbar.append('div').classed(`dropdown attribute-show`, true);
-    dropdiv.style('display', 'inline-block')
+    dropdiv.style('display', 'inline-block');
     let button = dropdiv.append('button').classed('btn dropbtn btn-secondary dropdown-toggle', true).text('Shown Attributes');
     let dropContent = dropdiv.append('div').attr('id', 'attribute-show').classed('dropdown-content', true);
     let dropUl = dropContent.append('ul');
@@ -131,7 +130,7 @@ export function toolbarControl(toolbar, main, calculatedScales){
     button.on('click', (d, i, n)=> {
         if(dropContent.classed('show')){
             dropContent.classed('show', false);
-            updateMainView('Summary View', chosenCladesGroup[chosenCladesGroup.length - 1].groups)
+            updateMainView('Summary View', chosenCladesGroup[chosenCladesGroup.length - 1].groups);
         }else{
             dropContent.classed('show', true);
         }
@@ -188,7 +187,7 @@ export function toolbarControl(toolbar, main, calculatedScales){
 
 export function updateCladeDrop(dropUl, cladeOptions){
 
-    let options = dropUl.selectAll('li').data(cladeOptions).join('li')
+    let options = dropUl.selectAll('li').data(cladeOptions).join('li');
     let checkBox = options.selectAll('input').data(d=> [d]).join('input').attr('type', 'checkbox');
     options.selectAll('text').data(d=> [d]).join('text').text(d=> ` ${d.field}`);
     

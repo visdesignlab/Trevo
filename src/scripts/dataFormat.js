@@ -6,7 +6,7 @@ import { binGroups } from "./distributionView";
 import { addCladeGroup, chosenCladesGroup, addClade } from "./cladeMaker";
 import { buildTreeStructure } from "./sidebarComponent";
 
-export const maxTimeKeeper = []
+export const maxTimeKeeper = [];
 
 export async function loadData(readFunction, fileString, type){
     let data = await readFunction(fileString);
@@ -14,22 +14,33 @@ export async function loadData(readFunction, fileString, type){
     return data;
 }
 
-export function pairPaths(pathData, field){
-
-
+function generatePairs(pathData){
     return pathData.flatMap((path, i)=> {
         let pairs = pathData.filter((f, j)=> j != i);
         let paired =  pairs.map((p)=> {
             return {'p1': path, 'p2': p}
         });
         return paired.map(m=> {
-            m.distance = getDistance(m);
-            m.deltas = calculateDelta(m, field);
-            m.closeness = calculateCloseness(m, field);
             
+            let key = [m.p1[m.p1.length - 1].node, m.p2[m.p2.length - 1].node].sort();
+            m.key = key.join(',')
+            m.distance = getDistance(m);
+            m.deltas = calculateDelta(m);
+            m.closeAll = calculateCloseness(m);
+           
             return m;
-        })
-    })
+        });
+    });
+}
+
+export function pairPaths(pathData){
+
+    let allPairs = generatePairs(pathData);
+    let pairSet = [...new Set(allPairs.map(m=> m.key))];
+    return pairSet.map(k=> {
+        let index = allPairs.map(m=> m.key).indexOf(k);
+        return allPairs[index];
+      });
 }
 
 function getDistance(pair){
@@ -49,7 +60,7 @@ function getDistance(pair){
     return d3.sum(p1.map(m=> m.edgeLength)) + d3.sum(p2.map(m=> m.edgeLength));
 }
 
-function calculateDelta(pair, field){
+function calculateDelta(pair){
    
     let verts = pair.p2.map(m=> m.node);
 
@@ -105,15 +116,17 @@ return attributes;
 
 }
 
-function calculateCloseness(pair, field){
+function calculateCloseness(pair){
  let leaf1 = pair.p1.filter(p=> p.leaf === true)[0].attributes;
  let leaf2 = pair.p2.filter(p=> p.leaf === true)[0].attributes;
 
- return d3.entries(leaf1).filter(f=> f.value.type === 'continuous').map(m=> {
+ let closeness = d3.entries(leaf1).filter(f=> f.value.type === 'continuous').map(m=> {
     
      m.value = Math.abs(m.value.values.realVal - leaf2[m.key].values.realVal);
      return m
  });
+
+ return closeness;
 }
 
 export function calculateNewScales(attributes, keyList, colorKeeper){
@@ -423,7 +436,6 @@ export async function dataLoadAndFormatMultinet(workspace, graphName){
 
     let data = await load_data(workspace, graphName);
 
-    console.log('data', workspace, graphName, data)
    
     //helper function to create array of unique elements
     Array.prototype.unique = function() {
@@ -432,7 +444,7 @@ export async function dataLoadAndFormatMultinet(workspace, graphName){
         });
     }
 
-    let attributeList = []
+    let attributeList = [];
 
     let edges = data.links;
     let internal = data.nodes.filter(f=> f.id.includes('internal'));

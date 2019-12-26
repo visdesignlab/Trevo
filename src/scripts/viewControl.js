@@ -18,7 +18,7 @@ export function updateMainView(d, groups){
 
     main.selectAll('*').remove();
 
-    let view = d3.select('#view-pheno').text()
+    let view = d3.select('#view-pheno').text();
    
     if(d != 'Pair View' && view === 'View Phenogram'){
         d3.select('.dropdown.attr-drop').remove();
@@ -45,9 +45,8 @@ export function updateMainView(d, groups){
         d3.select('#discrete-view').classed('hidden', true);
 
         if(groups){
-            renderDistStructure(main, groups)
+            renderDistStructure(main, groups);
         }else{
-           // groupDistributions(data, main, null);
            renderDistStructure(main, data);
         }
     }else if(d === 'Pair View'){
@@ -83,9 +82,8 @@ export function initialViewLoad(scales, dataName){
 
     if(data.length > 50){
 
-        renderDistStructure(main, chosenCladesGroup[chosenCladesGroup.length - 1].groups);
-        
-        d3.select('#view-toggle').text('View Paths');
+        rankingControl(data);
+        generatePairs(data);
 
         document.getElementById("scrunch").disabled = true;
         document.getElementById("discrete-view").disabled = true;
@@ -93,8 +91,17 @@ export function initialViewLoad(scales, dataName){
         d3.select('#scrunch').classed('hidden', true);
         d3.select('#discrete-view').classed('hidden', true);
 
-    }else{
+        // renderDistStructure(main, chosenCladesGroup[chosenCladesGroup.length - 1].groups);
         
+        // d3.select('#view-toggle').text('View Paths');
+
+        // document.getElementById("scrunch").disabled = true;
+        // document.getElementById("discrete-view").disabled = true;
+
+        // d3.select('#scrunch').classed('hidden', true);
+        // d3.select('#discrete-view').classed('hidden', true);
+
+    }else{
         drawPathsAndAttributes(data, main);
         d3.select('#view-toggle').text('View Summary');
 
