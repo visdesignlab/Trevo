@@ -348,21 +348,19 @@ export function updateCladeTree(treenodes, dimensions, treeSvg, g, attrDraw, len
     link.transition()
     .duration(500)
     .attr("d", function(d) {
-       
            return "M" + xScale(d.data.combEdge) + "," + yScale(d.position)
            + "C" + (xScale(d.data.combEdge) + xScale(d.parent.data.combEdge)) / 2 + "," + yScale(d.position)
            + " " + (xScale(d.parent.data.combEdge)) + "," + yScale(d.position)
            + " " + xScale(d.parent.data.combEdge) + "," + yScale(d.parent.position);
-     
     });
 
     // adds each node as a group
     var node = g.selectAll(".node")
-    .data(treenodes.descendants(), d => d.data.node)
-    .join("g")
-    .attr("class", function(d) { 
-    return "node" + 
-    (d.children ? " node--internal" : " node--leaf"); });
+        .data(treenodes.descendants(), d => d.data.node)
+        .join("g")
+        .attr("class", function(d) { 
+        return "node" + 
+        (d.children ? " node--internal" : " node--leaf"); });
 
     // adds the circle to the node
     node.selectAll('circle').data(d=> [d]).join("circle")

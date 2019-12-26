@@ -1348,7 +1348,7 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
     //ROOT RENDERING
     let root = predictedWrap.selectAll('g.root').data(d=> {
         return [d.rootData]}).join('g').classed('root', true);
-    root.attr('transform', `translate(60,0)`);
+    root.attr('transform', `translate(50,0)`);
 
     let contRoot = root.filter(f=> f.type === "continuous");
     contRoot.append('rect')
@@ -1392,6 +1392,7 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
         .style('text-anchor', 'end');
 
     rootStateGroups.attr('transform', (d, i)=> `translate(0, ${3.5+(i*(dimensions.squareDim+2))})`);
+
     rootStateGroups.append('rect')
         .attr('height', dimensions.squareDim)
         .attr('width', dimensions.squareDim)
@@ -1417,7 +1418,7 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
         }).attr('opacity', (c)=>{
             let sum = d3.sum(c.state.flatMap(s=> s.value));
             return sum/c.state.length;
-        })
+        });
 
 
     /////BRANCHES
@@ -1427,7 +1428,7 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
     branchGroup.attr('transform', (d, i, n)=> {
         let step = n.length < 11 ? (d.range[1] - d.range[0]) / 5 : 0;
         let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, dimensions.timeRange]);
-            return 'translate('+(100 + (branchScale(i)) + x(step)) +', 0)'});
+            return 'translate('+(44 + (branchScale(i)) + x(step)) +', 0)'});
 
     let discreteDist = branchGroup.filter(f=> f.type === 'discrete');
 
@@ -1445,9 +1446,11 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
     stateBarsPredicted.attr('transform', (d, i, n)=> {
         return `translate(${dimensions.squareDim}, ${3.5+(i*(dimensions.squareDim+2))})`});
 
+    let discreteWidth = 80;
+
     let bars = stateBarsPredicted.append('rect')
               .attr('height', dimensions.squareDim)
-              .attr('width', 80)
+              .attr('width', discreteWidth)
               .attr('stroke', 'black')
               .attr('fill', '#fff')
               .attr('opacity', 0.3);
@@ -1455,7 +1458,6 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
     let probabilityTicks = stateBarsPredicted
         .selectAll('.prob-tick')
         .data(d=> {
-           
             let state = d.state.map(m=> {
                 let newstate = m;
                 newstate.color = d.color.color;
@@ -1472,12 +1474,13 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
     .attr('fill', 'gray');
 
     probabilityTicks.attr('transform', (d, i, n)=> {
-        let scale = d3.scaleLinear().domain([0, 1]).range([0, (80 - 2)]);
+        let scale = d3.scaleLinear().domain([0, 1]).range([0, (discreteWidth - 2)]);
         return `translate(${scale(d.value)},0)`});
 
     probabilityTicks.on('mouseover', (d, i, n)=> {
      
         let tool = d3.select('#tooltip');
+
         tool.transition()
             .duration(200)
             .style("opacity", .9);
@@ -1487,6 +1490,7 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
         tool.html(`${d.state} : ${f(d.value)}`)
             .style("left", (d3.event.pageX - 40) + "px")
             .style("top", (d3.event.pageY - 28) + "px");
+
         tool.style('height', 'auto');
 
     }).on('mouseout', ()=>{
@@ -1576,29 +1580,31 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
             // });
     });
 
-    let disWrap = predictedWrap.filter(f=> f.type === 'discrete')
-    let pathKeeper = []
-    disWrap.each((d, i, node)=> {
-        let winPosArray = [];
-        d3.select(node[i]).selectAll('.win').each((r, j, n)=>{
-            winPosArray.push([n[j].getBoundingClientRect().x,(n[j].getBoundingClientRect().y + 10)])
-            winPosArray.push([n[j].getBoundingClientRect().x + 15,(n[j].getBoundingClientRect().y + 10)])
-        });
-        pathKeeper.push([...winPosArray]);
-        let lineThing = d3.line();
-        winPosArray[winPosArray.length -1][1] = winPosArray[winPosArray.length -1][1] + 2;
-        winPosArray[winPosArray.length -2][1] = winPosArray[winPosArray.length -2][1] + 2;
-        d.win = winPosArray;
-    });
+    //THE LINES THAT MOVE FROM WINNING POSITION
 
-    disWrap.each((e, i, n)=> {
-        let lineThing = d3.line();
-        d3.select(n[i]).select('.win-line').append('path').attr('d', (d)=> lineThing(d.win))
-        .attr('transform', 'translate(-75, -'+n[i].getBoundingClientRect().y+')')
-        .attr('fill', 'none')
-        .attr('stroke', `rgba(200, 203, 219, .9)`)
-        .attr('stoke-width', 1)
-    });
+    // let disWrap = predictedWrap.filter(f=> f.type === 'discrete')
+    // let pathKeeper = []
+    // disWrap.each((d, i, node)=> {
+    //     let winPosArray = [];
+    //     d3.select(node[i]).selectAll('.win').each((r, j, n)=>{
+    //         winPosArray.push([n[j].getBoundingClientRect().x,(n[j].getBoundingClientRect().y + 10)])
+    //         winPosArray.push([n[j].getBoundingClientRect().x + 15,(n[j].getBoundingClientRect().y + 10)])
+    //     });
+    //     pathKeeper.push([...winPosArray]);
+    //     let lineThing = d3.line();
+    //     winPosArray[winPosArray.length -1][1] = winPosArray[winPosArray.length -1][1] + 2;
+    //     winPosArray[winPosArray.length -2][1] = winPosArray[winPosArray.length -2][1] + 2;
+    //     d.win = winPosArray;
+    // });
+
+    // disWrap.each((e, i, n)=> {
+    //     let lineThing = d3.line();
+    //     d3.select(n[i]).select('.win-line').append('path').attr('d', (d)=> lineThing(d.win))
+    //     .attr('transform', 'translate(-75, -'+n[i].getBoundingClientRect().y+')')
+    //     .attr('fill', 'none')
+    //     .attr('stroke', `rgba(200, 203, 219, .9)`)
+    //     .attr('stoke-width', 1)
+    // });
 
     //CONTIN PREDICTED
     let continDist = branchGroup.filter(f=> f.type === 'continuous');
@@ -1695,8 +1701,6 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
         var s = d3.event.selection;
         var zero = d3.format(".3n");
 
-       
-    
         let index = d3.select('#toolbar').selectAll('.brush-span').size();
         let classLabel = index === 0 ? 'one' : 'two';
     
@@ -1828,7 +1832,6 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
                     xOut.on('click', (d, i, n)=> {
                        
                         let classy = index === 0 ? 'one' : 'two';
-                        
                         d3.select(d.brush).call(brush.move, null);
                         d3.select(n[i].parentNode).remove();
                         d3.select(d.brush).select('.overlay').attr('stroke-width', 0);
@@ -1895,15 +1898,12 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
                         .attr('stroke', brushColors[index][1])
                         .attr('stroke-width', 2);
 
-                       
                     let nodes = data.data.filter(f=> {
                         return (f.values.realVal >= brushedVal[0]) && (f.values.realVal <= brushedVal[1]);
                     });
-
                     let notNodes = data.data.filter(f=> {
                         return (f.values.realVal < brushedVal[0]) || (f.values.realVal > brushedVal[1]);
                     });
-
                     doesItExist.datum({brush:this, nodes: nodes})
                     brushedNodes(nodes, notNodes, data, brushedVal, label);
                     
@@ -2115,9 +2115,7 @@ function continuousHistogram(data){
 let mirrorlineGen = d3.area()
     .curve(d3.curveCardinal)
     .x((d, i, n)=> {
-      
         let y = d3.scaleLinear().domain([n.length - 1, 0]).range([0, dimensions.height]).clamp(true);
-        
         return y(i); 
     })
     .y0(d=> {

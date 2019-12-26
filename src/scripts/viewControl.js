@@ -82,24 +82,24 @@ export function initialViewLoad(scales, dataName){
 
     if(data.length > 50){
 
-        rankingControl(data);
-        generatePairs(data);
-
-        document.getElementById("scrunch").disabled = true;
-        document.getElementById("discrete-view").disabled = true;
-
-        d3.select('#scrunch').classed('hidden', true);
-        d3.select('#discrete-view').classed('hidden', true);
-
-        // renderDistStructure(main, chosenCladesGroup[chosenCladesGroup.length - 1].groups);
-        
-        // d3.select('#view-toggle').text('View Paths');
+        // rankingControl(data);
+        // generatePairs(data);
 
         // document.getElementById("scrunch").disabled = true;
         // document.getElementById("discrete-view").disabled = true;
 
         // d3.select('#scrunch').classed('hidden', true);
         // d3.select('#discrete-view').classed('hidden', true);
+
+        renderDistStructure(main, chosenCladesGroup[chosenCladesGroup.length - 1].groups);
+        
+        d3.select('#view-toggle').text('View Paths');
+
+        document.getElementById("scrunch").disabled = true;
+        document.getElementById("discrete-view").disabled = true;
+
+        d3.select('#scrunch').classed('hidden', true);
+        d3.select('#discrete-view').classed('hidden', true);
 
     }else{
         drawPathsAndAttributes(data, main);
