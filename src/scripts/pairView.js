@@ -560,12 +560,44 @@ function topPairSearch(topPairs, allPairs, field, weights){
 
 function rankHistogram(matchKeeper){
 
-  let rankBins = [[1,3], [4,6], [7,9], [10, 12], [13, 15], [16, 18]];
+  let size = 25;
+
+  let saturationScale = d3.scaleLinear().domain([1, 21]).range([8, .1])
+
+  let rankBins = [[1,3], [4,6], [7,9], [10, 12], [13, 15], [16, 18], [19, 21]];
+  let axisLabels = ['1-3', '4-6', '7-9', '10-12', '13-15', '16-18', '19-21'];
 
   let newArray = matchKeeper.map(m=> {
-    console.log('m', m.value)
-    let bins = rankBins.map(r=> console.log(r));
-  })
+    let bins = rankBins.map(r=> {
+      return {bin:r, values: m.value.filter(f=> f[1] >= r[0] && f[1] <= r[1])}
+    });
+    
+    return {key:m.key, 'bins':bins}
+  });
+
+  newArray.map(m=> {
+
+    let group = d3.selectAll('.pair-wrap').filter(f=> {
+          return (m.key === f.key);
+        }).append('g').classed('other-rank', true);
+
+    group.attr('transform', 'translate(860, 0)');
+
+    group.append('g').call(d3.axisBottom(d3.scaleBand().domain(axisLabels).range([0, rankBins.length * (size+2)]))).attr('transform', 'translate(0, 92)');
+
+    let binGroups = group.selectAll('g.bin').data(m.bins).join('g').classed('bin', true);
+    binGroups.attr('transform', (d, i)=> `translate(${i*(size+2)}, ${80-(size/2)})`);
+
+    let binRects = binGroups.selectAll('rect').data(d=>d.values).join('rect');
+    binRects.attr('width', size).attr('height', size/2).attr('transform', (d, i)=> `translate(0, ${-1*(i*((size/2)+1))})`);
+    binRects.attr('opacity', d=> saturationScale(d[1]))
+
+    binRects.on('mouseover', (r,i)=>{
+      console.log(r)
+    })
+  });
+
+  console.log('newarray!',newArray)
 
 
 }

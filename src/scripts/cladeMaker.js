@@ -367,10 +367,10 @@ export function updateCladeTree(treenodes, dimensions, treeSvg, g, attrDraw, len
       .attr("r", 3);
 
     node.transition()
-    .duration(500)
-    .attr("transform", function(d) { 
-            return "translate(" + xScale(d.data.combEdge) + "," + yScale(d.position) + ")"; 
-    });
+        .duration(500)
+        .attr("transform", function(d) { 
+                return "translate(" + xScale(d.data.combEdge) + "," + yScale(d.position) + ")"; 
+        });
 
     if(attrDraw != null){
         let leaves = node.filter(n=> n.data.leaf === true);

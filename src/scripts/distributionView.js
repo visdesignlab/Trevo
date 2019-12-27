@@ -1420,7 +1420,6 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
             return sum/c.state.length;
         });
 
-
     /////BRANCHES
     let branchGroup = predictedWrap.selectAll('g.branch-bin').data(d=> {
         return d.branches}).join('g').classed('branch-bin', true);
@@ -1538,6 +1537,7 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
         tool.html(`${d.state[0].state} : ${f(av)}`)
             .style("left", (d3.event.pageX - 40) + "px")
             .style("top", (d3.event.pageY - 28) + "px");
+            
         tool.style('height', 'auto');
 
     }).on('mouseout', ()=>{
