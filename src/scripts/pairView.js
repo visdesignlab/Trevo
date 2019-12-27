@@ -561,8 +561,9 @@ function topPairSearch(topPairs, allPairs, field, weights){
 function rankHistogram(matchKeeper){
 
   let size = 25;
+  let height = 12;
 
-  let saturationScale = d3.scaleLinear().domain([1, 21]).range([8, .1])
+  let saturationScale = d3.scaleLinear().domain([1, 21]).range([.8, .1])
 
   let rankBins = [[1,3], [4,6], [7,9], [10, 12], [13, 15], [16, 18], [19, 21]];
   let axisLabels = ['1-3', '4-6', '7-9', '10-12', '13-15', '16-18', '19-21'];
@@ -581,20 +582,39 @@ function rankHistogram(matchKeeper){
           return (m.key === f.key);
         }).append('g').classed('other-rank', true);
 
-    group.attr('transform', 'translate(860, 0)');
+    group.attr('transform', 'translate(880, 0)');
+
+    group.append('text').text('Ranked Top 20 in Other Traits').style('font-size', 11)
+    .style('text-anchor', 'middle')
+    .attr('transform', `translate(${(rankBins.length * (size+2))/2},0)`)
 
     group.append('g').call(d3.axisBottom(d3.scaleBand().domain(axisLabels).range([0, rankBins.length * (size+2)]))).attr('transform', 'translate(0, 92)');
 
     let binGroups = group.selectAll('g.bin').data(m.bins).join('g').classed('bin', true);
-    binGroups.attr('transform', (d, i)=> `translate(${i*(size+2)}, ${80-(size)})`);
+    binGroups.attr('transform', (d, i)=> `translate(${i*(size+2)}, ${80})`);
 
     let binRects = binGroups.selectAll('rect').data(d=>d.values).join('rect');
     binRects.attr('width', size).attr('height', size/2).attr('transform', (d, i)=> `translate(0, ${-1*(i*((size/2)+1))})`);
     binRects.attr('opacity', d=> saturationScale(d[1]))
 
     binRects.on('mouseover', (r,i)=>{
-      console.log(r)
-    })
+      let tool = d3.select('#tooltip');
+      tool.transition()
+          .duration(200)
+          .style("opacity", .9);
+      
+      let f = d3.format(".3f");
+        
+      tool.html(`${r[2].delta.key} : ${f(r[2].totalRank)} </br> Ranking: ${r[1]}`)
+          .style("left", (d3.event.pageX - 40) + "px")
+          .style("top", (d3.event.pageY - 28) + "px");
+          
+      tool.style('height', 'auto');
+      tool.style('width', '150px');
+
+    }).on('mouseout', ()=> {
+      let tool = d3.select('#tooltip').style('opacity', 0);
+    });
   });
 
   console.log('newarray!',newArray)
