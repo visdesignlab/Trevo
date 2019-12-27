@@ -586,7 +586,7 @@ function rankHistogram(matchKeeper){
     group.append('g').call(d3.axisBottom(d3.scaleBand().domain(axisLabels).range([0, rankBins.length * (size+2)]))).attr('transform', 'translate(0, 92)');
 
     let binGroups = group.selectAll('g.bin').data(m.bins).join('g').classed('bin', true);
-    binGroups.attr('transform', (d, i)=> `translate(${i*(size+2)}, ${80-(size/2)})`);
+    binGroups.attr('transform', (d, i)=> `translate(${i*(size+2)}, ${80-(size)})`);
 
     let binRects = binGroups.selectAll('rect').data(d=>d.values).join('rect');
     binRects.attr('width', size).attr('height', size/2).attr('transform', (d, i)=> `translate(0, ${-1*(i*((size/2)+1))})`);
