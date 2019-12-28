@@ -8,16 +8,11 @@ import { calculatedScalesKeeper } from ".";
 
 export let groupedView = false;
 
-export function updateMainView(d, groups){
+export async function updateMainView(d, groups){
+
 
     let main = d3.select('#main');
-    let data = getLatestData();
-    let moveMetric = 'edgeLength';
-
-    let scales = calculatedScalesKeeper[0];
-
-    main.selectAll('*').remove();
-
+    let data = await getLatestData();
     let view = d3.select('#view-pheno').text();
    
     if(d != 'Pair View' && view === 'View Phenogram'){
@@ -50,8 +45,10 @@ export function updateMainView(d, groups){
            renderDistStructure(main, data);
         }
     }else if(d === 'Pair View'){
-        rankingControl(data);
-        generatePairs(data);
+        await rankingControl(data);
+        await generatePairs(data);
+
+        document.getElementById("loader").style.display = "none";
 
         document.getElementById("scrunch").disabled = true;
         document.getElementById("discrete-view").disabled = true;
@@ -82,24 +79,26 @@ export function initialViewLoad(scales, dataName){
 
     if(data.length > 50){
 
-        rankingControl(data);
-        generatePairs(data);
-
-        document.getElementById("scrunch").disabled = true;
-        document.getElementById("discrete-view").disabled = true;
-
-        d3.select('#scrunch').classed('hidden', true);
-        d3.select('#discrete-view').classed('hidden', true);
-
-        // renderDistStructure(main, chosenCladesGroup[chosenCladesGroup.length - 1].groups);
-        
-        // d3.select('#view-toggle').text('View Paths');
+        // rankingControl(data);
+        // generatePairs(data);
 
         // document.getElementById("scrunch").disabled = true;
         // document.getElementById("discrete-view").disabled = true;
 
         // d3.select('#scrunch').classed('hidden', true);
         // d3.select('#discrete-view').classed('hidden', true);
+
+        renderDistStructure(main, chosenCladesGroup[chosenCladesGroup.length - 1].groups)
+            .then(()=>  document.getElementById("loader").style.display = "none");
+
+        
+        d3.select('#view-toggle').text('View Paths');
+
+        document.getElementById("scrunch").disabled = true;
+        document.getElementById("discrete-view").disabled = true;
+
+        d3.select('#scrunch').classed('hidden', true);
+        d3.select('#discrete-view').classed('hidden', true);
 
     }else{
         drawPathsAndAttributes(data, main);

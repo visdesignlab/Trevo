@@ -335,7 +335,7 @@ export function drawGroupLabels(pathData, svg, groupLabel){
  * @param {*} mainDiv 
  * @param {*} pathGroups 
  */
-export function renderDistStructure(mainDiv, pathGroups){
+export async function renderDistStructure(mainDiv, pathGroups){
 
     let compareTooltipFlag = false;
    
@@ -433,7 +433,7 @@ export function renderDistStructure(mainDiv, pathGroups){
         });
            
        // });
-        renderDistibutions(binnedWrap, branchScale, pointGroups);
+        return renderDistibutions(binnedWrap, branchScale, pointGroups);
     });
 }
 

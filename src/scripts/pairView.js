@@ -563,8 +563,6 @@ function rankHistogram(matchKeeper){
   let size = 25;
   let height = 12;
 
-  let saturationScale = d3.scaleLinear().domain([1, 21]).range([.8, .1])
-
   let rankBins = [[1,3], [4,6], [7,9], [10, 12], [13, 15], [16, 18], [19, 21]];
   let axisLabels = ['1-3', '4-6', '7-9', '10-12', '13-15', '16-18', '19-21'];
 
@@ -572,7 +570,6 @@ function rankHistogram(matchKeeper){
     let bins = rankBins.map(r=> {
       return {bin:r, values: m.value.filter(f=> f[1] >= r[0] && f[1] <= r[1])}
     });
-    
     return {key:m.key, 'bins':bins}
   });
 
@@ -584,18 +581,28 @@ function rankHistogram(matchKeeper){
 
     group.attr('transform', 'translate(880, 0)');
 
-    group.append('text').text('Ranked Top 20 in Other Traits').style('font-size', 11)
+    group.append('text')
+    .text('Ranked Top 20 in Other Traits')
+    .style('font-size', 11)
     .style('text-anchor', 'middle')
-    .attr('transform', `translate(${(rankBins.length * (size+2))/2},0)`)
+    .attr('transform', `translate(${(rankBins.length * (size+2))/2},0)`);
 
-    group.append('g').call(d3.axisBottom(d3.scaleBand().domain(axisLabels).range([0, rankBins.length * (size+2)]))).attr('transform', 'translate(0, 92)');
+    group.append('g')
+    .call(d3.axisBottom(d3.scaleBand().domain(axisLabels).range([0, rankBins.length * (size+2)])))
+    .attr('transform', 'translate(0, 92)');
 
     let binGroups = group.selectAll('g.bin').data(m.bins).join('g').classed('bin', true);
     binGroups.attr('transform', (d, i)=> `translate(${i*(size+2)}, ${80})`);
 
-    let binRects = binGroups.selectAll('rect').data(d=>d.values).join('rect');
-    binRects.attr('width', size).attr('height', size/2).attr('transform', (d, i)=> `translate(0, ${-1*(i*((size/2)+1))})`);
-    binRects.attr('opacity', d=> saturationScale(d[1]))
+    let binRects = binGroups.selectAll('rect').data(d=>d.values.sort((a, b)=> a[1]-b[1])).join('rect');
+    binRects.attr('width', size)
+    .attr('height', size/2)
+    .attr('transform', (d, i)=> `translate(0, ${-1*(i*((size/2)+1))})`);
+
+    binRects.attr('opacity', (d, i, n)=> {
+      let minMax = rankBins.filter(r=> d[1]<= r[1] && d[1] >= r[0])[0];
+      let scale = d3.scaleLinear().domain([minMax[0], minMax[1]]).range([.8, .2])
+      return scale(d[1])})
 
     binRects.on('mouseover', (r,i)=>{
       let tool = d3.select('#tooltip');
@@ -616,8 +623,5 @@ function rankHistogram(matchKeeper){
       let tool = d3.select('#tooltip').style('opacity', 0);
     });
   });
-
-  console.log('newarray!',newArray)
-
 
 }

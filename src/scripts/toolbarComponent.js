@@ -38,6 +38,19 @@ export function toolbarDataControl(toolbar, graphList, chosenGraph){
     });
 
 }
+async function changeDropValue(d){
+    console.log('when does this fire?')
+    d3.select('.dropdown.change-view').select('button').node().value = d.field;
+    d3.select('.dropdown.change-view').select('button').text(d.field);
+}
+export async function clearMain(d){
+    console.log('when does this fire?')
+    d3.select('#main').selectAll('*').remove();
+    d3.select('#change-view').classed('show', false);
+    document.getElementById("loader").style.display = "block";
+   
+    return document.getElementById("loader");
+}
 export function toolbarControl(toolbar, main, calculatedScales){
 
     let viewArray = [{'field':'Summary View'},{'field':'Path View'},{'field':'Pair View'}];
@@ -45,11 +58,13 @@ export function toolbarControl(toolbar, main, calculatedScales){
     let viewDrop = dropDown(toolbar, viewArray, viewArray[0].field, 'change-view');
 
     viewDrop.on('click', (d, i, n)=> {
-        let group = chosenCladesGroup[chosenCladesGroup.length - 1];
-        updateMainView(d.field, group.groups);
-        d3.select('.dropdown.change-view').select('button').node().value = d.field;
-        d3.select('.dropdown.change-view').select('button').text(d.field);
-        d3.select('#change-view').classed('show', false);
+
+        clearMain().then((loader)=> {
+            changeDropValue(d).then(()=>{
+                let group = chosenCladesGroup[chosenCladesGroup.length - 1];
+                updateMainView(d.field, group.groups);
+            });
+        });
     });
     
     let filterButton = toolbar.append('button').attr('id', 'view-filter');
