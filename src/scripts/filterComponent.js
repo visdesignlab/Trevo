@@ -57,8 +57,7 @@ export function addFilter(filterType, attType, filterId, filFunction, oldData, n
 }
 
 export function getLatestData(){
-    let data = filterMaster.length > 0 ? filterMaster[filterMaster.length - 1].data : dataMaster[0];
-    return data;
+    return filterMaster.length > 0 ? filterMaster[filterMaster.length - 1].data : dataMaster[dataMaster.length-1]; 
 }
 
 export function getScales(){

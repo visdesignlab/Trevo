@@ -8,11 +8,10 @@ import { calculatedScalesKeeper } from ".";
 
 export let groupedView = false;
 
-export async function updateMainView(d, groups){
-
+export function updateMainView(d, groups){
 
     let main = d3.select('#main');
-    let data = await getLatestData();
+    let data = getLatestData();
     let view = d3.select('#view-pheno').text();
    
     if(d != 'Pair View' && view === 'View Phenogram'){
@@ -41,12 +40,14 @@ export async function updateMainView(d, groups){
 
         if(groups){
             renderDistStructure(main, groups);
+            document.getElementById("loader").style.display = "none"
         }else{
            renderDistStructure(main, data);
+           document.getElementById("loader").style.display = "none"
         }
     }else if(d === 'Pair View'){
-        await rankingControl(data);
-        await generatePairs(data);
+        rankingControl(data);
+        generatePairs(data);
 
         document.getElementById("loader").style.display = "none";
 
@@ -69,6 +70,8 @@ export async function updateMainView(d, groups){
     }else{
         console.error('field not found');
     }
+
+    return main;
 }
 export function initialViewLoad(scales, dataName){
 

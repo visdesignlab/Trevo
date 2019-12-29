@@ -345,11 +345,12 @@ export async function renderDistStructure(mainDiv, pathGroups){
     let groupDivs = groupWrap.selectAll('.group-div').data(pathGroups).join('div').classed('group-div', true);
 
     groupDivs.each((d, i, node)=> {
-       let filteredAttributes = d.groupBins.filter(f=> {
-           return shownAttributes.indexOf(f.key) > -1;
-       });
+
+        console.log('d',d)
+       let filteredAttributes = d.groupBins.filter(f=> shownAttributes.indexOf(f.key) > -1);
 
         let group = d3.select(node[i]);
+        group.classed(d.label, true);
         group.style('text-align', 'center');
         group.append('text').text(d.label);
         group.append('text').text(` : ${d.paths.length} Paths` );
@@ -362,8 +363,6 @@ export async function renderDistStructure(mainDiv, pathGroups){
     
         let branchBar = drawBranchPointDistribution(d, svg);
         branchBar.attr('transform', 'translate(55, 10)');
-
-        group.classed(d.label, true);
     
         let branchScale = d3.scaleLinear().domain([0, d.groupBins.branchCount]).range([0, dimensions.timeRange]);
         let pointGroups = branchBar.selectAll('g.branch-points');
@@ -432,7 +431,6 @@ export async function renderDistStructure(mainDiv, pathGroups){
             }
         });
            
-       // });
         return renderDistibutions(binnedWrap, branchScale, pointGroups);
     });
 }
@@ -477,7 +475,6 @@ function renderDistributionComparison(div, data, branchScale){
 
     if(data.length > 1){
 //ADD THIS BACK IN//
-       // renderTree(d3.select('#sidebar'), null, true);
 
         d3.select('#toolbar').selectAll('.brush-span').remove();
        
@@ -598,14 +595,10 @@ function renderDistributionComparison(div, data, branchScale){
              index: 1 }];
 
              d.leafData.bins = [
-                
                 {key:data[0].label, keys: d.stateKeys, value: d.leafData.bins, index:0},
                 {key:data[1].label, keys: d.stateKeys, value: mapBins[i].leafData.bins, index:1}
-
                 ];
-
            }
-           
             return d;
         });
 
@@ -1445,29 +1438,42 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
     stateBarsPredicted.attr('transform', (d, i, n)=> {
         return `translate(${dimensions.squareDim}, ${3.5+(i*(dimensions.squareDim+2))})`});
 
-    let discreteWidth = 80;
+    let discreteWidth = 85;
 
-    let bars = stateBarsPredicted.append('rect')
+    let binRects = stateBarsPredicted.append('rect')
               .attr('height', dimensions.squareDim)
               .attr('width', discreteWidth)
               .attr('stroke', 'black')
               .attr('fill', '#fff')
               .attr('opacity', 0.3);
 
+    stateBarsPredicted.append('text')
+    .text('1')
+    .attr('transform', `translate(${discreteWidth + 2},10)`)
+    .style('font-size', '10px')
+    .style('opacity', 0.6);
+
+    stateBarsPredicted.append('text')
+    .text('0')
+    .attr('transform', `translate(-7,10)`)
+    .style('font-size', '10px')
+    .style('opacity', 0.6)
+
     let probabilityTicks = stateBarsPredicted
         .selectAll('.prob-tick')
-        .data(d=> {
+        .data((d, i, n)=> {
+            console.log('d', d, i, n)
             let state = d.state.map(m=> {
                 let newstate = m;
                 newstate.color = d.color.color;
-                return newstate
+                return newstate;
             });
             state.color = d.color.color;
             return state;
         }).join('rect').classed('prob-tick', true)
 
     probabilityTicks
-    .attr('width', 2)
+    .attr('width', 3)
     .attr('height', dimensions.squareDim)
     .attr('opacity', 0.05)
     .attr('fill', 'gray');
@@ -1506,46 +1512,6 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
         .classed('state-bins', true);
 
     stateBinsPredicted.attr('transform', (d, i)=> `translate(0, ${3.5+(i*(dimensions.squareDim+2))})`);
-
-    stateBinsPredicted.append('rect')
-        .attr('height', dimensions.squareDim)
-        .attr('width', dimensions.squareDim)
-        .attr('fill', '#fff').attr('opacity', 1);
-
-    let stateRects = stateBinsPredicted.append('rect')
-        .classed('state-rect', true)
-        .attr('height', dimensions.squareDim)
-        .attr('width', dimensions.squareDim);
-
-    stateRects.attr('fill', (d, i, n)=> {
-        let sum = d3.sum(d.state.map(m=> m.value))
-        let av = sum / d.state.length;
-        let scale = d3.scaleLinear().domain([0, 1]).range([0, 1]);
-        return `rgba(89, 91, 101, ${scale(av)})`;
-    }).attr('stroke-width', 0.5).attr('stroke', `rgba(200, 203, 219, .9)`);
-
-    stateRects.on('mouseover', (d, i, n)=> {
-        let sum = d3.sum(d.state.map(m=> m.value))
-        let av = sum / d.state.length;
-        let tool = d3.select('#tooltip');
-        tool.transition()
-            .duration(200)
-            .style("opacity", .9);
-        
-        let f = d3.format(".3f");
-          
-        tool.html(`${d.state[0].state} : ${f(av)}`)
-            .style("left", (d3.event.pageX - 40) + "px")
-            .style("top", (d3.event.pageY - 28) + "px");
-            
-        tool.style('height', 'auto');
-
-    }).on('mouseout', ()=>{
-        let tool = d3.select('#tooltip');
-        tool.transition()
-          .duration(500)
-          .style("opacity", 0);
-    });
 
     discreteDist.each((d, i, node)=>{
         let maxBin = 0;

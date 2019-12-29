@@ -38,6 +38,7 @@ export async function load_data(workspace, graph) {
 
     // Set the graph structure
     multinetOb.graph_structure = { "nodes": rename_node_vars(multinetOb.nodes), "links": rename_link_vars(multinetOb.links) }
+   
     return JSON.parse(JSON.stringify(multinetOb.graph_structure))
 };
 
