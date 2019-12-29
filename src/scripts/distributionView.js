@@ -2,10 +2,11 @@ import '../styles/index.scss';
 import {formatAttributeData, maxTimeKeeper} from './dataFormat';
 import * as d3 from "d3";
 import {filterMaster, getLatestData, getScales} from './filterComponent';
-import { pullPath } from './pathCalc';
+import { pullPath, calculateMovingAverage } from './pathCalc';
 import { renderTree } from './sidebarComponent';
 import { chosenCladesGroup } from './cladeMaker';
 import { updateMainView } from './viewControl';
+import { calculatedScalesKeeper } from '.';
 
 const dimensions = {
     height: 80,
@@ -471,10 +472,25 @@ function renderDistributionComparison(div, data, branchScale){
     xOut.on('click', (d, i, n)=> {
         divWrap.remove();
         selectedClades.push(new Array());
-        updateMainView('Summary View', chosenCladesGroup[chosenCladesGroup.length-1].groups);
+        console.log('chosenclades',chosenCladesGroup)
+
+        let test = d3.select('#clade-show').selectAll('li').selectAll('input').filter((f, j, li)=> {
+            return li[j].checked === true});
+
+        let groups = test.data().map((m=> {
+            let names = m.nodes.map(path => path[path.length - 1].node);
+            let data = getLatestData().filter(path => names.indexOf(path[path.length - 1].node) > -1);
+                
+            let group = binGroups(data, m.field, calculatedScalesKeeper[0], 8);
+            return {'label': m.field, 'paths': data, 'groupBins': group};
+        }));
+        console.log('test', groups)
+        d3.select('#summary-view').remove();
+        renderDistStructure(d3.select('#main'), groups);  
+       // updateMainView('Summary View', chosenCladesGroup[chosenCladesGroup.length-1].groups);
         d3.select('#sidebar').selectAll('.node').remove();
         d3.select('#sidebar').selectAll('.link').remove();
-        renderTree(d3.select('#sidebar'), null, true);
+        // renderTree(d3.select('#sidebar'), null, true);
     });
 
     if(data.length > 1){

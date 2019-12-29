@@ -174,10 +174,10 @@ export function toolbarControl(toolbar, main, calculatedScales){
         if(dropContentClade.classed('show')){
             dropContentClade.classed('show', false);
            
-           let test = d3.select('#clade-show').selectAll('li').selectAll('input').filter((f, j, li)=> {
+            let test = d3.select('#clade-show').selectAll('li').selectAll('input').filter((f, j, li)=> {
                 return li[j].checked === true});
             
-                let groups = test.data().map((m=> {
+            let groups = test.data().map((m=> {
                 let names = m.nodes.map(path => path[path.length - 1].node);
                 let data = getLatestData().filter(path => names.indexOf(path[path.length - 1].node) > -1);
                 
