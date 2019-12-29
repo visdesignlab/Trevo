@@ -57,29 +57,39 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
     let keysToHide = attrHide.length > 0 ? scales.filter(f=> attrHide.indexOf(f.field) === -1).map(m=> m.field) : null;
 
     formatAttributeData(newNormed, scales, keysToHide);
-
-    let maxBranch = d3.max(newNormed.map(p=> p.length)) - 1;
   
     let max = maxTimeKeeper[0]
 
-    let normBins = new Array(branchCount).fill().map((m, i)=> {
+    let normBins = new Array(branchCount)
+        .fill().map((m, i)=> {
             let step = max / branchCount;
             let base = (i * step);
             let top = ((i + 1)* step);
             return {'base': base, 'top': top, 'binI': i , 'step':step}
-    });
+        });
 
     let internalNodes = newNormed.map(path => path.filter(node=> (node.leaf != true) && (node.root != true)));
     let leafNodes = newNormed.flatMap(path => path.filter(node=> node.leaf === true));
     let rootNodes = newNormed.flatMap(path => path.filter(node=> node.root === true));
 
     normBins.map((n, i)=> {
+       
         let edges = internalNodes.flatMap(path => path.filter(node=> {
-                return node.combLength > n.base && node.combLength <= n.top;
+            return node.combLength > n.base && node.combLength <= n.top;
         } ));
-        n.data = edges;
+
+        let nodeSet = [...new Set(edges.map(e=> e.node))].map(m=> edges.filter(f=> f.node === m)[0]);
+
+        //n.data = edges;
+        n.data = nodeSet.map(m=> {
+            m.range = [...new Set(edges.map(e=> e.node))].length;
+            return m;
+        });
+
         return n;
     });
+
+    console.log('norm',normBins)
 
     let sortedBins = keys.map(key=> {
         let scale = scales.filter(f=> f.field === key)[0];
@@ -168,9 +178,9 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
             let y = d3.scaleLinear().domain([0, 1]).range([0, 40]);
 
             let histogram = d3.histogram()
-            .value(function(d) { return d.value; })  
-            .domain(y.domain())  
-            .thresholds(y.ticks(10)); 
+                .value(function(d) { return d.value; })  
+                .domain(y.domain())  
+                .thresholds(y.ticks(10)); 
   
             mapNorm.map((n, i, nodeArray)=> {
                 
@@ -1417,12 +1427,17 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
     let branchGroup = predictedWrap.selectAll('g.branch-bin').data(d=> {
         return d.branches}).join('g').classed('branch-bin', true);
 
-    branchGroup.attr('transform', (d, i, n)=> {
+    branchGroup.filter(f=> f.type === 'continuous').attr('transform', (d, i, n)=> {
+        let step = n.length < 11 ? (d.range[1] - d.range[0]) / 5 : 0;
+        let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, dimensions.timeRange]);
+            return 'translate('+(90 + (branchScale(i)) + x(step)) +', 0)'});
+
+    let discreteDist = branchGroup.filter(f=> f.type === 'discrete');
+
+    discreteDist.attr('transform', (d, i, n)=> {
         let step = n.length < 11 ? (d.range[1] - d.range[0]) / 5 : 0;
         let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, dimensions.timeRange]);
             return 'translate('+(44 + (branchScale(i)) + x(step)) +', 0)'});
-
-    let discreteDist = branchGroup.filter(f=> f.type === 'discrete');
 
     /////////EXPERIMENT////////
     let stateBarsPredicted = discreteDist.selectAll('g.histo-bars')
@@ -1462,21 +1477,34 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
     let probabilityTicks = stateBarsPredicted
         .selectAll('.prob-tick')
         .data((d, i, n)=> {
-            console.log('d', d, i, n)
+           // console.log('d', d.histogram.map(b=> b[0]).filter(f=> f != undefined))
             let state = d.state.map(m=> {
                 let newstate = m;
+                newstate.average = d3.mean(d.histogram.flatMap(m=> m.map(v=> +v.value)));
                 newstate.color = d.color.color;
                 return newstate;
             });
             state.color = d.color.color;
+            state.average = d3.mean(d.histogram.flatMap(m=> m.map(v=> +v.value)));
             return state;
         }).join('rect').classed('prob-tick', true)
 
     probabilityTicks
-    .attr('width', 3)
-    .attr('height', dimensions.squareDim)
-    .attr('opacity', 0.05)
-    .attr('fill', 'gray');
+        .attr('width', 3)
+        .attr('height', dimensions.squareDim)
+        .attr('opacity', 0.6)
+        .attr('fill', 'gray');
+
+    let averageTick = stateBarsPredicted
+        .selectAll('.av-tick').data(d=> {
+            console.log('g',d)
+            return [{value: d.state[0].average, color: d.color.color}];
+        }).join('rect').classed('av-tick', true)
+        .attr('width', 1).attr('height', dimensions.squareDim)
+        .attr('fill', d=> d.color)
+        .attr('transform', (d, i, n)=> {
+            let scale = d3.scaleLinear().domain([0, 1]).range([0, (discreteWidth - 2)]);
+            return `translate(${scale(d.value)}, 0)`});
 
     probabilityTicks.attr('transform', (d, i, n)=> {
         let scale = d3.scaleLinear().domain([0, 1]).range([0, (discreteWidth - 2)]);
@@ -1539,11 +1567,8 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
                 let sum = d3.sum(c.state.flatMap(s=> s.value));
                 return sum/c.state.length;
             });
-        winStateTicks.selectAll('rect.prob-tick').attr('fill', (c)=> c.color);
-            // .attr('opacity', (c)=>{
-            //     let sum = d3.sum(c.state.flatMap(s=> s.value));
-            //     return sum/c.state.length;
-            // });
+       // winStateTicks.selectAll('rect.prob-tick').attr('fill', (c)=> c.color);
+         
     });
 
     //THE LINES THAT MOVE FROM WINNING POSITION
