@@ -89,8 +89,6 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
         return n;
     });
 
-    console.log('norm',normBins)
-
     let sortedBins = keys.map(key=> {
         let scale = scales.filter(f=> f.field === key)[0];
     
@@ -174,7 +172,7 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
             leafData.bins = states.map(s=> {
                 return leafAttr.filter(f=> s.scaleName.includes(f.states.state))});
    
-            let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, dimensions.height]);
+          //  let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, dimensions.height]);
             let y = d3.scaleLinear().domain([0, 1]).range([0, 40]);
 
             let histogram = d3.histogram()
@@ -236,6 +234,7 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
 export function drawBranchPointDistribution(data, svg){
 
     let branchBar = svg.append('g').classed('branch-bar', true);
+    branchBar.attr('transform', 'translate(150, 0)')
 
     branchBar.append('rect').classed('point-dis-rect', true)
         .attr('height', 25)
@@ -243,7 +242,7 @@ export function drawBranchPointDistribution(data, svg){
         .attr('y', -10)
        .attr('fill', 'none');
 
-    let binWrap = branchBar.append('g').attr('transform', 'translate(102, -10)');
+    let binWrap = branchBar.append('g').attr('transform', 'translate(115, -10)');
 
     branchBar.append('line')
         .attr('y1', 2)
@@ -253,7 +252,7 @@ export function drawBranchPointDistribution(data, svg){
         .attr('stroke', 'gray')
         .attr('stroke-width', .25);
 
-    branchBar.append('text').text('Root').attr('transform', 'translate(70, 7)');
+    branchBar.append('text').text('Root').attr('transform', 'translate(80, 7)');
     let leafLabel = branchBar.append('g').classed('leaf-label', true).attr('transform', `translate(${dimensions.predictedWidth + 200}, 7)`);
     leafLabel.append('text').text('Leaves');
 
@@ -274,7 +273,7 @@ export function drawBranchPointDistribution(data, svg){
         .join('g').attr('class', (d, i)=> d.node).classed('branch-points', true);
 
     pointGroups.attr('transform', (d, i) => {
-        return `translate(${(105 + bPointScale(d.eMove))}, 0)`});
+        return `translate(${(115 + bPointScale(d.eMove))}, 0)`});
     pointGroups.append('circle').attr('r', 5).attr('fill', '#fff').attr('opacity', 0.5);
 
     let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, dimensions.timeRange]);
@@ -297,7 +296,7 @@ export function drawBranchPointDistribution(data, svg){
 
     let axis = d3.axisBottom(x);
     let axGroup = branchBar.append('g').call(axis);
-    axGroup.attr('transform', 'translate(103, 10)');
+    axGroup.attr('transform', 'translate(113, 10)');
     axGroup.select('path').attr('stroke-width', 0);
 
     return branchBar;
@@ -356,7 +355,6 @@ export async function renderDistStructure(mainDiv, pathGroups){
 
     groupDivs.each((d, i, node)=> {
 
-        console.log('d',d)
        let filteredAttributes = d.groupBins.filter(f=> shownAttributes.indexOf(f.key) > -1);
 
         let group = d3.select(node[i]);
@@ -1345,7 +1343,7 @@ function renderDistributionComparison(div, data, branchScale){
 export function renderDistibutions(binnedWrap, branchScale, pointGroups){
 
     let predictedWrap = binnedWrap.append('g').classed('predicted', true);
-    predictedWrap.attr('transform', 'translate(25, 0)');
+    predictedWrap.attr('transform', 'translate(35, 0)');
     predictedWrap.filter(f=> f.type === 'discrete').append('g').classed('win-line', true);
 
     //ROOT RENDERING
