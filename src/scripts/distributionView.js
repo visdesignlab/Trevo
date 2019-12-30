@@ -567,6 +567,7 @@ function renderDistributionComparison(div, data, branchScale){
                                     return m;
                             }), 
                          index: 1 }];
+
                 return b;
             });
           
@@ -614,7 +615,7 @@ function renderDistributionComparison(div, data, branchScale){
                 {key:data[1].label, keys: d.stateKeys, value: mapBins[i].leafData.bins, index:1}
                 ];
            }
-           console.log('d', d)
+          
             return d;
         });
 
@@ -732,6 +733,7 @@ function renderDistributionComparison(div, data, branchScale){
 
         ////BRANCHES
         let branchGroup = predictedWrap.selectAll('g.branch-bin').data(d=> {
+           
             return d.branches}).join('g').classed('branch-bin', true);
     
         branchGroup.attr('transform', (d, i, n)=> {
@@ -750,21 +752,21 @@ function renderDistributionComparison(div, data, branchScale){
         let discreteStateGroups = discreteDist.selectAll('g.group')
             .data(d=> {
                 let keys = d.bins[0].value.map(m=> m.color.state);
-
+            
                 let bins = keys.map(k=> {
                     let newOb = {};
                     newOb.stateKey = k;
                     
-                    newOb.bins = d.bins.map(m=> {
+                    newOb.bins = d.bins.map((m, i)=> {
                         let clade = {}
-                        console.log('m',m)
+                        clade.index = i;
                         clade.value = m.value.filter(f=> f.color.state === k)[0];
                         clade.key = m.key;
                         return clade;
                     });
                     return newOb;
                 });
-                console.log('bbb',bins)
+              
                 return bins;
             })
             .join('g')
@@ -795,15 +797,16 @@ function renderDistributionComparison(div, data, branchScale){
             .style('opacity', 0.6);
 
             let cladeStateGroups = discreteStateGroups.selectAll('.clade-dis').data(d=> {
-               // console.log('in discre',d)
                 return d.bins}).join('g').classed('clade-dis', true);
 
             let probabilityTicks = cladeStateGroups
             .selectAll('.prob-tick')
             .data((d, i, n)=> {
-               //console.log('d', d)
-                let state = d.value.state;
-               
+                let state = d.value.state.map(m=> {
+                    m.index = d.index;
+                    return m;
+                });
+                
                 return state;
             }).join('rect').classed('prob-tick', true)
     
@@ -811,11 +814,72 @@ function renderDistributionComparison(div, data, branchScale){
                 .attr('width', 3)
                 .attr('height', dimensions.squareDim)
                 .attr('opacity', 0.6)
-                .attr('fill', 'gray');
+                .attr('fill', (d)=> {
+                    return compareColors[d.index].light;
+                });
     
             probabilityTicks.attr('transform', (d, i, n)=> {
                     let scale = d3.scaleLinear().domain([0, 1]).range([0, (discreteWidth - 2)]);
                     return `translate(${scale(d.value)},0)`});
+
+            let averageTick = cladeStateGroups
+                    .selectAll('.av-tick').data(d=> {
+                        return [{value: d.value.state[0].average, color: d.value.color.color, index: d.index}];
+                    }).join('rect').classed('av-tick', true)
+                    .attr('width', 2).attr('height', dimensions.squareDim)
+                    .attr('fill', d=> {
+                        return compareColors[d.index].dark})
+                    .attr('transform', (d, i, n)=> {
+                        let scale = d3.scaleLinear().domain([0, 1]).range([0, (discreteWidth - 2)]);
+                        return `translate(${scale(d.value)}, 0)`});
+
+            averageTick.on('mouseover', (d, i, n)=> {
+                
+                    let tool = d3.select('#tooltip');
+                    tool.transition()
+                        .duration(200)
+                        .style("opacity", .9);
+                    
+                    let f = d3.format(".3f");
+                    tool.html(`Average: ${f(d.value)}`)
+                        .style("left", (d3.event.pageX - 40) + "px")
+                        .style("top", (d3.event.pageY - 28) + "px");
+            
+                    tool.style('height', 'auto');
+            
+                }).on('mouseout', ()=>{
+                    let tool = d3.select('#tooltip');
+                    tool.transition()
+                    .duration(500)
+                    .style("opacity", 0);
+                });
+            
+            probabilityTicks.attr('transform', (d, i, n)=> {
+                    let scale = d3.scaleLinear().domain([0, 1]).range([0, (discreteWidth - 2)]);
+                    return `translate(${scale(d.value)},0)`});
+            
+            probabilityTicks.on('mouseover', (d, i, n)=> {
+                
+                    let tool = d3.select('#tooltip');
+            
+                    tool.transition()
+                        .duration(200)
+                        .style("opacity", .9);
+                    
+                    let f = d3.format(".3f");
+                    
+                    tool.html(`${d.state} : ${f(d.value)}`)
+                        .style("left", (d3.event.pageX - 40) + "px")
+                        .style("top", (d3.event.pageY - 28) + "px");
+            
+                    tool.style('height', 'auto');
+            
+                }).on('mouseout', ()=>{
+                    let tool = d3.select('#tooltip');
+                    tool.transition()
+                    .duration(500)
+                    .style("opacity", 0);
+                });
  
 
     //         //END
@@ -823,100 +887,100 @@ function renderDistributionComparison(div, data, branchScale){
     //     //////PREDICTED CONTINUOUS
 
     //       //CONTIN PREDICTED
-    //     let continDist = branchGroup.filter(f=> f.type === 'continuous');
+        let continDist = branchGroup.filter(f=> f.type === 'continuous');
 
-    //     continDist.on('mouseover', (d, i, node)=> {
-    //         let newData = d.data;
-    //         let list = newData[0].value.concat(newData[1].value).map(m=> m.node);
-    //         let selected = pointGroups.filter(p=> {
-    //             return list.indexOf(p.node) > -1}).classed('selected', true);
-    //         let treeNode  = d3.select('#sidebar').selectAll('.node');
-    //         let selectedBranch = treeNode.filter(f=> list.indexOf(f.data.node) > -1).classed('selected-branch', true);
-    //         let y = d3.scaleLinear().domain(d.domain).range([0, dimensions.height])
-    //         let axis = d3.select(node[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(5));
-    //     }).on('mouseout', (d, i, node)=> {
-    //         d3.selectAll(".branch-points.selected").classed('selected', false);
-    //         d3.selectAll('.selected-branch').classed('selected-branch', false);
-    //         d3.select(node[i]).select('.y-axis').remove();
-    //     });
+        continDist.on('mouseover', (d, i, node)=> {
+            let newData = d.data;
+            let list = newData[0].value.concat(newData[1].value).map(m=> m.node);
+            let selected = pointGroups.filter(p=> {
+                return list.indexOf(p.node) > -1}).classed('selected', true);
+            let treeNode  = d3.select('#sidebar').selectAll('.node');
+            let selectedBranch = treeNode.filter(f=> list.indexOf(f.data.node) > -1).classed('selected-branch', true);
+            let y = d3.scaleLinear().domain(d.domain).range([0, dimensions.height])
+            let axis = d3.select(node[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(5));
+        }).on('mouseout', (d, i, node)=> {
+            d3.selectAll(".branch-points.selected").classed('selected', false);
+            d3.selectAll('.selected-branch').classed('selected-branch', false);
+            d3.select(node[i]).select('.y-axis').remove();
+        });
 
-    //     let continBinGroups = continDist.selectAll('g.group').data(d=> {
-    //         return d.bins;
-    //     }).join('g').attr('class', d=> `g-${d.index} group`)//.classed('group', true);
+        let continBinGroups = continDist.selectAll('g.group').data(d=> {
+            return d.bins;
+        }).join('g').attr('class', d=> `g-${d.index} group`)//.classed('group', true);
 
-    //     continBinGroups.each((d, i, nodes)=> {
-    //         d.maxCount = d3.sum(d.value.map(m=> m.length));
-    //         d.value.maxCount = d3.sum(d.value.map(m=> m.length));
-    //         let distrib = d3.select(nodes[i])
-    //             .selectAll('g')
-    //             .data([d.value.map(v=> {
-    //                 v.maxCount = d3.sum(d.value.map(m=> m.length))
-    //                 v.index = d.index;
-    //                 return v;
-    //             })])
-    //             .join('g')
-    //             .classed('distribution', true);
-    //         distrib.attr('transform', (d,i,n)=> {
-    //             if(d[0].index === 0){
-    //                 return 'translate(0, 0) rotate(90)'
-    //             }else{
-    //                 return 'translate(11, '+dimensions.height+') rotate(-90)'
-    //             }
-    //            });
-    //         let path = distrib.append('path').attr('d', d.index === 0 ? mirrorlineGen : lineGen);
-    //         path.attr("fill", (v, i, n)=> {
-    //             return defaultBarColor})
-    //         .attr('opacity', 0.4)
-    //         .style('stroke', compareColors[d.index].dark);
-    //     });
+        continBinGroups.each((d, i, nodes)=> {
+            d.maxCount = d3.sum(d.value.map(m=> m.length));
+            d.value.maxCount = d3.sum(d.value.map(m=> m.length));
+            let distrib = d3.select(nodes[i])
+                .selectAll('g')
+                .data([d.value.map(v=> {
+                    v.maxCount = d3.sum(d.value.map(m=> m.length))
+                    v.index = d.index;
+                    return v;
+                })])
+                .join('g')
+                .classed('distribution', true);
+            distrib.attr('transform', (d,i,n)=> {
+                if(d[0].index === 0){
+                    return 'translate(0, 0) rotate(90)'
+                }else{
+                    return 'translate(11, '+dimensions.height+') rotate(-90)'
+                }
+               });
+            let path = distrib.append('path').attr('d', d.index === 0 ? mirrorlineGen : lineGen);
+            path.attr("fill", (v, i, n)=> {
+                return defaultBarColor})
+            .attr('opacity', 0.4)
+            .style('stroke', compareColors[d.index].dark);
+        });
 
-    //     let contRect = continBinGroups.append('rect')
-    //     .attr('height', dimensions.height)
-    //     .attr('width', 10)
-    //     .style('fill', '#fff')
-    //     .style('stroke', 'gray');
+        let contRect = continBinGroups.append('rect')
+        .attr('height', dimensions.height)
+        .attr('width', 10)
+        .style('fill', '#fff')
+        .style('stroke', 'gray');
 
-    // let rangeRectWrap = continDist.selectAll('g.range-wrap').data(d=> {
-    //     return d.data;
-    // }).join('g').classed('range-wrap', true);
+    let rangeRectWrap = continDist.selectAll('g.range-wrap').data(d=> {
+        return d.data;
+    }).join('g').classed('range-wrap', true);
     
-    // let rangeRect = rangeRectWrap.selectAll('rect.range').data((d,i)=> {
-    //     let newData = d.value.map(m=> {
-    //         m.range = d.range;
-    //         m.gindex = i;
-    //         return m;
-    //     })
-    //     return newData;
-    // }).join('rect').classed('range', true);
+    let rangeRect = rangeRectWrap.selectAll('rect.range').data((d,i)=> {
+        let newData = d.value.map(m=> {
+            m.range = d.range;
+            m.gindex = i;
+            return m;
+        })
+        return newData;
+    }).join('rect').classed('range', true);
 
-    // let avRect = continDist.selectAll('rect.av-rect').data(d=> d.data)
-    //     .join('rect').classed('av-rect', true).attr('width', 10).attr('height', (d, i)=> {
-    //     if(d.value != undefined){
-    //         return 3;
-    //     }else{
-    //         return 0;
-    //     }
-    // });
+    let avRect = continDist.selectAll('rect.av-rect').data(d=> d.data)
+        .join('rect').classed('av-rect', true).attr('width', 10).attr('height', (d, i)=> {
+        if(d.value != undefined){
+            return 3;
+        }else{
+            return 0;
+        }
+    });
     
-    // avRect.attr('transform', (d, i) => {
-    //     if(d.value != undefined){
-    //         let newy = d.value[0].scales.yScale;
-    //         newy.range([dimensions.height, 0]);
-    //         let mean = d3.mean(d.value.map(m=> +m.values.realVal));
-    //         return 'translate(0,'+newy(mean)+')';
-    //     }else{
-    //         return 'translate(0,0)';
-    //     }
-    // }).attr('fill', (d)=>compareColors[d.index].dark);
+    avRect.attr('transform', (d, i) => {
+        if(d.value != undefined){
+            let newy = d.value[0].scales.yScale;
+            newy.range([dimensions.height, 0]);
+            let mean = d3.mean(d.value.map(m=> +m.values.realVal));
+            return 'translate(0,'+newy(mean)+')';
+        }else{
+            return 'translate(0,0)';
+        }
+    }).attr('fill', (d)=>compareColors[d.index].dark);
 
-    //  //////START BRANCH EXPERIMENT
-    //  let brush = d3.brushY().extent([[0, 0], [20, dimensions.height]])
-    //  brush.on('end', brushedComparison);
+     //////START BRANCH EXPERIMENT
+     let brush = d3.brushY().extent([[0, 0], [20, dimensions.height]])
+     brush.on('end', brushedComparison);
 
-    //  continDist.append("g")
-    //  .classed('continuous-branch-brush', true)
-    //  .attr("class", "brush")
-    //  .call(brush);
+     continDist.append("g")
+     .classed('continuous-branch-brush', true)
+     .attr("class", "brush")
+     .call(brush);
 
      //////BRUSH FOR COMPARISON/////
 
