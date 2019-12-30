@@ -2163,7 +2163,7 @@ function highlightNodesMouseover(d, i, node, pointGroups){
         return list.indexOf(p.node) > -1}).classed('selected', true);
     let treeNode  = d3.select('#sidebar').selectAll('.node');
     let selectedBranch = treeNode.filter(f=> list.indexOf(f.data.node) > -1).classed('selected-branch', true);
-    if(d.type = 'continuous'){
+    if(d.type === 'continuous'){
         let y = d3.scaleLinear().domain(d.domain).range([0, dimensions.height])
         let axis = d3.select(node[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(5));
     }else{

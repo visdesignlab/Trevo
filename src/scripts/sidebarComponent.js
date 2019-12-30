@@ -346,6 +346,8 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, pheno){
     }
 
     node.on('mouseover', (d, i, n)=> {
+
+        console.log('d in sidebar', d)
         let paths = d3.select('#main-path-view').selectAll('.paths');
         let points = d3.select('#main-summary-view').selectAll('.branch-points');
         points.filter(f=> f.node === d.data.node).classed('selected', true);
@@ -445,9 +447,6 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, pheno){
         //     d3.select(node[i]).attr('transform', `translate(300, ${yScale(leafSort[0].position)})`)
         // })
 
-     
-      
-        
     }
 
     return node;
