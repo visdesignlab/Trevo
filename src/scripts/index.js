@@ -1,6 +1,6 @@
 import '../styles/index.scss';
 import * as d3 from "d3";
-import {calculateNewScales, rootAttribute, combineLength, dataLoadAndFormatMultinet} from './dataFormat';
+import {calculateNewScales, rootAttribute, combineLength, dataLoadAndFormatMultinet, loadData} from './dataFormat';
 import {allPaths} from './pathCalc';
 import {renderTree, buildTreeStructure, renderTreeButtons} from './sidebarComponent';
 import {toolbarControl, toolbarDataControl} from './toolbarComponent';
@@ -8,6 +8,7 @@ import { initialViewLoad } from './viewControl';
 import { addCladeGroup, chosenCladesGroup, addClade} from './cladeMaker';
 import { binGroups } from './distributionView';
 import { getGraphNames } from './multinetLoad';
+
 
 export const dataMaster = [];
 export const savedSelected = [];
@@ -67,20 +68,26 @@ appLaunch();
 
 async function appLaunch(){
 
-    let graphList = await getGraphNames(workspace);
-    graphList = graphList.map(name=> {
-        return {field: name, text: `Data: ${name}`}
-    })
+    // let graphList = await getGraphNames(workspace);
+    // graphList = graphList.map(name=> {
+    //     return {field: name, text: `Data: ${name}`}
+    // })
+    let graphList = ['Anolis', 'Anolis']
+   // toolbarDataControl(toolbarDataWrap, graphList, graphList[1]);
+   toolbarDataControl(toolbarDataWrap, graphList, graphList[1]);
+   
 
-    toolbarDataControl(toolbarDataWrap, graphList, graphList[1]);
-
-    loadApp(workspace, graphList[1].field);
+    //loadApp(workspace, graphList[1].field);
+    loadApp(null, null);
 
 }
 
 export async function loadApp(workspace, graphName){
 
-    dataLoadAndFormatMultinet(workspace, graphName).then(centData=> {
+    dataLoadAndFormat('anolis-edges.json', 'anolis-edge-lengths.json', 'anolis-leaf-data.csv', 'anolis-res.json', 'Anolis').then(centData=> {
+    //dataLoadAndFormatMultinet(workspace, graphName).then(centData=> {
+
+        console.log(centData)
     
         toolbarControl(toolbarButtonWrap, main, centData[1]);
     

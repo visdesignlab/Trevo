@@ -489,7 +489,7 @@ function renderDistributionComparison(div, data, branchScale){
        
         d3.select('#sidebar').selectAll('.node').remove();
         d3.select('#sidebar').selectAll('.link').remove();
-        // renderTree(d3.select('#sidebar'), null, true);
+       
     });
 
     if(data.length > 1){
@@ -1989,27 +1989,68 @@ function renderDiscretePredicted(discreteDist){
         .text('0')
         .attr('transform', `translate(-7,10)`)
         .style('font-size', '10px')
-        .style('opacity', 0.6)
+        .style('opacity', 0.6);
+
 
     let probabilityTicks = stateBarsPredicted
-        .selectAll('.prob-tick')
-        .data((d, i, n)=> {
-            let state = d.state.map(m=> {
-                let newstate = m;
-                newstate.average = d3.mean(d.histogram.flatMap(m=> m.map(v=> +v.value)));
-                newstate.color = d.color.color;
-                return newstate;
-            });
-            state.color = d.color.color;
-            state.average = d3.mean(d.histogram.flatMap(m=> m.map(v=> +v.value)));
-            return state;
-        }).join('rect').classed('prob-tick', true)
+    .selectAll('.prob-tick')
+    .data((d, i, n)=> {
+        
+        let form = d3.format(".3f");
 
-    probabilityTicks
-        .attr('width', 3)
-        .attr('height', dimensions.squareDim)
-        .attr('opacity', 0.6)
-        .attr('fill', 'gray');
+        let jitterMove = [...new Set(d.state.map(m=> +form(m.value)))].map(m=> {
+            let arrayTest = d.state
+            .filter(f=> +form(f.value) === m)
+            .map(arr=> {
+                arr.y = Math.random();
+                arr.x = +arr.value;
+                return arr;
+            });
+            return arrayTest;
+        })
+       
+        let state = d.state.map(m=> {
+          
+            let newstate = m;
+            newstate.average = d3.mean(d.histogram.flatMap(m=> m.map(v=> +v.value)));
+            newstate.color = d.color.color;
+            return newstate;
+        });
+        state.color = d.color.color;
+        state.average = d3.mean(d.histogram.flatMap(m=> m.map(v=> +v.value)));
+        return state;
+    }).join('circle').classed('prob-tick', true)
+
+probabilityTicks
+    .attr('r', 2)
+    .attr('opacity', 0.4)
+    .attr('fill', 'gray');
+
+probabilityTicks.attr('transform', (d, i, n)=> {
+    let scale = d3.scaleLinear().domain([0, 1]).range([0, (discreteWidth - 2)]);
+    
+    let yScale = d3.scaleLinear().domain([0, 1]).range([0, dimensions.squareDim - 2])
+    return `translate(${scale(d.value)},${yScale(d.y)})`});
+
+    // let probabilityTicks = stateBarsPredicted
+    //     .selectAll('.prob-tick')
+    //     .data((d, i, n)=> {
+    //         let state = d.state.map(m=> {
+    //             let newstate = m;
+    //             newstate.average = d3.mean(d.histogram.flatMap(m=> m.map(v=> +v.value)));
+    //             newstate.color = d.color.color;
+    //             return newstate;
+    //         });
+    //         state.color = d.color.color;
+    //         state.average = d3.mean(d.histogram.flatMap(m=> m.map(v=> +v.value)));
+    //         return state;
+    //     }).join('rect').classed('prob-tick', true)
+
+    // probabilityTicks
+    //     .attr('width', 3)
+    //     .attr('height', dimensions.squareDim)
+    //     .attr('opacity', 0.6)
+    //     .attr('fill', 'gray');
 
     let averageTick = stateBarsPredicted
         .selectAll('.av-tick').data(d=> {
@@ -2020,6 +2061,7 @@ function renderDiscretePredicted(discreteDist){
         .attr('transform', (d, i, n)=> {
             let scale = d3.scaleLinear().domain([0, 1]).range([0, (discreteWidth - 2)]);
             return `translate(${scale(d.value)}, 0)`});
+
     averageTick.on('mouseover', (d, i, n)=> {
     
         let tool = d3.select('#tooltip');
@@ -2042,10 +2084,6 @@ function renderDiscretePredicted(discreteDist){
         .duration(500)
         .style("opacity", 0);
     });
-
-    probabilityTicks.attr('transform', (d, i, n)=> {
-        let scale = d3.scaleLinear().domain([0, 1]).range([0, (discreteWidth - 2)]);
-        return `translate(${scale(d.value)},0)`});
 
     probabilityTicks.on('mouseover', (d, i, n)=> {
     
