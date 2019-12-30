@@ -442,7 +442,6 @@ export async function renderDistStructure(mainDiv, pathGroups){
 
 function renderDistributionComparison(div, data, branchScale){
 
-
     let shownAttributes = d3.select('#attribute-show').selectAll('input').filter((f, i, n)=> n[i].checked === true).data();
   
     let divWrap = div.append('div').attr('id', 'compare-wrap');
@@ -590,11 +589,8 @@ function renderDistributionComparison(div, data, branchScale){
              index: 1 }];
 
              d.leafData.bins = [{key:data[0].label, value: d.leafData.bins, index:0},
-             {key:data[1].label, value: mapBins[i].leafData.bins, index:1}
-                ];
-
-
-
+                                {key:data[1].label, value: mapBins[i].leafData.bins, index:1}
+                                ];
            }else{
 
             d.leafData.data = [{key: data[0].label, 
@@ -618,6 +614,7 @@ function renderDistributionComparison(div, data, branchScale){
                 {key:data[1].label, keys: d.stateKeys, value: mapBins[i].leafData.bins, index:1}
                 ];
            }
+           console.log('d', d)
             return d;
         });
 
@@ -639,13 +636,13 @@ function renderDistributionComparison(div, data, branchScale){
         let label = binnedWrap.append('text')
             .text(d=> d.key);
     
-            label.filter(f=> f.type === 'continuous')
+        label.filter(f=> f.type === 'continuous')
             .attr('y', 40)
             .attr('x', 80)
             .style('text-anchor', 'end')
             .style('font-size', 11);
     
-            label.filter(f=> f.type === 'discrete')
+        label.filter(f=> f.type === 'discrete')
             .attr('y', (d, i)=> 3)
             .attr('x', d=> -((d.stateKeys.length)*(dimensions.squareDim)/2))
             .style('text-anchor', 'middle')
@@ -739,228 +736,187 @@ function renderDistributionComparison(div, data, branchScale){
     
         branchGroup.attr('transform', (d, i, n)=> {
             let step = n.length < 11 ? (d.range[1] - d.range[0]) / 5 : 0
-            let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, dimensions.timeRange])
-                return 'translate('+(100 + (branchScale(i)) + x(step)) +', 0)'});
+            let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, dimensions.timeRange]);
+           
+            let move = d.type === 'continuous'? 100 : 70;
+                return 'translate('+(move + (branchScale(i)) + x(step)) +', 0)'});
 
         let discreteDist = branchGroup.filter(f=> f.type === 'discrete').append('g');
 
         discreteDist.attr('transform', 'translate(5, 0)');
 
-        let discreteMiddleGroups = discreteDist.selectAll('g.middle-group')
+        let discreteWidth = 85;
+
+        let discreteStateGroups = discreteDist.selectAll('g.group')
             .data(d=> {
-                let bins = d.bins.map(b=> {
-                    b.key = d.key;
-                    return b;
-                })
-                return bins})
+                let keys = d.bins[0].value.map(m=> m.color.state);
+
+                let bins = keys.map(k=> {
+                    let newOb = {};
+                    newOb.stateKey = k;
+                    
+                    newOb.bins = d.bins.map(m=> {
+                        let clade = {}
+                        console.log('m',m)
+                        clade.value = m.value.filter(f=> f.color.state === k)[0];
+                        clade.key = m.key;
+                        return clade;
+                    });
+                    return newOb;
+                });
+                console.log('bbb',bins)
+                return bins;
+            })
             .join('g')
-            .classed('middle-group', true)
+            .classed('group', true)
             .attr('transform', (d, i)=> { 
-                let move = d.index === 0 ? -(dimensions.squareDim/2) : 0 ;
+                let move = d.index === 0 ? (-40 - (dimensions.squareDim/2)) : (dimensions.squareDim/2);
                 return `translate(${move}, 0)`});
 
-        let stateRects = discreteMiddleGroups
-        .selectAll('rect.state-rect')
-        .data(d=> {
-            let bins = d.value.map(v=> {
-                v.key = d.key;
-                return v;
-            })
-            return bins})
-        .join('rect')
-        .classed('state-rect', true)
-        .attr('height', dimensions.squareDim)
-        .attr('width', dimensions.squareDim/2);
-
-        stateRects.attr('fill', (d, i, n)=> {
-            let sum = d3.sum(d.state.map(m=> m.value))
-            let av = sum / d.state.length;
-            let scale = d3.scaleLinear().domain([0, 1]).range([0, 1]);
-            return `rgba(89, 91, 101, ${scale(av)})`;
-        }).attr('stroke-width', 0.5).attr('stroke', `rgba(200, 203, 219, .9)`);
-
-        stateRects.attr('transform', (d, i)=> {
-            return `translate(0, ${(3.5+(i*(dimensions.squareDim+2)))})`
-        });
-
-        let discreteBinGroups = discreteDist.selectAll('g.group')
-                .data(d=> d.bins)
-                .join('g')
-                .classed('group', true)
-                .attr('transform', (d, i)=> { 
-                    let move = d.index === 0 ? (-40 - (dimensions.squareDim/2)) : (dimensions.squareDim/2)
-                    return `translate(${move}, 0)`});
-
-        let stateBarsPredicted = discreteBinGroups.selectAll('g.histo-bars')
-            .data(d=> {
-                let binvalue = d.value.map(v=> {
-                    v.index = d.index;
-                    return v;
-                })
-            return binvalue}).join('g')
-        .classed('histo-bars', true);
-
-        stateBarsPredicted.attr('transform', (d, i)=> {
-            let dev = d3.deviation(d.state.map(m=> m.value));
-            let mean = d3.mean(d.state.map(m=> m.value));
-            let x = d3.scaleLinear().domain([0, 1]).range([0, 40]).clamp(true);
-            let xMove = d.index === 0 ? (40 - x(mean)) : 0;
-            return `translate(${xMove}, ${3.5+(i*(dimensions.squareDim+2))})`
-        });
-
-        let bars = stateBarsPredicted.append('rect')
+        let binRects = discreteStateGroups.append('rect')
             .attr('height', dimensions.squareDim)
-            .attr('width', (d, i, n)=> {
-        let dev = d3.deviation(d.state.map(m=> m.value));
-        let mean = d3.mean(d.state.map(m=> m.value));
-        let x = d3.scaleLinear().domain([0, 1]).range([0, 40]).clamp(true);
-            return x(mean)
-        })
-        .attr('fill', d=> d.color.color)
-        .attr('opacity', 0.3);
-
-        stateRects.on('mouseover', (d, i, n)=> {
-           
-            let sum = d3.sum(d.state.map(m=> m.value))
-            let av = sum / d.state.length;
-            let tool = d3.select('#tooltip');
-            tool.transition()
-                .duration(200)
-                .style("opacity", .9);
+            .attr('width', discreteWidth)
+            .attr('stroke', 'black')
+            .attr('fill', '#fff')
+            .attr('opacity', 0.3);
             
-            let f = d3.format(".3f");
-              
-            tool.html(`${d.key} </br> ${d.state[0].state} : ${f(av)}`)
-                .style("left", (d3.event.pageX - 40) + "px")
-                .style("top", (d3.event.pageY - 28) + "px");
-            tool.style('height', 'auto');
+            discreteStateGroups.attr('transform', (d, i)=> `translate(0, ${4+(i*(dimensions.squareDim+2))})`);
+
+            discreteStateGroups.append('text')
+            .text('1')
+            .attr('transform', `translate(${discreteWidth + 2},10)`)
+            .style('font-size', '10px')
+            .style('opacity', 0.6);
+        
+            discreteStateGroups.append('text')
+            .text('0')
+            .attr('transform', `translate(-7,10)`)
+            .style('font-size', '10px')
+            .style('opacity', 0.6);
+
+            let cladeStateGroups = discreteStateGroups.selectAll('.clade-dis').data(d=> {
+               // console.log('in discre',d)
+                return d.bins}).join('g').classed('clade-dis', true);
+
+            let probabilityTicks = cladeStateGroups
+            .selectAll('.prob-tick')
+            .data((d, i, n)=> {
+               //console.log('d', d)
+                let state = d.value.state;
+               
+                return state;
+            }).join('rect').classed('prob-tick', true)
     
-        }).on('mouseout', ()=>{
-            let tool = d3.select('#tooltip');
-            tool.transition()
-              .duration(500)
-              .style("opacity", 0);
-        });
-
-        discreteMiddleGroups.each((d, i, node)=>{
-            let maxBin = 0;
-            let maxState = null;
-            d.value.map(m=> {
-                if(d3.sum(m.state.flatMap(s=> s.value)) > maxBin){
-                    maxBin = d3.sum(m.state.flatMap(s=> s.value));
-                    maxState = m.color.state;
-                }
-            });
-      
-            let winStates = d3.select(node[i]).selectAll('rect.state-rect')
-                .filter((f, j, n)=>{
-                    return f.color.state === maxState;
-                }).classed('win', true)
-                .attr('fill', (c)=> {
-                    return c.color.color;
-                }).attr('opacity', (c)=>{
-                    let sum = d3.sum(c.state.flatMap(s=> s.value));
-                    return sum/c.state.length;
-                })
-        });
+            probabilityTicks
+                .attr('width', 3)
+                .attr('height', dimensions.squareDim)
+                .attr('opacity', 0.6)
+                .attr('fill', 'gray');
     
-        //////PREDICTED CONTINUOUS
+            probabilityTicks.attr('transform', (d, i, n)=> {
+                    let scale = d3.scaleLinear().domain([0, 1]).range([0, (discreteWidth - 2)]);
+                    return `translate(${scale(d.value)},0)`});
+ 
 
-          //CONTIN PREDICTED
-        let continDist = branchGroup.filter(f=> f.type === 'continuous');
+    //         //END
 
-        continDist.on('mouseover', (d, i, node)=> {
-            let newData = d.data;
-            let list = newData[0].value.concat(newData[1].value).map(m=> m.node);
-            let selected = pointGroups.filter(p=> {
-                return list.indexOf(p.node) > -1}).classed('selected', true);
-            let treeNode  = d3.select('#sidebar').selectAll('.node');
-            let selectedBranch = treeNode.filter(f=> list.indexOf(f.data.node) > -1).classed('selected-branch', true);
-            let y = d3.scaleLinear().domain(d.domain).range([0, dimensions.height])
-            let axis = d3.select(node[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(5));
-        }).on('mouseout', (d, i, node)=> {
-            d3.selectAll(".branch-points.selected").classed('selected', false);
-            d3.selectAll('.selected-branch').classed('selected-branch', false);
-            d3.select(node[i]).select('.y-axis').remove();
-        });
+    //     //////PREDICTED CONTINUOUS
 
-        let continBinGroups = continDist.selectAll('g.group').data(d=> {
-            return d.bins;
-        }).join('g').attr('class', d=> `g-${d.index} group`)//.classed('group', true);
+    //       //CONTIN PREDICTED
+    //     let continDist = branchGroup.filter(f=> f.type === 'continuous');
 
-        continBinGroups.each((d, i, nodes)=> {
-            d.maxCount = d3.sum(d.value.map(m=> m.length));
-            d.value.maxCount = d3.sum(d.value.map(m=> m.length));
-            let distrib = d3.select(nodes[i])
-                .selectAll('g')
-                .data([d.value.map(v=> {
-                    v.maxCount = d3.sum(d.value.map(m=> m.length))
-                    v.index = d.index;
-                    return v;
-                })])
-                .join('g')
-                .classed('distribution', true);
-            distrib.attr('transform', (d,i,n)=> {
-                if(d[0].index === 0){
-                    return 'translate(0, 0) rotate(90)'
-                }else{
-                    return 'translate(11, '+dimensions.height+') rotate(-90)'
-                }
-               });
-            let path = distrib.append('path').attr('d', d.index === 0 ? mirrorlineGen : lineGen);
-            path.attr("fill", (v, i, n)=> {
-                return defaultBarColor})
-            .attr('opacity', 0.4)
-            .style('stroke', compareColors[d.index].dark);
-        });
+    //     continDist.on('mouseover', (d, i, node)=> {
+    //         let newData = d.data;
+    //         let list = newData[0].value.concat(newData[1].value).map(m=> m.node);
+    //         let selected = pointGroups.filter(p=> {
+    //             return list.indexOf(p.node) > -1}).classed('selected', true);
+    //         let treeNode  = d3.select('#sidebar').selectAll('.node');
+    //         let selectedBranch = treeNode.filter(f=> list.indexOf(f.data.node) > -1).classed('selected-branch', true);
+    //         let y = d3.scaleLinear().domain(d.domain).range([0, dimensions.height])
+    //         let axis = d3.select(node[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(5));
+    //     }).on('mouseout', (d, i, node)=> {
+    //         d3.selectAll(".branch-points.selected").classed('selected', false);
+    //         d3.selectAll('.selected-branch').classed('selected-branch', false);
+    //         d3.select(node[i]).select('.y-axis').remove();
+    //     });
 
-        let contRect = continBinGroups.append('rect')
-        .attr('height', dimensions.height)
-        .attr('width', 10)
-        .style('fill', '#fff')
-        .style('stroke', 'gray');
+    //     let continBinGroups = continDist.selectAll('g.group').data(d=> {
+    //         return d.bins;
+    //     }).join('g').attr('class', d=> `g-${d.index} group`)//.classed('group', true);
 
-    let rangeRectWrap = continDist.selectAll('g.range-wrap').data(d=> {
-        return d.data;
-    }).join('g').classed('range-wrap', true);
+    //     continBinGroups.each((d, i, nodes)=> {
+    //         d.maxCount = d3.sum(d.value.map(m=> m.length));
+    //         d.value.maxCount = d3.sum(d.value.map(m=> m.length));
+    //         let distrib = d3.select(nodes[i])
+    //             .selectAll('g')
+    //             .data([d.value.map(v=> {
+    //                 v.maxCount = d3.sum(d.value.map(m=> m.length))
+    //                 v.index = d.index;
+    //                 return v;
+    //             })])
+    //             .join('g')
+    //             .classed('distribution', true);
+    //         distrib.attr('transform', (d,i,n)=> {
+    //             if(d[0].index === 0){
+    //                 return 'translate(0, 0) rotate(90)'
+    //             }else{
+    //                 return 'translate(11, '+dimensions.height+') rotate(-90)'
+    //             }
+    //            });
+    //         let path = distrib.append('path').attr('d', d.index === 0 ? mirrorlineGen : lineGen);
+    //         path.attr("fill", (v, i, n)=> {
+    //             return defaultBarColor})
+    //         .attr('opacity', 0.4)
+    //         .style('stroke', compareColors[d.index].dark);
+    //     });
+
+    //     let contRect = continBinGroups.append('rect')
+    //     .attr('height', dimensions.height)
+    //     .attr('width', 10)
+    //     .style('fill', '#fff')
+    //     .style('stroke', 'gray');
+
+    // let rangeRectWrap = continDist.selectAll('g.range-wrap').data(d=> {
+    //     return d.data;
+    // }).join('g').classed('range-wrap', true);
     
-    let rangeRect = rangeRectWrap.selectAll('rect.range').data((d,i)=> {
-        let newData = d.value.map(m=> {
-            m.range = d.range;
-            m.gindex = i;
-            return m;
-        })
-        return newData;
-    }).join('rect').classed('range', true);
+    // let rangeRect = rangeRectWrap.selectAll('rect.range').data((d,i)=> {
+    //     let newData = d.value.map(m=> {
+    //         m.range = d.range;
+    //         m.gindex = i;
+    //         return m;
+    //     })
+    //     return newData;
+    // }).join('rect').classed('range', true);
 
-    let avRect = continDist.selectAll('rect.av-rect').data(d=> d.data)
-        .join('rect').classed('av-rect', true).attr('width', 10).attr('height', (d, i)=> {
-        if(d.value != undefined){
-            return 3;
-        }else{
-            return 0;
-        }
-    });
+    // let avRect = continDist.selectAll('rect.av-rect').data(d=> d.data)
+    //     .join('rect').classed('av-rect', true).attr('width', 10).attr('height', (d, i)=> {
+    //     if(d.value != undefined){
+    //         return 3;
+    //     }else{
+    //         return 0;
+    //     }
+    // });
     
-    avRect.attr('transform', (d, i) => {
-        if(d.value != undefined){
-            let newy = d.value[0].scales.yScale;
-            newy.range([dimensions.height, 0]);
-            let mean = d3.mean(d.value.map(m=> +m.values.realVal));
-            return 'translate(0,'+newy(mean)+')';
-        }else{
-            return 'translate(0,0)';
-        }
-    }).attr('fill', (d)=>compareColors[d.index].dark);
+    // avRect.attr('transform', (d, i) => {
+    //     if(d.value != undefined){
+    //         let newy = d.value[0].scales.yScale;
+    //         newy.range([dimensions.height, 0]);
+    //         let mean = d3.mean(d.value.map(m=> +m.values.realVal));
+    //         return 'translate(0,'+newy(mean)+')';
+    //     }else{
+    //         return 'translate(0,0)';
+    //     }
+    // }).attr('fill', (d)=>compareColors[d.index].dark);
 
-     //////START BRANCH EXPERIMENT
-     let brush = d3.brushY().extent([[0, 0], [20, dimensions.height]])
-     brush.on('end', brushedComparison);
+    //  //////START BRANCH EXPERIMENT
+    //  let brush = d3.brushY().extent([[0, 0], [20, dimensions.height]])
+    //  brush.on('end', brushedComparison);
 
-     continDist.append("g")
-     .classed('continuous-branch-brush', true)
-     .attr("class", "brush")
-     .call(brush);
+    //  continDist.append("g")
+    //  .classed('continuous-branch-brush', true)
+    //  .attr("class", "brush")
+    //  .call(brush);
 
      //////BRUSH FOR COMPARISON/////
 
@@ -1288,7 +1244,6 @@ function renderDistributionComparison(div, data, branchScale){
         let compDisGroups = discOb.selectAll('g.dis-groups').data(d=> d.leafData.bins).join('g').classed('dis-groups', true);
 
         let discBars = compDisGroups.selectAll('g.ob-bars').data(d=> {
-            
             return d.keys.map((key, i)=>{
                 return {state: key, data: d.value[i], max: d3.sum(d.value[i].map(b=> b.length)), index: d.index}
             });
@@ -1974,7 +1929,6 @@ function renderDiscretePredicted(discreteDist){
     let probabilityTicks = stateBarsPredicted
         .selectAll('.prob-tick')
         .data((d, i, n)=> {
-        // console.log('d', d.histogram.map(b=> b[0]).filter(f=> f != undefined))
             let state = d.state.map(m=> {
                 let newstate = m;
                 newstate.average = d3.mean(d.histogram.flatMap(m=> m.map(v=> +v.value)));
@@ -2023,7 +1977,6 @@ function renderDiscretePredicted(discreteDist){
         .duration(500)
         .style("opacity", 0);
     });
-
 
     probabilityTicks.attr('transform', (d, i, n)=> {
         let scale = d3.scaleLinear().domain([0, 1]).range([0, (discreteWidth - 2)]);
@@ -2166,8 +2119,6 @@ function highlightNodesMouseover(d, i, node, pointGroups){
     if(d.type === 'continuous'){
         let y = d3.scaleLinear().domain(d.domain).range([0, dimensions.height])
         let axis = d3.select(node[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(5));
-    }else{
-
     }
     
 }
