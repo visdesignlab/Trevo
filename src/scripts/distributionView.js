@@ -480,6 +480,7 @@ function renderDistributionComparison(div, data, branchScale){
             let data = getLatestData().filter(path => names.indexOf(path[path.length - 1].node) > -1);
                 
             let group = binGroups(data, m.field, calculatedScalesKeeper[0], 8);
+            console.log('group',group)
             return {'label': m.field, 'paths': data, 'groupBins': group};
         }));
       
