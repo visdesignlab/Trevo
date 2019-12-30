@@ -472,8 +472,7 @@ function renderDistributionComparison(div, data, branchScale){
     xOut.on('click', (d, i, n)=> {
         divWrap.remove();
         selectedClades.push(new Array());
-        console.log('chosenclades',chosenCladesGroup)
-
+       
         let test = d3.select('#clade-show').selectAll('li').selectAll('input').filter((f, j, li)=> {
             return li[j].checked === true});
 
@@ -484,10 +483,10 @@ function renderDistributionComparison(div, data, branchScale){
             let group = binGroups(data, m.field, calculatedScalesKeeper[0], 8);
             return {'label': m.field, 'paths': data, 'groupBins': group};
         }));
-        console.log('test', groups)
+      
         d3.select('#summary-view').remove();
         renderDistStructure(d3.select('#main'), groups);  
-       // updateMainView('Summary View', chosenCladesGroup[chosenCladesGroup.length-1].groups);
+       
         d3.select('#sidebar').selectAll('.node').remove();
         d3.select('#sidebar').selectAll('.link').remove();
         // renderTree(d3.select('#sidebar'), null, true);

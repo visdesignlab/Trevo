@@ -186,8 +186,7 @@ export function toolbarControl(toolbar, main, calculatedScales){
            }));
 
            d3.select('#summary-view').remove();
-           
-           renderDistStructure(main, groups);  
+           renderDistStructure(d3.select('#main'), groups);  
 
         }else{
             dropContentClade.classed('show', true);

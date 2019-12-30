@@ -212,14 +212,14 @@ export function renderTree(att, uncollapse, pheno){
     if(groupedBool === "ungrouped" && uncollapse === false){
         if((cladesGroupKeeper.length > 0) && (chosenCladesGroup[chosenCladesGroup.length - 1].field != 'Clade Attribute)')){
             let newNodes = collapseTree(treenodes);
-            updateTree(newNodes, dimensions, treeSvg, g, att, lengthBool, uncollapse);
+            updateTree(newNodes, dimensions, treeSvg, g, att, pheno);
         }else{
-            updateTree(treenodes, dimensions, treeSvg, g, att, lengthBool, pheno, uncollapse);
+            updateTree(treenodes, dimensions, treeSvg, g, att, pheno);
         }
         
     }else{
         ////Break this out into other nodes////
-        updateTree(treenodes, dimensions, treeSvg, g, att, lengthBool, pheno, uncollapse);
+        updateTree(treenodes, dimensions, treeSvg, g, att, pheno);
     }
     /////END TREE STUFF
     ///////////
@@ -239,7 +239,10 @@ export function findDepth(node, array){
     return array;
 }
 
-export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, pheno, uncollapse){
+export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, pheno){
+
+    let length = true;
+    let uncollapse = true;
 
     d3.select('.pheno-y-axis').remove();
     d3.select('.pheno-x-axis').remove();
@@ -250,12 +253,12 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, length, 
     let xScale = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, dimensions.width]).clamp(true);
     let yScale = d3.scaleLinear().range([dimensions.height, 0]).domain([0, 1])
 
-    if(length){   
-        g.attr('transform', 'translate(20, 265)');
-        treeSvg.attr('height', 800);
-        yScale.range([500, 0]).domain([0, branchCount.length])
-        xScale.range([0, dimensions.width + 10]);
-    } 
+   
+    g.attr('transform', 'translate(20, 265)');
+    treeSvg.attr('height', 800);
+    yScale.range([500, 0]).domain([0, branchCount.length])
+    xScale.range([0, dimensions.width + 10]);
+
     if(pheno){
         treeSvg.attr('height', 800);
         xScale.domain(treenodes.data.attributes[pheno].scales.yScale.domain())

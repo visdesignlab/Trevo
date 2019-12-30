@@ -45,7 +45,7 @@ export function growSidebarRenderTree(attrDraw){
 
         ////REDRAW SIDEBAR
         renderTreeButtons(getLatestData(), sidebar, false);
-        renderTree(sidebar, null, true, false);
+        renderTree(sidebar, null, false);
 
     });
 
