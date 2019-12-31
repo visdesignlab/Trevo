@@ -38,34 +38,17 @@ export function updateMainView(d, groups){
         d3.select('#scrunch').classed('hidden', true);
         d3.select('#discrete-view').classed('hidden', true);
 
-        if(groups){
-            renderDistStructure(main, groups);
-            document.getElementById("loader").style.display = "none"
-        }else{
-           renderDistStructure(main, data);
-           document.getElementById("loader").style.display = "none"
-        }
+        groups ? renderDistStructure(main, groups) : renderDistStructure(main, data);
+       
     }else if(d === 'Pair View'){
         rankingControl(data);
         generatePairs(data);
-
-        document.getElementById("loader").style.display = "none";
 
         document.getElementById("scrunch").disabled = true;
         document.getElementById("discrete-view").disabled = true;
 
         d3.select('#scrunch').classed('hidden', true);
         d3.select('#discrete-view').classed('hidden', true);
-
-    // }else if(d === 'Clade View'){
-    //     d3.select('#pair-rank').classed('hidden', true);
-    //     createCladeView(main, scales);
-
-    //     document.getElementById("scrunch").disabled = true;
-    //     document.getElementById("discrete-view").disabled = true;
-
-    //     d3.select('#scrunch').classed('hidden', true);
-    //     d3.select('#discrete-view').classed('hidden', true);
 
     }else{
         console.error('field not found');

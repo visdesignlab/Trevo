@@ -90,7 +90,6 @@ export async function loadApp(workspace, graphName){
         console.log(centData)
     
         toolbarControl(toolbarButtonWrap, main, centData[1]);
-    
         d3.select('#clade-show').selectAll('li').select('input').node().checked = true
        
         renderTree(null, true, false);
