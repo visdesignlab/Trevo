@@ -1991,6 +1991,13 @@ function renderDiscretePredicted(discreteDist){
         .style('font-size', '10px')
         .style('opacity', 0.6);
 
+    function randomizer(){
+        var min= -.03; 
+        var max= .03;  
+        var random = Math.random() * (+max - +min) + +min; 
+        return random;
+    }
+
 
     let probabilityTicks = stateBarsPredicted
     .selectAll('.prob-tick')
@@ -2003,7 +2010,7 @@ function renderDiscretePredicted(discreteDist){
             .filter(f=> +form(f.value) === m)
             .map(arr=> {
                 arr.y = Math.random();
-                arr.x = +arr.value;
+                arr.x = randomizer();
                 return arr;
             });
             return arrayTest;
@@ -2021,36 +2028,16 @@ function renderDiscretePredicted(discreteDist){
         return state;
     }).join('circle').classed('prob-tick', true)
 
-probabilityTicks
-    .attr('r', 2)
-    .attr('opacity', 0.4)
-    .attr('fill', 'gray');
+    probabilityTicks
+        .attr('r', 2)
+        .attr('opacity', 0.4)
+        .attr('fill', 'gray');
 
-probabilityTicks.attr('transform', (d, i, n)=> {
-    let scale = d3.scaleLinear().domain([0, 1]).range([0, (discreteWidth - 2)]);
+    probabilityTicks.attr('transform', (d, i, n)=> {
+        let scale = d3.scaleLinear().domain([0, 1]).range([2, (discreteWidth - 2)]).clamp(true);
     
-    let yScale = d3.scaleLinear().domain([0, 1]).range([0, dimensions.squareDim - 2])
-    return `translate(${scale(d.value)},${yScale(d.y)})`});
-
-    // let probabilityTicks = stateBarsPredicted
-    //     .selectAll('.prob-tick')
-    //     .data((d, i, n)=> {
-    //         let state = d.state.map(m=> {
-    //             let newstate = m;
-    //             newstate.average = d3.mean(d.histogram.flatMap(m=> m.map(v=> +v.value)));
-    //             newstate.color = d.color.color;
-    //             return newstate;
-    //         });
-    //         state.color = d.color.color;
-    //         state.average = d3.mean(d.histogram.flatMap(m=> m.map(v=> +v.value)));
-    //         return state;
-    //     }).join('rect').classed('prob-tick', true)
-
-    // probabilityTicks
-    //     .attr('width', 3)
-    //     .attr('height', dimensions.squareDim)
-    //     .attr('opacity', 0.6)
-    //     .attr('fill', 'gray');
+    let yScale = d3.scaleLinear().domain([0, 1]).range([2, dimensions.squareDim - 2])
+    return `translate(${scale(d.value + d.x)},${yScale(d.y)})`});
 
     let averageTick = stateBarsPredicted
         .selectAll('.av-tick').data(d=> {
