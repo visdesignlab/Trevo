@@ -111,6 +111,7 @@ ul {
   grid-template-columns: auto;
   grid-template-areas: 
     "buttonwrap" "tree";
+    align-items: center;
 }
 
 #sidebar.clade-view{
@@ -174,6 +175,7 @@ ul {
   grid-template-columns: 1fr 1fr 1fr;
   grid-template-areas: 
     "left" "middle" "right";
+  align-items: center;
 }
 
 .clade-toolbar{

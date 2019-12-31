@@ -52,11 +52,13 @@ export function renderTreeButtons(normedPaths){
 
     ///SIDBAR STUFF
     let buttonWrap = sidebar.append('div').classed('button-wrap', true);
+   
     traitColorDropDown(scales, buttonWrap, renderTree);
+    buttonWrap.select('button').style('font-size', '12px');
     let phenoOptions = reduce2DropArray(scales.filter(f=> f.type != 'discrete'));
  
       ///BUTTON FOR PHENOGRAM VIEW. MAYBE MOVE THIS TO SIDEBAR
-    let phenogramButton = d3.select('#sidebar').select('.button-wrap').append('button').text('View Phenogram');
+    let phenogramButton = d3.select('#sidebar').select('.button-wrap').append('button').text('View Phenogram').style('font-size', '12px');
     phenogramButton.classed('btn btn-outline-secondary', true).attr('id', 'view-pheno'); 
     phenogramButton.on('click', ()=> {
           if(phenogramButton.text() === 'View Phenogram'){
@@ -93,7 +95,7 @@ export function renderTreeButtons(normedPaths){
     })
 
     let cladeButton = buttonWrap.append('button').attr('id', 'clade-maker');
-    cladeButton.attr('class', 'btn btn-outline-secondary').text('Clade View');
+    cladeButton.attr('class', 'btn btn-outline-secondary').text('Clade View').style('font-size', '12px');
     cladeButton.on('click', ()=> growSidebarRenderTree(null));
 }
 
