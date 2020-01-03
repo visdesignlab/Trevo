@@ -47,7 +47,7 @@ export const colorKeeper = [
 export const attributeList = [];
 export let discreteTraitList = ['Clade', 'Group', 'island/mainland'];
 
-export const workspace = 'evobio';
+export const workspace = 'evo-bio';
 
 let wrap = d3.select('#wrapper');
 let main = wrap.select('#main');
@@ -66,20 +66,29 @@ let tooltip = wrap.append("div")
 
 appLaunch();
 
+// async function appLaunch(){
+
+//    // let graphList = await getGraphNames(workspace);
+//     // graphList = graphList.map(name=> {
+//     //     return {field: name, text: `Data: ${name}`}
+//     // })
+//    let graphList = ['Anolis', 'Anolis']
+//    // toolbarDataControl(toolbarDataWrap, graphList, graphList[1]);
+//    toolbarDataControl(toolbarDataWrap, graphList, graphList[0]);
+   
+//     //loadApp(workspace, graphList[0].field);
+//     loadApp(null, null);
+
+// }
+
 async function appLaunch(){
 
-    // let graphList = await getGraphNames(workspace);
-    // graphList = graphList.map(name=> {
-    //     return {field: name, text: `Data: ${name}`}
-    // })
-    let graphList = ['Anolis', 'Anolis']
-   // toolbarDataControl(toolbarDataWrap, graphList, graphList[1]);
-   toolbarDataControl(toolbarDataWrap, graphList, graphList[1]);
-   
-
-    //loadApp(workspace, graphList[1].field);
-    loadApp(null, null);
-
+    let graphList = await getGraphNames(workspace);
+    graphList = graphList.map(name=> {
+        return {field: name, text: `Data: ${name}`}
+    })
+   toolbarDataControl(toolbarDataWrap, graphList, graphList[0]);
+    loadApp(workspace, graphList[0].field);
 }
 
 export async function loadApp(workspace, graphName){
@@ -87,7 +96,7 @@ export async function loadApp(workspace, graphName){
     dataLoadAndFormat('anolis-edges.json', 'anolis-edge-lengths.json', 'anolis-leaf-data.csv', 'anolis-res.json', 'Anolis').then(centData=> {
     //dataLoadAndFormatMultinet(workspace, graphName).then(centData=> {
 
-        console.log(centData)
+        console.log('cent',centData)
     
         toolbarControl(toolbarButtonWrap, main, centData[1]);
         d3.select('#clade-show').selectAll('li').select('input').node().checked = true
