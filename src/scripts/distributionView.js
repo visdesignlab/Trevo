@@ -46,6 +46,8 @@ export function groupDistributions(pathData, mainDiv, groupAttr){
 }
 export function binGroups(pathData, groupLabel, scales, branchCount){
 
+    console.log('pathhsss',pathData, scales)
+
     let attrHide = filterMaster.filter(f=> f.type === 'hide-attribute').map(m=> m.attribute);
     
     let keys = scales.map(s=> s.field).filter(f=> attrHide.indexOf(f) === -1);
