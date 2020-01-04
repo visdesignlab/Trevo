@@ -137,10 +137,20 @@ export function toolbarControl(toolbar, main, calculatedScales){
     let checkedDefault = attoptions.filter(f=> checkedAttributes.indexOf(f) > -1).select('input');
     checkedDefault.each((d, i, n) => n[i].checked = true);
 
-    button.on('click', (d, i, n)=> {
+    button.on('click', async(d, i, n)=> {
         if(dropContent.classed('show')){
+
+            console.log('d', d);
+
+
+            let loader = await clearMain();
+            // await changeDropValue(d);
+            // await updateMainView(d.field, chosenCladesGroup[chosenCladesGroup.length - 1].groups);
+            
+
             dropContent.classed('show', false);
-            updateMainView('Summary View', chosenCladesGroup[chosenCladesGroup.length - 1].groups);
+            await updateMainView('Summary View', chosenCladesGroup[chosenCladesGroup.length - 1].groups);
+            loader.style.display = "none";
         }else{
             dropContent.classed('show', true);
         }

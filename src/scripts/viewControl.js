@@ -12,7 +12,7 @@ export function updateMainView(d, groups){
 
     let main = d3.select('#main');
     let data = getLatestData();
-    let view = d3.select('#view-pheno').text();
+    let view = d3.select('#view-pheno').empty()? null : d3.select('#view-pheno').text();
    
     if(d != 'Pair View' && view === 'View Phenogram'){
         d3.select('.dropdown.attr-drop').remove();
