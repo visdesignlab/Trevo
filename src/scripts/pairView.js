@@ -341,28 +341,26 @@ function drawSorted(pairs, field){
             let ne = speciesTest[0].filter((f, j)=> (j < (+start + 2)) && (j > (+start - 2)));
             return ne;
         });
-        
-        let neighNodes = []//dataMaster[0].filter(f=> neighbors.indexOf(f[f.length -1].node) > -1).flatMap(m=> m.map(f=> f.node))
+        let checkArray = species1.filter(s=> species2.indexOf(s) > -1);
        
         let treeNode  = d3.select('#sidebar').selectAll('.node');
         let treeLinks  = d3.select('#sidebar').selectAll('.link');
         let pairNode1 = treeNode.filter(f=> {
-            return species1.indexOf(f.data.node) > -1;
+            return species1.filter(s=> species2.indexOf(s) === -1).indexOf(f.data.node) > -1;
         }).classed('hover one', true);
 
         let pairNode2 = treeNode.filter(f=> {
-          return species2.indexOf(f.data.node) > -1;
+          return species2.filter(s=> species1.indexOf(s) === -1).indexOf(f.data.node) > -1;
       }).classed('hover two', true);
 
-        treeLinks.filter(f=> species1.indexOf(f.data.node) > -1).classed('hover one', true);
-        treeLinks.filter(f=> species2.indexOf(f.data.node) > -1).classed('hover two', true);
-       // treeNode.filter(f=> neighNodes.indexOf(f.data.node) > -1).classed('hover-neighbor', true);
+        treeLinks.filter(f=> species1.filter(s=> species2.indexOf(s) === -1).indexOf(f.data.node) > -1).classed('hover one', true);
+        treeLinks.filter(f=> species2.filter(s=> species1.indexOf(s) === -1).indexOf(f.data.node) > -1).classed('hover two', true);
+     
         //Hiding Others
-        treeNode.filter(f=> (neighNodes.indexOf(f.data.node) === -1) && (species1.concat(species2).indexOf(f.data.node) === -1)).classed('hover-not', true);
-        //Coloring Neighbors
-       // treeLinks.filter(f=> neighNodes.indexOf(f.data.node) > -1).classed('hover-neighbor', true);
+        treeNode.filter(f=> (checkArray[checkArray.length - 1] != f.data.node) && (species1.filter(s=> species2.indexOf(s) === -1).concat(species2.filter(s=> species1.indexOf(s) === -1)).indexOf(f.data.node) === -1)).classed('hover-not', true);
+     
         //Hiding Others
-        treeLinks.filter(f=> (neighNodes.indexOf(f.data.node) === -1) && (species1.concat(species2).indexOf(f.data.node) === -1)).classed('hover-not', true);
+        treeLinks.filter(f=> (species1.filter(s=> species2.indexOf(s) === -1).concat(species2.filter(s=> species1.indexOf(s) === -1)).indexOf(f.data.node) === -1)).classed('hover-not', true);
         
         let speciesNames = [species1[species1.length-1], species2[species2.length-1]]
       
