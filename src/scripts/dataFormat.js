@@ -23,10 +23,11 @@ function generatePairs(pathData){
         return paired.map(m=> {
             
             let key = [m.p1[m.p1.length - 1].node, m.p2[m.p2.length - 1].node].sort();
-            m.key = key.join(',')
-            m.distance = getDistance(m);
-            m.deltas = calculateDelta(m);
-            m.closeAll = calculateCloseness(m);
+            m.key = key.join(',');
+            let distance = getDistance(m);
+            m.distance = distance;
+            m.deltas = calculateDelta(m, distance);
+            m.closeAll = calculateCloseness(m, distance);
            
             return m;
         });
@@ -60,7 +61,7 @@ function getDistance(pair){
     return d3.sum(p1.map(m=> m.edgeLength)) + d3.sum(p2.map(m=> m.edgeLength));
 }
 
-function calculateDelta(pair){
+function calculateDelta(pair, distance){
    
     let verts = pair.p2.map(m=> m.node);
 
@@ -108,7 +109,7 @@ function calculateDelta(pair){
                         let valdiffs = bins.map((b, i)=> {
                             return Math.abs(b.one[0].attributes[name].values.realVal - b.two[0].attributes[name].values.realVal);
                         });
-                        m.value = d3.max(valdiffs)
+                        m.value = d3.max(valdiffs) / distance;
                         return m;
                     });
 
@@ -116,13 +117,13 @@ return attributes;
 
 }
 
-function calculateCloseness(pair){
+function calculateCloseness(pair, distance){
  let leaf1 = pair.p1.filter(p=> p.leaf === true)[0].attributes;
  let leaf2 = pair.p2.filter(p=> p.leaf === true)[0].attributes;
 
  let closeness = d3.entries(leaf1).filter(f=> f.value.type === 'continuous').map(m=> {
     
-     m.value = Math.abs(m.value.values.realVal - leaf2[m.key].values.realVal);
+     m.value = Math.abs(m.value.values.realVal - leaf2[m.key].values.realVal) / distance;
      return m
  });
 

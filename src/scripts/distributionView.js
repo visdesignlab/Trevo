@@ -607,20 +607,19 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
            
             let test = continuousHistogram(nodes);
 
-           
             test.maxCount = d3.sum(data.bins.map(m=> m.length));
 
             //////EXPERIMENTING WITH BRUSH DRAW DISTRIBUTIONS////
             let brushedDist = d3.select(this.parentNode)
-            .selectAll('g.distribution-too')
-            .data([test])
-            .join('g')
-            .classed('distribution-too', true);
+                .selectAll('g.distribution-too')
+                .data([test])
+                .join('g')
+                .classed('distribution-too', true);
 
             brushedDist.attr('transform', 'translate(0, 0) rotate(90)');
             let path = brushedDist.append('path').attr('d', mirrorlineGen);
             path.attr("fill", brushColors[index][0]).attr('fill-opacity', 0.5)
-            .style('stroke', brushColors[index][0]);
+                .style('stroke', brushColors[index][0]);
 
             let nodeNames = nodes.map(m=> m.node);
 

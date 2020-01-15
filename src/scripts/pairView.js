@@ -116,13 +116,13 @@ function getWeightScales(pairs, field){
 }
 
 export function updateRanking(pairs, field, weights){
+
+  console.log('pairs in update ranking',pairs)
     
     let weightScales = getWeightScales(pairs, field);
 
     let pickedPairs = [...pairs].map(p=> {
-      
         let newP = Object.assign({}, p);
-      
         newP.delta = p.deltas.filter(d=> d.key === field)[0];
         newP.closeness = p.closeAll.filter(d=> d.key === field)[0];
         newP.deltaRank = weightScales.delta(newP.delta.value);
