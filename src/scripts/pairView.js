@@ -117,12 +117,13 @@ function getWeightScales(pairs, field){
 
 export function updateRanking(pairs, field, weights){
 
-  console.log('pairs in update ranking',pairs)
+ 
     
     let weightScales = getWeightScales(pairs, field);
 
     let pickedPairs = [...pairs].map(p=> {
         let newP = Object.assign({}, p);
+        
         newP.delta = p.deltas.filter(d=> d.key === field)[0];
         newP.closeness = p.closeAll.filter(d=> d.key === field)[0];
         newP.deltaRank = weightScales.delta(newP.delta.value);
@@ -299,7 +300,6 @@ function drawSorted(pairs, field){
     let nodeTest = f.filter(n=> nodes.map(m=> m.node).indexOf(n.node) > -1)
     return nodeTest.length > 0}).style('stroke', '#64B5F6').style('stroke-width', '5px');
 
-   //console.log('brushed',brushedPaths, nodes.map(m=> m.node))
     let branches = pairGroup.selectAll('g.branch').data(d=> d).join('g').classed('branch', true);
     branches.attr('transform', (d, i)=> `translate(${xScale(d.combLength)}, 0)`);
     branches.filter(f=> f.leaf != true).append('rect')

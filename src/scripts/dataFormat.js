@@ -41,7 +41,7 @@ export function pairPaths(pathData){
     return pairSet.map(k=> {
         let index = allPairs.map(m=> m.key).indexOf(k);
         return allPairs[index];
-      });
+    });
 }
 
 function getDistance(pair){
@@ -122,7 +122,6 @@ function calculateCloseness(pair, distance){
  let leaf2 = pair.p2.filter(p=> p.leaf === true)[0].attributes;
 
  let closeness = d3.entries(leaf1).filter(f=> f.value.type === 'continuous').map(m=> {
-    
      m.value = Math.abs(m.value.values.realVal - leaf2[m.key].values.realVal) / distance;
      return m
  });
