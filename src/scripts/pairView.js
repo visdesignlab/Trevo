@@ -176,7 +176,7 @@ function drawSorted(pairs, field){
     scoreLabel.append('text').text('Score').attr('y', 20).style('text-anchor', 'end').style('font-size', 11);
     scoreLabel.append('text').text('Value').attr('y', 40).style('text-anchor', 'end').style('font-size', 11);
 
-    scoreLabel.append('text').text('Total Score').attr('y', 60).attr('x', 95).style('text-anchor', 'end').style('font-size', 11);
+    scoreLabel.append('text').text('Distinctiveness Score').attr('y', 60).attr('x', 95).style('text-anchor', 'end').style('font-size', 11);
     scoreLabel.append('text').text('Rank').attr('y', 80).attr('x', 95).style('text-anchor', 'end').style('font-size', 11);
 
     scoreGroups.attr('transform', (d, i, n)=> {
