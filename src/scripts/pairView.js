@@ -2,11 +2,9 @@ import { pairPaths, maxTimeKeeper } from "./dataFormat";
 import { dropDown } from "./buttonComponents";
 import * as d3 from "d3";
 import * as slide from 'd3-simple-slider';
-import { renderTree } from "./sidebarComponent";
 import { speciesTest, dataMaster } from ".";
 import { findBrushedNodes } from "./toolbarComponent";
 import { getScales } from "./filterComponent";
-import { allPaths } from "./pathCalc";
 
 export function rankingControl(data){
     let rankDiv = d3.select('#pair-rank').classed('hidden', false);
@@ -103,7 +101,6 @@ export async function generatePairs(data){
         drawSorted(mappedPairs.top20, attKeys[0].field);
         topPairSearch(mappedPairs.top20, mappedPairs.pairs, attKeys[0].field, weights);
 }
-
 function getWeightScales(pairs, field){
  
   let deltaMax = d3.max([...pairs].map(m=> m.deltas.filter(f=> f.key === field)[0]).map(m=> m.value));
@@ -114,11 +111,8 @@ function getWeightScales(pairs, field){
   let distScale = d3.scaleLinear().domain([0, distMax]).range([0, 1]);
   return {delta: deltaScale, close:closeScale, distance: distScale};
 }
-
 export function updateRanking(pairs, field, weights){
 
- 
-    
     let weightScales = getWeightScales(pairs, field);
 
     let pickedPairs = [...pairs].map(p=> {
@@ -502,7 +496,6 @@ mouseG.append('svg:rect') // append a rect to catch mouse movements on canvas
 
    
 }
-
 function topPairSearch(topPairs, allPairs, field, weights){
 
   let matchKeeper = [];
@@ -530,7 +523,8 @@ function topPairSearch(topPairs, allPairs, field, weights){
     });
   });
 
-  rankHistogram(matchKeeper);
+  //rankHistogram(matchKeeper);
+  rankGrid(matchKeeper);
 
   // matchKeeper.map((m, i)=> {
    
@@ -555,6 +549,137 @@ function topPairSearch(topPairs, allPairs, field, weights){
   //   text.attr('transform', (d, i)=> `translate(20, ${(i*20)+11})`);
   // });
 }
+
+function rankGrid(matchKeeper){
+
+  let scales = getScales();
+
+  let size = 20;
+
+  let result = chunkArray(scales.map(m=> m.field), 4);
+
+  let newMatch = matchKeeper.map(m=> {
+    let bins = result.map(col=> {
+      return col.map(c=> {
+        return {key: c, value: m.value.filter(f=> f[2].delta.key === c) }
+      })
+    });
+    
+    return {key:m.key, 'bins':bins}
+  });
+
+  let satScale = d3.scaleLinear().domain([20, 1]).range([0.02, 1])
+
+  newMatch.map(m=> {
+
+    let group = d3.selectAll('.pair-wrap').filter(f=> {
+          return (m.key === f.key);
+        }).append('g').classed('other-rank', true);
+
+    group.attr('transform', 'translate(880, 0)');
+    
+   
+    let groups = group.selectAll('.square-group').data(m.bins).join('g').classed('square-group', true);
+    groups.attr('transform', (d, i)=> `translate(${i*22}, 0)`);
+    let squarebins = groups.selectAll('.trait-bin').data(d=> {
+      return d;
+    }).join('g').classed('trait-bin', true);
+
+    squarebins.on('mouseover', (r,i)=>{
+      let tool = d3.select('#tooltip');
+      tool.transition()
+          .duration(200)
+          .style("opacity", .9);
+      
+      let f = d3.format(".3f");
+      if(r.value[0]){
+        tool.html(`${r.value[0][2].delta.key} : ${f(r.value[0][2].totalRank)} </br> Ranking: ${r.value[0][1]}`)
+        .style("left", (d3.event.pageX - 40) + "px")
+        .style("top", (d3.event.pageY - 28) + "px");
+        
+        tool.style('height', 'auto');
+        tool.style('width', '150px');
+
+      }
+    
+
+    }).on('mouseout', ()=> {
+      let tool = d3.select('#tooltip').style('opacity', 0);
+    });
+
+    squarebins.append('rect')
+    .attr('width', size)
+    .attr('height', size)
+    .style('stroke', '#EBECED')
+    .style('stoke-width', '0.5px')
+    .style('fill', 'gray')
+    .style('fill-opacity', (d, i)=> {
+      return d.value.length === 0 ? satScale(33) : satScale(d.value[0][1]);ß
+    });
+
+    squarebins.attr('transform', (d, i)=> `translate(0, ${i*22})`);
+
+
+    // group.append('text')
+    // .text('Ranked Top 20 in Other Traits')
+    // .style('font-size', 11)
+    // .style('text-anchor', 'middle')
+    // .attr('transform', `translate(${(rankBins.length * (size+2))/2},0)`);
+
+    // group.append('g')
+    // .call(d3.axisBottom(d3.scaleBand().domain(axisLabels).range([0, rankBins.length * (size+2)])))
+    // .attr('transform', 'translate(0, 92)');
+
+    // let binGroups = group.selectAll('g.bin').data(m.bins).join('g').classed('bin', true);
+    // binGroups.attr('transform', (d, i)=> `translate(${i*(size+2)}, ${80})`);
+
+    // let binRects = binGroups.selectAll('rect').data(d=>d.values.sort((a, b)=> a[1]-b[1])).join('rect');
+    // binRects.attr('width', size)
+    // .attr('height', size/2)
+    // .attr('transform', (d, i)=> `translate(0, ${-1*(i*((size/2)+1))})`);
+
+    // binRects.attr('opacity', (d, i, n)=> {
+    //   let minMax = rankBins.filter(r=> d[1]<= r[1] && d[1] >= r[0])[0];
+    //   let scale = d3.scaleLinear().domain([minMax[0], minMax[1]]).range([.8, .2])
+    //   return scale(d[1])})
+
+    // binRects.on('mouseover', (r,i)=>{
+    //   let tool = d3.select('#tooltip');
+    //   tool.transition()
+    //       .duration(200)
+    //       .style("opacity", .9);
+      
+    //   let f = d3.format(".3f");
+        
+    //   tool.html(`${r[2].delta.key} : ${f(r[2].totalRank)} </br> Ranking: ${r[1]}`)
+    //       .style("left", (d3.event.pageX - 40) + "px")
+    //       .style("top", (d3.event.pageY - 28) + "px");
+          
+    //   tool.style('height', 'auto');
+    //   tool.style('width', '150px');
+
+    // }).on('mouseout', ()=> {
+    //   let tool = d3.select('#tooltip').style('opacity', 0);
+    // });
+  });
+
+
+
+}
+function chunkArray(myArray, chunk_size){
+    var index = 0;
+    var arrayLength = myArray.length;
+    var tempArray = [];
+    
+    for (index = 0; index < arrayLength; index += chunk_size) {
+        let myChunk = myArray.slice(index, index+chunk_size);
+        // Do something if you want with the group
+        tempArray.push(myChunk);
+    }
+
+    return tempArray;
+}
+
 
 function rankHistogram(matchKeeper){
 
