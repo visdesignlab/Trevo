@@ -11,6 +11,8 @@ export function rankingControl(data){
     rankDiv.selectAll('*').remove();
 
     let defaultW = [1, 1, 1];
+    let sliderWidth = 140;
+    let sliderMargin = 50;
   
     let weightPicker = rankDiv
       .append('svg')
@@ -35,18 +37,20 @@ export function rankingControl(data){
     weightPicker.selectAll('text.labels').data(labels).join('text').classed('labels', true)
     .text(d=> d)
     .attr('y', 10)
-    .attr('x', (d, i)=> (300+(260 * i)));
-
+    .attr('x', (d, i)=> (300+((sliderWidth + sliderMargin) * i)));
+  console.log('rank')
     defaultW.forEach((color, i) => {
       var slider = slide
         .sliderBottom()
         .min(-1)
         .max(1)
-        .step(.1)
-        .width(210)
+       // .step(.5)
+       .ticks(3)
+  
+        .width(sliderWidth)
         .default(defaultW[i])
         .displayValue(false)
-        .fill('#7FB3D5')
+        .fill('#516880')
         .on('end', num => {
           defaultW[i] = num;
           let mappedPairs = updateRanking(pairPaths(data), d3.select('.attr-drop.dropdown').select('button').attr('value'), defaultW);
@@ -57,7 +61,7 @@ export function rankingControl(data){
   
       weightPicker
         .append('g')
-        .attr('transform', `translate(${300+(260 * i)}, 20)`)
+        .attr('transform', `translate(${300+((sliderWidth + sliderMargin) * i)}, 20)`)
         .call(slider);
 
       weightPicker.selectAll('.tick')
