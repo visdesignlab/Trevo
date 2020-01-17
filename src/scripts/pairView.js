@@ -621,51 +621,19 @@ function rankGrid(matchKeeper){
     .attr('height', size)
     .style('stroke', '#EBECED')
     .style('stoke-width', '0.5px')
-    .style('fill', 'gray')
+    .style('fill', (d, i)=> {
+      if(d.value.length === 0){
+        return 'gray';
+      }else{
+        return d.value[0][1] < 2 ? '#FFC74F' : 'gray';
+      }
+    })
     .style('fill-opacity', (d, i)=> {
       return d.value.length === 0 ? satScale(33) : satScale(d.value[0][1]);ß
     });
 
     squarebins.attr('transform', (d, i)=> `translate(0, ${i*22})`);
 
-
-   
-
-    // group.append('g')
-    // .call(d3.axisBottom(d3.scaleBand().domain(axisLabels).range([0, rankBins.length * (size+2)])))
-    // .attr('transform', 'translate(0, 92)');
-
-    // let binGroups = group.selectAll('g.bin').data(m.bins).join('g').classed('bin', true);
-    // binGroups.attr('transform', (d, i)=> `translate(${i*(size+2)}, ${80})`);
-
-    // let binRects = binGroups.selectAll('rect').data(d=>d.values.sort((a, b)=> a[1]-b[1])).join('rect');
-    // binRects.attr('width', size)
-    // .attr('height', size/2)
-    // .attr('transform', (d, i)=> `translate(0, ${-1*(i*((size/2)+1))})`);
-
-    // binRects.attr('opacity', (d, i, n)=> {
-    //   let minMax = rankBins.filter(r=> d[1]<= r[1] && d[1] >= r[0])[0];
-    //   let scale = d3.scaleLinear().domain([minMax[0], minMax[1]]).range([.8, .2])
-    //   return scale(d[1])})
-
-    // binRects.on('mouseover', (r,i)=>{
-    //   let tool = d3.select('#tooltip');
-    //   tool.transition()
-    //       .duration(200)
-    //       .style("opacity", .9);
-      
-    //   let f = d3.format(".3f");
-        
-    //   tool.html(`${r[2].delta.key} : ${f(r[2].totalRank)} </br> Ranking: ${r[1]}`)
-    //       .style("left", (d3.event.pageX - 40) + "px")
-    //       .style("top", (d3.event.pageY - 28) + "px");
-          
-    //   tool.style('height', 'auto');
-    //   tool.style('width', '150px');
-
-    // }).on('mouseout', ()=> {
-    //   let tool = d3.select('#tooltip').style('opacity', 0);
-    // });
   });
 
 
