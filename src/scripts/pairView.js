@@ -38,7 +38,7 @@ export function rankingControl(data){
     .text(d=> d)
     .attr('y', 10)
     .attr('x', (d, i)=> (300+((sliderWidth + sliderMargin) * i)));
-  console.log('rank')
+ 
     defaultW.forEach((color, i) => {
       var slider = slide
         .sliderBottom()
@@ -581,10 +581,15 @@ function rankGrid(matchKeeper){
         }).append('g').classed('other-rank', true);
 
     group.attr('transform', 'translate(880, 0)');
+
+    group.append('text')
+    .text('Ranked Top 20 in Other Traits')
+    .style('font-size', 11)
+    .attr('transform', `translate(5,0)`);
     
    
     let groups = group.selectAll('.square-group').data(m.bins).join('g').classed('square-group', true);
-    groups.attr('transform', (d, i)=> `translate(${i*22}, 0)`);
+    groups.attr('transform', (d, i)=> `translate(${i*22}, 5)`);
     let squarebins = groups.selectAll('.trait-bin').data(d=> {
       return d;
     }).join('g').classed('trait-bin', true);
@@ -624,11 +629,7 @@ function rankGrid(matchKeeper){
     squarebins.attr('transform', (d, i)=> `translate(0, ${i*22})`);
 
 
-    // group.append('text')
-    // .text('Ranked Top 20 in Other Traits')
-    // .style('font-size', 11)
-    // .style('text-anchor', 'middle')
-    // .attr('transform', `translate(${(rankBins.length * (size+2))/2},0)`);
+   
 
     // group.append('g')
     // .call(d3.axisBottom(d3.scaleBand().domain(axisLabels).range([0, rankBins.length * (size+2)])))
