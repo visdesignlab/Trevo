@@ -92,7 +92,7 @@ export function renderTreeButtons(normedPaths){
             phenogramButton.text('View Phenogram');
 
           }
-    })
+    });
 
     let cladeButton = buttonWrap.append('button').attr('id', 'clade-maker');
     cladeButton.attr('class', 'btn btn-outline-secondary').text('Clade View').style('font-size', '12px');
@@ -180,8 +180,8 @@ export function renderTree(att, uncollapse, pheno){
     const dimensions =  {
         margin : {top: 10, right: 90, bottom: 50, left: 20},
         width : 260,
-        height : 520,
-        lengthHeight: 800,
+        height : 720,
+        lengthHeight: 850,
     }
 
     let lengthBool = true;
@@ -256,9 +256,9 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, pheno){
     let yScale = d3.scaleLinear().range([dimensions.height, 0]).domain([0, 1])
 
    
-    g.attr('transform', 'translate(20, 265)');
-    treeSvg.attr('height', 800);
-    yScale.range([500, 0]).domain([0, branchCount.length])
+    g.attr('transform', 'translate(20, 375)');
+    treeSvg.attr('height', 1100);
+    yScale.range([700, 0]).domain([0, branchCount.length])
     xScale.range([0, dimensions.width + 10]);
 
     if(pheno){
@@ -331,7 +331,7 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, pheno){
         if(attrDraw.type === 'discrete'){
             attrDraw.stateColors.forEach(att=> {
                 let circ = leaves.filter(f=> {
-                    return att.state.includes(f.data.attributes[attrDraw.field].states.state)//f.data.attributes[attrDraw.field].winState === att.state;
+                    return att.state.includes(f.data.attributes[attrDraw.field].states.state)
                 }).select('circle');
                 circ.attr('fill', att.color);
                 notleaves.selectAll('circle').attr('fill', 'gray');

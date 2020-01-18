@@ -37,16 +37,12 @@ export function growSidebarRenderTree(attrDraw){
     .style('padding-right', '10px');
 
     x.on('click', ()=> {
-     
         sidebar.classed('clade-view', false);
         d3.select('#main').classed('clade-view', false);
-
         sidebar.selectAll('*').remove();
-
         ////REDRAW SIDEBAR
         renderTreeButtons(getLatestData(), sidebar, false);
         renderTree(sidebar, null, false);
-
     });
 
     const dimensions =  {
@@ -81,8 +77,8 @@ export function growSidebarRenderTree(attrDraw){
         let paths = pullPath([subtreeFinder[subtreeFinder.length - 1]], subtreeFinder[subtreeFinder.length - 1].children, [], [], 0);
         
         let nodeNames = paths.flatMap(path => path.map(p=> p.node))
-        nodes.filter(f=> nodeNames.indexOf(f.data.node) > -1).select('circle').classed(className, true);//.attr('fill', 'orange');
-        link.filter(f=> nodeNames.filter((n)=> n != common[common.length - 1].node).indexOf(f.data.node) > -1).classed(className, true);//.style('stroke', 'orange');
+        nodes.filter(f=> nodeNames.indexOf(f.data.node) > -1).select('circle').classed(className, true);
+        link.filter(f=> nodeNames.filter((n)=> n != common[common.length - 1].node).indexOf(f.data.node) > -1).classed(className, true);
 
         return paths;
 
