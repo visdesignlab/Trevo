@@ -13,6 +13,8 @@ export const cladesGroupKeeper = []
 export const chosenCladesGroup = []
 export const cladeKeeper = []
 
+const colorKeep = ['#58D68D', '#F39C12', '#EC7063']
+
 
 
 export function growSidebarRenderTree(attrDraw){
@@ -75,7 +77,6 @@ export function growSidebarRenderTree(attrDraw){
         });
 
         let paths = pullPath([subtreeFinder[subtreeFinder.length - 1]], subtreeFinder[subtreeFinder.length - 1].children, [], [], 0);
-        
         let nodeNames = paths.flatMap(path => path.map(p=> p.node))
         nodes.filter(f=> nodeNames.indexOf(f.data.node) > -1).select('circle').classed(className, true);
         link.filter(f=> nodeNames.filter((n)=> n != common[common.length - 1].node).indexOf(f.data.node) > -1).classed(className, true);
@@ -132,7 +133,6 @@ export function growSidebarRenderTree(attrDraw){
             let leafNameNodeData = leafNameNodes.data().sort((a, b)=> b.position - a.position);
             let allLeafNodeData = leaf.data().sort((a, b)=> b.position - a.position);
 
-            console.log(leafNameNodeData)
 
             let positionHolder = [leafNameNodeData[0], leafNameNodeData[leafNameNodeData.length - 1]].map((m)=> {
                 let index = allLeafNodeData.indexOf(m);
@@ -140,12 +140,9 @@ export function growSidebarRenderTree(attrDraw){
                 return m;
             });
 
-            console.log(positionHolder);
 
             let yScale = d3.scaleLinear()
             yScale.range([dimensions.height, 0]).domain(d3.extent(leaf.data().map(m=> m.position)));
-
-           
 
             let wrap = sidebar.select('.button-wrap').append('form').classed("form-inline", true)
             .append('div').classed("form-group", true).style('width', '300px');
@@ -184,16 +181,16 @@ export function growSidebarRenderTree(attrDraw){
 }
 
 function drawCladeBox(cladeData){
-    console.log('in draw clades',cladeData)
+
     let treeSVG = d3.select('.tree-svg');
-    let cladeGroups = treeSVG.append('g').selectAll('g.clade').data(cladeData).join('g').classed('clade', true);
-    cladeGroups.append('rect').attr('width', 20).attr('height', (d, i)=>{
-        console.log('d', d)
+    let cladeGroups = treeSVG.append('g').selectAll('g.clade-label').data(cladeData).join('g').classed('clade-label', true);
+    cladeGroups.append('rect').attr('width', 10).attr('height', (d, i)=>{
         return (d.nodes.length * 12);
     }).attr('transform', (d, i)=> {
-        console.log('d', d.position)
         let step = d.position[0].index > 100 ? 12 : 11;
-        return `translate(500, ${((d.position[0].index * step)+27)})`});
+        return `translate(${(i*4)+495}, ${((d.position[0].index * step)+27)})`})
+    .attr('fill',(d, i)=> colorKeep[i])
+    .attr('opacity', .5)
 }
 
 export function addClade(name, nodes, positions){
