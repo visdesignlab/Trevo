@@ -48,11 +48,11 @@ export function growSidebarRenderTree(attrDraw){
     const dimensions =  {
         margin : {top: 10, right: 90, bottom: 50, left: 20},
         width : 400,
-        height : (getLatestData().length * 7),
+        height : (getLatestData().length * 8),
         lengthHeight: 500,
     }
    
-    renderCladeTree(sidebar, null, dimensions);
+    let treenodes = renderCladeTree(sidebar, null, dimensions);
 
     let leaf = sidebar.select('.tree-svg').selectAll('.node--leaf');
     let nodes = sidebar.select('.tree-svg').selectAll('.node');
@@ -70,9 +70,9 @@ export function growSidebarRenderTree(attrDraw){
             if(i > 0){
                 let child = subtreeFinder[subtreeFinder.length - 1].children.filter(f=> {
                     return f.node === m})[0];
-                subtreeFinder.push(child)
+                subtreeFinder.push(child);
             }
-        })
+        });
 
         let paths = pullPath([subtreeFinder[subtreeFinder.length - 1]], subtreeFinder[subtreeFinder.length - 1].children, [], [], 0);
         
@@ -109,15 +109,43 @@ export function growSidebarRenderTree(attrDraw){
         nodes.selectAll('circle').attr('fill', 'gray');
     }
 
+    drawCladeBox(cladeKeeper.filter(f=> f.position != undefined));
+
     leaf.on('click', (d, i, n)=> {
    
         d3.select(n[i]).select('circle').attr('fill', 'orange').attr('r', '5');
+
         if(cladeBool === null){
             cladeBool = d;
+            console.log('d in the clade', d, leaf);
         }else{
             let dat1 = nodeData.filter(f=> f[f.length-1].node === cladeBool.data.node)[0];
             let dat2 = nodeData.filter(f=> f[f.length-1].node === d.data.node)[0];
             let paths = findCommonNode(dat1, dat2, 'selected');
+
+            let leafNames = paths.map(p=> p[p.length - 1].node);
+
+            let leafNameNodes = leaf.filter(f=> {
+                return leafNames.indexOf(f.data.node) > -1;
+            });
+            
+            let leafNameNodeData = leafNameNodes.data().sort((a, b)=> b.position - a.position);
+            let allLeafNodeData = leaf.data().sort((a, b)=> b.position - a.position);
+
+            console.log(leafNameNodeData)
+
+            let positionHolder = [leafNameNodeData[0], leafNameNodeData[leafNameNodeData.length - 1]].map((m)=> {
+                let index = allLeafNodeData.indexOf(m);
+                m.index = index;
+                return m;
+            });
+
+            console.log(positionHolder);
+
+            let yScale = d3.scaleLinear()
+            yScale.range([dimensions.height, 0]).domain(d3.extent(leaf.data().map(m=> m.position)));
+
+           
 
             let wrap = sidebar.select('.button-wrap').append('form').classed("form-inline", true)
             .append('div').classed("form-group", true).style('width', '300px');
@@ -130,8 +158,9 @@ export function growSidebarRenderTree(attrDraw){
             button.text('Add Clade');
             
             button.on('click', ()=> {
-                let name = textInput.node().value != "" ? textInput.node().value : `Clade-${cladeKeeper.length}`
-                addClade(name, paths);
+                let name = textInput.node().value != "" ? textInput.node().value : `Clade-${cladeKeeper.length}`;
+               
+                addClade(name, paths, positionHolder);
                 growSidebarRenderTree(null);
                 let ul = d3.select('div#clade-show').selectAll('ul');
                 updateCladeDrop(ul, cladeKeeper);
@@ -154,8 +183,21 @@ export function growSidebarRenderTree(attrDraw){
 
 }
 
-export function addClade(name, nodes){
-    cladeKeeper.push({field: name, nodes: nodes})
+function drawCladeBox(cladeData){
+    console.log('in draw clades',cladeData)
+    let treeSVG = d3.select('.tree-svg');
+    let cladeGroups = treeSVG.append('g').selectAll('g.clade').data(cladeData).join('g').classed('clade', true);
+    cladeGroups.append('rect').attr('width', 20).attr('height', (d, i)=>{
+        console.log('d', d)
+        return (d.nodes.length * 12);
+    }).attr('transform', (d, i)=> {
+        console.log('d', d.position)
+        let step = d.position[0].index > 100 ? 12 : 11;
+        return `translate(500, ${((d.position[0].index * step)+27)})`});
+}
+
+export function addClade(name, nodes, positions){
+    cladeKeeper.push({field: name, nodes: nodes, position: positions});
 }
 
 export function addCladeGroup(name, clades, nodes){
@@ -166,7 +208,6 @@ export function addCladeGroup(name, clades, nodes){
 export function removeCladeGroup(clades){
     cladeKeeper = cladeKeeper.filter(f=> f.groupKey != clades.groupKey);
 }
-
 
 function createNewCladeGroup(div, scales){
     let cladeNames = [];
@@ -305,7 +346,7 @@ export function renderCladeTree(sidebar, att, dimensions){
    
     ////Break this out into other nodes////
     updateCladeTree(treenodes, dimensions, treeSvg, g, att, true);
-    
+    return treenodes;
     /////END TREE STUFF
     ///////////
 }
@@ -344,10 +385,10 @@ export function updateCladeTree(treenodes, dimensions, treeSvg, g, attrDraw, len
     link.transition()
     .duration(500)
     .attr("d", function(d) {
-           return "M" + xScale(d.data.combEdge) + "," + yScale(d.position)
-           + "C" + (xScale(d.data.combEdge) + xScale(d.parent.data.combEdge)) / 2 + "," + yScale(d.position)
-           + " " + (xScale(d.parent.data.combEdge)) + "," + yScale(d.position)
-           + " " + xScale(d.parent.data.combEdge) + "," + yScale(d.parent.position);
+        return "M" + xScale(d.data.combEdge) + "," + yScale(d.position)
+        + "C" + (xScale(d.data.combEdge) + xScale(d.parent.data.combEdge)) / 2 + "," + yScale(d.position)
+        + " " + (xScale(d.parent.data.combEdge)) + "," + yScale(d.position)
+        + " " + xScale(d.parent.data.combEdge) + "," + yScale(d.parent.position);
     });
 
     // adds each node as a group
@@ -400,10 +441,12 @@ export function updateCladeTree(treenodes, dimensions, treeSvg, g, attrDraw, len
             let nodes = path.map(m=> m.node);
             return nodes.indexOf(d.data.node) > -1;
         }).classed('hover', true);
+
         selectedPaths.selectAll('g').filter(g=> g.node === d.data.node).classed('selected', true);
         d3.select(n[i]).classed('selected-branch', true);
 
         if(d.data.label){
+
             let tool = d3.select('#tooltip');
             tool.transition()
             .duration(200)
@@ -432,6 +475,7 @@ export function updateCladeTree(treenodes, dimensions, treeSvg, g, attrDraw, len
     node.selectAll('.triangle').remove();
 
     let branchNodes = node.filter(n=> n.branchPoint === true);
+
     branchNodes.each((b, i, n)=> {
         if(b.children === null){
             let triangle = d3.select(n[i]).append('path').classed('triangle', true).attr('d', d3.symbol().type(d3.symbolTriangle).size('400'))
@@ -440,7 +484,8 @@ export function updateCladeTree(treenodes, dimensions, treeSvg, g, attrDraw, len
             let text = d3.select(n[i]).selectAll('text').data(d=> [d]).join('text').text(b.clade);
             text.attr('transform', 'translate(55, 5)');
         }
-    })
+    });
+
     branchNodes.select('circle').attr('fill', 'red').attr('r', 4.5);
     branchNodes.on('click', (d, i, n)=> {
         if(d.children == null){

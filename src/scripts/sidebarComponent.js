@@ -253,12 +253,12 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, pheno){
 
     let branchCount = findDepth(treenodes, []);
     let xScale = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, dimensions.width]).clamp(true);
-    let yScale = d3.scaleLinear().range([dimensions.height, 0]).domain([0, 1])
+    let yScale = d3.scaleLinear().range([dimensions.height, 0]).domain([0, 1]);
 
    
     g.attr('transform', 'translate(20, 375)');
     treeSvg.attr('height', 1100);
-    yScale.range([700, 0]).domain([0, branchCount.length])
+    yScale.range([700, 0]).domain([0, branchCount.length]);
     xScale.range([0, dimensions.width + 10]);
 
     if(pheno){
@@ -398,7 +398,7 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, pheno){
             let text = d3.select(n[i]).selectAll('text').data(d=> [d]).join('text').text(b.clade);
             text.attr('transform', 'translate(55, 5)');
         }
-    })
+    });
     branchNodes.select('circle').attr('fill', 'red').attr('r', 4.5);
     branchNodes.on('click', (d, i, n)=> {
         if(d.children == null){
@@ -413,7 +413,6 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, pheno){
 
     node.raise();
     node.selectAll('circle').raise();
-
 
     if(uncollapse){
        
