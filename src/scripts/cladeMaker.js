@@ -184,8 +184,25 @@ function drawCladeBox(cladeData){
     let base = 0;
     let treeSVG = d3.select('.tree-svg');
     let cladeGroups = treeSVG.append('g').selectAll('g.clade-label').data(cladeData).join('g').classed('clade-label', true);
-    cladeGroups.append('rect').attr('width', 8).attr('height', (d, i)=>{
-        return (d.nodes.length * 12);
+    cladeGroups.append('rect')
+    .attr('width', (d, i, n)=> {
+        if(i>0){
+            let others = d3.select(n[i-1]).data()[0].nodes.map(m=> m[m.length-1].node);
+            let test = d.nodes.filter(m=> {
+                let node = m[m.length-1].node;
+                return others.indexOf(node) > -1;
+            });
+            
+            let width = test.length > 0 ? 8 : 60;
+            return width;
+            
+        }else{
+            
+            return 60;
+        }
+    })
+    .attr('height', (d, i)=>{
+        return (d.nodes.length * 11.5);
     }).attr('transform', (d, i, n)=> {
         if(i>0){
             let others = d3.select(n[i-1]).data()[0].nodes.map(m=> m[m.length-1].node);
@@ -193,21 +210,21 @@ function drawCladeBox(cladeData){
                 let node = m[m.length-1].node;
                 return others.indexOf(node) > -1;
             });
-            console.log('others', test);
+          
             if(test.length > 0){base = base + 1};
             let xStep = test.length === 0 ? 0 : base;
-            let step = d.position[0].index > 100 ? 12 : 11.5;
-            return `translate(${(xStep*11)+495}, ${((d.position[0].index * step)+28)})`;
+            let step = d.position[0].index > 10 ? 12 : 11.5;
+            return `translate(${(xStep*65)+435}, ${((d.position[0].index * step)+28)})`;
             
         }else{
-            let step = d.position[0].index > 100 ? 12 : 11.5;
-            return `translate(${495}, ${((d.position[0].index * step)+28)})`;
+            let step = d.position[0].index > 10 ? 12 : 11.5;
+            return `translate(${435}, ${((d.position[0].index * step)+28)})`;
         }
         
         
     })
     .attr('fill',(d, i)=> colorKeep[i])
-    .attr('opacity', .4);
+    .attr('opacity', .3);
 
     cladeGroups.on('mouseover', (d, i, n)=> {
 
