@@ -888,7 +888,8 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
             return {state: key, data: d.leafData.bins[i], max: d3.sum(d.leafData.bins.map(b=> b.length))}
         });
     }).join('g').classed('ob-bars', true);
-    let dRects = discBars.append('rect').attr('width', (d, i, n)=> {
+    let dRects = discBars.append('rect')
+    .attr('width', (d, i, n)=> {
         let width = dimensions.observedWidth / n.length;
         return width;
     }).attr('height', (d, i, n)=> {
@@ -903,7 +904,7 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
         let movex = dimensions.observedWidth / n.length;
         let height = d.data[0] ? (d.data[0].scales.stateColors.length * dimensions.squareDim - 10) : 0;
         let y = d3.scaleLinear().domain([0, d.max]).range([0, (height-5)])
-        let movey = (height-5) - y(d.data.length);
+        let movey = (height) - y(d.data.length);
         return 'translate('+(movex * i)+', '+movey+')'});
 
     dRects.on('mouseover', (d, i, n)=> {
