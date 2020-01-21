@@ -11,6 +11,11 @@ h5, h6{
 button{
   margin:5px;
 }
+button:hover{
+  color:#fff !important;
+  background-color: #737373 !important;
+
+}
 
 form button, form input{
   margin-left:0;
@@ -219,6 +224,18 @@ button.btn.dropbtn.dropdown-toggle {
   text-align:center;
   transition: all 0.15s;
 }
+button.btn.dropbtn.dropdown-toggle:hover{
+   color:#DDDDDD !important;
+   border-color:#DDDDDD !important;
+}
+
+button.btn.dropbtn.dropdown-toggle:active{
+  a.button2:active{
+     color:#BBBBBB;
+     border-color:#BBBBBB;
+    }
+}
+
 
 #sidebar button{
   display:inline-block;
