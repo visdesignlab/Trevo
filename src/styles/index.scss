@@ -85,7 +85,7 @@ ul {
   border: 1px solid gray;
 }
 
-#branch-tooltip, #state-tooltip, #compare-tooltip{
+#branch-tooltip, #state-tooltip, #compare-tooltip, #tooltip{
   position: absolute;
   width: 200px;
   height: auto;
@@ -152,7 +152,7 @@ ul {
   height: 40px;
   padding: 2px;
   font: 12px sans-serif;
-  background: lightsteelblue;
+  //background: lightsteelblue;
   border: 0px;
   border-radius: 8px;
   pointer-events: none;
