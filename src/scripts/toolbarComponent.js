@@ -141,14 +141,10 @@ export function toolbarControl(toolbar, main, calculatedScales){
     button.on('click', async(d, i, n)=> {
         if(dropContent.classed('show')){
 
-          
-
-
             let loader = await clearMain();
             // await changeDropValue(d);
             // await updateMainView(d.field, chosenCladesGroup[chosenCladesGroup.length - 1].groups);
             
-
             dropContent.classed('show', false);
             await updateMainView('Summary View', chosenCladesGroup[chosenCladesGroup.length - 1].groups);
             loader.style.display = "none";
@@ -174,7 +170,7 @@ export function toolbarControl(toolbar, main, calculatedScales){
 
     let dropdivClade = toolbar.append('div').classed(`dropdown clade-show`, true);
     dropdivClade.style('display', 'inline-block')
-    let buttonClade = dropdivClade.append('button').classed('btn dropbtn dropdown-toggle', true).text('Shown Clades');
+    let buttonClade = dropdivClade.append('button').classed('btn dropbtn dropdown-toggle', true).text('Shown Subtrees');
 
     let dropContentClade = dropdivClade.append('div').attr('id', 'clade-show').classed('dropdown-content', true);
     let dropUlClade = dropContentClade.append('ul');
