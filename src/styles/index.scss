@@ -7,11 +7,12 @@ body {
 h5, h6{
   display:inline;
 }
-
+button.btn,
 button{
   display:inline-block;
   padding:0.5em 2em !important;
-  border:0.16em solid #737373 !important;
+  border:1.5px solid #737373 !important;
+  border-radius: .5px;
   margin:0.3em 0.3em 0.3em 0.3em !important;
   box-sizing: border-box !important;
   text-decoration:none;
@@ -22,6 +23,7 @@ button{
   color:#737373;
   text-align:center;
   transition: all 0.15s;
+  background-color: #ddd;
 }
 button:hover{
   color:#fff !important;
