@@ -181,16 +181,54 @@ export function growSidebarRenderTree(attrDraw){
 }
 
 function drawCladeBox(cladeData){
-
+    let base = 0;
     let treeSVG = d3.select('.tree-svg');
     let cladeGroups = treeSVG.append('g').selectAll('g.clade-label').data(cladeData).join('g').classed('clade-label', true);
-    cladeGroups.append('rect').attr('width', 10).attr('height', (d, i)=>{
+    cladeGroups.append('rect').attr('width', 8).attr('height', (d, i)=>{
         return (d.nodes.length * 12);
-    }).attr('transform', (d, i)=> {
-        let step = d.position[0].index > 100 ? 12 : 11;
-        return `translate(${(i*4)+495}, ${((d.position[0].index * step)+27)})`})
+    }).attr('transform', (d, i, n)=> {
+        if(i>0){
+            let others = d3.select(n[i-1]).data()[0].nodes.map(m=> m[m.length-1].node);
+            let test = d.nodes.filter(m=> {
+                let node = m[m.length-1].node;
+                return others.indexOf(node) > -1;
+            });
+            console.log('others', test);
+            if(test.length > 0){base = base + 1};
+            let xStep = test.length === 0 ? 0 : base;
+            let step = d.position[0].index > 100 ? 12 : 11.5;
+            return `translate(${(xStep*11)+495}, ${((d.position[0].index * step)+28)})`;
+            
+        }else{
+            let step = d.position[0].index > 100 ? 12 : 11.5;
+            return `translate(${495}, ${((d.position[0].index * step)+28)})`;
+        }
+        
+        
+    })
     .attr('fill',(d, i)=> colorKeep[i])
-    .attr('opacity', .5)
+    .attr('opacity', .4);
+
+    cladeGroups.on('mouseover', (d, i, n)=> {
+
+            let tool = d3.select('#tooltip');
+            tool.transition()
+            .duration(200)
+            .style("opacity", .9);
+          
+            tool.html(`${d.field}`)
+            .style("left", (d3.event.pageX - 40) + "px")
+            .style("top", (d3.event.pageY - 28) + "px");
+            tool.style('height', 'auto');
+
+    }).on('mouseout', (d, i, n)=> {
+       
+        let tool = d3.select('#tooltip');
+        tool.transition()
+          .duration(500)
+          .style("opacity", 0);
+    });
+
 }
 
 export function addClade(name, nodes, positions){
