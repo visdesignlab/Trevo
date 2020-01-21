@@ -631,9 +631,7 @@ function rankGrid(matchKeeper){
     .style('fill-opacity', (d, i)=> {
       return d.value.length === 0 ? satScale(33) : satScale(d.value[0][1]);ß
     });
-
     squarebins.attr('transform', (d, i)=> `translate(0, ${i*22})`);
-
   });
 
 

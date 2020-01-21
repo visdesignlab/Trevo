@@ -127,7 +127,7 @@ export function toolbarControl(toolbar, main, calculatedScales){
 
     let dropdiv = toolbar.append('div').classed(`dropdown attribute-show`, true);
     dropdiv.style('display', 'inline-block');
-    let button = dropdiv.append('button').classed('btn dropbtn btn-secondary dropdown-toggle', true).text('Shown Attributes');
+    let button = dropdiv.append('button').classed('btn dropbtn dropdown-toggle', true).text('Shown Attributes');
     let dropContent = dropdiv.append('div').attr('id', 'attribute-show').classed('dropdown-content', true);
     let dropUl = dropContent.append('ul');
     
@@ -174,7 +174,7 @@ export function toolbarControl(toolbar, main, calculatedScales){
 
     let dropdivClade = toolbar.append('div').classed(`dropdown clade-show`, true);
     dropdivClade.style('display', 'inline-block')
-    let buttonClade = dropdivClade.append('button').classed('btn dropbtn btn-secondary dropdown-toggle', true).text('Shown Clades');
+    let buttonClade = dropdivClade.append('button').classed('btn dropbtn dropdown-toggle', true).text('Shown Clades');
 
     let dropContentClade = dropdivClade.append('div').attr('id', 'clade-show').classed('dropdown-content', true);
     let dropUlClade = dropContentClade.append('ul');

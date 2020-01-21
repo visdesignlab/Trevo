@@ -58,10 +58,10 @@ export function renderTreeButtons(normedPaths){
     let phenoOptions = reduce2DropArray(scales.filter(f=> f.type != 'discrete'));
  
       ///BUTTON FOR PHENOGRAM VIEW. MAYBE MOVE THIS TO SIDEBAR
-    let phenogramButton = d3.select('#sidebar').select('.button-wrap').append('button').text('View Phenogram').style('font-size', '12px');
+    let phenogramButton = d3.select('#sidebar').select('.button-wrap').append('button').text('Phenogram').style('font-size', '12px');
     phenogramButton.classed('btn btn-outline-secondary', true).attr('id', 'view-pheno'); 
     phenogramButton.on('click', ()=> {
-          if(phenogramButton.text() === 'View Phenogram'){
+          if(phenogramButton.text() === 'Phenogram'){
             if(d3.select('.attr-drop.dropdown').select('button').empty()){
                 let drop = dropDown(d3.select('#toolbar'), phenoOptions, `Trait: ${phenoOptions[1].field}`, 'attr-drop');
                 d3.select('.attr-drop.dropdown').select('button').attr('value', phenoOptions[1].field);
@@ -89,7 +89,7 @@ export function renderTreeButtons(normedPaths){
                 d3.select('.dropdown.attr-drop').remove();
             }
             renderTree(null, true, false);
-            phenogramButton.text('View Phenogram');
+            phenogramButton.text('Phenogram');
 
           }
     });
