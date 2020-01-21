@@ -65,6 +65,7 @@ export function toolbarControl(toolbar, main, calculatedScales){
     let filterButton = toolbar.append('button').attr('id', 'view-filter');
     filterButton.attr('class', 'btn btn-outline-secondary').text('Show Filters');
     filterButton.on('click', ()=> toggleFilters(filterButton, main, calculatedScales));
+    filterButton.classed('hidden', true);
     ///LENGTH BUTTON CODE
 
     let scrunchButton = toolbar.append('button').attr('id', 'scrunch');
@@ -140,7 +141,7 @@ export function toolbarControl(toolbar, main, calculatedScales){
     button.on('click', async(d, i, n)=> {
         if(dropContent.classed('show')){
 
-            console.log('d', d);
+          
 
 
             let loader = await clearMain();
