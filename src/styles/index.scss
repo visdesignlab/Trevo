@@ -9,8 +9,19 @@ h5, h6{
 }
 
 button{
-  margin:5px;
+  display:inline-block;
+  padding:0.5em 2em !important;
+  border:0.16em solid #737373 !important;
+  margin:0.3em 0.3em 0.3em 0.3em !important;
+  box-sizing: border-box !important;
+  text-decoration:none;
   text-transform:uppercase;
+  font-family:'Roboto',sans-serif;
+  font-weight:400;
+  font-size:13px;
+  color:#737373;
+  text-align:center;
+  transition: all 0.15s;
 }
 button:hover{
   color:#fff !important;
