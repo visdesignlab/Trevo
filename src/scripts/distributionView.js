@@ -5,6 +5,7 @@ import {filterMaster, getLatestData, getScales} from './filterComponent';
 import { pullPath, calculateMovingAverage } from './pathCalc';
 import { renderTree } from './sidebarComponent';
 import {renderDistributionComparison} from './compare';
+import { addBrushables } from './brusherMaker';
 
 export const dimensions = {
     height: 80,
@@ -568,14 +569,18 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
 
     renderContinuousPredicted(continDist);
 
+    
+
      //////START BRANCH EXPERIMENT
      let brush = d3.brushY().extent([[0, 0], [20, dimensions.height]])
      brush.on('end', brushed);
 
-     continDist.append("g")
-     .classed('continuous-branch-brush', true)
-     .attr("class", "brush")
-     .call(brush);
+     let brushSpace = continDist.append("g")
+     .classed('brush-space', true)
+     
+     brushSpace.append('rect').classed('brush-space-rect', true);
+
+     addBrushables(brushSpace);
  
      function brushed(){
 
