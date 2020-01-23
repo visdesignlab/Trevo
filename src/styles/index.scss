@@ -305,6 +305,11 @@ button.hidden{
   stroke-width: 2px;
 }
 
+.link.selected{
+  stroke: orange;
+  stroke-width: 3px;
+}
+
 .attr-toggle-svg{
   width: inherit;
   height:180px;

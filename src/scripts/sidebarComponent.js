@@ -76,9 +76,9 @@ export function renderTreeButtons(normedPaths){
                     d3.select('.attr-drop.dropdown').select('button').attr('value', d.field);
                     d3.select('#attr-drop').classed('show', false);
                 });
-                renderTree(null, true, d3.select('.attr-drop.dropdown').select('button').attr('value'))
+                renderTree(null, true, d3.select('.attr-drop.dropdown').select('button').attr('value'));
               }else{
-                renderTree(null, true, d3.select('.attr-drop.dropdown').select('button').attr('value'))
+                renderTree(null, true, d3.select('.attr-drop.dropdown').select('button').attr('value'));
               }
               phenogramButton.text('View Phylogeny');
           }else{

@@ -133,13 +133,11 @@ export function growSidebarRenderTree(attrDraw){
             let leafNameNodeData = leafNameNodes.data().sort((a, b)=> b.position - a.position);
             let allLeafNodeData = leaf.data().sort((a, b)=> b.position - a.position);
 
-
             let positionHolder = [leafNameNodeData[0], leafNameNodeData[leafNameNodeData.length - 1]].map((m)=> {
                 let index = allLeafNodeData.indexOf(m);
                 m.index = index;
                 return m;
             });
-
 
             let yScale = d3.scaleLinear()
             yScale.range([dimensions.height, 0]).domain(d3.extent(leaf.data().map(m=> m.position)));

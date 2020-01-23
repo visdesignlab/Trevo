@@ -142,9 +142,6 @@ export function toolbarControl(toolbar, main, calculatedScales){
         if(dropContent.classed('show')){
 
             let loader = await clearMain();
-            // await changeDropValue(d);
-            // await updateMainView(d.field, chosenCladesGroup[chosenCladesGroup.length - 1].groups);
-            
             dropContent.classed('show', false);
             await updateMainView('Summary View', chosenCladesGroup[chosenCladesGroup.length - 1].groups);
             loader.style.display = "none";
@@ -153,20 +150,8 @@ export function toolbarControl(toolbar, main, calculatedScales){
         }
     });
 
-    // /////CLADE VIEW////
-    // let cladePickerDrop = dropDown(toolbar, cladesGroupKeeper, `Clades Shown: ${cladesGroupKeeper[0].field}`, 'change-clade');
-    // d3.select('#change-clade').selectAll('a').on('click', (d, i, n)=> {
-    //     d3.select('.dropdown.change-clade').select('button').text(`Clades Shown: ${d.field}`)
-    //     chosenCladesGroup.push(d)
-    //     updateMainView('Summary View', d.groups);
-    // });
-    // if(cladesGroupKeeper.length === 0){
-    //     d3.select('.dropdown.change-clade').select('button').text(d.field);
-    // }
-
     /////ATTRIBUTE DROP DOWN
     let cladeOptions = cladeKeeper;
-   // let checkedClades = attributeOptions.length > 11 ? attributeOptions.slice(0, 2) : attributeOptions;
 
     let dropdivClade = toolbar.append('div').classed(`dropdown clade-show`, true);
     dropdivClade.style('display', 'inline-block')
