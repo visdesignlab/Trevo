@@ -132,6 +132,7 @@ export function growSidebarRenderTree(attrDraw){
             
             let leafNameNodeData = leafNameNodes.data().sort((a, b)=> b.position - a.position);
             let allLeafNodeData = leaf.data().sort((a, b)=> b.position - a.position);
+            
 
             let positionHolder = [leafNameNodeData[0], leafNameNodeData[leafNameNodeData.length - 1]].map((m)=> {
                 let index = allLeafNodeData.indexOf(m);
@@ -200,7 +201,7 @@ function drawCladeBox(cladeData){
         }
     })
     .attr('height', (d, i)=>{
-        return (d.nodes.length * 11.5);
+        return (d.nodes.length * 12);
     }).attr('transform', (d, i, n)=> {
         if(i>0){
             let others = d3.select(n[i-1]).data()[0].nodes.map(m=> m[m.length-1].node);
@@ -211,11 +212,11 @@ function drawCladeBox(cladeData){
           
             if(test.length > 0){base = base + 1};
             let xStep = test.length === 0 ? 0 : base;
-            let step = d.position[0].index > 10 ? 12 : 11.5;
+            let step = d.position[0].index > 10 ? 12 : 11.6;
             return `translate(${(xStep*65)+435}, ${((d.position[0].index * step)+28)})`;
             
         }else{
-            let step = d.position[0].index > 10 ? 12 : 11.5;
+            let step = d.position[0].index > 10 ? 12 : 11.6;
             return `translate(${435}, ${((d.position[0].index * step)+28)})`;
         }
         
