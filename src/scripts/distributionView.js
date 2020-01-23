@@ -576,8 +576,7 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
      brush.on('end', brushed);
 
      let brushSpace = continDist.append("g")
-     .classed('brush-space', true)
-     
+     .classed('brush-space', true);
      brushSpace.append('rect').classed('brush-space-rect', true);
 
      addBrushables(brushSpace);

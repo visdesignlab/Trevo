@@ -15,8 +15,6 @@ export const cladeKeeper = []
 
 const colorKeep = ['#58D68D', '#F39C12', '#EC7063']
 
-
-
 export function growSidebarRenderTree(attrDraw){
 
     let sidebar = d3.select('#sidebar');
@@ -88,7 +86,7 @@ export function growSidebarRenderTree(attrDraw){
     labelTree(leaf);
 
     if(attrDraw != null){
-       // let leaves = node.filter(n=> n.data.leaf === true);
+    
         let notleaves = nodes.filter(n=> n.data.leaf != true);
 
         if(attrDraw.type === 'discrete'){
@@ -118,7 +116,7 @@ export function growSidebarRenderTree(attrDraw){
 
         if(cladeBool === null){
             cladeBool = d;
-            console.log('d in the clade', d, leaf);
+           
         }else{
             let dat1 = nodeData.filter(f=> f[f.length-1].node === cladeBool.data.node)[0];
             let dat2 = nodeData.filter(f=> f[f.length-1].node === d.data.node)[0];
