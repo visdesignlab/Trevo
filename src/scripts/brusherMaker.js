@@ -101,8 +101,8 @@ function highlightTree(nodes, descendBins, brushOb){
         return names.indexOf(f.data.node) > -1});
     treenodes.select('circle').attr('fill', brushOb.color).attr('r', 5).style('stroke-width', '1px').style('stroke', 'gray');
     descendNodes.select('circle').attr('fill', brushOb.color).attr('r', 5);
-    descendLinks.style('stroke', brushOb.color)
-    return {'treenodes': treenodes, 'descendNodes':descendNodes};
+    descendLinks.style('stroke', brushOb.color);
+    return {'treenodes': treenodes, 'descendNodes':descendNodes, 'descendLinks': descendLinks};
 }
 
 function findNodesOtherTraits(data, brushOb, filterData, continDist){
@@ -184,6 +184,7 @@ function addBadge(brushOb, brushedDomain, dist, otherBins, descendBins, treenode
         descendBins.selectAll('.distribution-too').remove();
         treenodeOb.treenodes.selectAll('circle').attr('fill', 'gray').attr('r', 3).style('stroke-width', '0px');
         treenodeOb.descendNodes.selectAll('circle').attr('fill', 'gray').attr('r', 3);
+        treenodeOb.descendLinks.style('stroke', 'gray');
     
     });
 }
