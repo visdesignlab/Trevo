@@ -4,7 +4,7 @@ import * as d3 from "d3";
 import { addingEdgeLength, assignPosition, renderTree, renderTreeButtons, traitColorDropDown } from './sidebarComponent';
 import { maxTimeKeeper } from './dataFormat';
 import { getLatestData, getScales } from './filterComponent';
-import { renderDistStructure, binGroups } from './distributionView';
+import { renderDistStructure, binGroups, continuousHistogram, mirrorlineGen } from './distributionView';
 import { updateMainView } from './viewControl';
 import { pullPath } from './pathCalc';
 import { updateCladeDrop } from './toolbarComponent';
@@ -14,6 +14,7 @@ export const chosenCladesGroup = []
 export const cladeKeeper = []
 
 const colorKeep = ['#58D68D', '#F39C12', '#EC7063']
+
 
 export function growSidebarRenderTree(attrDraw){
 
@@ -131,7 +132,6 @@ export function growSidebarRenderTree(attrDraw){
             let leafNameNodeData = leafNameNodes.data().sort((a, b)=> b.position - a.position);
             let allLeafNodeData = leaf.data().sort((a, b)=> b.position - a.position);
             
-
             let positionHolder = [leafNameNodeData[0], leafNameNodeData[leafNameNodeData.length - 1]].map((m)=> {
                 let index = allLeafNodeData.indexOf(m);
                 m.index = index;

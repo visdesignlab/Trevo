@@ -579,7 +579,7 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
      .classed('brush-space', true);
      brushSpace.append('rect').classed('brush-space-rect', true);
 
-     addBrushables(brushSpace);
+     addBrushables(brushSpace, continDist);
  
      function brushed(){
 
@@ -628,6 +628,7 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
             let nodeNames = nodes.map(m=> m.node);
 
             let otherBins = continDist.filter(f=> f.index === data.index && f.key != data.key);
+
             otherBins.each((b, i, n)=> {
                 
                 let test = continuousHistogram(b.data.filter(f=> nodeNames.indexOf(f.node) > -1) );
@@ -987,7 +988,7 @@ function brushedNodes(nodes, notNodes, data, brushedVal, classLabel){
     return [selectedBranch, secondGrp, notNodeSelectedBranch, notNodeSecondGrp];
 }
 
-function continuousHistogram(data){
+export function continuousHistogram(data){
     
     let x = data[0].yScale;
     let histogram = d3.histogram()
