@@ -243,6 +243,8 @@ export function findDepth(node, array){
 
 export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, pheno){
 
+    console.log('pheno',pheno)
+
     let length = true;
     let uncollapse = true;
 
@@ -262,7 +264,7 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, pheno){
 
     if(pheno){
         treeSvg.attr('height', 800);
-        console.log('tree nodes',treenodes)
+        console.log('tree nodes',treenodes, treenodes.data.attributes[pheno], pheno)
         xScale.domain(treenodes.data.attributes[pheno].scales.yScale.domain())
         yScale.domain([0, maxTimeKeeper[0]]).range([0, 600])
     }
@@ -407,7 +409,8 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, pheno){
             collapseSub(d);
         }
         let lengthBool = d3.select('button#length').text() === 'Hide Lengths';
-        updateTree(treenodes, dimensions, treeSvg, g, attrDraw, lengthBool, uncollapse);
+        updateTree(treenodes, dimensions, treeSvg, g, attrDraw, "SVL");
+        //treenodes, dimensions, treeSvg, g, att, pheno
       
     });
 

@@ -73,6 +73,9 @@ export function rankingControl(data){
 }
 export function changeTrait(attKeys, data, weights){
 
+  console.log('change trait',d3.select('#toolbar').select('.dropdown.change-view').select('.dropdown-toggle').node().value)
+  let view = d3.select('#toolbar').select('.dropdown.change-view').select('.dropdown-toggle').node().value;
+
   let drop = d3.select('.attr-drop.dropdown')
   .selectAll('a').empty() ? dropDown(d3.select('#toolbar'), attKeys, `Trait: ${attKeys[1].field}`, 'attr-drop') : d3.select('.attr-drop.dropdown').selectAll('a');
 
