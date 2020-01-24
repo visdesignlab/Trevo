@@ -44,7 +44,7 @@ ul {
 
 #compare-wrap div.compare-header{
   height:70px;
-  //background-color: #DCD4D4;
+ 
   background-color: #fff;
   margin:0;
   padding-left:50px;
@@ -54,11 +54,11 @@ ul {
 #wrapper{
   display: grid;
   grid-template-rows: auto;
-  grid-template-columns: repeat(9, 1fr);
+  grid-template-columns: repeat(10, 1fr);
   grid-template-areas: 
-    "header header header header header header header header header"
-    "main main main main main main main sidebar sidebar"
-    "m m m m m m expanded expanded expanded";
+    "header header header header header header header header header header"
+    "main main main main main main sidebar sidebar sidebar sidebar"
+    "m m m m m m expanded expanded expanded expanded";
 }
 
 #toolbar{
@@ -102,7 +102,6 @@ ul {
 
 #main{
   grid-area: main;
-
 }
 
 #main.clade-view{
@@ -118,11 +117,6 @@ ul {
 
   background-color: var(--structure-grey);
   border-left: 1px solid gray;
-  
-  // -webkit-transition: all 2s linear;
-  // -moz-transition: all 2s linear;
-  // -o-transition: all 2s linear;
-  // transition: all 2s linear;
 
   display: grid;
   grid-template-rows: 50px auto;
@@ -139,10 +133,15 @@ ul {
   top:50px;
   overflow-y: auto;
 
-  // -webkit-transition: all 2s linear;
-  // -moz-transition: all 2s linear;
-  // -o-transition: all 2s linear;
-  // transition: all 2s linear;
+}
+
+#sidebar .tree-svg{
+  display: grid;
+  grid-area: tree;
+}
+#sidebar .button-wrap{
+  display: grid;
+  grid-area:buttonwrap;
 }
 
 #tooltip {

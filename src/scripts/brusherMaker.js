@@ -19,8 +19,6 @@ export function addBrushables(bins, continDist){
 
         mouseBool = true;
 
-        console.log(d)
-
         let scale = d3.scaleLinear().domain(d.domain).range([0, 80]);
         
         let ind = brushArray.length + 1;
@@ -85,11 +83,26 @@ export function addBrushables(bins, continDist){
         let otherBins = findNodesOtherTraits(d, brushOb, filterData, continDist);
         let descendBins = findDescendValues(d, brushOb, [endPos, startPos], continDist);
        
-
-        addBadge(brushOb, [zero(brushOb.scale.invert(endPos)), zero(brushOb.scale.invert(startPos))], path, otherBins, descendBins);
-
+        let treenodeOb = highlightTree(filterData, descendBins, brushOb)
+        addBadge(brushOb, [zero(brushOb.scale.invert(endPos)), zero(brushOb.scale.invert(startPos))], path, otherBins, descendBins, treenodeOb);
       
     });
+}
+
+function highlightTree(nodes, descendBins, brushOb){
+    let treenodes = d3.select('#sidebar').select('.tree-svg').selectAll('.node').filter(f=> {
+        let names = nodes.map(m=> m.node);
+        return names.indexOf(f.data.node) > -1});
+    let descendNodes = d3.select('#sidebar').select('.tree-svg').selectAll('.node').filter(f=> {
+        let names = descendBins.data().flatMap(m=> m.data.map(d=> d.node));
+        return names.indexOf(f.data.node) > -1});
+    let descendLinks = d3.select('#sidebar').select('.tree-svg').selectAll('.link').filter(f=> {
+        let names = descendBins.data().flatMap(m=> m.data.map(d=> d.node));
+        return names.indexOf(f.data.node) > -1});
+    treenodes.select('circle').attr('fill', brushOb.color).attr('r', 5).style('stroke-width', '1px').style('stroke', 'gray');
+    descendNodes.select('circle').attr('fill', brushOb.color).attr('r', 5);
+    descendLinks.style('stroke', brushOb.color)
+    return {'treenodes': treenodes, 'descendNodes':descendNodes};
 }
 
 function findNodesOtherTraits(data, brushOb, filterData, continDist){
@@ -148,7 +161,7 @@ function findDescendValues(data, brushOb, valueRange, continDist){
 
 }
 
-function addBadge(brushOb, brushedDomain, dist, otherBins, descendBins){
+function addBadge(brushOb, brushedDomain, dist, otherBins, descendBins, treenodeOb){
     d3.select('#toolbar').append()
 
     let badge = d3.select('#toolbar')
@@ -166,16 +179,12 @@ function addBadge(brushOb, brushedDomain, dist, otherBins, descendBins){
         
         removeBrush(d.brush);
         d3.select(n[i].parentNode).remove();
-        // d3.select(d.brush).call(brush.move, null);
-        // d3.select(n[i].parentNode).remove();
-        // d3.select(d.brush).select('.overlay').attr('stroke-width', 0);
-        
         dist.remove();
         otherBins.selectAll('.distribution-too').remove();
         descendBins.selectAll('.distribution-too').remove();
-        // d3.select(d.brush.parentNode).select('.distribution-too').remove();
-        // d3.select('#sidebar').selectAll(`.${classy}`).classed('anti-brushed-second', false);
-        // d3.select('#sidebar').selectAll(`.${classy}`).classed('anti-brushed', false);
+        treenodeOb.treenodes.selectAll('circle').attr('fill', 'gray').attr('r', 3).style('stroke-width', '0px');
+        treenodeOb.descendNodes.selectAll('circle').attr('fill', 'gray').attr('r', 3);
+    
     });
 }
 
@@ -183,6 +192,5 @@ function removeBrush(brushOb){
 
     brushOb.brush.remove();
     brushArray = brushArray.filter(f=> f.key != brushOb.key);
-    //console.log(brushArray)
 
 }
