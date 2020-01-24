@@ -101,7 +101,7 @@ function highlightTree(nodes, descendBins, brushOb){
         return names.indexOf(f.data.node) > -1});
     treenodes.select('circle').attr('fill', brushOb.color).attr('r', 5).style('stroke-width', '1px').style('stroke', 'gray');
     descendNodes.select('circle').attr('fill', brushOb.color).attr('r', 5);
-    descendLinks.style('stroke', brushOb.color);
+    //descendLinks.style('stroke', brushOb.color);
     return {'treenodes': treenodes, 'descendNodes':descendNodes, 'descendLinks': descendLinks};
 }
 

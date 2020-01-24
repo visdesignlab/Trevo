@@ -54,11 +54,11 @@ ul {
 #wrapper{
   display: grid;
   grid-template-rows: auto;
-  grid-template-columns: repeat(10, 1fr);
+  grid-template-columns: repeat(9, 1fr);
   grid-template-areas: 
-    "header header header header header header header header header header"
-    "main main main main main main sidebar sidebar sidebar sidebar"
-    "m m m m m m expanded expanded expanded expanded";
+    "header header header header header header header header header"
+    "main main main main main main main sidebar sidebar"
+    "m m m m m expanded expanded expanded expanded";
 }
 
 #toolbar{
