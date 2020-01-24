@@ -62,8 +62,6 @@ export function addBrushables(bins, continDist){
         let filterData = d.data.filter(f=> f.values.realVal >= brushOb.scale.invert(endPos) && f.values.realVal <= brushOb.scale.invert(startPos));
         let test = continuousHistogram(filterData);
 
-        console.log('filter',filterData, test)
-
         test.maxCount = d3.sum(d.bins.map(m=> m.length));
 
         //////EXPERIMENTING WITH BRUSH DRAW DISTRIBUTIONS////
@@ -83,56 +81,71 @@ export function addBrushables(bins, continDist){
         .attr('fill-opacity', 0.5)
             .style('stroke', brushOb.color);
 
-        let nodeNames = filterData.map(m=> m.node);
-        let otherBins = continDist.filter(f=> f.index === d.index && f.key != d.key);
-
-        otherBins.each((b, i, n)=> {
-                
-            let test = continuousHistogram(b.data.filter(f=> nodeNames.indexOf(f.node) > -1) );
-               
-            test.maxCount = d3.sum(b.bins.map(m=> m.length));
-              
-            let otherDist = d3.select(n[i]).selectAll('g.distribution-too')
-                .data([test])
-                .join('g')
-                .classed('distribution-too', true);
-
-            otherDist.attr('transform', 'translate(0, 0) rotate(90)');
-            let path = otherDist.append('path').attr('d', mirrorlineGen);
-            path.attr("fill", brushOb.color).attr('fill-opacity', 0.5)
-                .style('stroke', brushOb.color);
-    
-        });
-
-        let descendBins = continDist.filter(f=> {
-            return (f.index > d.index) && (f.key === d.key)});
-
-        descendBins.each((b, i, n)=> {
-
-            let test = b.data.filter(f=> {
-                return (f.values.realVal > brushOb.scale.invert(endPos)) && (f.values.realVal < brushOb.scale.invert(startPos));
-                });
-
-             let testH = continuousHistogram(test);
-           
-             testH.maxCount = d3.sum(b.bins.map(m=> m.length));
-          
-            let otherDist = d3.select(n[i]).selectAll('g.distribution-too')
-            .data([testH])
-            .join('g')
-            .classed('distribution-too', true);
-
-            otherDist.attr('transform', 'translate(0, 0) rotate(90)');
-            let path = otherDist.append('path').attr('d', mirrorlineGen);
-            path.attr("fill", brushOb.color).attr('fill-opacity', 0.5)
-            .style('stroke', brushOb.color);
-        });
-
+        
+        let otherBins = findNodesOtherTraits(d, brushOb, filterData, continDist);
+        let descendBins = findDescendValues(d, brushOb, [endPos, startPos], continDist);
+       
 
         addBadge(brushOb, [zero(brushOb.scale.invert(endPos)), zero(brushOb.scale.invert(startPos))], path, otherBins, descendBins);
 
       
     });
+}
+
+function findNodesOtherTraits(data, brushOb, filterData, continDist){
+
+    let nodeNames = filterData.map(m=> m.node);
+
+    let otherBins = continDist.filter(f=> f.index === data.index && f.key != data.key);
+
+    otherBins.each((b, i, n)=> {
+            
+        let test = continuousHistogram(b.data.filter(f=> nodeNames.indexOf(f.node) > -1) );
+           
+        test.maxCount = d3.sum(b.bins.map(m=> m.length));
+          
+        let otherDist = d3.select(n[i]).selectAll('g.distribution-too')
+            .data([test])
+            .join('g')
+            .classed('distribution-too', true);
+
+        otherDist.attr('transform', 'translate(0, 0) rotate(90)');
+        let path = otherDist.append('path').attr('d', mirrorlineGen);
+        path.attr("fill", brushOb.color).attr('fill-opacity', 0.5)
+            .style('stroke', brushOb.color);
+
+    });
+
+    return otherBins;
+}
+function findDescendValues(data, brushOb, valueRange, continDist){
+
+    let descendBins = continDist.filter(f=> {
+        return (f.index > data.index) && (f.key === data.key)});
+
+    descendBins.each((b, i, n)=> {
+
+        let test = b.data.filter(f=> {
+            return (f.values.realVal > brushOb.scale.invert(valueRange[0])) && (f.values.realVal < brushOb.scale.invert(valueRange[1]));
+            });
+
+         let testH = continuousHistogram(test);
+       
+         testH.maxCount = d3.sum(b.bins.map(m=> m.length));
+      
+        let otherDist = d3.select(n[i]).selectAll('g.distribution-too')
+        .data([testH])
+        .join('g')
+        .classed('distribution-too', true);
+
+        otherDist.attr('transform', 'translate(0, 0) rotate(90)');
+        let path = otherDist.append('path').attr('d', mirrorlineGen);
+        path.attr("fill", brushOb.color).attr('fill-opacity', 0.5)
+        .style('stroke', brushOb.color);
+    });
+
+    return descendBins;
+
 }
 
 function addBadge(brushOb, brushedDomain, dist, otherBins, descendBins){

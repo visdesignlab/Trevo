@@ -989,14 +989,20 @@ function brushedNodes(nodes, notNodes, data, brushedVal, classLabel){
 }
 
 export function continuousHistogram(data){
-    
-    let x = data[0].yScale;
-    let histogram = d3.histogram()
-            .value(function(d) { return d.values.realVal; })  
-            .domain(x.domain())  
-            .thresholds(x.ticks(20)); 
 
-    return histogram(data);
+    console.log('data in continuous histo',data)
+    if(data[0]){
+        let x = data[0].yScale;
+        let histogram = d3.histogram()
+                .value(function(d) { return d.values.realVal; })  
+                .domain(x.domain())  
+                .thresholds(x.ticks(20)); 
+    
+        return histogram(data);
+    }else{
+        return [];
+    }
+   
 }
 
 export const mirrorlineGen = d3.area()
