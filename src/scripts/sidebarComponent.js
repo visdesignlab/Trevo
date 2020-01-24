@@ -255,7 +255,6 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, pheno){
     let xScale = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, dimensions.width]).clamp(true);
     let yScale = d3.scaleLinear().range([dimensions.height, 0]).domain([0, 1]);
 
-   
     g.attr('transform', 'translate(20, 375)');
     treeSvg.attr('height', 1100);
     yScale.range([700, 0]).domain([0, branchCount.length]);
@@ -263,8 +262,9 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, pheno){
 
     if(pheno){
         treeSvg.attr('height', 800);
+        console.log('tree nodes',treenodes)
         xScale.domain(treenodes.data.attributes[pheno].scales.yScale.domain())
-        yScale.domain([0, maxTimeKeeper[0]]).range([0, 500])
+        yScale.domain([0, maxTimeKeeper[0]]).range([0, 600])
     }
 
     // adds the links between the nodes
@@ -294,9 +294,9 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, pheno){
 
         let x = xScale.domain(treenodes.data.attributes[pheno].scales.yScale.domain()).range([0, (dimensions.width+20)]);
         let xAxis = d3.axisBottom(x);
-        g.append('g').classed('pheno-x-axis', true).call(xAxis).attr('transform', 'translate(0, 510)').select('path').attr('stroke-width', 0);
+        g.append('g').classed('pheno-x-axis', true).call(xAxis).attr('transform', 'translate(0, 610)').select('path').attr('stroke-width', 0);
 
-        let y = d3.scaleLinear().domain([0,maxTimeKeeper[0]]).range([0, dimensions.height -20]);
+        let y = d3.scaleLinear().domain([0,maxTimeKeeper[0]]).range([0, 600-20]);
         let yAxis = d3.axisLeft(y);
         g.append('g').classed('pheno-y-axis', true).call(yAxis).attr('transform', 'translate(0, 2)').select('path').attr('stroke-width', 0);;
     }

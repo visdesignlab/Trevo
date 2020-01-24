@@ -5,6 +5,7 @@ import * as slide from 'd3-simple-slider';
 import { speciesTest, dataMaster } from ".";
 import { findBrushedNodes } from "./toolbarComponent";
 import { getScales } from "./filterComponent";
+import { renderTree } from "./sidebarComponent";
 
 export function rankingControl(data){
     let rankDiv = d3.select('#pair-rank').classed('hidden', false);
@@ -70,6 +71,33 @@ export function rankingControl(data){
         .attr('opacity', 0.6);
     });
 }
+export function changeTrait(attKeys, data, weights){
+
+  let drop = d3.select('.attr-drop.dropdown')
+  .selectAll('a').empty() ? dropDown(d3.select('#toolbar'), attKeys, `Trait: ${attKeys[1].field}`, 'attr-drop') : d3.select('.attr-drop.dropdown').selectAll('a');
+
+  d3.select('.attr-drop.dropdown').select('button').attr('value', attKeys[1].field);
+
+  drop.on('click', (d, i, n)=> {
+
+    let mappedPairs = updateRanking(pairPaths(data), d.field, weights);
+
+    drawSorted(mappedPairs.top20, d.field);
+    topPairSearch(mappedPairs.top20, mappedPairs.pairs, d.field, weights);
+
+    if(d3.select('#sidebar').select('#view-pheno').text() === 'View Phylogeny'){
+      console.log('update tree', d)
+      renderTree(d3.select('#sidebar'), null, true, d.field);
+    }
+
+    d3.select('.attr-drop.dropdown').select('button').attr('value', d.field);
+    d3.select('.attr-drop.dropdown').select('button').text(`Trait: ${d.field}`);
+    d3.select('#attr-drop').classed('show', false);
+});
+
+return drop;
+
+}
 export async function generatePairs(data){
 
         let pairs = await pairPaths(data);
@@ -82,23 +110,30 @@ export async function generatePairs(data){
                         return {'field': m.key, 'value': m.key }
                     });
         
-        let drop = d3.select('.attr-drop.dropdown')
-          .selectAll('a').empty() ? dropDown(d3.select('#toolbar'), attKeys, `Trait: ${attKeys[1].field}`, 'attr-drop') : d3.select('.attr-drop.dropdown').selectAll('a');
         
-        d3.select('.attr-drop.dropdown').select('button').attr('value', attKeys[1].field);
+        let drop = changeTrait(attKeys, data, weights);
+        // let drop = d3.select('.attr-drop.dropdown')
+        //   .selectAll('a').empty() ? dropDown(d3.select('#toolbar'), attKeys, `Trait: ${attKeys[1].field}`, 'attr-drop') : d3.select('.attr-drop.dropdown').selectAll('a');
+        
+        // d3.select('.attr-drop.dropdown').select('button').attr('value', attKeys[1].field);
 
-        drop.on('click', (d, i, n)=> {
+        // drop.on('click', (d, i, n)=> {
 
-          let mappedPairs = updateRanking(pairPaths(data), d.field, weights);
+        //   let mappedPairs = updateRanking(pairPaths(data), d.field, weights);
        
-          drawSorted(mappedPairs.top20, d.field);
-          topPairSearch(mappedPairs.top20, mappedPairs.pairs, d.field, weights);
+        //   drawSorted(mappedPairs.top20, d.field);
+        //   topPairSearch(mappedPairs.top20, mappedPairs.pairs, d.field, weights);
 
-           // renderTree(d3.select('#sidebar'), null, true, d.field);
-          d3.select('.attr-drop.dropdown').select('button').attr('value', d.field);
-          d3.select('.attr-drop.dropdown').select('button').text(`Trait: ${d.field}`);
-          d3.select('#attr-drop').classed('show', false);
-        });
+        //   if(d3.select('#sidebar').select('#view-pheno').text() === 'Phenogram'){
+        //     console.log('update tree', d)
+        //      renderTree(d3.select('#sidebar'), null, true, d.field);
+        //   }
+
+           
+        //   d3.select('.attr-drop.dropdown').select('button').attr('value', d.field);
+        //   d3.select('.attr-drop.dropdown').select('button').text(`Trait: ${d.field}`);
+        //   d3.select('#attr-drop').classed('show', false);
+        // });
 
         let mappedPairs = updateRanking([...pairs], attKeys[0].field, weights);
        

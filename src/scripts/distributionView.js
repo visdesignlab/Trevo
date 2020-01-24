@@ -990,7 +990,6 @@ function brushedNodes(nodes, notNodes, data, brushedVal, classLabel){
 
 export function continuousHistogram(data){
 
-    console.log('data in continuous histo',data)
     if(data[0]){
         let x = data[0].yScale;
         let histogram = d3.histogram()
