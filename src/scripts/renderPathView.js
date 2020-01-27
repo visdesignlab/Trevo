@@ -93,6 +93,8 @@ export function renderPaths(pathData, main){
 
     let scales = getScales();
 
+    console.log('maxtime keeper', maxTimeKeeper)
+
     ////YOU SHOULD MOVE THESE APPENDING THINGS OUT OF HERE///////
     /////Rendering ///////
     let svgTest = main.select('#main-path-view');
@@ -179,7 +181,7 @@ export function renderPaths(pathData, main){
         });
    
     nodeGroups.attr('transform', (d)=> {
-        let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, 1000]);
+        let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 1000]);
         let distance = x(d.combLength);
         return 'translate('+ distance +', 10)';});
 
@@ -271,7 +273,7 @@ async function continuousPaths(innerTimeline, collapsed){
     let height = (collapsed === 'true')? dimensions.collapsedHeight : dimensions.rectHeight;
     var lineGen = d3.line()
     .x(d=> {
-        let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, 1000]);
+        let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 1000]);
         let distance = x(d.combLength);
         return distance; })
     .y(d=> {
@@ -314,7 +316,7 @@ export function drawContAtt(predictedAttrGrps, collapsed){
     // innerRect.attr('height', attributeHeight).attr('width', dimensions.rectWidth);
 
     innerBars.attr('transform', (d)=> {
-        let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, 1000]);
+        let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 1000]);
         let distance = x(d.combLength);
         return 'translate('+ distance +', 0)';});
       
@@ -653,7 +655,7 @@ export function drawGroups(stateBins, scales){
             let xAxisShift = shiftWraps.append('g').classed('axis-x', true);
             xAxisShift.attr('transform', 'translate(0, '+(height - 15)+')');
             xAxisShift.each((d, i, nodes)=> {
-                let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, 200]);
+                let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 200]);
                 d3.select(nodes[i]).call(d3.axisBottom(x).ticks(5));
             });
 
@@ -661,7 +663,7 @@ export function drawGroups(stateBins, scales){
 
             let shiftCircles = circGroupShift.selectAll('circle.shift').data(d=> d).join('circle').classed('shift', true);
             shiftCircles.attr('r', 4).attr('cx', (d, i)=> {
-                let x = d3.scaleLinear().domain([0,maxTimeKeeper[0]]).range([0, 200]);
+                let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 200]);
                 return x(d.combLength)
             });
             shiftCircles.attr('fill', d=> d.color).style('opacity', 0.4);
@@ -740,7 +742,7 @@ export function drawGroups(stateBins, scales){
 
             let lineGenD = d3.line()
                 .x(d=> {
-                    let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, 800]);
+                    let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 800]);
                     let distance = d.combLength;
                     return x(distance);
                     })
@@ -751,7 +753,7 @@ export function drawGroups(stateBins, scales){
 
             let lineGenC = d3.line()
                 .x(d=> {
-                    let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, 800]);
+                    let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 800]);
                     let distance = d.combLength;
                     return x(distance);
                 })
@@ -1066,7 +1068,7 @@ export function drawGroups(stateBins, scales){
 
     let lineGenD = d3.line()
        .x(d=> {
-           let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, 800]);
+           let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 800]);
            let distance = d.combLength;
            return x(distance);
         })
@@ -1110,7 +1112,7 @@ export function drawGroups(stateBins, scales){
     let branchGrpDis = disGroup.selectAll('.branch').data(d=>d.paths).join('g').classed('branch', true);
 
     branchGrpDis.attr('transform', (d)=> {
-        let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, 800]);
+        let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 800]);
             let distance = x(d.combLength);
             return 'translate('+distance+', 0)';
      });
@@ -1212,7 +1214,7 @@ export function drawGroups(stateBins, scales){
     let branchGrpCon = conGroup.selectAll('.branch').data(d=>d.paths).join('g').classed('branch', true);
 
     branchGrpCon.attr('transform', (d)=> {
-      let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, 800]);
+      let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 800]);
           let distance = x(d.combLength);
           return 'translate('+distance+', 0)';
       });
@@ -1309,7 +1311,7 @@ export function drawDiscreteAtt(predictedAttrGrps, collapsed, bars){
 
     var lineGen = d3.line()
     .x(d=> {
-        let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, 1000]);
+        let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 1000]);
         let distance = x(d.combLength);
         return distance + 7;})
     .y(d=> {
@@ -1331,7 +1333,7 @@ export function drawDiscreteAtt(predictedAttrGrps, collapsed, bars){
         return d;}).join('g');
 
     attributeNodesDisc.attr('transform', (d)=> {
-        let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, 1000]);
+        let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 1000]);
         if(d[0]){
            // let distance = (moveMetric === 'move') ? d[0].move : x(d[0].combLength);
            let distance = x(d[0].combLength);
@@ -1435,7 +1437,6 @@ export function drawDiscreteAtt(predictedAttrGrps, collapsed, bars){
         }).join('rect').classed('dis-rect', true);
 
         stateBars.attr('width', dimensions.rectWidth).attr('height', (d, i)=> {
-         
             let y = d3.scaleLinear().domain([0, 1]).range([0, attributeHeight]);
             return y(d.realVal);
         });
