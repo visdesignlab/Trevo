@@ -87,7 +87,7 @@ async function appLaunch(){
     graphList = graphList.map(name=> {
         return {field: name, text: `Data: ${name}`}
     })
-   toolbarDataControl(toolbarDataWrap, graphList, graphList[0]);
+    toolbarDataControl(toolbarDataWrap, graphList, graphList[0]);
     loadApp(workspace, graphList[0].field);
 }
 

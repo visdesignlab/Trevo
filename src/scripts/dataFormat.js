@@ -109,7 +109,8 @@ function calculateDelta(pair, distance){
                         let valdiffs = bins.map((b, i)=> {
                             return Math.abs(b.one[0].attributes[name].values.realVal - b.two[0].attributes[name].values.realVal);
                         });
-                        m.value = d3.max(valdiffs) / distance;
+                       // m.value = d3.max(valdiffs) / distance;
+                        m.value = d3.max(valdiffs) /// distance;
                         return m;
                     });
 
@@ -122,7 +123,8 @@ function calculateCloseness(pair, distance){
  let leaf2 = pair.p2.filter(p=> p.leaf === true)[0].attributes;
 
  let closeness = d3.entries(leaf1).filter(f=> f.value.type === 'continuous').map(m=> {
-     m.value = Math.abs(m.value.values.realVal - leaf2[m.key].values.realVal) / distance;
+     //m.value = Math.abs(m.value.values.realVal - leaf2[m.key].values.realVal) / distance;
+     m.value = Math.abs(m.value.values.realVal - leaf2[m.key].values.realVal)// / distance;
      return m
  });
 

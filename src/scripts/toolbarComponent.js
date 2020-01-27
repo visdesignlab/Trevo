@@ -32,6 +32,8 @@ export function toolbarDataControl(toolbar, graphList, chosenGraph){
         main.selectAll('*').remove();
         sidebar.selectAll('*').remove();
         toolbarButtonWrap.selectAll('*').remove();
+        console.log('cladeKeeper', cladeKeeper)
+        cladeKeeper.push([]);
 
         loadApp(workspace, d.field);
 
@@ -151,7 +153,8 @@ export function toolbarControl(toolbar, main, calculatedScales){
     });
 
     /////ATTRIBUTE DROP DOWN
-    let cladeOptions = cladeKeeper;
+    let cladeOptions = cladeKeeper[cladeKeeper.length - 1];
+
 
     let dropdivClade = toolbar.append('div').classed(`dropdown clade-show`, true);
     dropdivClade.style('display', 'inline-block')

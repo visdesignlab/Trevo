@@ -57,7 +57,7 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
 
     formatAttributeData(newNormed, scales, keysToHide);
   
-    let max = maxTimeKeeper[0]
+    let max = maxTimeKeeper[maxTimeKeeper.length - 1]
 
     let normBins = new Array(branchCount)
         .fill().map((m, i)=> {
@@ -264,7 +264,7 @@ export function drawBranchPointDistribution(data, svg){
         })
     });
 
-    let bPointScale = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, dimensions.timeRange]);
+    let bPointScale = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, dimensions.timeRange]);
     let pointGroups = branchBar.selectAll('g.branch-points').data(nodeLengthArray)
         .join('g').attr('class', (d, i)=> d.node).classed('branch-points', true);
 
@@ -272,7 +272,7 @@ export function drawBranchPointDistribution(data, svg){
         return `translate(${(115 + bPointScale(d.eMove))}, 0)`});
     pointGroups.append('circle').attr('r', 5).attr('fill', '#fff').attr('opacity', 0.5);
 
-    let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, dimensions.timeRange]);
+    let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, dimensions.timeRange]);
     
     let binsRects = binWrap
         .selectAll('rect.bin')
@@ -532,7 +532,7 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
 
     branchGroup.filter(f=> f.type === 'continuous').attr('transform', (d, i, n)=> {
         let step = n.length < 11 ? (d.range[1] - d.range[0]) / 5 : 0;
-        let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, dimensions.timeRange]);
+        let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, dimensions.timeRange]);
             return 'translate('+(90 + (branchScale(i)) + x(step)) +', 0)'});
 
     let discreteDist = branchGroup.filter(f=> f.type === 'discrete');
@@ -546,7 +546,7 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
 
     discreteDist.attr('transform', (d, i, n)=> {
         let step = n.length < 11 ? (d.range[1] - d.range[0]) / 5 : 0;
-        let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, dimensions.timeRange]);
+        let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, dimensions.timeRange]);
             return 'translate('+(44 + (branchScale(i)) + x(step)) +', 0)'});
 
     discreteDist.on('mouseover', (d, i, node)=> {

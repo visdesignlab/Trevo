@@ -11,7 +11,7 @@ import { updateCladeDrop } from './toolbarComponent';
 
 export const cladesGroupKeeper = []
 export const chosenCladesGroup = []
-export const cladeKeeper = []
+export const cladeKeeper = [[]]
 
 const colorKeep = ['#58D68D', '#F39C12', '#EC7063']
 
@@ -64,7 +64,7 @@ export function growSidebarRenderTree(attrDraw){
     function  findCommonNode(path1, path2, className){
 
         let common = path1.filter(f=> path2.map(m=> m.node).indexOf(f.node) > -1);
-        let subtreeFinder = [nestedData[0]];
+        let subtreeFinder = [nestedData[nestedData.length - 1]];
         let commonNodeMark = nodes.filter(f=> f.data.node === common[common.length - 1].node);
       
         common.map(m=> m.node).map((m, i)=> {
@@ -109,7 +109,7 @@ export function growSidebarRenderTree(attrDraw){
         nodes.selectAll('circle').attr('fill', 'gray');
     }
 
-    drawCladeBox(cladeKeeper.filter(f=> f.position != undefined));
+    drawCladeBox(cladeKeeper[cladeKeeper.length - 1].filter(f=> f.position != undefined));
 
     leaf.on('click', (d, i, n)=> {
    
@@ -157,7 +157,7 @@ export function growSidebarRenderTree(attrDraw){
                 addClade(name, paths, positionHolder);
                 growSidebarRenderTree(null);
                 let ul = d3.select('div#clade-show').selectAll('ul');
-                updateCladeDrop(ul, cladeKeeper);
+                updateCladeDrop(ul, cladeKeeper[cladeKeeper.length - 1]);
             });
             cladeBool = null;
         }
@@ -246,7 +246,7 @@ function drawCladeBox(cladeData){
 }
 
 export function addClade(name, nodes, positions){
-    cladeKeeper.push({field: name, nodes: nodes, position: positions});
+    cladeKeeper[cladeKeeper.length - 1].push({field: name, nodes: nodes, position: positions});
 }
 
 export function addCladeGroup(name, clades, nodes){
@@ -255,7 +255,7 @@ export function addCladeGroup(name, clades, nodes){
 }
 
 export function removeCladeGroup(clades){
-    cladeKeeper = cladeKeeper.filter(f=> f.groupKey != clades.groupKey);
+    cladeKeeper[cladeKeeper.length - 1] = cladeKeeper[cladeKeeper.length - 1].filter(f=> f.groupKey != clades.groupKey);
 }
 
 function createNewCladeGroup(div, scales){
@@ -381,14 +381,14 @@ export async function createCladeView(div, scales){
 
 export function renderCladeTree(sidebar, att, dimensions){
 
-     addingEdgeLength(0, nestedData[0]);
+     addingEdgeLength(0, nestedData[nestedData.length - 1]);
     
     let treeFun = data => {
         const root = d3.hierarchy(data);
         return d3.tree().size([dimensions.width, dimensions.height])(root);
       }
 
-    let treenodes = treeFun(nestedData[0]);
+    let treenodes = treeFun(nestedData[nestedData.length - 1]);
 
     let treeSvg = sidebar.append("svg").classed('tree-svg', true);
     let g = treeSvg.append("g").classed('tree-g', true);
@@ -422,7 +422,7 @@ export function updateCladeTree(treenodes, dimensions, treeSvg, g, attrDraw, len
     .attr("height", dimensions.height + (dimensions.height / 1.5));
 
     findDepth(treenodes, []);
-    let xScale = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, dimensions.width]).clamp(true);
+    let xScale = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, dimensions.width]).clamp(true);
     let yScale = d3.scaleLinear().range([dimensions.height, 0]).domain([0, getLatestData().length])
     g.attr('transform', `translate(30, ${dimensions.height / 1.9})`);
 
