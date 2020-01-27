@@ -131,6 +131,8 @@ function calculateCloseness(pair, distance){
 
 export function calculateNewScales(attributes, keyList, colorKeeper){
 
+    console.log('in scales', attributes, keyList, colorKeeper);
+
     return keyList.map((d, i)=> {
 
         let attData = attributes.flatMap(f=> f[d]);
@@ -357,6 +359,8 @@ export function filterKeeper(){
 
 export function formatAttributeData(pathData, scales, filterArray){
 
+    console.log('testing attr', pathData, scales, filterArray)
+
     let keys = (filterArray == null)? Object.keys(pathData[0][0].attributes).filter(f=> f != 'node' && f != 'leaf' && f != 'length' && f != 'root' && f != 'key'): filterArray;
    
     let newData = pathData.map(path=> {
@@ -433,9 +437,11 @@ export function formatAttributeData(pathData, scales, filterArray){
 export async function dataLoadAndFormatMultinet(workspace, graphName){
 
     let dataName = graphName;
-
     let data = await load_data(workspace, graphName);
 
+    let internalIndex = 0;
+    let leafIndex = 1;
+  
    
     //helper function to create array of unique elements
     Array.prototype.unique = function() {
@@ -446,11 +452,14 @@ export async function dataLoadAndFormatMultinet(workspace, graphName){
 
     let attributeList = [];
 
-    let edges = data.links;
-    let internal = data.nodes.filter(f=> f.id.includes('internal'));
-    let leaves = data.nodes.filter(f=> f.id.includes('leaf'));
+    let edges = data.links[0].rows;
 
-    let notAttributeList = ["id", "label", "_key", "_rev", "key", "length"];
+    let internal = data.nodes[internalIndex].rows//.filter(f=> f._id.includes('internal'));
+    let leaves = data.nodes[leafIndex].rows//.filter(f=> f._id.includes('leaf'));
+
+    let notAttributeList = ["_id", "label", "_key", "_rev", "key", "length"];
+
+
 
     ///Creating attribute list to add estimated values in //
     d3.keys(leaves[0]).filter(f=> notAttributeList.indexOf(f) === -1).forEach((d, i)=> {
@@ -465,6 +474,7 @@ export async function dataLoadAndFormatMultinet(workspace, graphName){
 
     let calculatedAtt = internal.map((row, i)=> {
 
+        
         let newRow = {};
         attributeList.forEach((att)=>{
             newRow[att.field] = {};
@@ -488,12 +498,12 @@ export async function dataLoadAndFormatMultinet(workspace, graphName){
             newRow[att.field].values = values;
         });
         newRow.node = row.label;
-        newRow.key = row.id;
+        newRow.key = row._id;
         newRow.length = +row.length;
         newRow.leaf = false;
         return newRow;
     });
-
+    console.log('leaves', leaves)
     let calcLeafAtt = leaves.map((row, i)=> {
         let newRow = {};
         attributeList.forEach((att)=>{
@@ -513,7 +523,7 @@ export async function dataLoadAndFormatMultinet(workspace, graphName){
         newRow.node = row.label;
         newRow.label = row.label;
         newRow.length = +row.length;
-        newRow.key = row.id;
+        newRow.key = row._id;
         newRow.leaf = true;
         return newRow;
     });
@@ -522,11 +532,14 @@ export async function dataLoadAndFormatMultinet(workspace, graphName){
 
     let matchedEdges = edges.map((edge, i)=> {
 
-        let attrib = edge.target.includes("internal") ? calculatedAtt.filter(f=> f.key === edge.target)[0] : calcLeafAtt.filter(f=> f.key === edge.target)[0];
-        let fromNode = edge.source.includes("internal") ? calculatedAtt.filter(f=> f.key === edge.source)[0] : calcLeafAtt.filter(f=> f.key === edge.source)[0];
+        let edgeSource = '_from';
+        let edgeTarget = '_to';
+
+        let attrib = edge[edgeTarget].includes("internal") ? calculatedAtt.filter(f=> f.key === edge[edgeTarget])[0] : calcLeafAtt.filter(f=> f.key === edge[edgeTarget])[0];
+        let fromNode = edge[edgeSource].includes("internal") ? calculatedAtt.filter(f=> f.key === edge[edgeSource])[0] : calcLeafAtt.filter(f=> f.key === edge[edgeSource])[0];
 
         if(attrib){
-           
+        
             Object.keys(attrib).filter(f=> (f != 'node') && (f != 'label') && (f != 'length') && (f != 'leaf') && (f != 'key')).map((att, i)=>{
                 let scales = calculatedScales.filter(f=> f.field=== att)[0];
                 attrib[att].scales = scales;
@@ -541,6 +554,7 @@ export async function dataLoadAndFormatMultinet(workspace, graphName){
             edgeLength: +attrib.length,
             attributes: attrib ? attrib : null
         }
+       
         return newEdge;
     });
 
@@ -554,7 +568,7 @@ export async function dataLoadAndFormatMultinet(workspace, graphName){
                     let scales = calculatedScales.filter(f=> f.field=== att)[0]
                     attrib[att].scales = scales;
                     return att;
-                })
+                });
             }
             let rooted = {
                 V1: null,
@@ -570,7 +584,6 @@ export async function dataLoadAndFormatMultinet(workspace, graphName){
         });
 
     let normedPaths = combineLength(paths);
-
     let group = binGroups(normedPaths, dataName, calculatedScales, 8);
     let chosenClade = addCladeGroup(`All ${dataName}`, ['Whole Set'], [{'label': `All ${dataName}`, 'paths': normedPaths, 'groupBins': group}]);
     chosenCladesGroup.push(chosenClade)    

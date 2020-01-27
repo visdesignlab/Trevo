@@ -537,6 +537,8 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
             return 'translate('+(90 + (branchScale(i)) + x(step)) +', 0)'});
 
     let discreteDist = branchGroup.filter(f=> f.type === 'discrete');
+
+    console.log('discxrete dist', discreteDist, discreteDist.data())
     
     /**
      * Discrete Predicted Render and Events
@@ -568,8 +570,6 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
     });
 
     renderContinuousPredicted(continDist);
-
-    
 
      //////START BRANCH EXPERIMENT
      let brush = d3.brushY().extent([[0, 0], [20, dimensions.height]])
@@ -1096,6 +1096,7 @@ function renderDiscretePredicted(discreteDist){
             .map(arr=> {
                 arr.y = Math.random();
                 arr.x = randomizer();
+                
                 return arr;
             });
             return arrayTest;
@@ -1121,8 +1122,9 @@ function renderDiscretePredicted(discreteDist){
     probabilityTicks.attr('transform', (d, i, n)=> {
         let scale = d3.scaleLinear().domain([0, 1]).range([2, (discreteWidth - 2)]).clamp(true);
     
-    let yScale = d3.scaleLinear().domain([0, 1]).range([2, dimensions.squareDim - 2])
-    return `translate(${scale(d.value + d.x)},${yScale(d.y)})`});
+    let yScale = d3.scaleLinear().domain([0, 1]).range([2, dimensions.squareDim - 2]);
+  
+    return `translate(${scale(+d.value + d.x)},${yScale(d.y)})`});
 
     let averageTick = stateBarsPredicted
         .selectAll('.av-tick').data(d=> {

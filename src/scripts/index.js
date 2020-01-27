@@ -92,11 +92,12 @@ async function appLaunch(){
 }
 
 export async function loadApp(workspace, graphName){
+ 
 
-    dataLoadAndFormat('anolis-edges.json', 'anolis-edge-lengths.json', 'anolis-leaf-data.csv', 'anolis-res.json', 'Anolis').then(centData=> {
-    //dataLoadAndFormatMultinet(workspace, graphName).then(centData=> {
+    //dataLoadAndFormat('anolis-edges.json', 'anolis-edge-lengths.json', 'anolis-leaf-data.csv', 'anolis-res.json', 'Anolis').then(centData=> {
+    dataLoadAndFormatMultinet(workspace, graphName).then(centData=> {
 
-        console.log('cent',centData)
+        console.log('cent', centData)
     
         toolbarControl(toolbarButtonWrap, main, centData[1]);
         d3.select('#clade-show').selectAll('li').select('input').node().checked = true
