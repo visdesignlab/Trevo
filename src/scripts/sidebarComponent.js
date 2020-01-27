@@ -63,32 +63,9 @@ export function renderTreeButtons(normedPaths){
     phenogramButton.on('click', ()=> {
           if(phenogramButton.text() === 'Phenogram'){
 
-            // if(d3.select('.attr-drop.dropdown').select('button').empty()){
-
-                
-            //     let drop = dropDown(d3.select('#toolbar'), phenoOptions, `Trait: ${phenoOptions[1].field}`, 'attr-drop');
-            //     d3.select('.attr-drop.dropdown').select('button').attr('value', phenoOptions[1].field);
-            //     d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Color By Value`);
-            //     drop.on('click', (d, i, n)=> {
-            //         if(d3.select('.dropdown.change-view').select('button').node().value === "View Pairs"){
-            //             updateRanking(pairPaths(normedPaths), d.field);
-            //         }
-            //         renderTree(true, d.field);
-            //         d3.select('.attr-drop.dropdown').select('button').text(`Trait: ${d.field}`);
-            //         d3.select('.attr-drop.dropdown').select('button').attr('value')
-            //         d3.select('.attr-drop.dropdown').select('button').attr('value', d.field);
-            //         d3.select('#attr-drop').classed('show', false);
-            //     });
-            //     renderTree(null, true, d3.select('.attr-drop.dropdown').select('button').attr('value'));
-            //   }else{
-            //     renderTree(null, true, d3.select('.attr-drop.dropdown').select('button').attr('value'));
-            //   }
-
-            
-            
               phenogramButton.text('View Phylogeny');
               changeTrait(phenoOptions, normedPaths, null);
-              console.log('is this on', d3.select('.attr-drop.dropdown').select('button').node().value);
+              
               renderTree(null, true, d3.select('.attr-drop.dropdown').select('button').attr('value'));
 
           }else{
@@ -196,16 +173,16 @@ export function renderTree(att, uncollapse, pheno){
 
     let lengthBool = true;
 
-    console.log('pheno',pheno)
+   
 
     // declares a tree layout and assigns the size
     var treemap = d3.tree()
     .size([dimensions.height, dimensions.width]);
-
-    addingEdgeLength(0, nestedData[0]);
+   
+    addingEdgeLength(0, nestedData[nestedData.length - 1]);
     
     //  assigns the data to a hierarchy using parent-child relationships
-    var treenodes = d3.hierarchy(nestedData[0]);
+    var treenodes = d3.hierarchy(nestedData[nestedData.length - 1]);
 
     // maps the node data to the tree layout
     treenodes = treemap(treenodes);
@@ -269,7 +246,7 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, pheno){
     assignPosition(treenodes, 0);
 
     let branchCount = findDepth(treenodes, []);
-    let xScale = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, dimensions.width]).clamp(true);
+    let xScale = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, dimensions.width]).clamp(true);
     let yScale = d3.scaleLinear().range([dimensions.height, 0]).domain([0, 1]);
 
     g.attr('transform', 'translate(20, 375)');
@@ -281,7 +258,7 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, pheno){
         treeSvg.attr('height', 800);
         console.log('tree nodes',treenodes, treenodes.data.attributes[pheno], pheno)
         xScale.domain(treenodes.data.attributes[pheno].scales.yScale.domain())
-        yScale.domain([0, maxTimeKeeper[0]]).range([0, 600])
+        yScale.domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 600])
     }
 
     // adds the links between the nodes
@@ -313,7 +290,7 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, pheno){
         let xAxis = d3.axisBottom(x);
         g.append('g').classed('pheno-x-axis', true).call(xAxis).attr('transform', 'translate(0, 610)').select('path').attr('stroke-width', 0);
 
-        let y = d3.scaleLinear().domain([0,maxTimeKeeper[0]]).range([0, 600-20]);
+        let y = d3.scaleLinear().domain([0,maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 600-20]);
         let yAxis = d3.axisLeft(y);
         g.append('g').classed('pheno-y-axis', true).call(yAxis).attr('transform', 'translate(0, 2)').select('path').attr('stroke-width', 0);;
     }

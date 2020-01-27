@@ -244,7 +244,7 @@ function drawSorted(pairs, field){
       let neighPaths = dataMaster[dataMaster.length - 1].filter(f=> 
         (neighbors.indexOf(f[f.length - 1].node)) > -1 && (speciesNames.indexOf(f[f.length - 1].node) === -1));
 
-      console.log('np',neighPaths, labels, speciesTest)
+    
   
       let labeledN = [...neighPaths].map(path=> {
         let name = path[path.length - 1].node;
@@ -257,8 +257,7 @@ function drawSorted(pairs, field){
       let spec1N = labeledN.map(m => m.filter(f=> species1.indexOf(f.node) > -1));
       let spec2N = labeledN.map(m => m.filter(f=> species2.indexOf(f.node) > -1));
 
-      console.log('species', labeledN, spec1N, spec2N)
-  
+
       let closest1 = spec1N.filter((f, i, n)=> {
         let max = d3.max(n.map(d=> d.length));
         return f.length === max;
@@ -268,7 +267,7 @@ function drawSorted(pairs, field){
         let max = d3.max(n.map(d=> d.length));
         return f.length === max;
       })[0];
-      console.log('species', closest1, closest2)
+      
       let wholeClosest1 = labeledN.filter(f=> f[f.length-1].node === closest1[closest1.length - 1].name)[0];
       let wholeClosest2 = labeledN.filter(f=> f[f.length-1].node === closest2[closest2.length - 1].name)[0];
      
