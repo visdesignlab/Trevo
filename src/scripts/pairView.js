@@ -115,28 +115,6 @@ export async function generatePairs(data){
         
         
         let drop = changeTrait(attKeys, data, weights);
-        // let drop = d3.select('.attr-drop.dropdown')
-        //   .selectAll('a').empty() ? dropDown(d3.select('#toolbar'), attKeys, `Trait: ${attKeys[1].field}`, 'attr-drop') : d3.select('.attr-drop.dropdown').selectAll('a');
-        
-        // d3.select('.attr-drop.dropdown').select('button').attr('value', attKeys[1].field);
-
-        // drop.on('click', (d, i, n)=> {
-
-        //   let mappedPairs = updateRanking(pairPaths(data), d.field, weights);
-       
-        //   drawSorted(mappedPairs.top20, d.field);
-        //   topPairSearch(mappedPairs.top20, mappedPairs.pairs, d.field, weights);
-
-        //   if(d3.select('#sidebar').select('#view-pheno').text() === 'Phenogram'){
-        //     console.log('update tree', d)
-        //      renderTree(d3.select('#sidebar'), null, true, d.field);
-        //   }
-
-           
-        //   d3.select('.attr-drop.dropdown').select('button').attr('value', d.field);
-        //   d3.select('.attr-drop.dropdown').select('button').text(`Trait: ${d.field}`);
-        //   d3.select('#attr-drop').classed('show', false);
-        // });
 
         let mappedPairs = updateRanking([...pairs], attKeys[0].field, weights);
        
@@ -183,7 +161,7 @@ function drawSorted(pairs, field){
    
   let width = 600;
   let height = 100;
-  let xScale = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, width]);
+  let xScale = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, width]);
     
   let svg = d3.select('#main').append('svg');
   svg.attr('height', pairs.length * (height * 1.9))
@@ -236,7 +214,7 @@ function drawSorted(pairs, field){
 
     var lineGen = d3.line()
     .x(d=> {
-        let x = d3.scaleLinear().domain([0, maxTimeKeeper[0]]).range([0, width]);
+        let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, width]);
        let distance = x(d.combLength);
         return distance; })
     .y(d=> {
@@ -253,16 +231,20 @@ function drawSorted(pairs, field){
       let labels = [...d.p1.filter(n=> n.leaf === true).map(m=> m.node)].concat(d.p2.filter(n=> n.leaf === true).map(m=> m.node));
 
       let neighbors = labels.flatMap(m=> {
-          let start = speciesTest[0].indexOf(m);
-          let ne = speciesTest[0].filter((f, j)=> (j < (+start + 2)) && (j > (+start - 2)));
+          let start = speciesTest[speciesTest.length - 1].indexOf(m);
+          let ne = speciesTest[speciesTest.length - 1].filter((f, j)=> (j < (+start + 2)) && (j > (+start - 2)));
           return ne;
       });
       
       let speciesNames = [species1[species1.length-1], species2[species2.length-1]];
 
+      
+
       ////EXPERIMENTING WITH NODES////
-      let neighPaths = dataMaster[0].filter(f=> 
+      let neighPaths = dataMaster[dataMaster.length - 1].filter(f=> 
         (neighbors.indexOf(f[f.length - 1].node)) > -1 && (speciesNames.indexOf(f[f.length - 1].node) === -1));
+
+      console.log('np',neighPaths, labels, speciesTest)
   
       let labeledN = [...neighPaths].map(path=> {
         let name = path[path.length - 1].node;
@@ -271,9 +253,11 @@ function drawSorted(pairs, field){
           return p
         })
       });
-  
+      
       let spec1N = labeledN.map(m => m.filter(f=> species1.indexOf(f.node) > -1));
       let spec2N = labeledN.map(m => m.filter(f=> species2.indexOf(f.node) > -1));
+
+      console.log('species', labeledN, spec1N, spec2N)
   
       let closest1 = spec1N.filter((f, i, n)=> {
         let max = d3.max(n.map(d=> d.length));
@@ -284,7 +268,7 @@ function drawSorted(pairs, field){
         let max = d3.max(n.map(d=> d.length));
         return f.length === max;
       })[0];
-  
+      console.log('species', closest1, closest2)
       let wholeClosest1 = labeledN.filter(f=> f[f.length-1].node === closest1[closest1.length - 1].name)[0];
       let wholeClosest2 = labeledN.filter(f=> f[f.length-1].node === closest2[closest2.length - 1].name)[0];
      
@@ -373,8 +357,8 @@ function drawSorted(pairs, field){
         let species2 = d.p2.map(n=> n.node);
         let labels = [...d.p1.filter(n=> n.leaf === true).map(m=> m.node)].concat(d.p2.filter(n=> n.leaf === true).map(m=> m.node));
         let neighbors = labels.flatMap(m=> {
-            let start = speciesTest[0].indexOf(m);
-            let ne = speciesTest[0].filter((f, j)=> (j < (+start + 2)) && (j > (+start - 2)));
+            let start = speciesTest[speciesTest.length - 1].indexOf(m);
+            let ne = speciesTest[speciesTest.length - 1].filter((f, j)=> (j < (+start + 2)) && (j > (+start - 2)));
             return ne;
         });
         let checkArray = species1.filter(s=> species2.indexOf(s) > -1);

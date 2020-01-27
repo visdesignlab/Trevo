@@ -47,8 +47,7 @@ export function groupDistributions(pathData, mainDiv, groupAttr){
 }
 export function binGroups(pathData, groupLabel, scales, branchCount){
 
-    console.log('pathhsss',pathData, scales)
-
+  
     let attrHide = filterMaster.filter(f=> f.type === 'hide-attribute').map(m=> m.attribute);
     
     let keys = scales.map(s=> s.field).filter(f=> attrHide.indexOf(f) === -1);
@@ -538,7 +537,7 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
 
     let discreteDist = branchGroup.filter(f=> f.type === 'discrete');
 
-    console.log('discxrete dist', discreteDist, discreteDist.data())
+  
     
     /**
      * Discrete Predicted Render and Events

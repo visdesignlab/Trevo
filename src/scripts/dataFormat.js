@@ -75,7 +75,7 @@ function calculateDelta(pair, distance){
     let p2 = pair.p2.filter((f, i)=> i >= p2Index);
 
  
-    let range = maxTimeKeeper[0] - p1[0].combLength;
+    let range = maxTimeKeeper[maxTimeKeeper.length - 1] - p1[0].combLength;
     let binCount = d3.max([p1.length, p2.length])
     let binStep = range / binCount;
    
@@ -131,7 +131,7 @@ function calculateCloseness(pair, distance){
 
 export function calculateNewScales(attributes, keyList, colorKeeper){
 
-    console.log('in scales', attributes, keyList, colorKeeper);
+
 
     return keyList.map((d, i)=> {
 
@@ -359,7 +359,7 @@ export function filterKeeper(){
 
 export function formatAttributeData(pathData, scales, filterArray){
 
-    console.log('testing attr', pathData, scales, filterArray)
+  
 
     let keys = (filterArray == null)? Object.keys(pathData[0][0].attributes).filter(f=> f != 'node' && f != 'leaf' && f != 'length' && f != 'root' && f != 'key'): filterArray;
    
@@ -503,7 +503,7 @@ export async function dataLoadAndFormatMultinet(workspace, graphName){
         newRow.leaf = false;
         return newRow;
     });
-    console.log('leaves', leaves)
+   
     let calcLeafAtt = leaves.map((row, i)=> {
         let newRow = {};
         attributeList.forEach((att)=>{
