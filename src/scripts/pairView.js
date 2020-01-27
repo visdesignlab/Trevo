@@ -83,6 +83,8 @@ export function changeTrait(attKeys, data, weights){
 
   drop.on('click', (d, i, n)=> {
 
+    console.log('change in tree', d)
+
     let mappedPairs = updateRanking(pairPaths(data), d.field, weights);
 
     drawSorted(mappedPairs.top20, d.field);
