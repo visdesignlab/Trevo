@@ -63,6 +63,8 @@ export function renderTreeButtons(normedPaths){
     phenogramButton.on('click', ()=> {
           if(phenogramButton.text() === 'Phenogram'){
             if(d3.select('.attr-drop.dropdown').select('button').empty()){
+
+                
                 let drop = dropDown(d3.select('#toolbar'), phenoOptions, `Trait: ${phenoOptions[1].field}`, 'attr-drop');
                 d3.select('.attr-drop.dropdown').select('button').attr('value', phenoOptions[1].field);
                 d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Color By Value`);
@@ -186,6 +188,8 @@ export function renderTree(att, uncollapse, pheno){
 
     let lengthBool = true;
 
+    console.log('pheno',pheno)
+
     // declares a tree layout and assigns the size
     var treemap = d3.tree()
     .size([dimensions.height, dimensions.width]);
@@ -214,12 +218,15 @@ export function renderTree(att, uncollapse, pheno){
     if(groupedBool === "ungrouped" && uncollapse === false){
         if((cladesGroupKeeper.length > 0) && (chosenCladesGroup[chosenCladesGroup.length - 1].field != 'Clade Attribute)')){
             let newNodes = collapseTree(treenodes);
+            console.log('testing this above', treenodes, dimensions, treeSvg, g, att, pheno)
             updateTree(newNodes, dimensions, treeSvg, g, att, pheno);
         }else{
+            console.log('testing this', treenodes, dimensions, treeSvg, g, att, pheno)
             updateTree(treenodes, dimensions, treeSvg, g, att, pheno);
         }
         
     }else{
+        console.log('testing this below', treenodes, dimensions, treeSvg, g, att, pheno)
         ////Break this out into other nodes////
         updateTree(treenodes, dimensions, treeSvg, g, att, pheno);
     }

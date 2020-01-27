@@ -38,20 +38,20 @@ def upconvert(value: str) -> Any:
 
 def parse_edge_file(stream: TextIO) -> Sequence[EdgeRow]:
     data = json.loads(stream.read())
-
-    return [{'_from': row['From'], '_to': row['To']} for row in data['rows'] if row['From'] and row['To']]
-
+    rows = data if type(data) == list else data['rows']
+   
+    return [{'_from': row['From'], '_to': row['To']} for row in rows if row['From'] and row['To']]
 
 def parse_edge_length_file(stream: TextIO) -> Sequence[float]:
     data = json.loads(stream.read())
+    rows = data if type(data) == list else data['rows']
 
-    return [row['x'] for row in data['rows']]
-
+    return [row['x'] for row in rows]
 
 def parse_data_file(stream: TextIO) -> Sequence[DataRow]:
     data = json.loads(stream.read())
-
-    return data['rows']
+    rows = data if type(data) == list else data['rows']
+    return rows
 
 
 def parse_leaf_file(stream: TextIO) -> Sequence[DataRow]:
