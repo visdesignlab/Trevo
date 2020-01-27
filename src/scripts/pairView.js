@@ -73,7 +73,6 @@ export function rankingControl(data){
 }
 export function changeTrait(attKeys, data, weights){
 
-  console.log('change trait',d3.select('#toolbar').select('.dropdown.change-view').select('.dropdown-toggle').node().value)
   let view = d3.select('#toolbar').select('.dropdown.change-view').select('.dropdown-toggle').node().value;
 
   let drop = d3.select('.attr-drop.dropdown')
@@ -83,16 +82,15 @@ export function changeTrait(attKeys, data, weights){
 
   drop.on('click', (d, i, n)=> {
 
-    console.log('change in tree', d)
+    if(d3.select('#toolbar').select('.dropdown.change-view').select('.dropdown-toggle').node().value === "Pair View"){
+      let mappedPairs = updateRanking(pairPaths(data), d.field, weights);
 
-    let mappedPairs = updateRanking(pairPaths(data), d.field, weights);
-
-    drawSorted(mappedPairs.top20, d.field);
-    topPairSearch(mappedPairs.top20, mappedPairs.pairs, d.field, weights);
+      drawSorted(mappedPairs.top20, d.field);
+      topPairSearch(mappedPairs.top20, mappedPairs.pairs, d.field, weights);
+    }
 
     if(d3.select('#sidebar').select('#view-pheno').text() === 'View Phylogeny'){
-      console.log('update tree', d)
-      renderTree(d3.select('#sidebar'), null, true, d.field);
+      renderTree(null, true, d.field);
     }
 
     d3.select('.attr-drop.dropdown').select('button').attr('value', d.field);

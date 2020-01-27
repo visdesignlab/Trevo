@@ -5,7 +5,7 @@ import {dataMaster, nestedData, collapsed} from './index';
 import {getScales} from './filterComponent';
 import {getNested} from './pathCalc';
 import { dropDown } from './buttonComponents';
-import { updateRanking } from './pairView';
+import { updateRanking, changeTrait } from './pairView';
 import { pairPaths, maxTimeKeeper } from './dataFormat';
 import { cladesGroupKeeper, chosenCladesGroup, growSidebarRenderTree } from './cladeMaker';
 
@@ -62,27 +62,35 @@ export function renderTreeButtons(normedPaths){
     phenogramButton.classed('btn btn-outline-secondary', true).attr('id', 'view-pheno'); 
     phenogramButton.on('click', ()=> {
           if(phenogramButton.text() === 'Phenogram'){
-            if(d3.select('.attr-drop.dropdown').select('button').empty()){
+
+            // if(d3.select('.attr-drop.dropdown').select('button').empty()){
 
                 
-                let drop = dropDown(d3.select('#toolbar'), phenoOptions, `Trait: ${phenoOptions[1].field}`, 'attr-drop');
-                d3.select('.attr-drop.dropdown').select('button').attr('value', phenoOptions[1].field);
-                d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Color By Value`);
-                drop.on('click', (d, i, n)=> {
-                    if(d3.select('.dropdown.change-view').select('button').node().value === "View Pairs"){
-                        updateRanking(pairPaths(normedPaths), d.field);
-                    }
-                    renderTree(true, d.field);
-                    d3.select('.attr-drop.dropdown').select('button').text(`Trait: ${d.field}`);
-                    d3.select('.attr-drop.dropdown').select('button').attr('value')
-                    d3.select('.attr-drop.dropdown').select('button').attr('value', d.field);
-                    d3.select('#attr-drop').classed('show', false);
-                });
-                renderTree(null, true, d3.select('.attr-drop.dropdown').select('button').attr('value'));
-              }else{
-                renderTree(null, true, d3.select('.attr-drop.dropdown').select('button').attr('value'));
-              }
+            //     let drop = dropDown(d3.select('#toolbar'), phenoOptions, `Trait: ${phenoOptions[1].field}`, 'attr-drop');
+            //     d3.select('.attr-drop.dropdown').select('button').attr('value', phenoOptions[1].field);
+            //     d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Color By Value`);
+            //     drop.on('click', (d, i, n)=> {
+            //         if(d3.select('.dropdown.change-view').select('button').node().value === "View Pairs"){
+            //             updateRanking(pairPaths(normedPaths), d.field);
+            //         }
+            //         renderTree(true, d.field);
+            //         d3.select('.attr-drop.dropdown').select('button').text(`Trait: ${d.field}`);
+            //         d3.select('.attr-drop.dropdown').select('button').attr('value')
+            //         d3.select('.attr-drop.dropdown').select('button').attr('value', d.field);
+            //         d3.select('#attr-drop').classed('show', false);
+            //     });
+            //     renderTree(null, true, d3.select('.attr-drop.dropdown').select('button').attr('value'));
+            //   }else{
+            //     renderTree(null, true, d3.select('.attr-drop.dropdown').select('button').attr('value'));
+            //   }
+
+            
+            
               phenogramButton.text('View Phylogeny');
+              changeTrait(phenoOptions, normedPaths, null);
+              console.log('is this on', d3.select('.attr-drop.dropdown').select('button').node().value);
+              renderTree(null, true, d3.select('.attr-drop.dropdown').select('button').attr('value'));
+
           }else{
             ////ADD THE HIDE BUTTON HERE 
             let view = d3.select('.dropdown.change-view').select('button').text();
