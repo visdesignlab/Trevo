@@ -48,7 +48,6 @@ def parse_edge_length_file(stream: TextIO) -> Sequence[float]:
 
     return [row['x'] for row in rows]
 
-
 def parse_data_file(stream: TextIO) -> Sequence[DataRow]:
     data = json.loads(stream.read())
     rows = data if type(data) == list else data['rows']
