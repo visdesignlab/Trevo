@@ -35,38 +35,50 @@ export function drawPathsAndAttributes(pathData, main){
 
     let attData = formatAttributeData(pathData, scales, shownAttributes);
 
-    console.log(pathGroups)
-
     let combinedAttGroup = pathGroups.append('g').classed('all-att-combo', true);
     combinedAttGroup.datum((d,i)=> attData[i])
-    combinedAttGroup.attr('transform', `translate(${width + 180}, -10)`)
-    combinedAttGroup.append('rect').attr('width', 100).attr('height', 40).classed('attribute-rect', true);
+    combinedAttGroup.attr('transform', `translate(${width + 180}, -9)`)
+    combinedAttGroup.append('rect')
+    .attr('width', 80)
+    .attr('height', 40)
+    .attr('fill', '#fff')
+    .style('fill-opacity', '0.6')
+    .style('stroke', 'gray')
+    .style('stroke-width', '0.7px')
 
     let comboLineGroups = combinedAttGroup.selectAll('g.combo-lines').data((d, i)=> {
         return d}).join('g').classed('combo-lines', true);
 
-    let comboLine = continuousPaths(comboLineGroups, collapsed, 100, 0.5);
-
-       
-    console.log(combinedAttGroup.data())
+    let comboLine = continuousPaths(comboLineGroups, collapsed, 80, 0.3, false);
 
 
     let predictedAttrGrps = renderAttributes(attributeWrapper, attData, collapsed);
     let attributeHeight = (collapsed === 'true')? 22 : 45;
     pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (shownAttributes.length + 1))) +')');
 
-
-    
     let cGroups = drawContAtt(predictedAttrGrps, collapsed, width);
     let dGroups = drawDiscreteAtt(predictedAttrGrps, collapsed, false, width);
 
-    console.log('contG',cGroups)
     let compactLineG = cGroups.append('g').classed('compact-line', true);
-    compactLineG.attr('transform', `translate(${width + 30}, 0)`);
+    compactLineG.attr('transform', `translate(${width + 40}, 0)`);
     compactLineG.append('rect').attr('width', 80).attr('height', 40).classed('attribute-rect', true);
 
-    //let innerPaths = continuousPaths(compactLineG, collapsed, 80);
     let innerPaths = continuousArea(compactLineG, collapsed, 80, 1);
+    compactLineG.on('mouseover', (d, i, n)=> {
+        let test = d3.select(n[i].parentNode.parentNode.parentNode).selectAll('g.combo-lines');
+        test.filter(f=> {
+            return f[0].field === d[0].field;
+        }).select('path')
+        .style('stroke', (s)=> s[0].color)
+        .style('opacity', 1);
+    }).on('mouseout', (d, i, n)=> {
+        let test = d3.select(n[i].parentNode.parentNode.parentNode).selectAll('g.combo-lines');
+        test.filter(f=> {
+            return f[0].field === d[0].field;
+        }).select('path')
+        .style('stroke', 'gray')
+        .style('opacity', 0.4);
+    })
 
     sizeAndMove(main.select('#main-path-view'), attributeWrapper, pathData, (shownAttributes.length * attributeHeight));
 
@@ -115,7 +127,7 @@ export function drawPathsAndAttributes(pathData, main){
 export function sizeAndMove(svg, attribWrap, data, attrMove){
         //tranforming elements
     svg.style('height', ((data.length * (attrMove + 52))) + 'px');
-    attribWrap.attr('transform', (d)=> 'translate(140, 25)');
+    attribWrap.attr('transform', (d)=> 'translate(140, 35)');
         ///////////////////////////////////
 }
 export function renderPaths(pathData, main, width){
@@ -147,8 +159,8 @@ export function renderPaths(pathData, main, width){
     let circleScale = d3.scaleLog().range([6, 12]).domain([1, d3.max(Object.values(branchFrequency))]);
     let pathGroups = pathWrap.selectAll('.paths').data(pathData).join('g').classed('paths', true);
     let pathBars = pathGroups.append('rect').classed('path-rect', true);
-    pathBars.attr('width', (width+180));
-    pathBars.attr('y', -8);
+    pathBars.style('width', '100%');
+    pathBars.attr('y', -12);
 
     //////////
     ///Selecting species
@@ -324,7 +336,7 @@ async function continuousArea(innerTimeline, collapsed, width){
      return innerPaths;
 
 }
-async function continuousPaths(innerTimeline, collapsed, width, opacity){
+async function continuousPaths(innerTimeline, collapsed, width, opacity, colorBool){
 
     innerTimeline.data().forEach(path => {
         collapsedPathGen(path);
@@ -350,7 +362,9 @@ async function continuousPaths(innerTimeline, collapsed, width, opacity){
     let innerPaths = innerTimeline.append('path')
     .attr("d", lineGen)
     .attr("class", "inner-line")
-    .style('stroke', (d)=> d[0].color)
+    .style('stroke', (d)=> {
+        return colorBool ? d[0].color : 'gray'
+    })
     .style('opacity', opacity);
 
     return innerPaths;
@@ -363,10 +377,9 @@ export function drawContAtt(predictedAttrGrps, collapsed, width){
     });
 
     let attributeHeight = (collapsed === 'true') ? dimensions.collapsedHeight : dimensions.rectHeight;
-
     let innerTimeline = continuousAtt.append('g').classed('attribute-time-line', true);
     /////DO NOT DELETE THIS! YOU NEED TO SEP CONT AND DICRETE ATTR. THIS DRAWS LINE FOR THE CONT/////
-    let innerPaths = continuousPaths(innerTimeline, collapsed, width, 1);
+    let innerPaths = continuousPaths(innerTimeline, collapsed, width, 1, true);
  ////////
     let attribRectCont = innerTimeline.append('rect').classed('attribute-rect', true);
     attribRectCont.attr('height', attributeHeight);
