@@ -35,9 +35,27 @@ export function drawPathsAndAttributes(pathData, main){
 
     let attData = formatAttributeData(pathData, scales, shownAttributes);
 
+    console.log(pathGroups)
+
+    let combinedAttGroup = pathGroups.append('g').classed('all-att-combo', true);
+    combinedAttGroup.datum((d,i)=> attData[i])
+    combinedAttGroup.attr('transform', `translate(${width + 180}, -10)`)
+    combinedAttGroup.append('rect').attr('width', 100).attr('height', 40).classed('attribute-rect', true);
+
+    let comboLineGroups = combinedAttGroup.selectAll('g.combo-lines').data((d, i)=> {
+        return d}).join('g').classed('combo-lines', true);
+
+    let comboLine = continuousPaths(comboLineGroups, collapsed, 100, 0.5);
+
+       
+    console.log(combinedAttGroup.data())
+
+
     let predictedAttrGrps = renderAttributes(attributeWrapper, attData, collapsed);
     let attributeHeight = (collapsed === 'true')? 22 : 45;
     pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (shownAttributes.length + 1))) +')');
+
+
     
     let cGroups = drawContAtt(predictedAttrGrps, collapsed, width);
     let dGroups = drawDiscreteAtt(predictedAttrGrps, collapsed, false, width);
@@ -48,7 +66,7 @@ export function drawPathsAndAttributes(pathData, main){
     compactLineG.append('rect').attr('width', 80).attr('height', 40).classed('attribute-rect', true);
 
     //let innerPaths = continuousPaths(compactLineG, collapsed, 80);
-    let innerPaths = continuousArea(compactLineG, collapsed, 80);
+    let innerPaths = continuousArea(compactLineG, collapsed, 80, 1);
 
     sizeAndMove(main.select('#main-path-view'), attributeWrapper, pathData, (shownAttributes.length * attributeHeight));
 
@@ -104,8 +122,6 @@ export function renderPaths(pathData, main, width){
 
     let scales = getScales();
 
-    console.log('maxtime keeper', maxTimeKeeper)
-
     ////YOU SHOULD MOVE THESE APPENDING THINGS OUT OF HERE///////
     /////Rendering ///////
     let svgTest = main.select('#main-path-view');
@@ -131,7 +147,7 @@ export function renderPaths(pathData, main, width){
     let circleScale = d3.scaleLog().range([6, 12]).domain([1, d3.max(Object.values(branchFrequency))]);
     let pathGroups = pathWrap.selectAll('.paths').data(pathData).join('g').classed('paths', true);
     let pathBars = pathGroups.append('rect').classed('path-rect', true);
-    pathBars.attr('width', (width+300));
+    pathBars.attr('width', (width+180));
     pathBars.attr('y', -8);
 
     //////////
@@ -308,7 +324,7 @@ async function continuousArea(innerTimeline, collapsed, width){
      return innerPaths;
 
 }
-async function continuousPaths(innerTimeline, collapsed, width){
+async function continuousPaths(innerTimeline, collapsed, width, opacity){
 
     innerTimeline.data().forEach(path => {
         collapsedPathGen(path);
@@ -334,7 +350,8 @@ async function continuousPaths(innerTimeline, collapsed, width){
     let innerPaths = innerTimeline.append('path')
     .attr("d", lineGen)
     .attr("class", "inner-line")
-    .style('stroke', (d)=> d[0].color);
+    .style('stroke', (d)=> d[0].color)
+    .style('opacity', opacity);
 
     return innerPaths;
     ///////////////////////////////////////////////////////////
@@ -349,7 +366,7 @@ export function drawContAtt(predictedAttrGrps, collapsed, width){
 
     let innerTimeline = continuousAtt.append('g').classed('attribute-time-line', true);
     /////DO NOT DELETE THIS! YOU NEED TO SEP CONT AND DICRETE ATTR. THIS DRAWS LINE FOR THE CONT/////
-    let innerPaths = continuousPaths(innerTimeline, collapsed, width);
+    let innerPaths = continuousPaths(innerTimeline, collapsed, width, 1);
  ////////
     let attribRectCont = innerTimeline.append('rect').classed('attribute-rect', true);
     attribRectCont.attr('height', attributeHeight);
