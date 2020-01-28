@@ -16,6 +16,8 @@ const dimensions = {
 
 export function drawPathsAndAttributes(pathData, main){
 
+    let width = 800;
+
     let scales = getScales();
 
     let nodeTooltipFlag = true;
@@ -24,7 +26,7 @@ export function drawPathsAndAttributes(pathData, main){
   
     main.select('#main-path-view').selectAll('*').remove();
 
-    let pathGroups = renderPaths(pathData, main);
+    let pathGroups = renderPaths(pathData, main, 800);
   
       /// LOWER ATTRIBUTE VISUALIZATION ///
     let attributeWrapper = pathGroups.append('g').classed('attribute-wrapper', true);
@@ -37,8 +39,17 @@ export function drawPathsAndAttributes(pathData, main){
     let attributeHeight = (collapsed === 'true')? 22 : 45;
     pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (shownAttributes.length + 1))) +')');
     
-    let cGroups = drawContAtt(predictedAttrGrps, collapsed);
-    let dGroups = drawDiscreteAtt(predictedAttrGrps, collapsed, false);
+    let cGroups = drawContAtt(predictedAttrGrps, collapsed, width);
+    let dGroups = drawDiscreteAtt(predictedAttrGrps, collapsed, false, width);
+
+    console.log('contG',cGroups)
+    let compactLineG = cGroups.append('g').classed('compact-line', true);
+    compactLineG.attr('transform', `translate(${width + 30}, 0)`);
+    compactLineG.append('rect').attr('width', 80).attr('height', 40).classed('attribute-rect', true);
+
+    //let innerPaths = continuousPaths(compactLineG, collapsed, 80);
+    let innerPaths = continuousArea(compactLineG, collapsed, 80);
+
     sizeAndMove(main.select('#main-path-view'), attributeWrapper, pathData, (shownAttributes.length * attributeHeight));
 
     let leafStates = d3.selectAll('.discrete-leaf');
@@ -89,7 +100,7 @@ export function sizeAndMove(svg, attribWrap, data, attrMove){
     attribWrap.attr('transform', (d)=> 'translate(140, 25)');
         ///////////////////////////////////
 }
-export function renderPaths(pathData, main){
+export function renderPaths(pathData, main, width){
 
     let scales = getScales();
 
@@ -120,6 +131,7 @@ export function renderPaths(pathData, main){
     let circleScale = d3.scaleLog().range([6, 12]).domain([1, d3.max(Object.values(branchFrequency))]);
     let pathGroups = pathWrap.selectAll('.paths').data(pathData).join('g').classed('paths', true);
     let pathBars = pathGroups.append('rect').classed('path-rect', true);
+    pathBars.attr('width', (width+300));
     pathBars.attr('y', -8);
 
     //////////
@@ -171,7 +183,7 @@ export function renderPaths(pathData, main){
 
     let lines = timelines.append('line')
     .attr('x1', 0)
-    .attr('x2', 1000)
+    .attr('x2', width)
     .attr('y1', 15)
     .attr('y2', 15);
 
@@ -181,7 +193,7 @@ export function renderPaths(pathData, main){
         });
    
     nodeGroups.attr('transform', (d)=> {
-        let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 1000]);
+        let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, width]);
         let distance = x(d.combLength);
         return 'translate('+ distance +', 10)';});
 
@@ -263,7 +275,40 @@ function collapsedPathGen(data){
         p.change = test;
     })
 }
-async function continuousPaths(innerTimeline, collapsed){
+async function continuousArea(innerTimeline, collapsed, width){
+
+     //THIS IS THE PATH GENERATOR FOR THE CONTINUOUS VARIABLES
+     let height = (collapsed === 'true')? dimensions.collapsedHeight : dimensions.rectHeight;
+     var lineGen = d3.area()
+     .x(d=> {
+         let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, width]);
+         let distance = x(d.combLength);
+         return distance; })
+     .y1(d=> {
+         let y = d.scales.yScale;
+         y.range([40, 0]);
+         if(collapsed === 'true'){
+             return d.change;
+         }else{
+             return y(d.values.realVal);
+         }
+     }).y0(d=> {
+        let y = d.scales.yScale;
+        y.range([40, 0]);
+        return y(-1)
+    });
+ 
+     let innerPaths = innerTimeline.append('path')
+     .attr("d", lineGen)
+     .style('fill', (d)=> d[0].color)
+     .style('stroke-width', '1px')
+     .style('stroke', (d)=> d[0].color)
+     .style('fill-opacity', 0.3);
+ 
+     return innerPaths;
+
+}
+async function continuousPaths(innerTimeline, collapsed, width){
 
     innerTimeline.data().forEach(path => {
         collapsedPathGen(path);
@@ -273,7 +318,7 @@ async function continuousPaths(innerTimeline, collapsed){
     let height = (collapsed === 'true')? dimensions.collapsedHeight : dimensions.rectHeight;
     var lineGen = d3.line()
     .x(d=> {
-        let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 1000]);
+        let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, width]);
         let distance = x(d.combLength);
         return distance; })
     .y(d=> {
@@ -294,7 +339,7 @@ async function continuousPaths(innerTimeline, collapsed){
     return innerPaths;
     ///////////////////////////////////////////////////////////
 }
-export function drawContAtt(predictedAttrGrps, collapsed){
+export function drawContAtt(predictedAttrGrps, collapsed, width){
 
     let continuousAtt = predictedAttrGrps.filter(d=> {
         return (d[d.length - 1] != undefined) ? d[d.length - 1].type === 'continuous' : d.type === 'continuous';
@@ -304,19 +349,17 @@ export function drawContAtt(predictedAttrGrps, collapsed){
 
     let innerTimeline = continuousAtt.append('g').classed('attribute-time-line', true);
     /////DO NOT DELETE THIS! YOU NEED TO SEP CONT AND DICRETE ATTR. THIS DRAWS LINE FOR THE CONT/////
-    let innerPaths = continuousPaths(innerTimeline, collapsed);
+    let innerPaths = continuousPaths(innerTimeline, collapsed, width);
  ////////
     let attribRectCont = innerTimeline.append('rect').classed('attribute-rect', true);
     attribRectCont.attr('height', attributeHeight);
+    attribRectCont.attr('width', width);
     let attributeNodesCont = innerTimeline.selectAll('g').data(d=> d).join('g').classed('attribute-node', true);
 
     let innerBars = attributeNodesCont.append('g').classed('inner-bars', true);
 
-    // let innerRect = innerBars.append('rect').classed('attribute-inner-bar', true);
-    // innerRect.attr('height', attributeHeight).attr('width', dimensions.rectWidth);
-
     innerBars.attr('transform', (d)=> {
-        let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 1000]);
+        let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, width]);
         let distance = x(d.combLength);
         return 'translate('+ distance +', 0)';});
       
@@ -359,7 +402,9 @@ export function drawContAtt(predictedAttrGrps, collapsed){
         tool.transition()
           .duration(200)
           .style("opacity", .9);
+
         let f = d3.format(".3f");
+
         tool.html('mean: '+f(d.values.realVal) +"</br>"+"</br>"+ 'upperCI: '+ f(d.values.upperCI95) +"</br>"+"</br>"+ 'lowerCI: '+ f(d.values.lowerCI95))
           .style("left", (d3.event.pageX) + "px")
           .style("top", (d3.event.pageY - 28) + "px");
@@ -374,7 +419,7 @@ export function drawContAtt(predictedAttrGrps, collapsed){
           .style("opacity", 0);
     });
 
-    return attributeNodesCont;
+    return predictedAttrGrps;
    
 }
 export function findMaxState(states, offset){
@@ -1275,7 +1320,7 @@ export function drawGroups(stateBins, scales){
     })
      
 }
-export function drawDiscreteAtt(predictedAttrGrps, collapsed, bars){
+export function drawDiscreteAtt(predictedAttrGrps, collapsed, bars, width){
 
     let discreteAtt = predictedAttrGrps.filter(d=> {
         return d[d.length - 1].type === 'discrete';
@@ -1329,6 +1374,7 @@ export function drawDiscreteAtt(predictedAttrGrps, collapsed, bars){
 
     let attribRectDisc = innerTimelineDis.append('rect').classed('attribute-rect', true);
     attribRectDisc.attr('height', attributeHeight);
+    attribRectDisc.attr('width', width);
     let attributeNodesDisc = innerTimelineDis.selectAll('.attribute-node-discrete').data(d=> {
         return d;}).join('g');
 
