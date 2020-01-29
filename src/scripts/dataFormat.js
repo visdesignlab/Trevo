@@ -434,6 +434,15 @@ export function formatAttributeData(pathData, scales, filterArray){
     return newData;
 }
 
+export function abbreviate(word, limit){
+    
+    if(word.length > limit){
+        return word.slice(0, limit) + '...';
+    }else{
+        return word;
+    }
+}
+
 export async function dataLoadAndFormatMultinet(workspace, graphName){
 
     let dataName = graphName;
@@ -503,8 +512,6 @@ export async function dataLoadAndFormatMultinet(workspace, graphName){
         return newRow;
     });
 
-    console.log('calc', d3.keys(calculatedAtt[0]), attributeList);
-   
     let calcLeafAtt = leaves.map((row, i)=> {
         let newRow = {};
         attributeList.forEach((att)=>{
@@ -529,8 +536,6 @@ export async function dataLoadAndFormatMultinet(workspace, graphName){
         return newRow;
     });
 
-    
-
     let calculatedScales = calculateNewScales(calculatedAtt, attributeList.map(m=> m.field).filter(f=> d3.keys(calculatedAtt[0]).indexOf(f) > -1), colorKeeper);
 
     let matchedEdges = edges.map((edge, i)=> {
@@ -542,7 +547,6 @@ export async function dataLoadAndFormatMultinet(workspace, graphName){
         let fromNode = edge[edgeSource].includes("internal") ? calculatedAtt.filter(f=> f.key === edge[edgeSource])[0] : calcLeafAtt.filter(f=> f.key === edge[edgeSource])[0];
 
         if(attrib){
-        
             Object.keys(attrib).filter(f=> (f != 'node') && (f != 'label') && (f != 'length') && (f != 'leaf') && (f != 'key')).map((att, i)=>{
                 let scales = calculatedScales.filter(f=> f.field=== att)[0];
                 attrib[att].scales = scales;

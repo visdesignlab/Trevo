@@ -93,7 +93,6 @@ async function appLaunch(){
 
 export async function loadApp(workspace, graphName){
  
-
     //dataLoadAndFormat('anolis-edges.json', 'anolis-edge-lengths.json', 'anolis-leaf-data.csv', 'anolis-res.json', 'Anolis').then(centData=> {
     dataLoadAndFormatMultinet(workspace, graphName).then(centData=> {
 
