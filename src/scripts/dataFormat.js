@@ -359,8 +359,6 @@ export function filterKeeper(){
 
 export function formatAttributeData(pathData, scales, filterArray){
 
-  
-
     let keys = (filterArray == null)? Object.keys(pathData[0][0].attributes).filter(f=> f != 'node' && f != 'leaf' && f != 'length' && f != 'root' && f != 'key'): filterArray;
    
     let newData = pathData.map(path=> {

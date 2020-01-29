@@ -32,7 +32,7 @@ export function toolbarDataControl(toolbar, graphList, chosenGraph){
         main.selectAll('*').remove();
         sidebar.selectAll('*').remove();
         toolbarButtonWrap.selectAll('*').remove();
-        console.log('cladeKeeper', cladeKeeper)
+       
         cladeKeeper.push([]);
 
         loadApp(workspace, d.field);

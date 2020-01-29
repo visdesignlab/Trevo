@@ -289,8 +289,10 @@ export function drawBranchPointDistribution(data, svg){
         return `translate(${step*i},0)`});
 
     binsRects.attr('fill', 'gray').attr('stroke-width', 2).attr('stroke', 'white');
+    
+    let xFlipped = d3.scaleLinear().domain([maxTimeKeeper[maxTimeKeeper.length - 1], 0]).range([0, dimensions.timeRange]);
 
-    let axis = d3.axisBottom(x);
+    let axis = d3.axisBottom(xFlipped);
     let axGroup = branchBar.append('g').call(axis);
     axGroup.attr('transform', 'translate(113, 10)');
     axGroup.select('path').attr('stroke-width', 0);
@@ -351,7 +353,7 @@ export async function renderDistStructure(mainDiv, pathGroups){
 
     groupDivs.each((d, i, node)=> {
 
-       let filteredAttributes = d.groupBins.filter(f=> shownAttributes.indexOf(f.key) > -1);
+        let filteredAttributes = d.groupBins.filter(f=> shownAttributes.indexOf(f.key) > -1);
 
         let group = d3.select(node[i]);
         group.classed(d.label, true);
@@ -394,7 +396,6 @@ export async function renderDistStructure(mainDiv, pathGroups){
                 return abbreviate(d.key, 11)});
 
         label.on('mouseover', (d, i, n)=> {
-          
             d3.select("#tooltip")
                     .classed('hidden', false)
                     .style('opacity', 1)

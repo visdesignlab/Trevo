@@ -256,7 +256,7 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, pheno){
 
     if(pheno){
         treeSvg.attr('height', 800);
-        console.log('tree nodes',treenodes, treenodes.data.attributes[pheno], pheno)
+       
         xScale.domain(treenodes.data.attributes[pheno].scales.yScale.domain())
         yScale.domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 600])
     }
@@ -287,11 +287,13 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, pheno){
         g.attr('transform', 'translate(30, 50)');
 
         let x = xScale.domain(treenodes.data.attributes[pheno].scales.yScale.domain()).range([0, (dimensions.width+20)]);
+   
         let xAxis = d3.axisBottom(x);
         g.append('g').classed('pheno-x-axis', true).call(xAxis).attr('transform', 'translate(0, 610)').select('path').attr('stroke-width', 0);
 
         let y = d3.scaleLinear().domain([0,maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 600-20]);
-        let yAxis = d3.axisLeft(y);
+        let yFlipped = d3.scaleLinear().domain([maxTimeKeeper[maxTimeKeeper.length - 1], 0]).range([0, 600]);
+        let yAxis = d3.axisLeft(yFlipped);
         g.append('g').classed('pheno-y-axis', true).call(yAxis).attr('transform', 'translate(0, 2)').select('path').attr('stroke-width', 0);;
     }
 
@@ -319,6 +321,7 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, pheno){
     });
 
     if(attrDraw != null){
+        console.log('att is not null',attrDraw)
         let leaves = node.filter(n=> n.data.leaf === true);
         let notleaves = node.filter(n=> n.data.leaf != true);
 
