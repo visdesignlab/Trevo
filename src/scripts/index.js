@@ -99,7 +99,7 @@ export async function loadApp(workspace, graphName){
 
         toolbarControl(toolbarButtonWrap, main, centData[1]);
         d3.select('#clade-show').selectAll('li').select('input').node().checked = true
-        console.log('centtt dataaaa',centData)
+      
         renderTree(null, true, false);
         renderTreeButtons(centData[0], false);
         /// LOWER ATTRIBUTE VISUALIZATION ///

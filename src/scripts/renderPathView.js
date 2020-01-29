@@ -49,6 +49,10 @@ export function drawPathsAndAttributes(pathData, main){
     let comboLineGroups = combinedAttGroup.selectAll('g.combo-lines').data((d, i)=> {
         return d}).join('g').classed('combo-lines', true);
 
+    drawDistLines(comboLineGroups.filter(f=> f[0].type != 'continuous'))
+
+
+    
     let comboLine = continuousPaths(comboLineGroups.filter(f=> f[0].type === 'continuous'), collapsed, 80, 0.3, false);
 
     let predictedAttrGrps = renderAttributes(attributeWrapper, attData, collapsed);
@@ -78,28 +82,57 @@ export function drawPathsAndAttributes(pathData, main){
         .style('stroke', 'gray')
         .style('opacity', 0.4);
     })
-
-    compactLineG.filter(f=> {
-        return f[0].type != 'continuous';
-    }).selectAll('g.states').data(d=> {
-       
-        let array = [d[0]]
-        let test = d.filter(f=> f.leaf != true).map(m=> {
-            let maxVal = m.filter(f=> +f.value === d3.max(m.map(v=> +v.value)));
-            console.log('max',maxVal, array[array.length - 1])
-            if(maxVal.length > 1){
-
+    let contDist = drawDistLines(compactLineG.filter(f=> f[0].type != 'continuous'));
+    contDist.select('rect')    
+    .attr('fill', (d, i)=> {
+            if(d.leaf === true){
+                return d.color;
+            }else if(d.length > 1){
+                return 'gray';
             }else{
-                console.log('just one', maxVal[maxVal.length - 1], array[array.length - 1])
-                if(array[array.length - 1].length > 1){
-                    array.push(maxVal[maxVal.length - 1])
-                }
+                return d.color.color;
             }
         });
-      //  array.concat(test);
-        console.log('array',array)
-        return array;
-    })
+
+    // let compactStateG = compactLineG.filter(f=> {
+    //     return f[0].type != 'continuous';
+    // }).selectAll('g.states').data(d=> {
+       
+    //     let array = [d[0]]
+    //     let test = d.filter(f=> f.leaf != true).map(m=> {
+    //         let maxVal = m.filter(f=> +f.value === d3.max(m.map(v=> +v.value)));
+           
+    //         if(maxVal.length > 1){
+
+    //         }else{
+              
+    //             if(array[array.length - 1].length > 1){
+    //                 array.push(maxVal[maxVal.length - 1]);
+    //             }else{
+    //                 if(maxVal[maxVal.length - 1].key != array[array.length - 1].key){ array.push(maxVal[maxVal.length - 1]); }
+    //             }
+    //         }
+    //     });
+       
+    //     array.push(d.filter(f=> f.leaf === true)[0])
+    //     return array;
+    // }).join('g').classed('states', true);
+
+    // compactStateG.append('rect').attr('width', 3).attr('height', 40)
+    //.attr('fill', (d, i)=> {
+    //     if(d.leaf === true){
+    //         return d.color;
+    //     }else if(d.length > 1){
+    //         return 'gray';
+    //     }else{
+    //         return d.color.color;
+    //     }
+    // });
+    
+    // compactStateG.attr('transform', (d, i)=> {
+    //     let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 77]);
+    //     let move = d.length > 0 ? d[0].combLength : d.combLength;
+    //     return `translate(${x(move)},0)`})
 
     sizeAndMove(main.select('#main-path-view'), attributeWrapper, pathData, (shownAttributes.length * attributeHeight));
 
@@ -144,6 +177,39 @@ export function drawPathsAndAttributes(pathData, main){
 
     return pathGroups;
 
+}
+function drawDistLines(discG){
+    let comboDisc = discG.selectAll('g.states').data(d=> {
+        let array = [d[0]]
+        let test = d.filter(f=> f.leaf != true).map(m=> {
+            let maxVal = m.filter(f=> +f.value === d3.max(m.map(v=> +v.value)));
+           
+            if(maxVal.length > 1){
+
+            }else{
+                if(array[array.length - 1].length > 1){
+                    array.push(maxVal[maxVal.length - 1]);
+                }else{
+                    if(maxVal[maxVal.length - 1].key != array[array.length - 1].key){ array.push(maxVal[maxVal.length - 1]); }
+                }
+            }
+        });
+        array.push(d.filter(f=> f.leaf === true)[0])
+        return array;
+    }).join('g').classed('states', true);
+
+    comboDisc.append('rect')
+        .attr('width', 2)
+        .attr('height', 40)
+        .attr('fill', 'gray')
+        .attr('opacity', 0.4);
+
+    comboDisc.attr('transform', (d, i)=> {
+            let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 78]);
+            let move = d.length > 0 ? d[0].combLength : d.combLength;
+            return `translate(${x(move)},0)`});
+
+    return comboDisc;
 }
 export function sizeAndMove(svg, attribWrap, data, attrMove){
         //tranforming elements
@@ -1312,7 +1378,7 @@ export function drawGroups(stateBins, scales){
     let branchGrpCon = conGroup.selectAll('.branch').data(d=>d.paths).join('g').classed('branch', true);
 
     branchGrpCon.attr('transform', (d)=> {
-      let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 800]);
+      let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 750]);
           let distance = x(d.combLength);
           return 'translate('+distance+', 0)';
       });
