@@ -49,7 +49,7 @@ export function drawPathsAndAttributes(pathData, main){
     let comboLineGroups = combinedAttGroup.selectAll('g.combo-lines').data((d, i)=> {
         return d}).join('g').classed('combo-lines', true);
 
-    let comboLine = continuousPaths(comboLineGroups, collapsed, 80, 0.3, false);
+    let comboLine = continuousPaths(comboLineGroups.filter(f=> f[0].type === 'continuous'), collapsed, 80, 0.3, false);
 
 
     let predictedAttrGrps = renderAttributes(attributeWrapper, attData, collapsed);
@@ -63,7 +63,9 @@ export function drawPathsAndAttributes(pathData, main){
     compactLineG.attr('transform', `translate(${width + 40}, 0)`);
     compactLineG.append('rect').attr('width', 80).attr('height', 40).classed('attribute-rect', true);
 
-    let innerPaths = continuousArea(compactLineG, collapsed, 80, 1);
+    console.log(compactLineG.data())
+
+    let innerPaths = continuousArea(compactLineG.filter(f=> f[0].type === 'continuous'), collapsed, 80, 1);
     compactLineG.on('mouseover', (d, i, n)=> {
         let test = d3.select(n[i].parentNode.parentNode.parentNode).selectAll('g.combo-lines');
         test.filter(f=> {
@@ -342,6 +344,8 @@ async function continuousPaths(innerTimeline, collapsed, width, opacity, colorBo
         collapsedPathGen(path);
     });
 
+    console.log('innertimeline',innerTimeline.data())
+
     //THIS IS THE PATH GENERATOR FOR THE CONTINUOUS VARIABLES
     let height = (collapsed === 'true')? dimensions.collapsedHeight : dimensions.rectHeight;
     var lineGen = d3.line()
@@ -350,7 +354,7 @@ async function continuousPaths(innerTimeline, collapsed, width, opacity, colorBo
         let distance = x(d.combLength);
         return distance; })
     .y(d=> {
-        let y = d.scales.yScale;
+        let y = d.scales ? d.scales.yScale : console.log('d',d);
         y.range([height, 0]);
         if(collapsed === 'true'){
             return d.change;
