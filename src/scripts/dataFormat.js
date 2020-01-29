@@ -133,8 +133,6 @@ function calculateCloseness(pair, distance){
 
 export function calculateNewScales(attributes, keyList, colorKeeper){
 
-
-
     return keyList.map((d, i)=> {
 
         let attData = attributes.flatMap(f=> f[d]);
@@ -444,7 +442,6 @@ export async function dataLoadAndFormatMultinet(workspace, graphName){
     let internalIndex = 0;
     let leafIndex = 1;
   
-   
     //helper function to create array of unique elements
     Array.prototype.unique = function() {
         return this.filter(function (value, index, self) { 
@@ -461,43 +458,43 @@ export async function dataLoadAndFormatMultinet(workspace, graphName){
 
     let notAttributeList = ["_id", "label", "_key", "_rev", "key", "length"];
 
-
-
     ///Creating attribute list to add estimated values in //
     d3.keys(leaves[0]).filter(f=> notAttributeList.indexOf(f) === -1).forEach((d, i)=> {
-
         if(discreteTraitList.indexOf(d) > -1){
             attributeList.push({field: d, type: 'discrete'});
         }else{
             attributeList.push({field: d, type:'continuous'});
         }
-
     });
 
     let calculatedAtt = internal.map((row, i)=> {
 
-        
         let newRow = {};
         attributeList.forEach((att)=>{
-            newRow[att.field] = {};
-            newRow[att.field].field = att.field;
-            newRow[att.field].type = att.type;
-            let values = {}
-            d3.entries(row).filter(f=> f.key.includes(att.field)).map(m=> {
-                if(att.type === 'continuous'){
-                   
-                    if(m.key.includes('upperCI')){
-                        values.upperCI95 = +m.value;
-                    }else if(m.key.includes('lowerCI')){
-                        values.lowerCI95 = +m.value;
+         
+            if(d3.entries(row).filter(f=> f.key.includes(att.field)).length > 0){
+                newRow[att.field] = {};
+                newRow[att.field].field = att.field;
+                newRow[att.field].type = att.type;
+                let values = {}
+                d3.entries(row).filter(f=> f.key.includes(att.field)).map(m=> {
+                    
+                    if(att.type === 'continuous'){
+                       
+                        if(m.key.includes('upperCI')){
+                            values.upperCI95 = +m.value;
+                        }else if(m.key.includes('lowerCI')){
+                            values.lowerCI95 = +m.value;
+                        }else{
+                            values.realVal = +m.value;
+                        }
                     }else{
-                        values.realVal = +m.value;
+                         values[m.key] = m.value;   
                     }
-                }else{
-                     values[m.key] = m.value;   
-                }
-            });
-            newRow[att.field].values = values;
+                });
+                newRow[att.field].values = values;
+
+            }
         });
         newRow.node = row.label;
         newRow.key = row._id;
@@ -505,6 +502,8 @@ export async function dataLoadAndFormatMultinet(workspace, graphName){
         newRow.leaf = false;
         return newRow;
     });
+
+    console.log('calc', d3.keys(calculatedAtt[0]), attributeList);
    
     let calcLeafAtt = leaves.map((row, i)=> {
         let newRow = {};
@@ -530,7 +529,9 @@ export async function dataLoadAndFormatMultinet(workspace, graphName){
         return newRow;
     });
 
-    let calculatedScales = calculateNewScales(calculatedAtt, attributeList.map(m=> m.field), colorKeeper);
+    
+
+    let calculatedScales = calculateNewScales(calculatedAtt, attributeList.map(m=> m.field).filter(f=> d3.keys(calculatedAtt[0]).indexOf(f) > -1), colorKeeper);
 
     let matchedEdges = edges.map((edge, i)=> {
 

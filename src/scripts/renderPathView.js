@@ -429,8 +429,6 @@ async function continuousPaths(innerTimeline, collapsed, width, opacity, colorBo
         collapsedPathGen(path);
     });
 
-    console.log('innertimeline',innerTimeline.data())
-
     //THIS IS THE PATH GENERATOR FOR THE CONTINUOUS VARIABLES
     let height = (collapsed === 'true')? dimensions.collapsedHeight : dimensions.rectHeight;
     var lineGen = d3.line()
