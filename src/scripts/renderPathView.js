@@ -51,7 +51,6 @@ export function drawPathsAndAttributes(pathData, main){
 
     let comboLine = continuousPaths(comboLineGroups.filter(f=> f[0].type === 'continuous'), collapsed, 80, 0.3, false);
 
-
     let predictedAttrGrps = renderAttributes(attributeWrapper, attData, collapsed);
     let attributeHeight = (collapsed === 'true')? 22 : 45;
     pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (shownAttributes.length + 1))) +')');
@@ -62,8 +61,6 @@ export function drawPathsAndAttributes(pathData, main){
     let compactLineG = cGroups.append('g').classed('compact-line', true);
     compactLineG.attr('transform', `translate(${width + 40}, 0)`);
     compactLineG.append('rect').attr('width', 80).attr('height', 40).classed('attribute-rect', true);
-
-    console.log(compactLineG.data())
 
     let innerPaths = continuousArea(compactLineG.filter(f=> f[0].type === 'continuous'), collapsed, 80, 1);
     compactLineG.on('mouseover', (d, i, n)=> {
@@ -80,6 +77,28 @@ export function drawPathsAndAttributes(pathData, main){
         }).select('path')
         .style('stroke', 'gray')
         .style('opacity', 0.4);
+    })
+
+    compactLineG.filter(f=> {
+        return f[0].type != 'continuous';
+    }).selectAll('g.states').data(d=> {
+       
+        let array = [d[0]]
+        let test = d.filter(f=> f.leaf != true).map(m=> {
+            let maxVal = m.filter(f=> +f.value === d3.max(m.map(v=> +v.value)));
+            console.log('max',maxVal, array[array.length - 1])
+            if(maxVal.length > 1){
+
+            }else{
+                console.log('just one', maxVal[maxVal.length - 1], array[array.length - 1])
+                if(array[array.length - 1].length > 1){
+                    array.push(maxVal[maxVal.length - 1])
+                }
+            }
+        });
+      //  array.concat(test);
+        console.log('array',array)
+        return array;
     })
 
     sizeAndMove(main.select('#main-path-view'), attributeWrapper, pathData, (shownAttributes.length * attributeHeight));
@@ -1360,25 +1379,14 @@ export function drawDiscreteAtt(predictedAttrGrps, collapsed, bars, width){
         return d[d.length - 1].type === 'discrete';
     });
 
-   // discreteAtt.selectAll('*').remove();
-
     let attributeHeight = (collapsed === 'true')? 20 : 45;
 
     let innerTimelineDis = discreteAtt.append('g').classed('attribute-time-line', true);
 
-    innerTimelineDis.append('line').classed('half', true).attr('x1', 0).attr('y1', 22).attr('x2', 1010).attr('y2', 22);
+    innerTimelineDis.append('line').classed('half', true).attr('x1', 0).attr('y1', 22).attr('x2', width).attr('y2', 22);
     
     let statePath = innerTimelineDis.selectAll('g').data(d=> {
         
-        // let disct = d.map(m=> {
-        //     console.log('m', d, m)
-        //     let test = (m.leaf == true) ? m.states.map(s=> {
-        //         s.combLength = m.combLength;
-        //         s.color = m.color;
-        //         return s;
-        //     }) : m;
-        //     return test;
-        // });
         let disct = d;
        
         let keys = disct[0].map(s=> s.state);
@@ -1390,7 +1398,7 @@ export function drawDiscreteAtt(predictedAttrGrps, collapsed, bars, width){
 
     var lineGen = d3.line()
     .x(d=> {
-        let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 1000]);
+        let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, width]);
         let distance = x(d.combLength);
         return distance + 7;})
     .y(d=> {
@@ -1413,7 +1421,7 @@ export function drawDiscreteAtt(predictedAttrGrps, collapsed, bars, width){
         return d;}).join('g');
 
     attributeNodesDisc.attr('transform', (d)=> {
-        let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 1000]);
+        let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, width]);
         if(d[0]){
            // let distance = (moveMetric === 'move') ? d[0].move : x(d[0].combLength);
            let distance = x(d[0].combLength);
