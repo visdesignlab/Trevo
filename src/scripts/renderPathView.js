@@ -49,8 +49,6 @@ export function drawPathsAndAttributes(pathData, main){
     let comboLineGroups = combinedAttGroup.selectAll('g.combo-lines').data((d, i)=> {
         return d}).join('g').classed('combo-lines', true);
 
-    //drawDistLines(comboLineGroups.filter(f=> f[0].type != 'continuous'))
-
     let comboLine = continuousPaths(comboLineGroups.filter(f=> f[0].type === 'continuous'), collapsed, 80, 0.3, false);
 
     let predictedAttrGrps = renderAttributes(attributeWrapper, attData, collapsed);
@@ -138,6 +136,11 @@ function drawDistLines(discG){
 
     comboDisc.append('text').text(d=> d.key).style('font-size', '7px').style('fill', 'gray').attr('x', 83).attr('y', 3.5);
 
+    function round_to_precision(x, precision) {
+        var y = +x + (precision === undefined ? 0.5 : precision/2);
+        return y - (y % (precision === undefined ? 1 : +precision));
+    }
+
     let comboStates = comboDisc.selectAll('g.state-node')
     .data(d=> {
         let toGroup = d.value.map((v, i, n)=> {
@@ -145,7 +148,7 @@ function drawDistLines(discG){
             v.endLength = i < n.length - 1 ? n[i+1].combLength : maxTimeKeeper[maxTimeKeeper.length - 1];
             return v;
         });
-        return  Array.from(d3Array.group(toGroup, v=> v.value));
+        return  Array.from(d3Array.group(toGroup, v=> round_to_precision(v.value, .005)));
     }).join('g').classed('state-node', true);
   
     comboDisc.attr('transform', (d, i, n)=> {
@@ -157,14 +160,17 @@ function drawDistLines(discG){
             let vals = d[1]
             let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 80]);
             return (x(vals[vals.length-1].endLength) - x(vals[0].combLength)) - .5;
-            
         })
         .attr('height', (d, i)=> {
             let sizer = d3.scaleLinear().domain([0, 1]).range([0.2, 6]);
             return sizer(d[0]);
         })
         .attr('fill', 'gray')
-        .attr('opacity', 0.4);
+        .attr('opacity', 0.4)
+        .attr('y', (d)=> {
+            let sizer = d3.scaleLinear().domain([0, 1]).range([0.2, 6]);
+            return (sizer(d[0]) / 2) * -1;
+        });
 
     comboStates.attr('transform', (d, i)=> {
         let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 80]);
