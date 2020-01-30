@@ -28,24 +28,22 @@ export function toolbarDataControl(toolbar, graphList, chosenGraph){
         let sidebar = d3.select('#sidebar');
         let toolbarDiv = d3.select('#toolbar');
         let toolbarButtonWrap = toolbarDiv.select('.toolbar-button-wrap');
-
         main.selectAll('*').remove();
         sidebar.selectAll('*').remove();
         toolbarButtonWrap.selectAll('*').remove();
-       
         cladeKeeper.push([]);
-
         loadApp(workspace, d.field);
-
     });
 
 }
+
 async function dropUpdated(d){
     let loader = await clearMain();
     await changeDropValue(d);
     await updateMainView(d.field, chosenCladesGroup[chosenCladesGroup.length - 1].groups);
     loader.style.display = "none";
 }
+
 function changeDropValue(d){
     d3.select('.dropdown.change-view').select('button').node().value = d.field;
     d3.select('.dropdown.change-view').select('button').text(d.field);
@@ -107,7 +105,8 @@ export function toolbarControl(toolbar, main, calculatedScales){
         if(d.type === 'discrete'){
             let data = getLatestData();
             let stateBins = d.scales.map(m=> {
-                return {'field': m.field, 'state': m.scaleName, 'data': []}});
+                return {'field': m.field, 'state': m.scaleName, 'data': [] };
+            });
            
             stateBins.map(state=> {
                state.data = data.filter(paths=> {
@@ -145,7 +144,7 @@ export function toolbarControl(toolbar, main, calculatedScales){
 
             let loader = await clearMain();
             dropContent.classed('show', false);
-            await updateMainView('Summary View', chosenCladesGroup[chosenCladesGroup.length - 1].groups);
+            await updateMainView(d3.select('.dropdown.change-view').select('button').node().value, chosenCladesGroup[chosenCladesGroup.length - 1].groups);
             loader.style.display = "none";
         }else{
             dropContent.classed('show', true);
@@ -154,7 +153,6 @@ export function toolbarControl(toolbar, main, calculatedScales){
 
     /////ATTRIBUTE DROP DOWN
     let cladeOptions = cladeKeeper[cladeKeeper.length - 1];
-
 
     let dropdivClade = toolbar.append('div').classed(`dropdown clade-show`, true);
     dropdivClade.style('display', 'inline-block')
