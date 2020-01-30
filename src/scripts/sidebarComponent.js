@@ -170,14 +170,10 @@ export function renderTree(att, uncollapse, pheno){
         height : 720,
         lengthHeight: 850,
     }
-
-    let lengthBool = true;
-
-   
-
+    
     // declares a tree layout and assigns the size
     var treemap = d3.tree()
-    .size([dimensions.height, dimensions.width]);
+   // .size([dimensions.height, dimensions.width]);
    
     addingEdgeLength(0, nestedData[nestedData.length - 1]);
     

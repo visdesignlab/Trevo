@@ -6,7 +6,7 @@ import {formatAttributeData, maxTimeKeeper} from './dataFormat';
 import {filterMaster, nodeFilter, getLatestData, leafStateFilter, getScales} from './filterComponent';
 import { drawBranchPointDistribution } from './distributionView';
 import { dropDown } from './buttonComponents';
-import { groupedView } from './viewControl';
+
 
 const dimensions = {
     rectWidth: 15,
@@ -39,20 +39,18 @@ export function drawPathsAndAttributes(pathData, main){
     combinedAttGroup.datum((d,i)=> attData[i])
     combinedAttGroup.attr('transform', `translate(${width + 180}, -9)`)
     combinedAttGroup.append('rect')
-    .attr('width', 80)
-    .attr('height', 40)
-    .attr('fill', '#fff')
-    .style('fill-opacity', '0.6')
-    .style('stroke', 'gray')
-    .style('stroke-width', '0.7px')
+        .attr('width', 80)
+        .attr('height', 40)
+        .attr('fill', '#fff')
+        .style('fill-opacity', '0.6')
+        .style('stroke', 'gray')
+        .style('stroke-width', '0.7px');
 
     let comboLineGroups = combinedAttGroup.selectAll('g.combo-lines').data((d, i)=> {
         return d}).join('g').classed('combo-lines', true);
 
-    drawDistLines(comboLineGroups.filter(f=> f[0].type != 'continuous'))
+    //drawDistLines(comboLineGroups.filter(f=> f[0].type != 'continuous'))
 
-
-    
     let comboLine = continuousPaths(comboLineGroups.filter(f=> f[0].type === 'continuous'), collapsed, 80, 0.3, false);
 
     let predictedAttrGrps = renderAttributes(attributeWrapper, attData, collapsed);
@@ -81,58 +79,9 @@ export function drawPathsAndAttributes(pathData, main){
         }).select('path')
         .style('stroke', 'gray')
         .style('opacity', 0.4);
-    })
+    });
+
     let contDist = drawDistLines(compactLineG.filter(f=> f[0].type != 'continuous'));
-    contDist.select('rect')    
-    .attr('fill', (d, i)=> {
-            if(d.leaf === true){
-                return d.color;
-            }else if(d.length > 1){
-                return 'gray';
-            }else{
-                return d.color.color;
-            }
-        });
-
-    // let compactStateG = compactLineG.filter(f=> {
-    //     return f[0].type != 'continuous';
-    // }).selectAll('g.states').data(d=> {
-       
-    //     let array = [d[0]]
-    //     let test = d.filter(f=> f.leaf != true).map(m=> {
-    //         let maxVal = m.filter(f=> +f.value === d3.max(m.map(v=> +v.value)));
-           
-    //         if(maxVal.length > 1){
-
-    //         }else{
-              
-    //             if(array[array.length - 1].length > 1){
-    //                 array.push(maxVal[maxVal.length - 1]);
-    //             }else{
-    //                 if(maxVal[maxVal.length - 1].key != array[array.length - 1].key){ array.push(maxVal[maxVal.length - 1]); }
-    //             }
-    //         }
-    //     });
-       
-    //     array.push(d.filter(f=> f.leaf === true)[0])
-    //     return array;
-    // }).join('g').classed('states', true);
-
-    // compactStateG.append('rect').attr('width', 3).attr('height', 40)
-    //.attr('fill', (d, i)=> {
-    //     if(d.leaf === true){
-    //         return d.color;
-    //     }else if(d.length > 1){
-    //         return 'gray';
-    //     }else{
-    //         return d.color.color;
-    //     }
-    // });
-    
-    // compactStateG.attr('transform', (d, i)=> {
-    //     let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 77]);
-    //     let move = d.length > 0 ? d[0].combLength : d.combLength;
-    //     return `translate(${x(move)},0)`})
 
     sizeAndMove(main.select('#main-path-view'), attributeWrapper, pathData, (shownAttributes.length * attributeHeight));
 
@@ -170,7 +119,6 @@ export function drawPathsAndAttributes(pathData, main){
                 d3.select("#state-tooltip").classed("hidden", true);
 
                 pathSelected(test, notIt, scales);
-
             });
 
         }});
@@ -179,35 +127,49 @@ export function drawPathsAndAttributes(pathData, main){
 
 }
 function drawDistLines(discG){
-    let comboDisc = discG.selectAll('g.states').data(d=> {
-        let array = [d[0]]
-        let test = d.filter(f=> f.leaf != true).map(m=> {
-            let maxVal = m.filter(f=> +f.value === d3.max(m.map(v=> +v.value)));
-           
-            if(maxVal.length > 1){
 
-            }else{
-                if(array[array.length - 1].length > 1){
-                    array.push(maxVal[maxVal.length - 1]);
-                }else{
-                    if(maxVal[maxVal.length - 1].key != array[array.length - 1].key){ array.push(maxVal[maxVal.length - 1]); }
-                }
-            }
+    let comboDisc = discG.selectAll('g.states').data(d=> {
+        let states = d[0].map(m=> m.key).map(m=> {
+            let values = d.filter(f=> f.leaf != true).flatMap(v=> v.filter(f=> f.key === m));
+            return {key: m, 'value': values};
         });
-        array.push(d.filter(f=> f.leaf === true)[0])
-        return array;
+        return states;
     }).join('g').classed('states', true);
 
-    comboDisc.append('rect')
-        .attr('width', 2)
-        .attr('height', 40)
+    comboDisc.append('text').text(d=> d.key).style('font-size', '7px').style('fill', 'gray').attr('x', 83).attr('y', 3.5);
+
+    let comboStates = comboDisc.selectAll('g.state-node')
+    .data(d=> {
+        let toGroup = d.value.map((v, i, n)=> {
+            v.value = +v.value;
+            v.endLength = i < n.length - 1 ? n[i+1].combLength : maxTimeKeeper[maxTimeKeeper.length - 1];
+            return v;
+        });
+        return  Array.from(d3Array.group(toGroup, v=> v.value));
+    }).join('g').classed('state-node', true);
+  
+    comboDisc.attr('transform', (d, i, n)=> {
+        let step = 40 / n.length;
+        return `translate(0, ${(i * step)+(step/2.2)})`});
+    
+      comboStates.append('rect')
+        .attr('width', (d, i)=>{
+            let vals = d[1]
+            let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 80]);
+            return (x(vals[vals.length-1].endLength) - x(vals[0].combLength)) - .5;
+            
+        })
+        .attr('height', (d, i)=> {
+            let sizer = d3.scaleLinear().domain([0, 1]).range([0.2, 6]);
+            return sizer(d[0]);
+        })
         .attr('fill', 'gray')
         .attr('opacity', 0.4);
 
-    comboDisc.attr('transform', (d, i)=> {
-            let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 78]);
-            let move = d.length > 0 ? d[0].combLength : d.combLength;
-            return `translate(${x(move)},0)`});
+    comboStates.attr('transform', (d, i)=> {
+        let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 80]);
+        return `translate(${x(d[1][0].combLength)},0)`;
+    });
 
     return comboDisc;
 }
@@ -410,7 +372,7 @@ async function continuousArea(innerTimeline, collapsed, width){
      }).y0(d=> {
         let y = d.scales.yScale;
         y.range([40, 0]);
-        return y(-1)
+        return 40
     });
  
      let innerPaths = innerTimeline.append('path')
@@ -1462,7 +1424,7 @@ export function drawDiscreteAtt(predictedAttrGrps, collapsed, bars, width){
 
     var lineGen = d3.line()
     .x(d=> {
-        let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, width]);
+        let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, width-10]);
         let distance = x(d.combLength);
         return distance + 7;})
     .y(d=> {
@@ -1485,13 +1447,11 @@ export function drawDiscreteAtt(predictedAttrGrps, collapsed, bars, width){
         return d;}).join('g');
 
     attributeNodesDisc.attr('transform', (d)=> {
-        let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, width]);
+        let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, width-10]);
         if(d[0]){
-           // let distance = (moveMetric === 'move') ? d[0].move : x(d[0].combLength);
            let distance = x(d[0].combLength);
             return 'translate('+distance+', 0)';
         }else{
-           // let distance = (moveMetric === 'move') ? d.move : x(d.combLength);
             let distance = x(d.combLength);
             return 'translate('+distance+', 0)';
         }
@@ -1519,7 +1479,6 @@ export function drawDiscreteAtt(predictedAttrGrps, collapsed, bars, width){
     if(bars === false){
 
         let stateDots = attributeNodesDisc.filter((att, i)=> att[0] != undefined).selectAll('.dots').data(d=> {
-            
             return d;
         }).join('circle').classed('dots', true);
         
