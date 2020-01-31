@@ -170,7 +170,7 @@ export function renderTree(att, uncollapse, pheno){
         height : 720,
         lengthHeight: 850,
     }
-    
+
     // declares a tree layout and assigns the size
     var treemap = d3.tree()
    // .size([dimensions.height, dimensions.width]);
@@ -199,15 +199,15 @@ export function renderTree(att, uncollapse, pheno){
     if(groupedBool === "ungrouped" && uncollapse === false){
         if((cladesGroupKeeper.length > 0) && (chosenCladesGroup[chosenCladesGroup.length - 1].field != 'Clade Attribute)')){
             let newNodes = collapseTree(treenodes);
-            console.log('testing this above', treenodes, dimensions, treeSvg, g, att, pheno)
+            //console.log('testing this above', treenodes, dimensions, treeSvg, g, att, pheno)
             updateTree(newNodes, dimensions, treeSvg, g, att, pheno);
         }else{
-            console.log('testing this', treenodes, dimensions, treeSvg, g, att, pheno)
+            //console.log('testing this', treenodes, dimensions, treeSvg, g, att, pheno)
             updateTree(treenodes, dimensions, treeSvg, g, att, pheno);
         }
         
     }else{
-        console.log('testing this below', treenodes, dimensions, treeSvg, g, att, pheno)
+        //console.log('testing this below', treenodes, dimensions, treeSvg, g, att, pheno)
         ////Break this out into other nodes////
         updateTree(treenodes, dimensions, treeSvg, g, att, pheno);
     }

@@ -35,22 +35,28 @@ export function drawPathsAndAttributes(pathData, main){
 
     let attData = formatAttributeData(pathData, scales, shownAttributes);
 
-    let combinedAttGroup = pathGroups.append('g').classed('all-att-combo', true);
-    combinedAttGroup.datum((d,i)=> attData[i])
-    combinedAttGroup.attr('transform', `translate(${width + 180}, -9)`)
-    combinedAttGroup.append('rect')
-        .attr('width', 80)
-        .attr('height', 40)
-        .attr('fill', '#fff')
-        .style('fill-opacity', '0.6')
-        .style('stroke', 'gray')
-        .style('stroke-width', '0.7px');
 
-    let comboLineGroups = combinedAttGroup.selectAll('g.combo-lines').data((d, i)=> {
-        return d}).join('g').classed('combo-lines', true);
 
-    let comboLine = continuousPaths(comboLineGroups.filter(f=> f[0].type === 'continuous'), collapsed, 80, 0.3, false);
+    if(collapsed != 'true'){
 
+        let combinedAttGroup = pathGroups.append('g').classed('all-att-combo', true);
+        combinedAttGroup.datum((d,i)=> attData[i])
+        combinedAttGroup.attr('transform', `translate(${width + 180}, -9)`)
+        combinedAttGroup.append('rect')
+            .attr('width', 80)
+            .attr('height', 40)
+            .attr('fill', '#fff')
+            .style('fill-opacity', '0.6')
+            .style('stroke', 'gray')
+            .style('stroke-width', '0.7px');
+
+        let comboLineGroups = combinedAttGroup.selectAll('g.combo-lines').data((d, i)=> {
+            return d}).join('g').classed('combo-lines', true);
+    
+        let comboLine = continuousPaths(comboLineGroups.filter(f=> f[0].type === 'continuous'), collapsed, 80, 0.3, false);
+    
+    }
+   
     let predictedAttrGrps = renderAttributes(attributeWrapper, attData, collapsed);
     let attributeHeight = (collapsed === 'true')? 22 : 45;
     pathGroups.attr('transform', (d, i)=> 'translate(10,'+ (i * ((attributeHeight + 5)* (shownAttributes.length + 1))) +')');
@@ -58,29 +64,31 @@ export function drawPathsAndAttributes(pathData, main){
     let cGroups = drawContAtt(predictedAttrGrps, collapsed, width);
     let dGroups = drawDiscreteAtt(predictedAttrGrps, collapsed, false, width);
 
-    let compactLineG = cGroups.append('g').classed('compact-line', true);
-    compactLineG.attr('transform', `translate(${width + 40}, 0)`);
-    compactLineG.append('rect').attr('width', 80).attr('height', 40).classed('attribute-rect', true);
+    if(collapsed != 'true'){
 
-    let innerPaths = continuousArea(compactLineG.filter(f=> f[0].type === 'continuous'), collapsed, 80, 1);
-    compactLineG.on('mouseover', (d, i, n)=> {
-        let test = d3.select(n[i].parentNode.parentNode.parentNode).selectAll('g.combo-lines');
-        test.filter(f=> {
-            return f[0].field === d[0].field;
-        }).select('path')
-        .style('stroke', (s)=> s[0].color)
-        .style('opacity', 1);
-    }).on('mouseout', (d, i, n)=> {
-        let test = d3.select(n[i].parentNode.parentNode.parentNode).selectAll('g.combo-lines');
-        test.filter(f=> {
-            return f[0].field === d[0].field;
-        }).select('path')
-        .style('stroke', 'gray')
-        .style('opacity', 0.4);
-    });
+        let compactLineG = cGroups.append('g').classed('compact-line', true);
+        compactLineG.attr('transform', `translate(${width + 40}, 0)`);
+        compactLineG.append('rect').attr('width', 80).attr('height', 40).classed('attribute-rect', true);
+    
+        let innerPaths = continuousArea(compactLineG.filter(f=> f[0].type === 'continuous'), collapsed, 80, 1);
+        compactLineG.on('mouseover', (d, i, n)=> {
+            let test = d3.select(n[i].parentNode.parentNode.parentNode).selectAll('g.combo-lines');
+            test.filter(f=> {
+                return f[0].field === d[0].field;
+            }).select('path')
+            .style('stroke', (s)=> s[0].color)
+            .style('opacity', 1);
+        }).on('mouseout', (d, i, n)=> {
+            let test = d3.select(n[i].parentNode.parentNode.parentNode).selectAll('g.combo-lines');
+            test.filter(f=> {
+                return f[0].field === d[0].field;
+            }).select('path')
+            .style('stroke', 'gray')
+            .style('opacity', 0.4);
+        });
 
-    let contDist = drawDistLines(compactLineG.filter(f=> f[0].type != 'continuous'));
-
+        let contDist = drawDistLines(compactLineG.filter(f=> f[0].type != 'continuous'));
+    }
     sizeAndMove(main.select('#main-path-view'), attributeWrapper, pathData, (shownAttributes.length * attributeHeight));
 
     let leafStates = d3.selectAll('.discrete-leaf');
@@ -232,10 +240,10 @@ export function renderPaths(pathData, main, width){
      
         if(d3.select(n[i]).classed('selected-path')){
             d3.select(n[i]).classed('selected-path', false);
-            pathSelected(null, notIt.data(), scales);
+            pathSelected(null, notIt.data(), scales, width);
         }else{
             d3.select(n[i]).classed('selected-path', true);
-            pathSelected([d], notIt.data(), scales);
+            pathSelected([d], notIt.data(), scales, width);
         }
     });
 
@@ -309,7 +317,7 @@ export function renderPaths(pathData, main, width){
                 });
                 nodeTooltipFlag = false;
                 d3.select("#branch-tooltip").classed("hidden", true);
-                pathSelected(test.data(), notIt.data(), scales);
+                pathSelected(test.data(), notIt.data(), scales, width);
             });
         }
     });
