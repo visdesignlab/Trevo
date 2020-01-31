@@ -2,7 +2,7 @@ import '../styles/index.scss';
 import * as d3 from "d3";
 
 import {dataMaster, nestedData, collapsed} from './index';
-import {getScales} from './filterComponent';
+import {getScales, getLatestData} from './filterComponent';
 import {getNested} from './pathCalc';
 import { dropDown } from './buttonComponents';
 import { updateRanking, changeTrait } from './pairView';
@@ -231,7 +231,9 @@ export function findDepth(node, array){
 
 export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, pheno){
 
-    console.log('pheno',pheno)
+    
+    let dataSet = getLatestData();
+    let move = dataSet.length > 200 ? 370 : 375;
 
     let length = true;
     let uncollapse = true;
@@ -245,7 +247,7 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, pheno){
     let xScale = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, dimensions.width]).clamp(true);
     let yScale = d3.scaleLinear().range([dimensions.height, 0]).domain([0, 1]);
 
-    g.attr('transform', 'translate(20, 375)');
+    g.attr('transform', `translate(20, ${move})`);
     treeSvg.attr('height', 1100);
     yScale.range([700, 0]).domain([0, branchCount.length]);
     xScale.range([0, dimensions.width + 10]);

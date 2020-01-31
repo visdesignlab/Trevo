@@ -381,6 +381,8 @@ export async function createCladeView(div, scales){
 
 export function renderCladeTree(sidebar, att, dimensions){
 
+
+
      addingEdgeLength(0, nestedData[nestedData.length - 1]);
     
     let treeFun = data => {
@@ -415,6 +417,9 @@ export function findDepth(node, array){
 }
 
 export function updateCladeTree(treenodes, dimensions, treeSvg, g, attrDraw, length){
+
+    let dataSet = getLatestData();
+    let move = dataSet.length > 200 ? dimensions.height / 1.964 : dimensions.height / 1.9;
     
     assignPosition(treenodes, 0);
 
@@ -424,7 +429,8 @@ export function updateCladeTree(treenodes, dimensions, treeSvg, g, attrDraw, len
     findDepth(treenodes, []);
     let xScale = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, dimensions.width]).clamp(true);
     let yScale = d3.scaleLinear().range([dimensions.height, 0]).domain([0, getLatestData().length])
-    g.attr('transform', `translate(30, ${dimensions.height / 1.9})`);
+    //g.attr('transform', `translate(30, ${dimensions.height / 1.9})`);
+    g.attr('transform', `translate(30, ${move})`);
 
     let link = g.selectAll(".link")
     .data( treenodes.descendants().slice(1))
