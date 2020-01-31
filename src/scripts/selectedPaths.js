@@ -112,8 +112,6 @@ export function sortOtherPaths(pathData, otherPaths, commonNode) {
 }
 function renderSelectedTopology(commonNodeStart, svg, scales, branchFrequency){
 
-        
-
         let selectWrap = svg.append('g').classed('select-wrap', true);
         selectWrap.attr('transform', 'translate(0, 20)')
 
@@ -138,9 +136,7 @@ function renderSelectedTopology(commonNodeStart, svg, scales, branchFrequency){
         let lines = timelines.append('line')
             .attr('x1', 0)
             .attr('x2', (d, i) => {
-               
                 let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, width]);
-                console.log('test',x(d[d.length - 1].combEdge))
                 return x(d[d.length - 1].combEdge)
             })
             .attr('y1', 15)
@@ -159,7 +155,6 @@ function renderSelectedTopology(commonNodeStart, svg, scales, branchFrequency){
 
         let childNodeWrap = nodeGroups
         .filter((c, i, n) => {
-            //return c.children != undefined
             return i === n.length - 1
             })
         .selectAll('g.child')
@@ -617,7 +612,6 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, wi
 
     ///RENDERING SELECTED PATHS////
     if (pathData.length === 1) {
-
         /////////////////////////////////////////////////
         let selectWrap = svg.append('g').classed('select-wrap', true);
         selectWrap.attr('transform', (d, i) => 'translate(0,20)');
@@ -780,7 +774,6 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, wi
        
         let commonNodeStart = getCommonNodes(pathData, width);
 
-        
         renderSelectedTopology(commonNodeStart, svg, scales, branchFrequency);
 
         /////END PATH RENDER///////
@@ -788,20 +781,28 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, wi
         let attributeData = commonNodeStart[commonNodeStart.length - 1].children.map(ch => {
             return [...commonNodeStart].concat(ch);
         });
+
         let shownAttributes = d3.select('#attribute-show').selectAll('input').filter((f, i, n)=> n[i].checked === true).data();
-        let attData = formatAttributeData(pathData, scales, shownAttributes);
+
+       // console.log('attributes',attributeData[0][attributeData[0].length - 1].node, shownAttributes)
+        let attData = formatAttributeData(attributeData, scales, shownAttributes);
+        console.log('attData',attData)
         let attDataComb = attData[0].map((att, i)=> {
-            let species = pathData[0].filter(f=> f.leaf === true)[0].label;
+            
+            let species = att[att.length - 1].node;//pathData[0].filter(f=> f.leaf === true)[0].label;
             att[att.length - 1].offset = 0;
             let attribute = {'label': att[att.length-1].label, 'type':att[att.length-1].type, 'data': [{'species': species, 'paths': att}]}
             for(let index = 1; index < attData.length; index++ ){
-                let species = pathData[index].filter(f=> f.leaf === true)[0].label;
+                console.log(attData[index], attData[index][attData[index].length - 1].filter(f=> f.leaf === true)[0].species)
+                let species = attData[index][attData[index].length - 1].filter(f=> f.leaf === true)[0].species//pathData[index].filter(f=> f.leaf === true)[0].node;
                 let last = attData[index][i].length - 1
                 attData[index][i][last].offset = (index * 8);
                 attribute.data.push({'species': species, 'paths': attData[index][i]})
             }
             return attribute;
         });
+
+        console.log('attr comb', attDataComb)
 
         function findMaxState(states, offset){
             let maxP = d3.max(states.map(v=> v.realVal));
@@ -873,9 +874,9 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, wi
            return x(distance);
         })
        .y(d=> {
-           let y = d.yScale;
+           let y = d.scales.yScale;
            y.range([attributeHeight-2, 1]);
-           return y(d.realVal) + 2;
+           return y(d.values.realVal) + 2;
        });
 
        let innerStatePaths = speciesGrp.append('path')
@@ -901,14 +902,14 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, wi
        let branchGrpDis = disGroup.selectAll('.branch').data(d=>d.paths).join('g').classed('branch', true);
 
        branchGrpDis.attr('transform', (d)=> {
-        let x = d3.scaleLinear().domain([0, 1]).range([0, width]);
+        let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, width]);
             let distance = x(d.combLength);
             return 'translate('+distance+', 0)';
         });
 
         let bCirc = branchGrpDis.append('circle').attr('r', 5).attr('cy', (d, i)=> {
             let y = d3.scaleLinear().domain([0, 1]).range([attributeHeight - 5, 2]);
-            return y(d.realVal) + d.offset;
+            return y(d.values.realVal) + d.offset;
         }).attr('cx', 5);
 
         bCirc.attr('fill', (d, i)=> d.color);
@@ -917,7 +918,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, wi
         otherCirc.attr('r', 4).attr('cx', 5).attr('cy', (c, i)=> {
             let y = d3.scaleLinear().domain([1, 0]);
             y.range([0, (attributeHeight-5)]);
-                return y(c.realVal);
+                return y(c.values.realVal);
             }).attr('fill', (c)=> c.color).style('opacity', 0.1);
 
         otherCirc.on("mouseover", function(d) {
@@ -943,7 +944,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, wi
               .duration(200)
               .style("opacity", .9);
             let f = d3.format(".3f");
-            tool.html(d.state + ": " + f(d.realVal))
+            tool.html(d.state + ": " + f(d.values.realVal))
               .style("left", (d3.event.pageX + 10) + "px")
               .style("top", (d3.event.pageY - 28) + "px");
             })
@@ -977,7 +978,7 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, wi
         let branchGrpCon = conGroup.selectAll('.branch').data(d=>d.paths).join('g').classed('branch', true);
 
         branchGrpCon.attr('transform', (d)=> {
-         let x = d3.scaleLinear().domain([0, 1]).range([0, 1000]);
+         let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, width]);
              let distance = x(d.combLength);
              return 'translate('+distance+', 0)';
          });
@@ -1004,20 +1005,20 @@ export function renderSelectedView(pathData, otherPaths, selectedDiv, scales, wi
         MeanRect.attr('y', (d, i) => {
             let scale = scales.filter(s=> s.field === d.label)[0];
             let y = d3.scaleLinear().domain([scale.min, scale.max]).range([attributeHeight, 0])
-            return y(d.realVal);
+            return y(d.values.realVal);
         });
 
         let confiBars = branchGrpCon.filter(f=> f.leaf != true).append('rect');
         confiBars.attr('width', 10).attr('height', (d, i)=> {
             let scale = scales.filter(s=> s.field === d.label)[0];
             let y = d3.scaleLinear().domain([scale.min, scale.max]).range([attributeHeight, 0]);
-            return y(d.lowerCI95) - y(d.upperCI95);
+            return y(d.values.lowerCI95) - y(d.values.upperCI95);
         });
 
         confiBars.attr('y', (d, i)=> {
             let scale = scales.filter(s=> s.field === d.label)[0];
             let y = d3.scaleLinear().domain([scale.min, scale.max]).range([attributeHeight, 0]);
-            return y(d.upperCI95);
+            return y(d.values.upperCI95);
         })
         confiBars.style('opacity', 0.1);
 
