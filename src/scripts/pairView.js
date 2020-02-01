@@ -131,6 +131,7 @@ function getWeightScales(pairs, field){
   let distScale = d3.scaleLinear().domain([0, distMax]).range([0, 1]);
   return {delta: deltaScale, close:closeScale, distance: distScale};
 }
+
 export function updateRanking(pairs, field, weights){
 
     let weightScales = getWeightScales(pairs, field);
@@ -162,6 +163,7 @@ function drawSorted(pairs, field){
   let width = 600;
   let height = 100;
   let xScale = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, width]);
+  let xScaleAxis = d3.scaleLinear().domain([maxTimeKeeper[maxTimeKeeper.length - 1], 0]).range([0, width]);
     
   let svg = d3.select('#main').append('svg');
   svg.attr('height', pairs.length * (height * 1.9))
@@ -347,7 +349,7 @@ function drawSorted(pairs, field){
         .attr('fill', '#fff').style('opacity', 0.7);
         let yAxisG = pairWraps.append('g').classed('y-axis', true);
         let xAxisG = pairWraps.append('g').classed('x-axis', true);
-        xAxisG.call(d3.axisBottom(xScale).ticks(10));
+        xAxisG.call(d3.axisBottom(xScaleAxis).ticks(10));
         xAxisG.attr('transform', `translate(0, ${height})`)
 
     pairWraps.on('mouseover', (d, i, n)=> {
