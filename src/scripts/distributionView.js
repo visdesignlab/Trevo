@@ -1127,9 +1127,10 @@ function renderDiscretePredicted(discreteDist){
             return newstate;
         });
         //console.log('state', state);
+
         state.color = d.color.color;
-        state.average = d3.mean(d.histogram.flatMap(m=> m.map(v=> +v.value)));
-        // state.average = d3.mean(d.histogram.flatMap(m=> +m));
+        //state.average = d3.mean(d.histogram.flatMap(m=> m.map(v=> +v.value)));
+         state.average = d3.mean(d.histogram.flatMap(m=> +m));
         return state;
     }).join('circle').classed('prob-tick', true)
 

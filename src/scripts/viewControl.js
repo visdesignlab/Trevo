@@ -8,10 +8,26 @@ import { calculatedScalesKeeper } from ".";
 
 export let groupedView = false;
 
+/**
+ * Get the latest data and filter only what is selected
+ */
+export function getSelectedData(){
+
+    let test = d3.select('#clade-show').selectAll('li').selectAll('input').filter((f, j, li)=> {
+        return li[j].checked === true});
+
+    let names = Array.from(new Set(test.data().flatMap(f=> f.nodes.map(path => path[path.length - 1].node))));
+    let data = getLatestData().filter(path => names.indexOf(path[path.length - 1].node) > -1);
+
+    return data;
+}
+
 export function updateMainView(d, groups){
 
+
     let main = d3.select('#main');
-    let data = getLatestData();
+    //let data = getLatestData();
+    let data = getSelectedData();
     let view = d3.select('#view-pheno').empty()? null : d3.select('#view-pheno').text();
    
     if(d != 'Pair View' && view === 'View Phenogram'){
