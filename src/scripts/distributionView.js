@@ -47,7 +47,6 @@ export function groupDistributions(pathData, mainDiv, groupAttr){
 }
 export function binGroups(pathData, groupLabel, scales, branchCount){
 
-  
     let attrHide = filterMaster.filter(f=> f.type === 'hide-attribute').map(m=> m.attribute);
     
     let keys = scales.map(s=> s.field).filter(f=> attrHide.indexOf(f) === -1);
@@ -365,7 +364,7 @@ export async function renderDistStructure(mainDiv, pathGroups){
         let svg = group.append('svg');
         svg.attr('class', 'main-summary-view');
         svg.attr('id', `${d.label}-svg`);
-        svg.attr('height', (shownAttributes.length * (dimensions.height + 5))+ 50);
+        svg.attr('height', (shownAttributes.length * (dimensions.height + 7))+ 50);
     
         let branchBar = drawBranchPointDistribution(d, svg);
         branchBar.attr('transform', 'translate(55, 10)');
@@ -1114,17 +1113,23 @@ function renderDiscretePredicted(discreteDist){
                 return arr;
             });
             return arrayTest;
-        })
+        });
        
         let state = d.state.map(m=> {
-          
+            if(d.histogram.flatMap(m=> m.map(v=> +v.value)).includes(NaN)){
+                console.log('histogram', d.histogram.flatMap(m => m), d.histogram.flatMap(m=> m.map(v=> +v.value)))
+            }
+            
             let newstate = m;
             newstate.average = d3.mean(d.histogram.flatMap(m=> m.map(v=> +v.value)));
+            //newstate.average = d3.mean(d.histogram.flatMap(m=> +m));
             newstate.color = d.color.color;
             return newstate;
         });
+        //console.log('state', state);
         state.color = d.color.color;
         state.average = d3.mean(d.histogram.flatMap(m=> m.map(v=> +v.value)));
+        // state.average = d3.mean(d.histogram.flatMap(m=> +m));
         return state;
     }).join('circle').classed('prob-tick', true)
 
@@ -1141,12 +1146,15 @@ function renderDiscretePredicted(discreteDist){
     return `translate(${scale(+d.value + d.x)},${yScale(d.y)})`});
 
     let averageTick = stateBarsPredicted
-        .selectAll('.av-tick').data(d=> {
+        .selectAll('.av-tick').data((d, i, n)=> {
+            //console.log('d above', d, i, n, d3.selectAll(n).data())
             return [{value: d.state[0].average, color: d.color.color}];
         }).join('rect').classed('av-tick', true)
         .attr('width', 1).attr('height', dimensions.squareDim)
         .attr('fill', d=> d.color)
         .attr('transform', (d, i, n)=> {
+           // console.log('d', d, d3.selectAll(n).data())
+            let avValue = d.value != undefined ? d.value : 0;
             let scale = d3.scaleLinear().domain([0, 1]).range([0, (discreteWidth - 2)]);
             return `translate(${scale(d.value)}, 0)`});
 
