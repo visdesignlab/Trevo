@@ -96,7 +96,6 @@ export function initialViewLoad(scales, dataName){
 
         renderDistStructure(main, chosenCladesGroup[chosenCladesGroup.length - 1].groups)
             .then(()=>  document.getElementById("loader").style.display = "none");
-
         
         d3.select('#view-toggle').text('View Paths');
 
@@ -109,6 +108,7 @@ export function initialViewLoad(scales, dataName){
         changeDropValue({'field':'Summary View'});
 
     }else{
+        
         drawPathsAndAttributes(data, main);
         d3.select('#view-toggle').text('View Summary');
 

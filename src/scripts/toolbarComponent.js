@@ -36,14 +36,12 @@ export function toolbarDataControl(toolbar, graphList, chosenGraph){
     });
 
 }
-
 async function dropUpdated(d){
     let loader = await clearMain();
     await changeDropValue(d);
     await updateMainView(d.field, chosenCladesGroup[chosenCladesGroup.length - 1].groups);
     loader.style.display = "none";
 }
-
 export function changeDropValue(d){
     d3.select('.dropdown.change-view').select('button').node().value = d.field;
     d3.select('.dropdown.change-view').select('button').text(d.field);
@@ -146,8 +144,11 @@ export function toolbarControl(toolbar, main, calculatedScales){
             dropContent.classed('show', false);
             await updateMainView(d3.select('.dropdown.change-view').select('button').node().value, chosenCladesGroup[chosenCladesGroup.length - 1].groups);
             loader.style.display = "none";
+
         }else{
+
             dropContent.classed('show', true);
+
         }
     });
 
@@ -178,17 +179,19 @@ export function toolbarControl(toolbar, main, calculatedScales){
                 return {'label': m.field, 'paths': data, 'groupBins': group};
            }));
 
-           d3.select('#summary-view').remove();
-           renderDistStructure(d3.select('#main'), groups);  
+           let loader = clearMain();
+          // dropContent.classed('show', false);
+           updateMainView(d3.select('.dropdown.change-view').select('button').node().value, groups);
+           loader.style.display = "none";
+
+          // d3.select('#summary-view').remove();
+           //renderDistStructure(d3.select('#main'), groups);  
 
         }else{
             dropContentClade.classed('show', true);
         }
     });
 }
-
-
-
 export function updateCladeDrop(dropUl, cladeOptions){
 
     let options = dropUl.selectAll('li').data(cladeOptions).join('li');
