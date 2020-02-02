@@ -5,8 +5,10 @@ import { getLatestData } from "./filterComponent";
 import { generatePairs, rankingControl } from "./pairView";
 import { drawTreeForGroups, createCladeView, chosenCladesGroup } from "./cladeMaker";
 import { calculatedScalesKeeper } from ".";
+import { changeDropValue } from './toolbarComponent';
 
 export let groupedView = false;
+
 
 /**
  * Get the latest data and filter only what is selected
@@ -24,11 +26,13 @@ export function getSelectedData(){
 
 export function updateMainView(d, groups){
 
-
     let main = d3.select('#main');
-    //let data = getLatestData();
+    
     let data = getSelectedData();
     let view = d3.select('#view-pheno').empty()? null : d3.select('#view-pheno').text();
+
+    console.log('data', data);
+    console.log('d',d)
    
     if(d != 'Pair View' && view === 'View Phenogram'){
         d3.select('.dropdown.attr-drop').remove();
@@ -102,6 +106,8 @@ export function initialViewLoad(scales, dataName){
         d3.select('#scrunch').classed('hidden', true);
         d3.select('#discrete-view').classed('hidden', true);
 
+        changeDropValue({'field':'Summary View'});
+
     }else{
         drawPathsAndAttributes(data, main);
         d3.select('#view-toggle').text('View Summary');
@@ -111,6 +117,9 @@ export function initialViewLoad(scales, dataName){
 
         d3.select('#scrunch').classed('hidden', false);
         d3.select('#discrete-view').classed('hidden', false);
+        change
+
+        changeDropValue({'field':'Path View'});
       
     }
 

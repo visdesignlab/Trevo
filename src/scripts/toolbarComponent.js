@@ -44,7 +44,7 @@ async function dropUpdated(d){
     loader.style.display = "none";
 }
 
-function changeDropValue(d){
+export function changeDropValue(d){
     d3.select('.dropdown.change-view').select('button').node().value = d.field;
     d3.select('.dropdown.change-view').select('button').text(d.field);
     return d;
@@ -178,18 +178,16 @@ export function toolbarControl(toolbar, main, calculatedScales){
                 return {'label': m.field, 'paths': data, 'groupBins': group};
            }));
 
-           console.log('bin groups', groups);
-
            d3.select('#summary-view').remove();
            renderDistStructure(d3.select('#main'), groups);  
-
-           console.log('test', Array.from(new Set(test.data().flatMap(f=> f.nodes.map(path => path[path.length - 1].node)))))
 
         }else{
             dropContentClade.classed('show', true);
         }
     });
 }
+
+
 
 export function updateCladeDrop(dropUl, cladeOptions){
 
