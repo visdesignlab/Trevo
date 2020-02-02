@@ -43,7 +43,7 @@ export function growSidebarRenderTree(attrDraw){
         sidebar.selectAll('*').remove();
         ////REDRAW SIDEBAR
         renderTreeButtons(getLatestData(), sidebar, false);
-        renderTree(sidebar, null, false);
+        renderTree(null, true, false);//att, uncollapse, pheno
     });
 
     const dimensions =  {
