@@ -66,21 +66,6 @@ let tooltip = wrap.append("div")
 
 appLaunch();
 
-// async function appLaunch(){
-
-//    // let graphList = await getGraphNames(workspace);
-//     // graphList = graphList.map(name=> {
-//     //     return {field: name, text: `Data: ${name}`}
-//     // })
-//    let graphList = ['Anolis', 'Anolis']
-//    // toolbarDataControl(toolbarDataWrap, graphList, graphList[1]);
-//    toolbarDataControl(toolbarDataWrap, graphList, graphList[0]);
-   
-//     //loadApp(workspace, graphList[0].field);
-//     loadApp(null, null);
-
-// }
-
 async function appLaunch(){
 
     let graphList = await getGraphNames(workspace);
@@ -93,7 +78,6 @@ async function appLaunch(){
 
 export async function loadApp(workspace, graphName){
  
-    //dataLoadAndFormat('anolis-edges.json', 'anolis-edge-lengths.json', 'anolis-leaf-data.csv', 'anolis-res.json', 'Anolis').then(centData=> {
     dataLoadAndFormatMultinet(workspace, graphName).then(centData=> {
 
         toolbarControl(toolbarButtonWrap, main, centData[1]);

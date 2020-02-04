@@ -180,12 +180,9 @@ export function toolbarControl(toolbar, main, calculatedScales){
            }));
 
            let loader = clearMain();
-          // dropContent.classed('show', false);
            updateMainView(d3.select('.dropdown.change-view').select('button').node().value, groups);
            loader.style.display = "none";
 
-          // d3.select('#summary-view').remove();
-           //renderDistStructure(d3.select('#main'), groups);  
 
         }else{
             dropContentClade.classed('show', true);
