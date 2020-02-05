@@ -7,11 +7,32 @@ import { findBrushedNodes } from "./toolbarComponent";
 import { getScales } from "./filterComponent";
 import { renderTree } from "./sidebarComponent";
 
+const macroModes = [
+  {field:'Convergence (Shallow)', value: [0, 1, 1]}, 
+  {field:'Convergence (Ancient)', value: [1, 1, 1]}, 
+  {field:'Divergence (Shallow)', value: [0, 1, 1]}, 
+  {field:'Divergence (Ancient)', value: [0, 1, 1]},
+  {field:'Divergence (Ancient)', value: [0, 1, 1]},  
+  {field:'Conservativism', value: [1, -1, 1]},  
+  {field:'Character Shift', value: [-1, -1, -1]}
+];
+
 export function rankingControl(data){
     let rankDiv = d3.select('#pair-rank').classed('hidden', false);
     rankDiv.selectAll('*').remove();
 
-    let defaultW = [1, 1, 1];
+    let dropOptions = dropDown(rankDiv, macroModes, 'Preset', 'preset');
+    dropOptions.on('click', (d, i, n)=> {
+     console.log('d', d, d3.select('#preset'));
+     d3.select('#preset').classed('show', false);
+     defaultW = d.value;
+   
+     let mappedPairs = updateRanking(pairPaths(data), d3.select('.attr-drop.dropdown').select('button').attr('value'), defaultW);
+     drawSorted(mappedPairs.top20, d3.select('.attr-drop.dropdown').select('button').attr('value'));
+     topPairSearch(mappedPairs.top20, mappedPairs.pairs, d3.select('.attr-drop.dropdown').select('button').attr('value'), defaultW);
+    });
+
+    let defaultW = macroModes[1].value;
     let sliderWidth = 140;
     let sliderMargin = 50;
   
@@ -22,7 +43,7 @@ export function rankingControl(data){
       .append('g')
       .attr('transform', 'translate(10,10)');
 
-     weightPicker
+    weightPicker
     .append("svg:image")
     .attr('width', 200)
     .attr('height', 140)
@@ -55,7 +76,6 @@ export function rankingControl(data){
         .on('end', num => {
           defaultW[i] = num;
           let mappedPairs = updateRanking(pairPaths(data), d3.select('.attr-drop.dropdown').select('button').attr('value'), defaultW);
-       
           drawSorted(mappedPairs.top20, d3.select('.attr-drop.dropdown').select('button').attr('value'));
           topPairSearch(mappedPairs.top20, mappedPairs.pairs, d3.select('.attr-drop.dropdown').select('button').attr('value'), defaultW);
         });
@@ -69,7 +89,7 @@ export function rankingControl(data){
         .filter(f=> f < 0).select('text')
         .attr('fill', 'red')
         .attr('opacity', 0.6);
-    });
+      });
 }
 export function changeTrait(attKeys, data, weights){
 
@@ -130,6 +150,7 @@ function getWeightScales(pairs, field){
   let closeScale = d3.scaleLinear().domain([closeMax, 0]).range([0, 1]);
   let distScale = d3.scaleLinear().domain([0, distMax]).range([0, 1]);
   return {delta: deltaScale, close:closeScale, distance: distScale};
+
 }
 
 export function updateRanking(pairs, field, weights){
@@ -226,7 +247,6 @@ function drawSorted(pairs, field){
     });
 
     //BEGIN EXPERIOMENTING////]
-
     let pairGroupN = pairWraps.selectAll('g.pair-neighbor').data((d, i, n)=> {
       let species1 = d.p1.map(n=> n.node);
       let species2 = d.p2.map(n=> n.node);
@@ -240,14 +260,10 @@ function drawSorted(pairs, field){
       
       let speciesNames = [species1[species1.length-1], species2[species2.length-1]];
 
-      
-
       ////EXPERIMENTING WITH NODES////
       let neighPaths = dataMaster[dataMaster.length - 1].filter(f=> 
         (neighbors.indexOf(f[f.length - 1].node)) > -1 && (speciesNames.indexOf(f[f.length - 1].node) === -1));
 
-    
-  
       let labeledN = [...neighPaths].map(path=> {
         let name = path[path.length - 1].node;
         return path.map(p=> {

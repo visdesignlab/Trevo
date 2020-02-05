@@ -551,8 +551,6 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
 
     let discreteDist = branchGroup.filter(f=> f.type === 'discrete');
 
-  
-    
     /**
      * Discrete Predicted Render and Events
      */
@@ -631,6 +629,7 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
     contOb.each((d, i, nodes)=> {
         let xvalues = d.leafData.data.map(m=> {
             return +m.values.realVal});
+            
         let x = d3.scaleLinear()
             .domain([d3.min(xvalues), d3.max(xvalues)])
             .range([0, dimensions.observedWidth]);
