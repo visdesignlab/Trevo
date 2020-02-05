@@ -23,7 +23,6 @@ export function rankingControl(data){
 
     let dropOptions = dropDown(rankDiv, macroModes, 'Preset', 'preset');
     dropOptions.on('click', (d, i, n)=> {
-     console.log('d', d, d3.select('#preset'));
      d3.select('#preset').classed('show', false);
      defaultW = d.value;
    
