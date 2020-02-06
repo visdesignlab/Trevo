@@ -10,8 +10,8 @@ import { renderTree } from "./sidebarComponent";
 const macroModes = [
   {field:'Convergence (Shallow)', value: [-1, 1, 1], pict: 'shallow-converg.gif'}, 
   {field:'Convergence (Ancient)', value: [1, 1, 1], pict: 'ancient-converg.gif'}, 
-  {field:'Divergence (Shallow)', value: [0, 1, 1], pict: 'shallow-div.gif'}, 
-  {field:'Divergence (Ancient)', value: [0, 1, 1], pict: 'ancient-div.gif'},
+  {field:'Divergence (Shallow)', value: [-1, 1, -1], pict: 'shallow-div.gif'}, 
+  {field:'Divergence (Ancient)', value: [1, 1, -1], pict: 'ancient-div.gif'},
   {field:'Conservativism', value: [1, -1, 1], pict: 'conservativism.gif'},  
   {field:'Character Shift', value: [-1, -1, -1], pict: 'char-disp.gif'}
 ];
