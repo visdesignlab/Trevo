@@ -8,50 +8,53 @@ import { getScales } from "./filterComponent";
 import { renderTree } from "./sidebarComponent";
 
 const macroModes = [
-  {field:'Convergence (Shallow)', value: [0, 1, 1]}, 
-  {field:'Convergence (Ancient)', value: [1, 1, 1]}, 
-  {field:'Divergence (Shallow)', value: [0, 1, 1]}, 
-  {field:'Divergence (Ancient)', value: [0, 1, 1]},
-  {field:'Divergence (Ancient)', value: [0, 1, 1]},  
-  {field:'Conservativism', value: [1, -1, 1]},  
-  {field:'Character Shift', value: [-1, -1, -1]}
+  {field:'Convergence (Shallow)', value: [-1, 1, 1], pict: 'shallow-converg.gif'}, 
+  {field:'Convergence (Ancient)', value: [1, 1, 1], pict: 'ancient-converg.gif'}, 
+  {field:'Divergence (Shallow)', value: [0, 1, 1], pict: 'shallow-div.gif'}, 
+  {field:'Divergence (Ancient)', value: [0, 1, 1], pict: 'ancient-div.gif'},
+  {field:'Conservativism', value: [1, -1, 1], pict: 'conservativism.gif'},  
+  {field:'Character Shift', value: [-1, -1, -1], pict: 'char-disp.gif'}
 ];
 
 export function rankingControl(data){
     let rankDiv = d3.select('#pair-rank').classed('hidden', false);
     rankDiv.selectAll('*').remove();
 
-    let dropOptions = dropDown(rankDiv, macroModes, 'Preset', 'preset');
-    dropOptions.on('click', (d, i, n)=> {
-     d3.select('#preset').classed('show', false);
-     defaultW = d.value;
+    let dropDiv = rankDiv.append('div')
+      .style('width', '200px')
+      .style('display', 'inline-block')
+      .style('padding-left', '30px')
+      .style('padding-bottom', '20px')
+
+    let weightPickerDiv = rankDiv
+      .append('div')
+      .style('display', 'inline-block')
+      .style('padding-left', '80px');
+
+    let weightPicker = weightPickerDiv
+      .append('svg')
+      .style('width', '800px')
+      .attr('height', 100)
+      .append('g')
+      .attr('transform', 'translate(10,10)');
+    
+    let wImage = weightPicker
+      .append("svg:image")
+      .attr('width', 180)
+      .attr('height', 126)
+      .attr('y', -30)
+      .attr("xlink:href", `./public/${macroModes[1].pict}`);
+
+    let dropOptions = dropDown(dropDiv, macroModes, macroModes[1].field, 'preset');
    
-     let mappedPairs = updateRanking(pairPaths(data), d3.select('.attr-drop.dropdown').select('button').attr('value'), defaultW);
-     drawSorted(mappedPairs.top20, d3.select('.attr-drop.dropdown').select('button').attr('value'));
-     topPairSearch(mappedPairs.top20, mappedPairs.pairs, d3.select('.attr-drop.dropdown').select('button').attr('value'), defaultW);
-    });
 
     let defaultW = macroModes[1].value;
     let sliderWidth = 140;
     let sliderMargin = 50;
   
-    let weightPicker = rankDiv
-      .append('svg')
-      .attr('width', 800)
-      .attr('height', 100)
-      .append('g')
-      .attr('transform', 'translate(10,10)');
-
-    weightPicker
-    .append("svg:image")
-    .attr('width', 200)
-    .attr('height', 140)
-    .attr('y', -50)
-    .attr("xlink:href", "./public/mini-diagram.gif");
-
-    weightPicker.append('text').text('Distance').attr('font-size', 10).attr('x', 85).attr('y', 60);
-    weightPicker.append('text').text('Delta').attr('font-size', 10).attr('x', 66).attr('y', 20);
-    weightPicker.append('text').text('Closeness').attr('font-size', 10).attr('x', 195).attr('y', 22);
+    // weightPicker.append('text').text('Distance').attr('font-size', 10).attr('x', 85).attr('y', 60);
+    // weightPicker.append('text').text('Delta').attr('font-size', 10).attr('x', 66).attr('y', 20);
+    // weightPicker.append('text').text('Closeness').attr('font-size', 10).attr('x', 195).attr('y', 22);
 
     let labels = ['Distance', 'Delta', 'Closeness'];
 
@@ -65,9 +68,8 @@ export function rankingControl(data){
         .sliderBottom()
         .min(-1)
         .max(1)
-       // .step(.5)
-       .ticks(3)
-  
+        // .step(.5)
+        .ticks(3)
         .width(sliderWidth)
         .default(defaultW[i])
         .displayValue(false)
@@ -81,6 +83,7 @@ export function rankingControl(data){
   
       weightPicker
         .append('g')
+        .attr('id', `weight-slider-${i}`)
         .attr('transform', `translate(${300+((sliderWidth + sliderMargin) * i)}, 20)`)
         .call(slider);
 
@@ -89,6 +92,48 @@ export function rankingControl(data){
         .attr('fill', 'red')
         .attr('opacity', 0.6);
       });
+
+      dropOptions.on('click', (d, i, n)=> {
+
+        let sliderGroups = d3.selectAll('.weight-slider');
+
+        console.log(sliderGroups);
+
+
+        d3.select('#preset').classed('show', false);
+        defaultW = d.value;
+
+        defaultW.forEach((w, j)=> {
+
+          var slider = slide
+          .sliderBottom()
+          .min(-1)
+          .max(1)
+          // .step(.5)
+          .ticks(3)
+          .width(sliderWidth)
+          .default(w)
+          .displayValue(false)
+          .fill('#516880')
+          .on('end', num => {
+            defaultW[i] = num;
+            let mappedPairs = updateRanking(pairPaths(data), d3.select('.attr-drop.dropdown').select('button').attr('value'), defaultW);
+            drawSorted(mappedPairs.top20, d3.select('.attr-drop.dropdown').select('button').attr('value'));
+            topPairSearch(mappedPairs.top20, mappedPairs.pairs, d3.select('.attr-drop.dropdown').select('button').attr('value'), defaultW);
+          });
+
+          d3.select(`#weight-slider-${j}`).call(slider);
+        })
+   
+        d3.select('.dropdown.preset').select('button').text(d.field);
+      
+        let mappedPairs = updateRanking(pairPaths(data), d3.select('.attr-drop.dropdown').select('button').attr('value'), defaultW);
+        drawSorted(mappedPairs.top20, d3.select('.attr-drop.dropdown').select('button').attr('value'));
+        topPairSearch(mappedPairs.top20, mappedPairs.pairs, d3.select('.attr-drop.dropdown').select('button').attr('value'), defaultW);
+   
+        wImage.attr("xlink:href", `./public/${d.pict}`);
+   
+       });
 }
 export function changeTrait(attKeys, data, weights){
 
