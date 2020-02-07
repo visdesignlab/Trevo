@@ -881,9 +881,7 @@ function renderDiscretePredicted(discreteDist){
         });
        
         let state = d.state.map(m=> {
-            if(d.histogram.flatMap(m=> m.map(v=> +v.value)).includes(NaN)){
-                console.log('histogram', d.histogram.flatMap(m => m), d.histogram.flatMap(m=> m.map(v=> +v.value)))
-            }
+          
             
             let newstate = m;
             newstate.average = d3.mean(d.histogram.flatMap(m=> m.map(v=> +v.value)));
@@ -913,13 +911,13 @@ function renderDiscretePredicted(discreteDist){
 
     let averageTick = stateBarsPredicted
         .selectAll('.av-tick').data((d, i, n)=> {
-            //console.log('d above', d, i, n, d3.selectAll(n).data())
+        
             return [{value: d.state[0].average, color: d.color.color}];
         }).join('rect').classed('av-tick', true)
         .attr('width', 1).attr('height', dimensions.squareDim)
         .attr('fill', d=> d.color)
         .attr('transform', (d, i, n)=> {
-           // console.log('d', d, d3.selectAll(n).data())
+        
             let avValue = d.value != undefined ? d.value : 0;
             let scale = d3.scaleLinear().domain([0, 1]).range([0, (discreteWidth - 2)]);
             return `translate(${scale(d.value)}, 0)`});

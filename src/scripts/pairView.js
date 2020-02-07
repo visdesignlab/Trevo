@@ -183,7 +183,10 @@ export async function generatePairs(data){
         let mappedPairs = updateRanking([...pairs], attKeys[0].field, weights);
        
         drawSorted(mappedPairs.top20, attKeys[0].field);
-        topPairSearch(mappedPairs.top20, mappedPairs.pairs, attKeys[0].field, weights);
+        if(data.length < 200){
+          topPairSearch(mappedPairs.top20, mappedPairs.pairs, attKeys[0].field, weights);
+        }
+        
 }
 function getWeightScales(pairs, field){
  

@@ -5,6 +5,7 @@ import { allPaths } from "./pathCalc";
 import { binGroups } from "./distributionView";
 import { addCladeGroup, chosenCladesGroup, addClade } from "./cladeMaker";
 import { buildTreeStructure } from "./sidebarComponent";
+import { calcVolatility } from "./renderPathView";
 
 export const maxTimeKeeper = [];
 
@@ -21,7 +22,6 @@ function generatePairs(pathData){
             return {'p1': path, 'p2': p}
         });
         return paired.map(m=> {
-            
             let key = [m.p1[m.p1.length - 1].node, m.p2[m.p2.length - 1].node].sort();
             m.key = key.join(',');
             let distance = getDistance(m);
@@ -360,12 +360,14 @@ export function filterKeeper(){
 export function formatAttributeData(pathData, scales, filterArray){
 
     let keys = (filterArray == null)? Object.keys(pathData[0][0].attributes).filter(f=> f != 'node' && f != 'leaf' && f != 'length' && f != 'root' && f != 'key'): filterArray;
-    console.log('pathData',pathData)
+    let test = pathData.map((path, i)=> {
+        return scales.map(m=> calcVolatility(path, m.field));
+    });
     let newData = pathData.map(path=> {
         return keys.map((key)=> {
+     
             return path.map((m)=> {
                 let speciesLabel = path[path.length - 1].node;
-                
                 if(m.attributes[key].type === 'continuous'){
                     m.attributes[key].species = speciesLabel;
                     m.attributes[key].color = scales.filter(f=> f.field === key)[0].catColor;
@@ -429,6 +431,8 @@ export function formatAttributeData(pathData, scales, filterArray){
             });
         });
     });
+
+   
     return newData;
 }
 

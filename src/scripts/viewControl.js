@@ -30,9 +30,6 @@ export function updateMainView(d, groups){
     
     let data = getSelectedData();
     let view = d3.select('#view-pheno').empty()? null : d3.select('#view-pheno').text();
-
-    console.log('data', data);
-    console.log('d',d)
    
     if(d != 'Pair View' && view === 'View Phenogram'){
         d3.select('.dropdown.attr-drop').remove();
@@ -117,7 +114,7 @@ export function initialViewLoad(scales, dataName){
 
         d3.select('#scrunch').classed('hidden', false);
         d3.select('#discrete-view').classed('hidden', false);
-        change
+        
 
         changeDropValue({'field':'Path View'});
       

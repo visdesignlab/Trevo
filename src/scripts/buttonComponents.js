@@ -1,5 +1,6 @@
 import * as d3 from "d3";
 import '../styles/index.scss';
+import { changeDropValue } from "./toolbarComponent";
 
 export function dropDown(div, optionArray, dropText, dropId){
     let dropdiv = div.append('div').classed(`dropdown ${dropId}`, true);
@@ -9,7 +10,13 @@ export function dropDown(div, optionArray, dropText, dropId){
     dropContent.append('a').text('text').attr('font-size', 11);
     let options = dropContent.selectAll('a').data(optionArray).join('a').text(d=> d.field);
 
-    options.on('click', (d, i, n)=> dropContent.classed('show', false));
+    options.on('click', (d, i, n)=> {
+        
+        changeDropValue(d);
+        dropContent.classed('show', false);
+    });
+
+  
 
     button.on('click', (d, i, n)=> {
         if(dropContent.classed('show')){

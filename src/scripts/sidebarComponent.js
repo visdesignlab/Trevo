@@ -199,15 +199,15 @@ export function renderTree(att, uncollapse, pheno){
     if(groupedBool === "ungrouped" && uncollapse === false){
         if((cladesGroupKeeper.length > 0) && (chosenCladesGroup[chosenCladesGroup.length - 1].field != 'Clade Attribute)')){
             let newNodes = collapseTree(treenodes);
-            //console.log('testing this above', treenodes, dimensions, treeSvg, g, att, pheno)
+         
             updateTree(newNodes, dimensions, treeSvg, g, att, pheno);
         }else{
-            //console.log('testing this', treenodes, dimensions, treeSvg, g, att, pheno)
+          
             updateTree(treenodes, dimensions, treeSvg, g, att, pheno);
         }
         
     }else{
-        //console.log('testing this below', treenodes, dimensions, treeSvg, g, att, pheno)
+        
         ////Break this out into other nodes////
         updateTree(treenodes, dimensions, treeSvg, g, att, pheno);
     }
@@ -319,7 +319,7 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, pheno){
     });
 
     if(attrDraw != null){
-        console.log('att is not null',attrDraw)
+        
         let leaves = node.filter(n=> n.data.leaf === true);
         let notleaves = node.filter(n=> n.data.leaf != true);
 
@@ -344,7 +344,7 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, pheno){
 
     node.on('mouseover', (d, i, n)=> {
 
-        console.log('d in sidebar', d)
+        
         let paths = d3.select('#main-path-view').selectAll('.paths');
         let points = d3.select('#main-summary-view').selectAll('.branch-points');
         points.filter(f=> f.node === d.data.node).classed('selected', true);
@@ -433,7 +433,6 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, pheno){
         //     let leafSort = test.data().sort((a, b)=> {
         //         return a.x - b.x;
         //     });
-        //     console.log(leafSort[0].data.node)
 
         //     let chosenNode = test.filter(f=> {
         //         return f.data.node === leafSort[leafSort.length - 1].data.node;

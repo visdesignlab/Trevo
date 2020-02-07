@@ -14,7 +14,40 @@ const dimensions = {
     collapsedHeight: 20,
 }
 
+export function calcVolatility(data, attribute){
+    let length = data.length;
+
+    let sumKeeper = [];
+    let valKeeper = [];
+
+ 
+    for(let i = 1; i < length; i++){
+
+        let one = i - 1;
+        let two = i;
+
+        if(data[one] && data[two]){
+            let diff = data[one].attributes[attribute].values.realVal - data[two].attributes[attribute].values.realVal;
+            
+            let diffSquared = diff * diff;
+            sumKeeper.push(diffSquared);
+          //sumKeeper.push(diff)
+            valKeeper.push(data[one].attributes[attribute].values.realVal)
+        }
+
+    }
+
+    return data.map(d=> {
+        d.attributes[attribute].volatility = d3.variance(sumKeeper) / d3.mean(sumKeeper);
+        d.attributes[attribute].extent = d3.extent(valKeeper);
+        return d;
+    });
+    
+}
+
 export function drawPathsAndAttributes(pathData, main){
+
+   
 
     let width = 800;
 
@@ -30,12 +63,8 @@ export function drawPathsAndAttributes(pathData, main){
   
       /// LOWER ATTRIBUTE VISUALIZATION ///
     let attributeWrapper = pathGroups.append('g').classed('attribute-wrapper', true);
-  
     let shownAttributes = d3.select('#attribute-show').selectAll('input').filter((f, i, n)=> n[i].checked === true).data();
-
     let attData = formatAttributeData(pathData, scales, shownAttributes);
-
-
 
     if(collapsed != 'true'){
 
@@ -54,7 +83,11 @@ export function drawPathsAndAttributes(pathData, main){
             return d}).join('g').classed('combo-lines', true);
     
         let comboLine = continuousPaths(comboLineGroups.filter(f=> f[0].type === 'continuous'), collapsed, 80, 0.3, false);
-    
+
+        pathGroups.append('text').text('Volatility').attr('transform', `translate(${1090}, ${30})`);
+        pathGroups.append('text').text('Min Val').attr('transform', `translate(${1190}, ${30})`);
+        pathGroups.append('text').text('Max Val').attr('transform', `translate(${1290}, ${30})`);
+
     }
    
     let predictedAttrGrps = renderAttributes(attributeWrapper, attData, collapsed);
@@ -87,7 +120,18 @@ export function drawPathsAndAttributes(pathData, main){
             .style('opacity', 0.4);
         });
 
+        var zero = d3.format(".2n");
+
         let contDist = drawDistLines(compactLineG.filter(f=> f[0].type != 'continuous'));
+
+        let volatility = cGroups.append('g').append('text').text(d=> zero(d[d.length - 1].volatility));
+        volatility.attr('transform', `translate(${950}, ${30})`);
+        let minVal = cGroups.append('g').append('text').text(d=> zero(d[d.length - 1].extent[0]));
+        minVal.attr('transform', `translate(${1050}, ${30})`);
+        let maxVal = cGroups.append('g').append('text').text(d=> zero(d[d.length - 1].extent[1]));
+        maxVal.attr('transform', `translate(${1150}, ${30})`)
+
+       
     }
     sizeAndMove(main.select('#main-path-view'), attributeWrapper, pathData, (shownAttributes.length * attributeHeight));
 
@@ -345,6 +389,7 @@ export function renderPaths(pathData, main, width){
     return pathGroups;
 }
 export function renderAttributes(attributeWrapper, data, collapsed){
+
     let attributeHeight = (collapsed === 'true')? 20 : 45;
     let predictedAttrGrps = attributeWrapper.selectAll('g').data((d, i)=> {
         return data[i]}).join('g');
@@ -358,6 +403,7 @@ export function renderAttributes(attributeWrapper, data, collapsed){
     attrLabel.attr('transform', 'translate(-15, 20)');
 
     return predictedAttrGrps;
+
 }
 function collapsedPathGen(data){
     data.map((p, i)=>{
