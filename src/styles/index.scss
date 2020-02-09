@@ -181,6 +181,13 @@ ul {
   opacity:0;
 }
 
+#tool-buttons{
+  display:inline;
+}
+
+.toggle, .toggle-on, .toggle-off { border-radius: 20rem; }
+  .toggle .toggle-handle { border-radius: 20rem; }
+
 .brush-space rect.brush-space-rect{
   cursor: crosshair;
   width: 10px;

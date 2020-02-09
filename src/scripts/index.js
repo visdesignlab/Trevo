@@ -53,7 +53,7 @@ let wrap = d3.select('#wrapper');
 let main = wrap.select('#main');
 wrap.select('#selected').classed('hidden', true);
 let sidebar = wrap.select('#sidebar');
-let toolbarDiv = wrap.select('#toolbar');
+let toolbarDiv = wrap.select('#toolbar').select('#tool-buttons');
 let toolbarDataWrap = toolbarDiv.append('div').classed('toolbar-data-button', true);
 let toolbarButtonWrap = toolbarDiv.append('div').classed('toolbar-button-wrap', true);
 wrap.select('#filter-tab').classed('hidden', true);
