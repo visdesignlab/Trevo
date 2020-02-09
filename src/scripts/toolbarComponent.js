@@ -146,9 +146,7 @@ export function toolbarControl(toolbar, main, calculatedScales){
             loader.style.display = "none";
 
         }else{
-
             dropContent.classed('show', true);
-
         }
     });
 

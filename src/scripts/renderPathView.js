@@ -20,7 +20,6 @@ export function calcVolatility(data, attribute){
     let sumKeeper = [];
     let valKeeper = [];
 
- 
     for(let i = 1; i < length; i++){
 
         let one = i - 1;
@@ -31,15 +30,15 @@ export function calcVolatility(data, attribute){
             
             let diffSquared = diff * diff;
             sumKeeper.push(diffSquared);
-          //sumKeeper.push(diff)
             valKeeper.push(data[one].attributes[attribute].values.realVal)
         }
-
     }
 
     return data.map(d=> {
-        d.attributes[attribute].volatility = d3.variance(sumKeeper) / d3.mean(sumKeeper);
+        //d.attributes[attribute].volatility = d3.deviation(valKeeper);//Math.sqrt(d3.mean(sumKeeper));//d3.variance(sumKeeper) / d3.mean(sumKeeper);
+        d.attributes[attribute].volatility = d3.deviation(sumKeeper);//Math.sqrt(d3.mean(sumKeeper));//d3.variance(sumKeeper) / d3.mean(sumKeeper);
         d.attributes[attribute].extent = d3.extent(valKeeper);
+        d.attributes[attribute].maxDiff = d3.extent(valKeeper)[1] - d3.extent(valKeeper)[0];
         return d;
     });
     
@@ -47,18 +46,12 @@ export function calcVolatility(data, attribute){
 
 export function drawPathsAndAttributes(pathData, main){
 
-   
-
     let width = 800;
-
     let scales = getScales();
-
     let nodeTooltipFlag = true;
 
     let collapsed = d3.select('#scrunch').attr('value');
-  
     main.select('#main-path-view').selectAll('*').remove();
-
     let pathGroups = renderPaths(pathData, main, 800);
   
       /// LOWER ATTRIBUTE VISUALIZATION ///
@@ -176,6 +169,7 @@ export function drawPathsAndAttributes(pathData, main){
     return pathGroups;
 
 }
+
 function drawDistLines(discG){
 
     let comboDisc = discG.selectAll('g.states').data(d=> {
@@ -207,27 +201,27 @@ function drawDistLines(discG){
         let step = 40 / n.length;
         return `translate(0, ${(i * step)+(step/2.2)})`});
     
-      comboStates.append('rect')
-        .attr('width', (d, i)=>{
-            let vals = d[1]
-            let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 80]);
-            return (x(vals[vals.length-1].endLength) - x(vals[0].combLength)) - .5;
-        })
-        .attr('height', (d, i)=> {
-            let sizer = d3.scaleLinear().domain([0, 1]).range([0.2, 6]);
-            return sizer(d[0]);
-        })
-        .attr('fill', 'gray')
-        .attr('opacity', 0.4)
-        .attr('y', (d)=> {
-            let sizer = d3.scaleLinear().domain([0, 1]).range([0.2, 6]);
-            return (sizer(d[0]) / 2) * -1;
-        });
+        comboStates.append('rect')
+            .attr('width', (d, i)=>{
+                let vals = d[1]
+                let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 80]);
+                return (x(vals[vals.length-1].endLength) - x(vals[0].combLength)) - .5;
+            })
+            .attr('height', (d, i)=> {
+                let sizer = d3.scaleLinear().domain([0, 1]).range([0.2, 6]);
+                return sizer(d[0]);
+            })
+            .attr('fill', 'gray')
+            .attr('opacity', 0.4)
+            .attr('y', (d)=> {
+                let sizer = d3.scaleLinear().domain([0, 1]).range([0.2, 6]);
+                return (sizer(d[0]) / 2) * -1;
+            });
 
-    comboStates.attr('transform', (d, i)=> {
-        let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 80]);
-        return `translate(${x(d[1][0].combLength)},0)`;
-    });
+        comboStates.attr('transform', (d, i)=> {
+            let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 80]);
+            return `translate(${x(d[1][0].combLength)},0)`;
+        });
 
     return comboDisc;
 }
