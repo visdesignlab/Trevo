@@ -32,7 +32,6 @@ export function logScaleToggle(){
        let loader = clearMain();
        updateMainView(d3.select('.dropdown.change-view').select('button').node().value, groups);
        loader.style.display = "none";
-  
 
     })
 }
