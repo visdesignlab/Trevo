@@ -16,6 +16,12 @@ export async function loadData(readFunction, fileString, type){
     return data;
 }
 
+export function generateTraitScale(extent, pixelRange){
+
+    return d3.scaleLinear().domain(extent).range(pixelRange);
+
+}
+
 export function scalingValues(num){
     if(valueParam === 'realVal'){
         return num;
