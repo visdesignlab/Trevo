@@ -6,8 +6,9 @@ import {getScales, getLatestData} from './filterComponent';
 import {getNested} from './pathCalc';
 import { dropDown } from './buttonComponents';
 import { updateRanking, changeTrait } from './pairView';
-import { pairPaths, maxTimeKeeper } from './dataFormat';
+import { pairPaths, maxTimeKeeper, scalingValues } from './dataFormat';
 import { cladesGroupKeeper, chosenCladesGroup, growSidebarRenderTree } from './cladeMaker';
+import { valueParam } from './toolbarComponent';
 
 
 export function buildTreeStructure(paths, edges){
@@ -254,8 +255,11 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, pheno){
 
     if(pheno){
         treeSvg.attr('height', 800);
+        let min = scalingValues(treenodes.data.attributes[pheno].scales.min);
+        let max = scalingValues(treenodes.data.attributes[pheno].scales.max);
        
-        xScale.domain(treenodes.data.attributes[pheno].scales.yScale.domain())
+        //xScale.domain(treenodes.data.attributes[pheno].scales.yScale.domain())
+        xScale.domain([min, max])
         yScale.domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 600])
     }
 
@@ -274,8 +278,8 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, pheno){
            + " " + (xScale(d.parent.data.combEdge)) + "," + yScale(d.position)
            + " " + xScale(d.parent.data.combEdge) + "," + yScale(d.parent.position);
         }else{
-            return "M" + xScale(d.data.attributes[pheno].values.realVal) + "," + yScale(d.data.combEdge)
-            + " " + xScale(d.parent.data.attributes[pheno].values.realVal) + "," + yScale(d.parent.data.combEdge);
+            return "M" + xScale(d.data.attributes[pheno].values[valueParam]) + "," + yScale(d.data.combEdge)
+            + " " + xScale(d.parent.data.attributes[pheno].values[valueParam]) + "," + yScale(d.parent.data.combEdge);
         }       
     });
 
@@ -284,7 +288,13 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, pheno){
         link.style('opacity', 0.3);
         g.attr('transform', 'translate(30, 50)');
 
-        let x = xScale.domain(treenodes.data.attributes[pheno].scales.yScale.domain()).range([0, (dimensions.width+20)]);
+        let x = xScale;
+        x.range([0, (dimensions.width+20)]);
+        let min = scalingValues(treenodes.data.attributes[pheno].scales.min);
+        let max = scalingValues(treenodes.data.attributes[pheno].scales.max);
+       
+        //xScale.domain(treenodes.data.attributes[pheno].scales.yScale.domain())
+        x.domain([min, max]);
    
         let xAxis = d3.axisBottom(x);
         g.append('g').classed('pheno-x-axis', true).call(xAxis).attr('transform', 'translate(0, 610)').select('path').attr('stroke-width', 0);
@@ -314,7 +324,7 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, pheno){
             return "translate(" + xScale(d.data.combEdge) + "," + yScale(d.position) + ")"; 
         }else{
 
-           return "translate(" + (xScale(d.data.attributes[pheno].values.realVal) - 5) + "," + yScale(d.data.combEdge) + ")"; 
+           return "translate(" + (xScale(d.data.attributes[pheno].values[valueParam]) - 5) + "," + yScale(d.data.combEdge) + ")"; 
         }
     });
 
@@ -335,7 +345,7 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, pheno){
             let scale = attrDraw.yScale;
             scale.range(['#fff', '#E74C3C']);
             leaves.select('circle').attr('fill', (d, i)=> {
-                return scale(d.data.attributes[attrDraw.field].values.realVal);
+                return scale(d.data.attributes[attrDraw.field].values[valueParam]);
             });
         }
     }else{
