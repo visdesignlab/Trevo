@@ -137,16 +137,18 @@ export function rankingControl(data){
 }
 export function changeTrait(attKeys, data, weights){
 
-  let view = d3.select('#toolbar').select('.dropdown.change-view').select('.dropdown-toggle').node().value;
+  let toolbarButtonDiv = d3.select('#toolbar').select('#tool-buttons');
+
+  let view = toolbarButtonDiv.select('.dropdown.change-view').select('.dropdown-toggle').node().value;
 
   let drop = d3.select('.attr-drop.dropdown')
-  .selectAll('a').empty() ? dropDown(d3.select('#toolbar'), attKeys, `Trait: ${attKeys[1].field}`, 'attr-drop') : d3.select('.attr-drop.dropdown').selectAll('a');
+  .selectAll('a').empty() ? dropDown(toolbarButtonDiv, attKeys, `Trait: ${attKeys[1].field}`, 'attr-drop') : d3.select('.attr-drop.dropdown').selectAll('a');
 
   d3.select('.attr-drop.dropdown').select('button').attr('value', attKeys[1].field);
 
   drop.on('click', (d, i, n)=> {
 
-    if(d3.select('#toolbar').select('.dropdown.change-view').select('.dropdown-toggle').node().value === "Pair View"){
+    if(toolbarButtonDiv.select('.dropdown.change-view').select('.dropdown-toggle').node().value === "Pair View"){
       let mappedPairs = updateRanking(pairPaths(data), d.field, weights);
 
       drawSorted(mappedPairs.top20, d.field);
