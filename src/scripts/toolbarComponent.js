@@ -17,6 +17,21 @@ export function logScaleToggle(){
     .on('change', (d, i, n)=> {
         
         valueParam = n[i].checked === true ? 'logVal' : 'realVal';
+        
+        let test = d3.select('#clade-show').selectAll('li').selectAll('input').filter((f, j, li)=> {
+            return li[j].checked === true});
+        
+        let groups = test.data().map((m=> {
+            let names = m.nodes.map(path => path[path.length - 1].node);
+            let data = getLatestData().filter(path => names.indexOf(path[path.length - 1].node) > -1);
+            
+            let group = binGroups(data, m.field, calculatedScalesKeeper[0], 8);
+            return {'label': m.field, 'paths': data, 'groupBins': group};
+       }));
+
+       let loader = clearMain();
+       updateMainView(d3.select('.dropdown.change-view').select('button').node().value, groups);
+       loader.style.display = "none";
   
 
     })
