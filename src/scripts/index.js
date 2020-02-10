@@ -3,7 +3,7 @@ import * as d3 from "d3";
 import {calculateNewScales, rootAttribute, combineLength, dataLoadAndFormatMultinet, loadData} from './dataFormat';
 import {allPaths} from './pathCalc';
 import {renderTree, buildTreeStructure, renderTreeButtons} from './sidebarComponent';
-import {toolbarControl, toolbarDataControl} from './toolbarComponent';
+import {toolbarControl, toolbarDataControl, logScaleToggle} from './toolbarComponent';
 import { initialViewLoad } from './viewControl';
 import { addCladeGroup, chosenCladesGroup, addClade} from './cladeMaker';
 import { binGroups } from './distributionView';
@@ -69,11 +69,15 @@ appLaunch();
 async function appLaunch(){
 
     let graphList = await getGraphNames(workspace);
+
     graphList = graphList.map(name=> {
         return {field: name, text: `Data: ${name}`}
-    })
+    });
+
     toolbarDataControl(toolbarDataWrap, graphList, graphList[0]);
+    logScaleToggle();
     loadApp(workspace, graphList[0].field);
+
 }
 
 export async function loadApp(workspace, graphName){

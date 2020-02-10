@@ -8,6 +8,13 @@ import { dropDown } from './buttonComponents';
 import { cladesGroupKeeper, chosenCladesGroup, cladeKeeper } from './cladeMaker';
 import { binGroups, renderDistStructure } from './distributionView';
 
+export function logScaleToggle(){
+    console.log('doed this fire', d3.select('#toolbar').select('checkbox'));
+    
+    d3.select('#toolbar').select('checkbox').on('change', (d, i, n)=> {
+        console.log('change', d, n)
+    })
+}
 
 export function findBrushedNodes(){
     let brushes = d3.select('#toolbar').selectAll('.brush-span');
