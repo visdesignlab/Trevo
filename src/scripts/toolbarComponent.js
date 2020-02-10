@@ -8,11 +8,17 @@ import { dropDown } from './buttonComponents';
 import { cladesGroupKeeper, chosenCladesGroup, cladeKeeper } from './cladeMaker';
 import { binGroups, renderDistStructure } from './distributionView';
 
+export let valueParam = d3.select('#toolbar').select('input').node().checked ? 'logVal' : 'realVal';
+
 export function logScaleToggle(){
-    console.log('doed this fire', d3.select('#toolbar').select('checkbox'));
+
     
-    d3.select('#toolbar').select('checkbox').on('change', (d, i, n)=> {
-        console.log('change', d, n)
+    d3.select('#toolbar').select('input')
+    .on('change', (d, i, n)=> {
+        
+        valueParam = n[i].checked === true ? 'logVal' : 'realVal';
+  
+
     })
 }
 

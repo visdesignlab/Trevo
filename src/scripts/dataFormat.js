@@ -6,6 +6,7 @@ import { binGroups } from "./distributionView";
 import { addCladeGroup, chosenCladesGroup, addClade } from "./cladeMaker";
 import { buildTreeStructure } from "./sidebarComponent";
 import { calcVolatility } from "./renderPathView";
+import { valueParam } from './toolbarComponent';
 
 export const maxTimeKeeper = [];
 
@@ -13,6 +14,19 @@ export async function loadData(readFunction, fileString, type){
     let data = await readFunction(fileString);
     data.type = String(type);
     return data;
+}
+
+export function scalingValues(num){
+    if(valueParam === 'realVal'){
+        return num;
+    }else{
+        if(num < 0){
+            console.log((Math.log(Math.abs(num)) * -1));
+            return (Math.log(Math.abs(num)) * -1);
+        }else{
+            return Math.log(num);
+        }
+    }
 }
 
 function generatePairs(pathData){
@@ -220,6 +234,7 @@ export function calculateScales(calculatedAtt, colorKeeper){
                     'max': max, 
                     'min':  min,
                     'yScale': d3.scaleLinear().range([45, 0]).domain([min, max]),
+                    
                 };
                 
             }) };
@@ -278,7 +293,6 @@ export function matchLeaves(labels, leaves, leafChar, calculatedScales){
          return leaf;
      });
 }
-
 export function matchEdges(edges, edgeLen, calculatedAtt, calculatedScales){
     return edges.rows.map((edge, i)=> {
         let attrKeys = Object.keys(calculatedAtt);
@@ -494,10 +508,13 @@ export async function dataLoadAndFormatMultinet(workspace, graphName){
                        
                         if(m.key.includes('upperCI')){
                             values.upperCI95 = +m.value;
+                            values.logUpper = +m.value < 0 ? (Math.log(Math.abs(+m.value)) * -1) : Math.log(+m.value);
                         }else if(m.key.includes('lowerCI')){
                             values.lowerCI95 = +m.value;
+                            values.logLower = +m.value < 0 ? (Math.log(Math.abs(+m.value)) * -1) : Math.log(+m.value);
                         }else{
                             values.realVal = +m.value;
+                            values.logVal = +m.value < 0 ? (Math.log(Math.abs(+m.value)) * -1) : Math.log(+m.value);
                         }
                     }else{
                          values[m.key] = m.value;   
@@ -524,6 +541,7 @@ export async function dataLoadAndFormatMultinet(workspace, graphName){
             d3.entries(row).filter(f=> f.key.includes(att.field)).map(m=> {
                 if(att.type === 'continuous'){
                     values.realVal = +m.value;
+                    values.logVal = +m.value < 0 ? (Math.log(Math.abs(+m.value)) * -1) : Math.log(+m.value);
                 }else{
                     values[m.key] = m.value;   
                 }

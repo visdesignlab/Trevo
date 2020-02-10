@@ -1,11 +1,14 @@
 import '../styles/index.scss';
-import {formatAttributeData, maxTimeKeeper, abbreviate} from './dataFormat';
+import {formatAttributeData, maxTimeKeeper, abbreviate, scalingValues} from './dataFormat';
 import * as d3 from "d3";
 import {filterMaster, getLatestData, getScales} from './filterComponent';
 import { pullPath, calculateMovingAverage } from './pathCalc';
 import { renderTree } from './sidebarComponent';
 import {renderDistributionComparison} from './compare';
 import { addBrushables } from './brusherMaker';
+import { valueParam } from './toolbarComponent';
+
+
 
 export const dimensions = {
     height: 80,
@@ -25,6 +28,8 @@ export const defaultBarColor = '#baaaaa'//#DCD4D4';
 
 export let colorBool = 0;
 export const selectedClades = [[]];
+
+
 
 export function groupDistributions(pathData, mainDiv, groupAttr){
 
@@ -46,6 +51,7 @@ export function groupDistributions(pathData, mainDiv, groupAttr){
     renderDistStructure(mainDiv, pathGroups);
 }
 export function binGroups(pathData, groupLabel, scales, branchCount){
+    console.log('this is firing',valueParam)
 
     let attrHide = filterMaster.filter(f=> f.type === 'hide-attribute').map(m=> m.attribute);
     
@@ -106,17 +112,20 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
         let leafData = {'data': leafAttr};
    
         if(scale.type === 'continuous'){
-            let x = d3.scaleLinear().domain([scale.min, scale.max]).range([0, dimensions.height]);
+            let min = valueParam === 'realVal' ? scale.min : Math.log(scale.min);
+            let max = valueParam === 'realVal' ? scale.max : Math.log(scale.max);
+            let x = d3.scaleLinear().domain([min, max]).range([0, dimensions.height]);
     
             let histogram = d3.histogram()
-            .value(function(d) { return d.values.realVal; })  
+            .value(function(d) { return d.values[valueParam]; })  
             .domain(x.domain())  
             .thresholds(x.ticks(20)); 
   
             mapNorm.map((n, i, nodeArray)=> {
+                
                 n.type = scale.type;
                 n.bins = histogram(n.data);
-                n.domain = [scale.max, scale.min];
+                n.domain = [max, min];
                 n.bins.count = branchCount;
                 n.bins.groupLabel = groupLabel;
 
@@ -134,13 +143,13 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
             });
 
             //Histogram for observed////
-            let maxO = d3.max(leafAttr.flatMap(v=> +v.values.realVal));
-            let minO = d3.min(leafAttr.flatMap(v=> +v.values.realVal));
+            let maxO = d3.max(leafAttr.flatMap(v=> +v.values[valueParam]));
+            let minO = d3.min(leafAttr.flatMap(v=> +v.values[valueParam]));
             let xO = d3.scaleLinear().domain([minO, maxO]).range([0, dimensions.height]);
 
             let histogramO = d3.histogram()
             .value(function(d) { 
-                return +d.values.realVal; })  
+                return +d.values[valueParam]; })  
             .domain(xO.domain())  
             .thresholds(xO.ticks(20)); 
 
@@ -477,17 +486,21 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
         .attr('fill', '#fff')
         .style('stroke-width', '0.5px')
         .style('stroke', 'black');
+        
 
     let rootRange = contRoot.append('rect')
         .attr('width', 12)
         .attr('height', d=> {
             let newy = d.scales.yScale;
             newy.range([(dimensions.height - 5), 0]);
-            return newy(d.values.lowerCI95) - newy(+d.values.upperCI95);
+            let up = valueParam === 'realVal' ? +d.values.upperCI95 : +d.values.logUpper;
+            let low = valueParam === 'realVal' ? +d.values.lowerCI95 : +d.values.logLower;
+            return newy(low) - newy(up);
         }).attr('transform', (d, i) => {
             let newy = d.scales.yScale;
             newy.range([(dimensions.height - 5), 0]);
-            return 'translate(0,'+newy(+d.values.upperCI95)+')';
+            let up = valueParam === 'realVal' ? +d.values.upperCI95 : +d.values.logUpper;
+            return 'translate(0,'+newy(up)+')';
         }).style('opacity', 0.5).attr('fill', defaultBarColor);
 
     let rootAv = contRoot.append('rect').attr('width', 12).attr('height', 3);
@@ -495,7 +508,7 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
     rootAv.attr('transform', (d, i) => {
         let newy = d.scales.yScale;
         newy.range([dimensions.height, 0]);
-        let mean = +d.values.realVal;
+        let mean = +d.values[valueParam];
         return 'translate(0,'+newy(mean)+')';
     }).attr('fill', '#004573');
 
@@ -628,7 +641,7 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
 
     contOb.each((d, i, nodes)=> {
         let xvalues = d.leafData.data.map(m=> {
-            return +m.values.realVal});
+            return +m.values[valueParam]});
             
         let x = d3.scaleLinear()
             .domain([d3.min(xvalues), d3.max(xvalues)])
@@ -733,11 +746,11 @@ function brushedNodes(nodes, notNodes, data, brushedVal, classLabel){
     let notTest = pullPath([], notNodeSelectedBranch.data(), [], [], 0);
 
     let testtest = test.flatMap(t=> t).filter(f=>{
-        return f.data.attributes[data.key].values.realVal >= brushedVal[0] && f.data.attributes[data.key].values.realVal <= brushedVal[1];
+        return f.data.attributes[data.key].values[valueParam] >= brushedVal[0] && f.data.attributes[data.key].values[valueParam] <= brushedVal[1];
     }).map(m=> m.data.node);
 
     let notTestTest = notTest.flatMap(t=> t).filter(f=>{
-        return f.data.attributes[data.key].values.realVal < brushedVal[0] || f.data.attributes[data.key].values.realVal > brushedVal[1];
+        return f.data.attributes[data.key].values[valueParam] < brushedVal[0] || f.data.attributes[data.key].values[valueParam] > brushedVal[1];
     }).map(m=> m.data.node);
     
     let secondGrp = treeNode.filter(f=> (nodeNames.indexOf(f.data.node) === -1)&&(testtest.indexOf(f.data.node) > -1))
@@ -771,7 +784,7 @@ export function continuousHistogram(data){
     if(data[0]){
         let x = data[0].yScale;
         let histogram = d3.histogram()
-                .value(function(d) { return d.values.realVal; })  
+                .value(function(d) { return d.values[valueParam]; })  
                 .domain(x.domain())  
                 .thresholds(x.ticks(20)); 
     
@@ -885,14 +898,14 @@ function renderDiscretePredicted(discreteDist){
             
             let newstate = m;
             newstate.average = d3.mean(d.histogram.flatMap(m=> m.map(v=> +v.value)));
-            //newstate.average = d3.mean(d.histogram.flatMap(m=> +m));
+    
             newstate.color = d.color.color;
             return newstate;
         });
     
 
         state.color = d.color.color;
-        //state.average = d3.mean(d.histogram.flatMap(m=> m.map(v=> +v.value)));
+ 
          state.average = d3.mean(d.histogram.flatMap(m=> +m));
         return state;
     }).join('circle').classed('prob-tick', true)
@@ -1040,14 +1053,32 @@ function renderContinuousPredicted(continDist){
         if(d.scales.yScale != undefined){
             let newy = d.scales.yScale;
             newy.range([80, 0]);
-            return newy(d.values.lowerCI95) - newy(d.values.upperCI95)
+               
+            let min = scalingValues(d.scales.min);
+            let max = scalingValues(d.scales.max);
+          
+            newy.domain([min, max]);
+
+            let up = valueParam === 'realVal' ? +d.values.upperCI95 : +d.values.logUpper;
+            let low = valueParam === 'realVal' ? +d.values.lowerCI95 : +d.values.logLower;
+            return newy(low) - newy(up);
+  
         }else{
             return 0;
         }
     }).attr('transform', (d, i) => {
+
         let newy = d.scales.yScale;
         newy.range([80, 0]);
-        return 'translate(0,'+newy(d.values.upperCI95)+')'
+           
+        let min = scalingValues(d.scales.min);
+        let max = scalingValues(d.scales.max);
+      
+        newy.domain([min, max]);
+
+        let up = valueParam === 'realVal' ? +d.values.upperCI95 : +d.values.logUpper;
+
+        return 'translate(0,'+newy(up)+')'
     });
 
     //rangeRect.attr('fill', "rgba(133, 193, 233, .05)");
@@ -1064,8 +1095,13 @@ function renderContinuousPredicted(continDist){
     avRect.attr('transform', (d, i) => {
         if(d.data[0] != undefined){
             let newy = d.data[0].scales.yScale;
+           
+            let min = scalingValues(d.data[0].scales.min);
+            let max = scalingValues(d.data[0].scales.max);
+          
             newy.range([dimensions.height, 0]);
-            let mean = d3.mean(d.data.map(m=> +m.values.realVal));
+            newy.domain([min, max]);
+            let mean = d3.mean(d.data.map(m=> +m.values[valueParam]));
             return 'translate(0,'+newy(mean)+')';
         }else{
             return 'translate(0,0)';

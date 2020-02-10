@@ -88,6 +88,8 @@ export async function loadApp(workspace, graphName){
         d3.select('#clade-show').selectAll('li').select('input').node().checked = true
         renderTree(null, true, false);
         renderTreeButtons(centData[0], false);
+
+        console.log(centData[0]);
         /// LOWER ATTRIBUTE VISUALIZATION ///
         initialViewLoad(centData[1]);
     });
