@@ -2,7 +2,7 @@ import '../styles/index.scss';
 import * as d3 from "d3";
 import {drawPathsAndAttributes, drawDiscreteAtt, drawGroups} from './renderPathView';
 import {toggleFilters, getLatestData} from './filterComponent';
-import { updateMainView } from './viewControl';
+import { updateMainView, updateViews } from './viewControl';
 import { collapsed, calculatedScalesKeeper, workspace, loadApp } from '.';
 import { dropDown } from './buttonComponents';
 import { cladesGroupKeeper, chosenCladesGroup, cladeKeeper } from './cladeMaker';
@@ -18,21 +18,21 @@ export function logScaleToggle(){
         
         valueParam = n[i].checked === true ? 'logVal' : 'realVal';
         
-        let test = d3.select('#clade-show').selectAll('li').selectAll('input').filter((f, j, li)=> {
-            return li[j].checked === true});
+    //     let test = d3.select('#clade-show').selectAll('li').selectAll('input').filter((f, j, li)=> {
+    //         return li[j].checked === true});
         
-        let groups = test.data().map((m=> {
-            let names = m.nodes.map(path => path[path.length - 1].node);
-            let data = getLatestData().filter(path => names.indexOf(path[path.length - 1].node) > -1);
+    //     let groups = test.data().map((m=> {
+    //         let names = m.nodes.map(path => path[path.length - 1].node);
+    //         let data = getLatestData().filter(path => names.indexOf(path[path.length - 1].node) > -1);
             
-            let group = binGroups(data, m.field, calculatedScalesKeeper[0], 8);
-            return {'label': m.field, 'paths': data, 'groupBins': group};
-       }));
-
-       let loader = clearMain();
-       updateMainView(d3.select('.dropdown.change-view').select('button').node().value, groups);
-       loader.style.display = "none";
-
+    //         let group = binGroups(data, m.field, calculatedScalesKeeper[0], 8);
+    //         return {'label': m.field, 'paths': data, 'groupBins': group};
+    //    }));
+    //    console.log('groups', chosenCladesGroup[chosenCladesGroup.length - 1], groups)
+    //    let loader = clearMain();
+    //    updateMainView(d3.select('.dropdown.change-view').select('button').node().value, groups);
+    //    loader.style.display = "none";
+    updateViews(d3.select('.dropdown.change-view').select('button').node().value);
     })
 }
 

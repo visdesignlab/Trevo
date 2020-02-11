@@ -27,7 +27,7 @@ export function scalingValues(num){
         return num;
     }else{
         if(num < 0){
-            console.log((Math.log(Math.abs(num)) * -1));
+           
             return (Math.log(Math.abs(num)) * -1);
         }else{
             return Math.log(num);
@@ -379,6 +379,8 @@ export function filterKeeper(){
 
 export function formatAttributeData(pathData, scales, filterArray){
 
+    console.log(pathData, filterArray, scales)
+
     let keys = (filterArray == null)? Object.keys(pathData[0][0].attributes).filter(f=> f != 'node' && f != 'leaf' && f != 'length' && f != 'root' && f != 'key'): filterArray;
     let test = pathData.map((path, i)=> {
         return scales.map(m=> calcVolatility(path, m.field));
@@ -466,6 +468,9 @@ export function abbreviate(word, limit){
 }
 
 export async function dataLoadAndFormatMultinet(workspace, graphName){
+
+
+    console.log('when does this fir');
 
     let dataName = graphName;
     let data = await load_data(workspace, graphName);

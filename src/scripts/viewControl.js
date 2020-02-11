@@ -5,7 +5,7 @@ import { getLatestData } from "./filterComponent";
 import { generatePairs, rankingControl } from "./pairView";
 import { drawTreeForGroups, createCladeView, chosenCladesGroup } from "./cladeMaker";
 import { calculatedScalesKeeper } from ".";
-import { changeDropValue } from './toolbarComponent';
+import { changeDropValue, clearMain } from './toolbarComponent';
 
 export let groupedView = false;
 
@@ -22,6 +22,25 @@ export function getSelectedData(){
     let data = getLatestData().filter(path => names.indexOf(path[path.length - 1].node) > -1);
 
     return data;
+}
+
+export function updateViews(viewType){
+
+    let test = d3.select('#clade-show').selectAll('li').selectAll('input').filter((f, j, li)=> {
+        return li[j].checked === true});
+    
+    let groups = test.data().map((m=> {
+        let names = m.nodes.map(path => path[path.length - 1].node);
+        let data = getLatestData().filter(path => names.indexOf(path[path.length - 1].node) > -1);
+        
+        let group = binGroups(data, m.field, calculatedScalesKeeper[calculatedScalesKeeper.length - 1], 8);
+        return {'label': m.field, 'paths': data, 'groupBins': group};
+   }));
+  
+   let loader = clearMain();
+   updateMainView(viewType, groups);
+   loader.style.display = "none";
+
 }
 
 export function updateMainView(d, groups){

@@ -17,6 +17,8 @@ const dimensions = {
 }
 
 export function calcVolatility(data, attribute){
+
+    console.log('data', data, attribute)
     let length = data.length;
 
     let sumKeeper = [];
@@ -28,6 +30,7 @@ export function calcVolatility(data, attribute){
         let two = i;
 
         if(data[one] && data[two]){
+        
             let diff = data[one].attributes[attribute].values[valueParam] - data[two].attributes[attribute].values[valueParam];
             
             let diffSquared = diff * diff;
@@ -512,8 +515,6 @@ export function drawContAtt(predictedAttrGrps, collapsed, width){
         
         if(d.leaf != true){ range = y(low) - y(up); }
 
-        console.log(range, up, low, d)
-
         let barHeight = (collapsed === 'true') ? dimensions.collapsedHeight : range;
         return barHeight;
     });
@@ -551,7 +552,7 @@ export function drawContAtt(predictedAttrGrps, collapsed, width){
 
     /////AXIS ON HOVER////
     innerBars.on('mouseover', (d, i, n)=> {
-        console.log('d inerror', d)
+       
         let y = generateTraitScale([scalingValues(d.scales.min), scalingValues(d.scales.max)], [0, attributeHeight]);
         d3.select(n[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(5));
 
@@ -568,6 +569,7 @@ export function drawContAtt(predictedAttrGrps, collapsed, width){
         tool.html('mean: '+f(d.values[valueParam]) +"</br>"+"</br>"+ 'upperCI: '+ f(up) +"</br>"+"</br>"+ 'lowerCI: '+ f(low))
           .style("left", (d3.event.pageX) + "px")
           .style("top", (d3.event.pageY - 28) + "px");
+          
         tool.style('height', 'auto');
        
     }).on('mouseout', (d, i, n)=> {
