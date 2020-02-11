@@ -1162,12 +1162,8 @@ export function drawGroups(stateBins, scales){
          let max = scalingValues(scale.max);
          let y = d3.scaleLinear().domain([min, max]).range([height, 0]);
 
-        
-
          let up = valueParam === 'realVal' ? +d.values.upperCI95 : +d.values.logUpper;
          let low = valueParam === 'realVal' ? +d.values.lowerCI95 : +d.values.logLower;
-
-         console.log('scale check', y(up), y(low))
 
          return y(low) - y(up);
      });
@@ -1179,7 +1175,7 @@ export function drawGroups(stateBins, scales){
      });
      confiBars.style('opacity', 0.1);
            
-           //drawGroups(stateBins, scales);
+          
     }else{
             console.error('THIS HAS TO BE DISCRETE');
         }
