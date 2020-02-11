@@ -8,6 +8,8 @@ import { buildTreeStructure } from "./sidebarComponent";
 import { calcVolatility } from "./renderPathView";
 import { valueParam } from './toolbarComponent';
 
+
+
 export const maxTimeKeeper = [];
 
 export async function loadData(readFunction, fileString, type){
@@ -18,7 +20,9 @@ export async function loadData(readFunction, fileString, type){
 
 export function generateTraitScale(extent, pixelRange){
 
-    return d3.scaleLinear().domain(extent).range(pixelRange);
+    let scale = valueParam === 'realVal'? d3.scaleLinear() : d3.scaleLog();
+    scale.domain(extent).range(pixelRange).clamp(true);
+    return scale;
 
 }
 
@@ -379,8 +383,6 @@ export function filterKeeper(){
 
 export function formatAttributeData(pathData, scales, filterArray){
 
-  
-
     let keys = (filterArray == null)? Object.keys(pathData[0][0].attributes).filter(f=> f != 'node' && f != 'leaf' && f != 'length' && f != 'root' && f != 'key'): filterArray;
     let test = pathData.map((path, i)=> {
         return scales.map(m=> calcVolatility(path, m.field));
@@ -469,7 +471,6 @@ export function abbreviate(word, limit){
 
 export async function dataLoadAndFormatMultinet(workspace, graphName){
 
-
     let dataName = graphName;
     let data = await load_data(workspace, graphName);
 
@@ -536,7 +537,6 @@ export async function dataLoadAndFormatMultinet(workspace, graphName){
                 });
                 newRow[att.field].values = values;
 
-                console.log('val check',values.upperCI95, values.lowerCI95, 'logged', values.logUpper, values.logLower)
 
             }
         });

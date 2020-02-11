@@ -6,9 +6,8 @@ import {formatAttributeData, maxTimeKeeper, scalingValues, generateTraitScale} f
 import {filterMaster, nodeFilter, getLatestData, leafStateFilter, getScales} from './filterComponent';
 import { drawBranchPointDistribution } from './distributionView';
 import { dropDown } from './buttonComponents';
-import { valueParam } from './toolbarComponent';
 
-
+let valueParam = 'realVal'
 
 const dimensions = {
     rectWidth: 15,
@@ -31,7 +30,6 @@ export function calcVolatility(data, attribute){
         if(data[one] && data[two]){
         
             let diff = data[one].attributes[attribute].values[valueParam] - data[two].attributes[attribute].values[valueParam];
-            
             let diffSquared = diff * diff;
             sumKeeper.push(diffSquared);
             valKeeper.push(data[one].attributes[attribute].values[valueParam])
@@ -208,23 +206,22 @@ function drawDistLines(discG){
         comboStates.append('rect')
             .attr('width', (d, i)=>{
                 let vals = d[1]
-                let x = generateTraitScale([0, maxTimeKeeper[maxTimeKeeper.length - 1]], [0, 80]);
+                let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0,80])
                 return (x(vals[vals.length-1].endLength) - x(vals[0].combLength)) - .5;
             })
             .attr('height', (d, i)=> {
-                let sizer = generateTraitScale([0, 1],[0.2, 6]);
+                let sizer = d3.scaleLinear().domain([0, 1]).range([0.2, 6]);
                 return sizer(d[0]);
             })
             .attr('fill', 'gray')
             .attr('opacity', 0.4)
             .attr('y', (d)=> {
-                let sizer = generateTraitScale([0, 1],[0.2, 6]);
+                let sizer = d3.scaleLinear().domain([0, 1]).range([0.2, 6]);
                 return (sizer(d[0]) / 2) * -1;
             });
 
         comboStates.attr('transform', (d, i)=> {
-         
-            let x = generateTraitScale([0, maxTimeKeeper[maxTimeKeeper.length - 1]], [0, 80]);
+            let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0,80])
             return `translate(${x(d[1][0].combLength)},0)`;
         });
 
@@ -327,8 +324,7 @@ export function renderPaths(pathData, main, width){
         });
    
     nodeGroups.attr('transform', (d)=> {
-        
-        let x = generateTraitScale([0, maxTimeKeeper[maxTimeKeeper.length - 1]], [0, width]);
+        let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, width]);
         let distance = x(d.combLength);
         return 'translate('+ distance +', 10)';});
 
@@ -460,7 +456,8 @@ async function continuousPaths(innerTimeline, collapsed, width, opacity, colorBo
         return distance; })
     .y(d=> {
        
-        let y = generateTraitScale([scalingValues(d.scales.min), scalingValues(d.scales.max)], [height, 0])
+        //let y = generateTraitScale([scalingValues(d.scales.min), scalingValues(d.scales.max)], [height, 0])
+        let y = generateTraitScale([d.scales.min, d.scales.max], [height, 0])
         if(collapsed === 'true'){
             return d.change;
         }else{
@@ -505,14 +502,15 @@ export function drawContAtt(predictedAttrGrps, collapsed, width){
       
     let rangeRect = innerBars.append('rect').classed('range-rect', true);
     rangeRect.attr('width', dimensions.rectWidth).attr('height', (d, i)=> {
-        let y = generateTraitScale([scalingValues(d.scales.min), scalingValues(d.scales.max)], [attributeHeight-3, 0])
+        let y = generateTraitScale([d.scales.min, d.scales.max], [attributeHeight-3, 0]);
+       // let y = generateTraitScale([scalingValues(d.scales.min), scalingValues(d.scales.max)], [attributeHeight-3, 0])
 
-        let up = valueParam === 'realVal' ? +d.values.upperCI95 : +d.values.logUpper;
-        let low = valueParam === 'realVal' ? +d.values.lowerCI95 : +d.values.logLower;
+        // let up = valueParam === 'realVal' ? +d.values.upperCI95 : +d.values.logUpper;
+        // let low = valueParam === 'realVal' ? +d.values.lowerCI95 : +d.values.logLower;
       
         let range = 0;
         if(d.leaf != true){ 
-            range = Math.abs(y(low) - y(up)); 
+            range = Math.abs(y(+d.values.lowerCI95) - y(+d.values.upperCI95)); 
         }
 
         let barHeight = (collapsed === 'true') ? dimensions.collapsedHeight : range;
@@ -522,14 +520,17 @@ export function drawContAtt(predictedAttrGrps, collapsed, width){
     rangeRect.attr('transform', (d, i)=> {
 
         let y = d3.scaleLinear();
-        let min = scalingValues(d.scales.min);
-        let max = scalingValues(d.scales.max);
+        // let min = scalingValues(d.scales.min);
+        // let max = scalingValues(d.scales.max);
+        let min = d.scales.min;
+        let max = d.scales.max;
 
         y.domain([min, max]);
-        y.range([attributeHeight-3, 0]).clamp(true);
+        y.range([attributeHeight, 0]).clamp(true);
 
-        let up = valueParam === 'realVal' ? +d.values.upperCI95 : +d.values.logUpper;
-        let move = (d.leaf || (collapsed === 'true')) ? 0 : y(up);
+        //let up = valueParam === 'realVal' ? +d.values.upperCI95 : +d.values.logUpper;
+       // let up = valueParam === 'realVal' ? +d.values.upperCI95 : +d.values.logUpper;
+        let move = (d.leaf || (collapsed === 'true')) ? 0 : y(+d.values.upperCI95);
        
         return 'translate(0, '+ Math.abs(move) +')';
     });
@@ -542,20 +543,15 @@ export function drawContAtt(predictedAttrGrps, collapsed, width){
     if(collapsed != 'true'){
         innerBars.append('rect').attr('width', dimensions.rectWidth).attr('height', 4)
         .attr('transform', (d, i)=> {
-            let y = d3.scaleLinear();
-            let min = scalingValues(d.scales.min);
-            let max = scalingValues(d.scales.max);
-            y.domain([min, max]);
-            y.range([attributeHeight, 0]);
-            
+            let y = generateTraitScale([d.scales.min, d.scales.max], [attributeHeight, 0])
             return 'translate(0, '+ y(d.values[valueParam]) +')';})
         .attr('fill', d=> d.color).classed('val-bar', true);
     }
 
     /////AXIS ON HOVER////
     innerBars.on('mouseover', (d, i, n)=> {
-       
-        let y = generateTraitScale([scalingValues(d.scales.min), scalingValues(d.scales.max)], [0, attributeHeight]);
+        let y = generateTraitScale([d.scales.min, d.scales.max], [0, attributeHeight]);
+        //let y = generateTraitScale([scalingValues(d.scales.min), scalingValues(d.scales.max)], [0, attributeHeight]);
         d3.select(n[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(5));
 
         let tool = d3.select('#tooltip');
@@ -969,9 +965,9 @@ export function drawGroups(stateBins, scales){
                     return x(distance);
                 })
                 .y(d=> {
-                    // let y = d.scales.yScale;
-                    // y.range([height-2, 1]);
-                    let y = generateTraitScale([scalingValues(d.scales.min), scalingValues(d.scales.max)], [height-2], 1);
+                   
+                    //let y = generateTraitScale([scalingValues(d.scales.min), scalingValues(d.scales.max)], [height-2], 1);
+                    let y = generateTraitScale([d.scales.min, d.scales.max], [height-2], 1);
                     return y(d.values[valueParam]) + 2;
                 });
 
@@ -1148,24 +1144,28 @@ export function drawGroups(stateBins, scales){
      MeanRect.attr('width', dimensions.rectWidth).attr('height', 3);
      MeanRect.attr('y', (d, i) => {
          let scale = scales.filter(s=> s.field === d.label)[0];
-         let min = scalingValues(scale.min);
-         let max = scalingValues(scale.max);
-         let y = d3.scaleLinear().domain([min, max]).range([height-3, 0]);
+        //  let min = scalingValues(scale.min);
+        //  let max = scalingValues(scale.max);
+         let min = scale.min;
+         let max = scale.max;
+         let y = generateTraitScale([min, max], [height-3, 0]);
+        // let y = d3.scaleLinear().domain([min, max]).range([height-3, 0]);
          return y(d[valueParam]);
      });
 
      let confiBars = branchGrpCon.filter(f=> f.leaf != true).append('rect');
-     confiBars.attr('width', dimensions.rectWidth).attr('height', (d, i)=> {
+
+     confiBars
+     .attr('width', dimensions.rectWidth)
+     .attr('height', (d, i)=> {
          let scale = scales.filter(s=> s.field === d.label)[0];
-        //  let y = d3.scaleLinear().domain([scale.min, scale.max]).range([height, 0]);
-         let min = scalingValues(scale.min);
-         let max = scalingValues(scale.max);
-         let y = d3.scaleLinear().domain([min, max]).range([height, 0]);
+         let min = scale.min;
+         let max = scale.max;
+         let y = generateTraitScale([min, max], [height, 0]);
+     
+        console.log('testing', y(+d.values.lowerCI95) - y(+d.values.upperCI95));
 
-         let up = valueParam === 'realVal' ? +d.values.upperCI95 : +d.values.logUpper;
-         let low = valueParam === 'realVal' ? +d.values.lowerCI95 : +d.values.logLower;
-
-         return y(low) - y(up);
+         return y(+d.values.lowerCI95) - y(+d.values.upperCI95);
      });
 
      confiBars.attr('y', (d, i)=> {
