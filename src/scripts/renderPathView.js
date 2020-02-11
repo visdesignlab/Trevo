@@ -18,7 +18,6 @@ const dimensions = {
 
 export function calcVolatility(data, attribute){
 
-    console.log('data', data, attribute)
     let length = data.length;
 
     let sumKeeper = [];
@@ -506,30 +505,33 @@ export function drawContAtt(predictedAttrGrps, collapsed, width){
       
     let rangeRect = innerBars.append('rect').classed('range-rect', true);
     rangeRect.attr('width', dimensions.rectWidth).attr('height', (d, i)=> {
-        let y = generateTraitScale([scalingValues(d.scales.min), scalingValues(d.scales.max)], [attributeHeight, 0])
+        let y = generateTraitScale([scalingValues(d.scales.min), scalingValues(d.scales.max)], [attributeHeight-3, 0])
 
         let up = valueParam === 'realVal' ? +d.values.upperCI95 : +d.values.logUpper;
         let low = valueParam === 'realVal' ? +d.values.lowerCI95 : +d.values.logLower;
-
+      
         let range = 0;
-        
-        if(d.leaf != true){ range = y(low) - y(up); }
+        if(d.leaf != true){ 
+            range = Math.abs(y(low) - y(up)); 
+        }
 
         let barHeight = (collapsed === 'true') ? dimensions.collapsedHeight : range;
         return barHeight;
     });
+
     rangeRect.attr('transform', (d, i)=> {
 
         let y = d3.scaleLinear();
         let min = scalingValues(d.scales.min);
         let max = scalingValues(d.scales.max);
+
         y.domain([min, max]);
-        y.range([attributeHeight, 0]);
+        y.range([attributeHeight-3, 0]).clamp(true);
 
         let up = valueParam === 'realVal' ? +d.values.upperCI95 : +d.values.logUpper;
-      
         let move = (d.leaf || (collapsed === 'true')) ? 0 : y(up);
-        return 'translate(0, '+ move +')';
+       
+        return 'translate(0, '+ Math.abs(move) +')';
     });
     rangeRect.style('fill', (d)=> {
         return d.colorScale(d.values[valueParam]);
@@ -1158,10 +1160,14 @@ export function drawGroups(stateBins, scales){
         //  let y = d3.scaleLinear().domain([scale.min, scale.max]).range([height, 0]);
          let min = scalingValues(scale.min);
          let max = scalingValues(scale.max);
-         let y = d3.scaleLinear().domain([min, max]).range([height-3, 0]);
+         let y = d3.scaleLinear().domain([min, max]).range([height, 0]);
+
+        
 
          let up = valueParam === 'realVal' ? +d.values.upperCI95 : +d.values.logUpper;
          let low = valueParam === 'realVal' ? +d.values.lowerCI95 : +d.values.logLower;
+
+         console.log('scale check', y(up), y(low))
 
          return y(low) - y(up);
      });

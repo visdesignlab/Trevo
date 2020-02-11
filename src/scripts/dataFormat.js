@@ -379,7 +379,7 @@ export function filterKeeper(){
 
 export function formatAttributeData(pathData, scales, filterArray){
 
-    console.log(pathData, filterArray, scales)
+  
 
     let keys = (filterArray == null)? Object.keys(pathData[0][0].attributes).filter(f=> f != 'node' && f != 'leaf' && f != 'length' && f != 'root' && f != 'key'): filterArray;
     let test = pathData.map((path, i)=> {
@@ -470,8 +470,6 @@ export function abbreviate(word, limit){
 export async function dataLoadAndFormatMultinet(workspace, graphName){
 
 
-    console.log('when does this fir');
-
     let dataName = graphName;
     let data = await load_data(workspace, graphName);
 
@@ -519,12 +517,17 @@ export async function dataLoadAndFormatMultinet(workspace, graphName){
                        
                         if(m.key.includes('upperCI')){
                             values.upperCI95 = +m.value;
+                            
+                           // if(+m.value < 0){ console.log('this is a test' , (Math.log(Math.abs(+m.value)) * -1), Math.log(+m.value)) }
                             values.logUpper = +m.value < 0 ? (Math.log(Math.abs(+m.value)) * -1) : Math.log(+m.value);
                         }else if(m.key.includes('lowerCI')){
                             values.lowerCI95 = +m.value;
-                            values.logLower = +m.value < 0 ? (Math.log(Math.abs(+m.value)) * -1) : Math.log(+m.value);
+                           // if(+m.value < 0){ console.log('this is a test in lower' , +m.value, (Math.log(Math.abs(+m.value)) * -1.0), Math.log(+m.value)) }
+                            let logLower = +m.value < 0 ? (Math.log(Math.abs(+m.value))) : Math.log(+m.value);
+                            values.logLower = logLower;
                         }else{
                             values.realVal = +m.value;
+                           // if(+m.value < 0){ console.log('this is a test' , (Math.log(Math.abs(+m.value)) * -1), Math.log(+m.value)) }
                             values.logVal = +m.value < 0 ? (Math.log(Math.abs(+m.value)) * -1) : Math.log(+m.value);
                         }
                     }else{
@@ -532,6 +535,8 @@ export async function dataLoadAndFormatMultinet(workspace, graphName){
                     }
                 });
                 newRow[att.field].values = values;
+
+                console.log('val check',values.upperCI95, values.lowerCI95, 'logged', values.logUpper, values.logLower)
 
             }
         });
