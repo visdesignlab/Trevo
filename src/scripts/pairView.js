@@ -18,7 +18,6 @@ const macroModes = [
 
 export function rankingControl(data){
 
-  
     let rankDiv = d3.select('#pair-rank').classed('hidden', false);
     rankDiv.selectAll('*').remove();
 
@@ -104,7 +103,6 @@ export function rankingControl(data){
           .sliderBottom()
           .min(-1)
           .max(1)
-          // .step(.5)
           .ticks(3)
           .width(sliderWidth)
           .default(w)
@@ -140,9 +138,9 @@ export function changeTrait(attKeys, data, weights){
   let view = toolbarButtonDiv.select('.dropdown.change-view').select('.dropdown-toggle').node().value;
 
   let drop = d3.select('.attr-drop.dropdown')
-  .selectAll('a').empty() ? dropDown(toolbarButtonDiv, attKeys, `Trait: ${attKeys[1].field}`, 'attr-drop') : d3.select('.attr-drop.dropdown').selectAll('a');
+  .selectAll('a').empty() ? dropDown(toolbarButtonDiv, attKeys, `Trait: ${attKeys[0].field}`, 'attr-drop') : d3.select('.attr-drop.dropdown').selectAll('a');
 
-  d3.select('.attr-drop.dropdown').select('button').attr('value', attKeys[1].field);
+  d3.select('.attr-drop.dropdown').select('button').attr('value', attKeys[0].field);
 
   drop.on('click', (d, i, n)=> {
 
@@ -217,9 +215,7 @@ export function updateRanking(pairs, field, weights){
     });
 
     let percentage = Math.round(pickedPairs.length * 0.01);
-
     let sortedPairs = pickedPairs.sort((a, b)=> b.totalRank - a.totalRank).slice(0, percentage);
-
 
     return {topPairs: sortedPairs, 'pairs': pickedPairs};
 }
@@ -227,8 +223,9 @@ export function updateRanking(pairs, field, weights){
 function renderText(pairs, field){
   d3.select('#pair-rank').select('svg').select('.rank-meta').remove();
   let rankMeta = d3.select('#pair-rank').select('svg').append('g').classed('rank-meta', true);
-  rankMeta.append('text').text(`Trait: ${field}`).attr('transform', 'translate(870, 30)');
-  rankMeta.append('text').text(`Num of Pairs: ${pairs.length}`).attr('transform', 'translate(870, 50)');
+  rankMeta.append('text').text(`Trait: ${field}`).attr('transform', 'translate(870, 20)').style('font-size', '12px');
+  rankMeta.append('text').text(`Pairs Shown: Top 1%`).attr('transform', 'translate(870, 40)').style('font-size', '12px');
+  rankMeta.append('text').text(`Num of Pairs: ${pairs.length}`).attr('transform', 'translate(870, 60)').style('font-size', '12px');
 
 }
 
