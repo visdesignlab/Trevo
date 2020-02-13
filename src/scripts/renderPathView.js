@@ -1162,8 +1162,6 @@ export function drawGroups(stateBins, scales){
          let min = scale.min;
          let max = scale.max;
          let y = generateTraitScale([min, max], [height, 0]);
-     
-        console.log('testing', y(+d.values.lowerCI95) - y(+d.values.upperCI95));
 
          return y(+d.values.lowerCI95) - y(+d.values.upperCI95);
      });

@@ -121,7 +121,7 @@ export function initialViewLoad(scales, dataName){
         d3.select('#scrunch').classed('hidden', true);
         d3.select('#discrete-view').classed('hidden', true);
 
-        changeDropValue({'field':'Summary View'});
+        changeDropValue({'field':'Summary View'}, d3.select('.dropdown.change-view').select('button'));
 
     }else{
         

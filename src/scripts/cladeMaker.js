@@ -1,5 +1,5 @@
 import {dataMaster, nestedData, calculatedScalesKeeper} from './index';
-import { updateDropdown } from './buttonComponents';
+import { updateDropdown, dropDown } from './buttonComponents';
 import * as d3 from "d3";
 import { addingEdgeLength, assignPosition, renderTree, renderTreeButtons, traitColorDropDown } from './sidebarComponent';
 import { maxTimeKeeper } from './dataFormat';
@@ -9,11 +9,28 @@ import { updateMainView } from './viewControl';
 import { pullPath } from './pathCalc';
 import { updateCladeDrop } from './toolbarComponent';
 
-export const cladesGroupKeeper = []
-export const chosenCladesGroup = []
-export const cladeKeeper = [[]]
+export const cladesGroupKeeper = [];
+export const chosenCladesGroup = [];
+export const cladeKeeper = [[]];
 
-const colorKeep = ['#58D68D', '#F39C12', '#EC7063']
+const colorKeep = ['#58D68D', '#F39C12', '#EC7063'];
+
+function defineTraitClade(trait){
+    console.log(trait);
+    d3.select('#clade-by-trait').remove();
+    if(trait.type === 'discrete'){ 
+        
+        let options = [...trait.scales].map(m => {
+            m.field = m.scaleName;
+            return m;
+        });
+
+        dropDown(d3.select('#sidebar').select('.button-wrap'), options, 'Define by Trait', 'clade-by-trait');
+
+    }else{
+        
+    }
+}
 
 
 export function growSidebarRenderTree(attrDraw){
@@ -27,15 +44,17 @@ export function growSidebarRenderTree(attrDraw){
     sidebar.select('.tree-svg').remove();
     sidebar.select('.button-wrap').selectAll('*').remove();
 
-    traitColorDropDown(getScales(), sidebar.select('.button-wrap'), growSidebarRenderTree);
+    traitColorDropDown(getScales(), sidebar.select('.button-wrap'), growSidebarRenderTree, defineTraitClade);
+    
+   
 
     let x = sidebar.select('.button-wrap').append('div')
-    .style('position', 'absolute')
-    .style('right', '5px')
-    .style('top', '18px')
-    .append('i')
-    .classed('close fas fa-times', true)
-    .style('padding-right', '10px');
+        .style('position', 'absolute')
+        .style('right', '5px')
+        .style('top', '18px')
+        .append('i')
+        .classed('close fas fa-times', true)
+        .style('padding-right', '10px');
 
     x.on('click', ()=> {
         sidebar.classed('clade-view', false);

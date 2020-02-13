@@ -63,15 +63,15 @@ export function toolbarDataControl(toolbar, graphList, chosenGraph){
     });
 
 }
-async function dropUpdated(d){
+async function dropUpdated(d, button){
     let loader = await clearMain();
-    await changeDropValue(d);
+    await changeDropValue(d, button);
     await updateMainView(d.field, chosenCladesGroup[chosenCladesGroup.length - 1].groups);
     loader.style.display = "none";
 }
-export function changeDropValue(d){
-    d3.select('.dropdown.change-view').select('button').node().value = d.field;
-    d3.select('.dropdown.change-view').select('button').text(d.field);
+export function changeDropValue(d, button){
+    button.node().value = d.field;
+    button.text(d.field);
     return d;
 }
 export function clearMain(){
@@ -85,7 +85,7 @@ export function toolbarControl(toolbar, main, calculatedScales){
     let viewArray = [{'field':'Summary View'},{'field':'Path View'},{'field':'Pair View'}];
     let viewDrop = dropDown(toolbar, viewArray, viewArray[0].field, 'change-view');
 
-    viewDrop.on('click', (d)=> dropUpdated(d));
+    viewDrop.on('click', (d)=> dropUpdated(d, d3.select('.dropdown.change-view').select('button')));
     
     let filterButton = toolbar.append('button').attr('id', 'view-filter');
     filterButton.attr('class', 'btn btn-outline-secondary').text('Show Filters');

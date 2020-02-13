@@ -18,24 +18,28 @@ export function buildTreeStructure(paths, edges){
     return nestedData;
 }
 
-export function traitColorDropDown(scales, sidebar, renderCallback){
+export function traitColorDropDown(scales, sidebar, renderCallback, addedCall){
 
     let optionArray  = reduce2DropArray(scales);
 
     let dropOptions = dropDown(sidebar, optionArray, `Color By Trait`,'show-drop-div-sidebar');
     dropOptions.on('click', (d, i, n)=> {
         if(d.type === 'discrete'){
-            renderCallback(d, true, false)
-            d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Colored by ${d.field}`)
-        }else if(d.type === 'continuous'){
-            renderCallback(d, true, false)
+            renderCallback(d, true, false);
             d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Colored by ${d.field}`);
+            if(addedCall != null) addedCall(d);
+        }else if(d.type === 'continuous'){
+            renderCallback(d, true, false);
+            d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Colored by ${d.field}`);
+            if(addedCall != null) addedCall(d);
         }else{
              renderCallback(null, true, false)
             d3.select('.dropdown.show-drop-div-sidebar').select('button').text(`Color By Value`);
         }
     sidebar.select('#show-drop-div-sidebar').classed('show', false);
     });
+
+    return dropOptions;
 
 }
 
@@ -54,7 +58,7 @@ export function renderTreeButtons(normedPaths){
     ///SIDBAR STUFF
     let buttonWrap = sidebar.append('div').classed('button-wrap', true);
    
-    traitColorDropDown(scales, buttonWrap, renderTree);
+    traitColorDropDown(scales, buttonWrap, renderTree), null;
     buttonWrap.select('button').style('font-size', '12px');
     let phenoOptions = reduce2DropArray(scales.filter(f=> f.type != 'discrete'));
  

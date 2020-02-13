@@ -12,11 +12,9 @@ export function dropDown(div, optionArray, dropText, dropId){
 
     options.on('click', (d, i, n)=> {
         
-        changeDropValue(d);
+        changeDropValue(d, button);
         dropContent.classed('show', false);
     });
-
-  
 
     button.on('click', (d, i, n)=> {
         if(dropContent.classed('show')){
