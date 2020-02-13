@@ -59,6 +59,7 @@ export function renderTreeButtons(normedPaths){
     let buttonWrap = sidebar.append('div').classed('button-wrap', true);
    
     traitColorDropDown(scales, buttonWrap, renderTree), null;
+
     buttonWrap.select('button').style('font-size', '12px');
     let phenoOptions = reduce2DropArray(scales.filter(f=> f.type != 'discrete'));
  
@@ -258,13 +259,15 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, pheno){
     xScale.range([0, dimensions.width + 10]);
 
     if(pheno){
+
         treeSvg.attr('height', 800);
         let min = scalingValues(treenodes.data.attributes[pheno].scales.min);
         let max = scalingValues(treenodes.data.attributes[pheno].scales.max);
        
         //xScale.domain(treenodes.data.attributes[pheno].scales.yScale.domain())
-        xScale.domain([min, max])
-        yScale.domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 600])
+        xScale.domain([min, max]);
+        yScale.domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, 600]);
+        
     }
 
     // adds the links between the nodes

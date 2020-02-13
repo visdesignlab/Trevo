@@ -31,41 +31,16 @@ export function updateDropdown(optionArray, dropId){
     d3.select(`#${dropId}`).selectAll('a').data(optionArray).join('a').text(d=> d.field);
 }
 
-export function slider(range, trait, svg) {
+export function slider(trait, svg, callBack) {
+    console.log('trait', trait.min)
 
-    console.log(trait, svg)
+    let range = [trait.min, trait.max];
+
+    let intitialBrush = false;
     // set width and height of svg
     var w = 200
     var h = 100
 
-//     <style>
-// svg {
-// 	font-family: sans-serif;
-// }
-
-// rect.overlay {
-// 	stroke: black;
-// }
-
-// rect.selection {
-// 	stroke: none;
-//   fill: steelblue;
-//   fill-opacity: 0.6;
-// }
-
-// #labelleft, #labelright {
-// 	dominant-baseline: hanging;
-//   font-size: 12px;
-// }
-
-// #labelleft {
-// 	text-anchor: end;
-// }
-
-// #labelright {
-// 	text-anchor: start;
-// }
-// </style>
     svg.attr('width', w)
         .attr('height', h)
 
@@ -116,7 +91,13 @@ export function slider(range, trait, svg) {
         // move these two lines into the on('end') part below
         svg.node().value = s.map(function(d) {var temp = x.invert(d); return +temp.toFixed(2)});
         svg.node().dispatchEvent(new CustomEvent("input"));
-      })
+      }).on('end', ()=> {
+            if(intitialBrush === false){
+                intitialBrush = true;
+            }else{
+                callBack(trait, 'clade-define-hover', svg.node().value)
+            }
+      });
   
     // append brush to g
     var gBrush = g.append("g")
@@ -158,7 +139,9 @@ export function slider(range, trait, svg) {
     }
     
     // select entire range
-    gBrush.call(brush.move, range.map(x))
+    gBrush.call(brush.move, range.map(x));
+
+
     
-    return svg.node()
+    return gBrush;
   }
