@@ -54,7 +54,7 @@ function defineTraitClade(trait){
             button.on('click', ()=> {
                 let name = textInput.node().value != "" ? textInput.node().value : `Clade-${d.field}`;
                
-                addClade(name, chosen, null);
+                addClade(name, chosen, []);
                 growSidebarRenderTree(null);
                 let ul = d3.select('div#clade-show').selectAll('ul');
                 updateCladeDrop(ul, cladeKeeper[cladeKeeper.length - 1]);
@@ -160,7 +160,7 @@ export function growSidebarRenderTree(attrDraw){
         nodes.selectAll('circle').attr('fill', 'gray');
     }
 
-    drawCladeBox(cladeKeeper[cladeKeeper.length - 1].filter(f=> f.position != undefined));
+    drawCladeBox(cladeKeeper[cladeKeeper.length - 1]);
 
     leaf.on('click', (d, i, n)=> {
    
@@ -227,11 +227,23 @@ export function growSidebarRenderTree(attrDraw){
 
 }
 
+function colorCladeGroups(cladeData){
+}
+
 function drawCladeBox(cladeData){
     let base = 0;
     let treeSVG = d3.select('.tree-svg');
-    let cladeGroups = treeSVG.append('g').selectAll('g.clade-label').data(cladeData).join('g').classed('clade-label', true);
-    cladeGroups.append('rect')
+
+   
+    
+    let newClade = cladeData.filter(f=> f.position != undefined)
+                        .map((m, i)=> {
+                            m.color = colorKeep[i];
+                            return m;
+                        });
+
+    let cladeMono = treeSVG.append('g').selectAll('g.clade-label').data(newClade.filter(f=> f.position.length > 0)).join('g').classed('clade-label', true);
+    cladeMono.append('rect')
     .attr('width', (d, i, n)=> {
         if(i>0){
             let others = d3.select(n[i-1]).data()[0].nodes.map(m=> m[m.length-1].node);
@@ -242,9 +254,7 @@ function drawCladeBox(cladeData){
             
             let width = test.length > 0 ? 8 : 60;
             return width;
-            
         }else{
-            
             return 60;
         }
     })
@@ -270,10 +280,18 @@ function drawCladeBox(cladeData){
         
         
     })
-    .attr('fill',(d, i)=> colorKeep[i])
+    .attr('fill',(d, i)=> d.color)
     .attr('opacity', .3);
 
-    cladeGroups.on('mouseover', (d, i, n)=> {
+    let multiData = newClade.filter(f=> f.position.length === 0).map(n=> {
+        let names = n.nodes.map(m=> m[m.length - 1].node);
+        treeSVG.selectAll('.node--leaf').filter(f=> names.indexOf(f.data.node) > -1).select('circle').attr('fill', n.color);
+    });
+    console.log('multi',multiData)
+
+    //treeSvg.selectAll('.node--leaf').filter(f=> f.data)
+
+    cladeMono.on('mouseover', (d, i, n)=> {
 
             let tool = d3.select('#tooltip');
             tool.transition()
