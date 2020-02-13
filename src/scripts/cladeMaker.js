@@ -15,6 +15,23 @@ export const cladeKeeper = [[]];
 
 const colorKeep = ['#58D68D', '#F39C12', '#EC7063'];
 
+function highlightGroups(group, className){
+
+    let data = getLatestData();
+         
+    let chosen = data.filter(f=> {
+        let leaf = f[f.length - 1];
+        return group.field.includes(leaf.attributes[group.trait].winState);
+    });
+
+    let leaf = d3.select('#sidebar').select('.tree-svg').selectAll('.node--leaf');
+    let chosenLeaf = leaf.filter(f=> {
+        return chosen.map(m=> m[m.length - 1].node).indexOf(f.data.node) > -1
+    }).select('circle').classed(className, true);
+
+    return chosen;
+}
+
 function defineTraitClade(trait){
     
     d3.select('#clade-by-trait').remove();
@@ -27,19 +44,26 @@ function defineTraitClade(trait){
         });
 
         let dropOp = dropDown(d3.select('#sidebar').select('.button-wrap'), options, 'Define by Trait', 'clade-by-trait');
+        dropOp.on('mouseover', (d)=> {
+           highlightGroups(d, 'clade-define-hover');
+        }).on('mouseout', ()=> {
+            d3.selectAll('.clade-define-hover').classed('clade-define-hover', false);
+        });
+           
         dropOp.on('click', (d)=> {
-            
-            let data = getLatestData();
+            // let data = getLatestData();
          
-            let chosen = data.filter(f=> {
-                let leaf = f[f.length - 1];
-                return d.field.includes(leaf.attributes[d.trait].winState);
-            });
+            // let chosen = data.filter(f=> {
+            //     let leaf = f[f.length - 1];
+            //     return d.field.includes(leaf.attributes[d.trait].winState);
+            // });
 
-            let leaf = d3.select('#sidebar').select('.tree-svg').selectAll('.node--leaf');
-            let chosenLeaf = leaf.filter(f=> {
-                return chosen.map(m=> m[m.length - 1].node).indexOf(f.data.node) > -1
-            }).select('circle').classed('clade-define', true);
+            // let leaf = d3.select('#sidebar').select('.tree-svg').selectAll('.node--leaf');
+            // let chosenLeaf = leaf.filter(f=> {
+            //     return chosen.map(m=> m[m.length - 1].node).indexOf(f.data.node) > -1
+            // }).select('circle').classed('clade-define', true);
+
+            let chosen = highlightGroups(d, 'clade-define');
 
             let wrap = d3.select('#sidebar').select('.button-wrap').append('form').classed("form-inline", true)
             .append('div').classed("form-group", true).style('width', '300px');
@@ -227,15 +251,10 @@ export function growSidebarRenderTree(attrDraw){
 
 }
 
-function colorCladeGroups(cladeData){
-}
-
 function drawCladeBox(cladeData){
     let base = 0;
     let treeSVG = d3.select('.tree-svg');
 
-   
-    
     let newClade = cladeData.filter(f=> f.position != undefined)
                         .map((m, i)=> {
                             m.color = colorKeep[i];
