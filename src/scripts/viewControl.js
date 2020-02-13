@@ -24,7 +24,7 @@ export function getSelectedData(){
     return data;
 }
 
-export function updateViews(viewType){
+export async function updateViews(viewType){
 
     let test = d3.select('#clade-show').selectAll('li').selectAll('input').filter((f, j, li)=> {
         return li[j].checked === true});
@@ -37,10 +37,11 @@ export function updateViews(viewType){
         return {'label': m.field, 'paths': data, 'groupBins': group};
    }));
   
-   let loader = clearMain();
-   updateMainView(viewType, groups);
-   loader.style.display = "none";
-
+    clearMain().then((loader=> {
+        updateMainView(viewType, groups).then(()=> {
+            loader.style.display = "none";
+        });
+    }));
 }
 
 export function updateMainView(d, groups){
@@ -100,15 +101,6 @@ export function initialViewLoad(scales, dataName){
     main.selectAll('*').remove();
 
     if(data.length > 50){
-
-        // rankingControl(data);
-        // generatePairs(data);
-
-        // document.getElementById("scrunch").disabled = true;
-        // document.getElementById("discrete-view").disabled = true;
-
-        // d3.select('#scrunch').classed('hidden', true);
-        // d3.select('#discrete-view').classed('hidden', true);
 
         renderDistStructure(main, chosenCladesGroup[chosenCladesGroup.length - 1].groups)
             .then(()=>  document.getElementById("loader").style.display = "none");

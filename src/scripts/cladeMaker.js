@@ -1,10 +1,10 @@
 import {dataMaster, nestedData, calculatedScalesKeeper} from './index';
-import { updateDropdown, dropDown } from './buttonComponents';
+import { updateDropdown, dropDown, slider } from './buttonComponents';
 import * as d3 from "d3";
 import { addingEdgeLength, assignPosition, renderTree, renderTreeButtons, traitColorDropDown } from './sidebarComponent';
 import { maxTimeKeeper } from './dataFormat';
 import { getLatestData, getScales } from './filterComponent';
-import { renderDistStructure, binGroups, continuousHistogram, mirrorlineGen } from './distributionView';
+import { renderDistStructure, binGroups, continuousHistogram, mirrorlineGen, selectedClades } from './distributionView';
 import { updateMainView } from './viewControl';
 import { pullPath } from './pathCalc';
 import { updateCladeDrop } from './toolbarComponent';
@@ -51,19 +51,10 @@ function defineTraitClade(trait){
         });
            
         dropOp.on('click', (d)=> {
-            // let data = getLatestData();
-         
-            // let chosen = data.filter(f=> {
-            //     let leaf = f[f.length - 1];
-            //     return d.field.includes(leaf.attributes[d.trait].winState);
-            // });
-
-            // let leaf = d3.select('#sidebar').select('.tree-svg').selectAll('.node--leaf');
-            // let chosenLeaf = leaf.filter(f=> {
-            //     return chosen.map(m=> m[m.length - 1].node).indexOf(f.data.node) > -1
-            // }).select('circle').classed('clade-define', true);
 
             let chosen = highlightGroups(d, 'clade-define');
+
+            d3.select('#clade-by-trait').classed('show', false);
 
             let wrap = d3.select('#sidebar').select('.button-wrap').append('form').classed("form-inline", true)
             .append('div').classed("form-group", true).style('width', '300px');
@@ -86,6 +77,8 @@ function defineTraitClade(trait){
         });
 
     }else{
+
+        slider([0, 10], trait, d3.select('#sidebar').select('.button-wrap').append('svg'))
         
     }
 }

@@ -12,6 +12,12 @@ import { valueParam } from './toolbarComponent';
 
 export const maxTimeKeeper = [];
 
+export function calculateSDRange(ValueArray){
+
+
+
+}
+
 export async function loadData(readFunction, fileString, type){
     let data = await readFunction(fileString);
     data.type = String(type);
@@ -23,7 +29,6 @@ export function generateTraitScale(extent, pixelRange){
     let scale = valueParam === 'realVal'? d3.scaleLinear() : d3.scaleLog();
     scale.domain(extent).range(pixelRange).clamp(true);
     return scale;
-
 }
 
 export function scalingValues(num){
@@ -167,12 +172,15 @@ export function calculateNewScales(attributes, keyList, colorKeeper){
             let max = d3.max(attData.flatMap(m=> m.values.upperCI95));
             let min = d3.min(attData.flatMap(m=> m.values.lowerCI95));
             let mean = d3.mean(attData.flatMap(m=> m.values.realVal));
+            let deviation = d3.deviation(attData.flatMap(m=> m.values.realVal));
+            
 
             return {
                 'field': d, 
                 'type':'continuous',
                 'max': max, 
                 'min':  min,
+                'popDeviation':deviation,
                 'yScale': d3.scaleLinear().range([0, 43]).domain([min, max]).clamp(true),
                 'satScale': d3.scaleLinear().range([0, .9]).domain([min, max]),
                 'colorScale': d3.scaleLinear().range([color, '#f23929']).domain([min, max]),

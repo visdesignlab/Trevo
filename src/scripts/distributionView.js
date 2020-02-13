@@ -1,5 +1,5 @@
 import '../styles/index.scss';
-import {formatAttributeData, maxTimeKeeper, abbreviate, scalingValues} from './dataFormat';
+import {formatAttributeData, maxTimeKeeper, abbreviate, scalingValues, generateTraitScale} from './dataFormat';
 import * as d3 from "d3";
 import {filterMaster, getLatestData, getScales} from './filterComponent';
 import { pullPath, calculateMovingAverage } from './pathCalc';
@@ -30,6 +30,13 @@ export let colorBool = 0;
 export const selectedClades = [[]];
 
 
+export function deviationTraitScale(deviation, pixelRange){
+
+    let scale = valueParam === 'realVal'? d3.scaleLinear() : d3.scaleLog();
+    scale.domain(deviation).range(pixelRange).clamp(true);
+    return scale;
+}
+
 
 export function groupDistributions(pathData, mainDiv, groupAttr){
 
@@ -51,7 +58,6 @@ export function groupDistributions(pathData, mainDiv, groupAttr){
     renderDistStructure(mainDiv, pathGroups);
 }
 export function binGroups(pathData, groupLabel, scales, branchCount){
-    console.log('this is firing',valueParam)
 
     let attrHide = filterMaster.filter(f=> f.type === 'hide-attribute').map(m=> m.attribute);
     
@@ -62,7 +68,7 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
 
     formatAttributeData(newNormed, scales, keysToHide);
   
-    let max = maxTimeKeeper[maxTimeKeeper.length - 1]
+    let max = maxTimeKeeper[maxTimeKeeper.length - 1];
 
     let normBins = new Array(branchCount)
         .fill().map((m, i)=> {
@@ -362,7 +368,6 @@ export async function renderDistStructure(mainDiv, pathGroups){
     groupDivs.each((d, i, node)=> {
 
         let filteredAttributes = d.groupBins.filter(f=> shownAttributes.indexOf(f.key) > -1);
-
         let group = d3.select(node[i]);
         group.classed(d.label, true);
         group.style('text-align', 'center');
@@ -487,7 +492,6 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
         .style('stroke-width', '0.5px')
         .style('stroke', 'black');
         
-
     let rootRange = contRoot.append('rect')
         .attr('width', 12)
         .attr('height', d=> {
