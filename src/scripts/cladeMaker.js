@@ -46,13 +46,13 @@ function defineTraitClade(trait){
             
             let textInput = wrap.append('input').attr('type', 'text')
             .classed('form-control', true)
-            .attr('placeholder', 'Clade Name');
+            .attr('placeholder', `Clade-${d.field}`);
 
             let button = wrap.append('div').classed('input-group-append', true).append('button').attr('type', 'button').classed('btn btn-outline-secondary', true);
             button.text('Add Clade');
             
             button.on('click', ()=> {
-                let name = textInput.node().value != "" ? textInput.node().value : `Clade-${cladeKeeper.length}`;
+                let name = textInput.node().value != "" ? textInput.node().value : `Clade-${d.field}`;
                
                 addClade(name, chosen, null);
                 growSidebarRenderTree(null);
@@ -203,7 +203,7 @@ export function growSidebarRenderTree(attrDraw){
             button.text('Add Clade');
             
             button.on('click', ()=> {
-                let name = textInput.node().value != "" ? textInput.node().value : `Clade-${cladeKeeper.length}`;
+                let name = textInput.node().value != "" ? textInput.node().value : `Clade-${cladeKeeper[cladeKeeper.length - 1].length}`;
                 addClade(name, paths, positionHolder);
                 growSidebarRenderTree(null);
                 let ul = d3.select('div#clade-show').selectAll('ul');
