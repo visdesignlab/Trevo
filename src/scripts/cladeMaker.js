@@ -16,16 +16,50 @@ export const cladeKeeper = [[]];
 const colorKeep = ['#58D68D', '#F39C12', '#EC7063'];
 
 function defineTraitClade(trait){
-    console.log(trait);
+    
     d3.select('#clade-by-trait').remove();
     if(trait.type === 'discrete'){ 
         
         let options = [...trait.scales].map(m => {
+            m.trait = m.field;
             m.field = m.scaleName;
             return m;
         });
 
-        dropDown(d3.select('#sidebar').select('.button-wrap'), options, 'Define by Trait', 'clade-by-trait');
+        let dropOp = dropDown(d3.select('#sidebar').select('.button-wrap'), options, 'Define by Trait', 'clade-by-trait');
+        dropOp.on('click', (d)=> {
+            
+            let data = getLatestData();
+         
+            let chosen = data.filter(f=> {
+                let leaf = f[f.length - 1];
+                return d.field.includes(leaf.attributes[d.trait].winState);
+            });
+
+            let leaf = d3.select('#sidebar').select('.tree-svg').selectAll('.node--leaf');
+            let chosenLeaf = leaf.filter(f=> {
+                return chosen.map(m=> m[m.length - 1].node).indexOf(f.data.node) > -1
+            }).select('circle').classed('clade-define', true);
+
+            let wrap = d3.select('#sidebar').select('.button-wrap').append('form').classed("form-inline", true)
+            .append('div').classed("form-group", true).style('width', '300px');
+            
+            let textInput = wrap.append('input').attr('type', 'text')
+            .classed('form-control', true)
+            .attr('placeholder', 'Clade Name');
+
+            let button = wrap.append('div').classed('input-group-append', true).append('button').attr('type', 'button').classed('btn btn-outline-secondary', true);
+            button.text('Add Clade');
+            
+            button.on('click', ()=> {
+                let name = textInput.node().value != "" ? textInput.node().value : `Clade-${cladeKeeper.length}`;
+               
+                addClade(name, chosen, null);
+                growSidebarRenderTree(null);
+                let ul = d3.select('div#clade-show').selectAll('ul');
+                updateCladeDrop(ul, cladeKeeper[cladeKeeper.length - 1]);
+            });
+        });
 
     }else{
         
@@ -46,8 +80,6 @@ export function growSidebarRenderTree(attrDraw){
 
     traitColorDropDown(getScales(), sidebar.select('.button-wrap'), growSidebarRenderTree, defineTraitClade);
     
-   
-
     let x = sidebar.select('.button-wrap').append('div')
         .style('position', 'absolute')
         .style('right', '5px')
@@ -172,7 +204,6 @@ export function growSidebarRenderTree(attrDraw){
             
             button.on('click', ()=> {
                 let name = textInput.node().value != "" ? textInput.node().value : `Clade-${cladeKeeper.length}`;
-               
                 addClade(name, paths, positionHolder);
                 growSidebarRenderTree(null);
                 let ul = d3.select('div#clade-show').selectAll('ul');
@@ -301,89 +332,6 @@ function createNewCladeGroup(div, scales){
     updateMainView('Summary View', groups);
     renderTree(d3.select('#sidebar'), null, true, false);
 }
-
-// function cladeToolbar(div, scales){
-
-//     let toolBar = div.append('div').classed('clade-toolbar', true);
-//     let textInput = toolBar.append('input')
-//     .classed('group-name', true)
-//     .attr('type', 'text')
-//     .attr('value', 'Name Your Group');
-  
-//     let addCladeGroupButton = toolBar.append('button').text('Add Clade Group');
-//     addCladeGroupButton.on('click', ()=> createNewCladeGroup(div, scales));
-
-//     let inputGroup = toolBar.append('div').classed('input-group input-number-group', true);
-//     let minusButton = inputGroup.append('button').text('-');
-   
-//     let numberText = inputGroup.append('input')
-//         .attr('value', 3)
-//         .attr('min', 0)
-//         .attr('max', 10)
-//         .attr('type', 'number')
-//         .classed('input-number', true);
-
-//     let plusButton = inputGroup.append('button').text('+');
-
-//     let nameWrap = inputGroup.append('div').classed('name-input-wrap', true);
-//     minusButton.on('click', ()=> {
-//         let num = numberText.attr('value');
-//         numberText.attr('value', +num - 1);
-//         addTextInputForGroups(+numberText.attr('value'), nameWrap);
-//     });
-
-//     plusButton.on('click', ()=> {
-//         let num = numberText.attr('value');
-//         numberText.attr('value', +num + 1);
-//         addTextInputForGroups(+numberText.attr('value'), nameWrap);
-//     });
-
-//     addTextInputForGroups(+numberText.attr('value'), nameWrap);
-
-//     function addTextInputForGroups(index, nameWrap){
-       
-//         nameWrap.selectAll('*').remove();
-//         d3.selectAll('.overlay-brush').selectAll('rect').remove();
-//         for(let ind = 0; ind < index; ind = ind + 1){
-//             nameWrap.append('input')
-//             .classed('clade-name', true)
-//             .attr('value', `Group ${ind+1}`)
-//             .attr('type', 'text');
-
-//             let rectGroup = d3.select('.overlay-brush').append('g').classed(`group-${ind}`, true)
-
-//             let rect = rectGroup.append('rect')
-//             .classed(`rect-${ind + 1}`, true)
-//             .attr('height', 100)
-//             .attr('width', 910)
-//             .attr('opacity', 0.3)
-//             .attr('transform',  (d, i, n)=> `translate(${0},${((800 / index) * ind)})`);
-
-//             let rectSizer = rectGroup.append('rect').attr('class', `handle-${ind}`)
-//             .attr('width', 700)
-//             .attr('height', 20)
-//             .attr('y', rect.node().getBoundingClientRect().y + 20)
-//             .attr('opacity', 0)
-//             .call(d3.drag()
-//             .on('drag', function(){
-//                 let dragPos = d3.mouse(this);
-//                 let dragY = d3.event.y
-//                 d3.select(this).attr('y', dragPos[1]);
-//                 let height = +d3.select(`.rect-${ind + 1}`).attr('height')
-//                 let rectY = d3.select(`.rect-${ind + 1}`).node().getBoundingClientRect().bottom;
-//                 d3.select(`.rect-${ind + 1}`).attr('height', height + (dragY-rectY) + 70);
-//             }));
-            
-//             rect.call(d3.drag().on('drag', function(){
-//                 let dragPos = d3.mouse(this);
-//                 let dragY = d3.event.y
-//                 d3.select(this).attr('y', dragPos[1]);
-//                 let rectH = d3.select(`.rect-${ind + 1}`).node().getBoundingClientRect().height;
-//                 d3.select(`.handle-${ind}`).attr('y', dragY + (rectH - 20));
-//             }))
-//         }
-//     }
-// }
 
 function labelTree(nodes){
     nodes.append('text')
