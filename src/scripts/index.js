@@ -45,7 +45,7 @@ export const colorKeeper = [
 ]
 
 export const attributeList = [];
-export let discreteTraitList = ['Clade', 'Group', 'island/mainland'];
+export let discreteTraitList = ['Clade', 'Group', 'island/mainland', 'ecomorph', 'island'];
 
 export const workspace = 'evo-bio';
 
