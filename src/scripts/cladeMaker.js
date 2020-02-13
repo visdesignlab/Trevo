@@ -32,6 +32,8 @@ function highlightGroups(group, className, range){
             return chosen.map(m=> m[m.length - 1].node).indexOf(f.data.node) > -1
         }).select('circle').classed(className, true);
 
+        return chosen;
+
 
     }else{
 
@@ -111,13 +113,20 @@ function defineTraitClade(trait){
         
         button.on('click', ()=> {
 
-            console.log(sliderThing)
-            // let name = textInput.node().value != "" ? textInput.node().value : `Clade-${trait.field}`;
-           
-            // addClade(name, chosen, []);
-            // growSidebarRenderTree(null);
-            // let ul = d3.select('div#clade-show').selectAll('ul');
-            // updateCladeDrop(ul, cladeKeeper[cladeKeeper.length - 1]);
+            let range = sliderThing.value;
+            let name = textInput.node().value != "" ? textInput.node().value : `Clade-${trait.field}`;
+
+            let data = getLatestData();
+
+            let chosen = data.filter(f=> {
+                let leaf = f[f.length - 1];
+                return (leaf.attributes[trait.field].values.realVal >= range[0]) && (leaf.attributes[trait.field].values.realVal <= range[1]);
+            });
+
+            addClade(name, chosen, []);
+            growSidebarRenderTree(null);
+            let ul = d3.select('div#clade-show').selectAll('ul');
+            updateCladeDrop(ul, cladeKeeper[cladeKeeper.length - 1]);
         });
 
         

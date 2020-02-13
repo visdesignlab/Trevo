@@ -143,5 +143,5 @@ export function slider(trait, svg, callBack) {
 
 
     
-    return gBrush;
+    return svg.node();
   }
