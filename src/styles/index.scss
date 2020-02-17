@@ -85,7 +85,7 @@ ul {
   border: 1px solid gray;
 }
 
-#branch-tooltip, #state-tooltip, #compare-tooltip, #tooltip{
+#branch-tooltip, #state-tooltip, #compare-tooltip, #tooltip, #copy-tooltip{
   position: absolute;
   width: 200px;
   height: auto;
@@ -300,7 +300,8 @@ button.hidden{
 
 #branch-tooltip.hidden, 
 #state-tooltip.hidden,
-#compare-tooltip.hidden {
+#compare-tooltip.hidden,
+#copy-tooltip.hidden {
   display: none;
 }
 

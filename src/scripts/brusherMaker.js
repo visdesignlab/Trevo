@@ -1,5 +1,6 @@
 import * as d3 from "d3";
 import { renderDistStructure, binGroups, continuousHistogram, mirrorlineGen } from './distributionView';
+import { getLatestData } from "./filterComponent";
 
 
 export let brushArray = [];
@@ -83,8 +84,9 @@ export function addBrushables(bins, continDist){
         let otherBins = findNodesOtherTraits(d, brushOb, filterData, continDist);
         let descendBins = findDescendValues(d, brushOb, [endPos, startPos], continDist);
        
-        let treenodeOb = highlightTree(filterData, descendBins, brushOb)
-        addBadge(brushOb, [zero(brushOb.scale.invert(endPos)), zero(brushOb.scale.invert(startPos))], path, otherBins, descendBins, treenodeOb);
+        let treenodeOb = highlightTree(filterData, descendBins, brushOb);
+        console.log('fffffffff',filterData)
+        addBadge(brushOb, [zero(brushOb.scale.invert(endPos)), zero(brushOb.scale.invert(startPos))], path, otherBins, descendBins, treenodeOb, filterData);
       
     });
 }
@@ -161,7 +163,7 @@ function findDescendValues(data, brushOb, valueRange, continDist){
 
 }
 
-function addBadge(brushOb, brushedDomain, dist, otherBins, descendBins, treenodeOb){
+function addBadge(brushOb, brushedDomain, dist, otherBins, descendBins, treenodeOb, filterData){
     d3.select('#toolbar').append()
 
     let badge = d3.select('#toolbar')
@@ -172,7 +174,51 @@ function addBadge(brushOb, brushedDomain, dist, otherBins, descendBins, treenode
     .style('background', brushOb.color)
     .datum({brush:brushOb})
     .text(`${brushOb.trait}:${brushedDomain[0]} - ${brushedDomain[1]}`);
+
+    let nodeNames = filterData.map(m=> m.node);
+
+    let species = getLatestData().filter(f=> {
+        let nodes = f.map(n=> n.node).filter(no => nodeNames.includes(no));
+        return nodes.length > 0;
+    }).flatMap(s=> s[s.length - 1].node);
+
+    console.log('species', species);
+
+
+    badge.on('click', ()=> {
+
+        let tool = d3.select('#copy-tooltip');
+        console.log(tool)
+        tool.classed('hidden') ? tool.classed('hidden', false) : tool.classed('hidden', true);
+
+        tool.style("left", (d3.event.pageX) + "px")
+        .style("top", (d3.event.pageY - 28) + "px")
+
+        tool.select('button').on('click', ()=> {
+           // species.select();
+            species.execCommand('"copy');
+            alert("Copied the text: " + species);
+
+        })
+
+        // var copyText = document.getElementById("myInput");
+
+        // /* Select the text field */
+        // copyText.select();
+        // copyText.setSelectionRange(0, 99999); /*For mobile devices*/
+      
+        // /* Copy the text inside the text field */
+        // document.execCommand("copy");
+      
+        // /* Alert the copied text */
+        // alert("Copied the text: " + copyText.value);
+
+    })
+
+    
+
   
+
     let xOut = badge.append('i').classed('close fas fa-times', true).style('padding-left', '10px');
     
     xOut.on('click', (d, i, n)=> {
