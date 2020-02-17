@@ -195,9 +195,33 @@ function addBadge(brushOb, brushedDomain, dist, otherBins, descendBins, treenode
         .style("top", (d3.event.pageY - 28) + "px")
 
         tool.select('button').on('click', ()=> {
+
+            tool.classed('hidden', true);
            // species.select();
-            document.execCommand('"copy');
-            alert("Copied the text: " + species);
+            // document.execCommand('copy');
+            // alert("Copied the text: " + species);
+            let textIn = d3.select('#copy-input');
+            textIn.select('#copy-input-text').attr('value', species)
+
+            textIn.classed('hidden', false);
+
+            textIn.style("left", (d3.event.pageX) + "px")
+            .style("top", (d3.event.pageY - 28) + "px")
+
+            textIn.select('button').on('click', ()=> {
+                textIn.classed('hidden', true)
+                let copyText = document.getElementById("copy-input-text");
+                copyText.select();
+                copyText.setSelectionRange(0, 99999); /*For mobile devices*/
+                document.execCommand("copy");
+
+               
+                alert("Copied the text: " + copyText.value);
+
+            })
+
+
+           
 
         })
 
