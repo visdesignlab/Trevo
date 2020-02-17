@@ -196,7 +196,7 @@ function addBadge(brushOb, brushedDomain, dist, otherBins, descendBins, treenode
 
         tool.select('button').on('click', ()=> {
            // species.select();
-            species.execCommand('"copy');
+            document.execCommand('"copy');
             alert("Copied the text: " + species);
 
         })
