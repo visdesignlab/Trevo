@@ -86,6 +86,19 @@ export function calcVolatility(data, attribute){
     });
 }
 
+export function SortPathsByTrait(trait, paths, main){
+    console.log(trait, paths);
+
+    let test = paths.sort((a, b)=> {
+        return  b[b.length - 1].attributes[trait.field].volatility - a[a.length - 1].attributes[trait.field].volatility;
+    });
+
+    console.log(test);
+
+    drawPathsAndAttributes(test, main)
+
+}
+
 export function drawPathsAndAttributes(pathData, main){
 
     let width = 800;
@@ -95,7 +108,32 @@ export function drawPathsAndAttributes(pathData, main){
     let collapsed = d3.select('#scrunch').attr('value');
     main.select('#main-path-view').selectAll('*').remove();
 
+    let optionArray = scales.map(m=> {
+        let newOb = {}
+        newOb.field = m.field;
+        newOb.type = m.type;
+        newOb.popDeviation = m.type === 'continuous' ? m.popDeviation : null;
+        newOb.popCharShift = m.type === 'continuous' ? null : m.popCharShift;
+        return newOb;
+    });
+
     let sortBar = main.append('div').style('width', '100%').style('height', '70px');
+    let dropWrap = sortBar.append('div');
+    let popStatWrap = sortBar.append('div');
+
+    let traitSortOp = dropDown(dropWrap, optionArray, 'Sort By', 'trait-path-sort');
+    traitSortOp.on('click', (d)=>{
+
+        d3.select('#trait-path-sort').classed('show', false);
+        popStatWrap.selectAll('*').remove();
+
+        popStatWrap.append('text').text(`Sorted By : ${d.field} `)
+
+        popStatWrap.append('text').text(`Volatility of Population : ${d.popDeviation}`)
+
+        console.log('d', d);
+        SortPathsByTrait(d, pathData, main);
+    });
 
     let pathGroups = renderPaths(pathData, main, 800);
   
@@ -122,11 +160,11 @@ export function drawPathsAndAttributes(pathData, main){
     
         let comboLine = continuousPaths(comboLineGroups.filter(f=> f[0].type === 'continuous'), collapsed, 80, 0.3, false);
 
-        pathGroups.append('text').text('Volatility').attr('transform', `translate(${1090}, ${30})`);
-        pathGroups.append('text').text('Val Range').attr('transform', `translate(${1190}, ${30})`);
+        pathGroups.append('text').text('Volatility').attr('transform', `translate(${1100}, ${30})`);
+        pathGroups.append('text').text('Val Range').attr('transform', `translate(${1200}, ${30})`);
         // pathGroups.append('text').text('Min Val').attr('transform', `translate(${1190}, ${30})`);
         // pathGroups.append('text').text('Max Val').attr('transform', `translate(${1290}, ${30})`);
-        pathGroups.append('text').text('State Shifts').attr('transform', `translate(${1290}, ${30})`);
+        // pathGroups.append('text').text('State Shifts').attr('transform', `translate(${1300}, ${30})`);
 
     }
    
@@ -169,9 +207,9 @@ export function drawPathsAndAttributes(pathData, main){
       
 
         let volatility = volatilityGroups.append('g').append('text').text(d=> zero(d[d.length - 1].volatility));
-        volatility.attr('transform', `translate(${950}, ${30})`);
+        volatility.attr('transform', `translate(${970}, ${30})`);
          let valRange = volatilityGroups.append('g').append('text').text(d=> zero(d[d.length - 1].extent[1] - d[d.length - 1].extent[0]));
-        valRange.attr('transform', `translate(${1050}, ${30})`);
+        valRange.attr('transform', `translate(${1075}, ${30})`);
         // let minVal = volatilityGroups.append('g').append('text').text(d=> zero(d[d.length - 1].extent[0]));
         // minVal.attr('transform', `translate(${1050}, ${30})`);
         // let maxVal = volatilityGroups.append('g').append('text').text(d=> zero(d[d.length - 1].extent[1]));
@@ -183,9 +221,7 @@ export function drawPathsAndAttributes(pathData, main){
             return f[0].type != "continuous"});
 
         let shiftVal = shiftGroups.append('g').append('text').text(d=> d[d.length - 1].characterShifts);
-        shiftVal.attr('transform', `translate(${1150}, ${30})`);
-
-        
+        shiftVal.attr('transform', `translate(${975}, ${30})`);
 
        
     }
