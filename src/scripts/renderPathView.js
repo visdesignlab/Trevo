@@ -402,10 +402,16 @@ export function renderPaths(pathData, main, width){
 
     /////////
     pathGroups.on('mouseover', function(d, i){
+
+        //console.log('ddd', d);
+        let nodeNames = d.map(m=> m.node);
+       
+
         let treeNode  = d3.select('#sidebar').selectAll('.node');
         let treeLinks  = d3.select('#sidebar').selectAll('.link');
         treeNode.filter(f=> {
-            return d.map(m=> m.node).indexOf(f.data.node) > -1;
+         
+            return nodeNames.indexOf(f.data.node) > -1;
         }).classed('hover', true);
         treeLinks.filter(f=> d.map(m=> m.node).indexOf(f.data.node) > -1).classed('hover', true);
         return d3.select(this).classed('hover', true);

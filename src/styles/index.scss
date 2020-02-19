@@ -546,8 +546,9 @@ line.half{
 }
 
 .inner-line{
-  stroke: #32C1FE;
-  stroke-width: 2px;
+  stroke: gray;
+  stroke-width: 1px;
+  opacity:0.5;
   fill: none;
   z-index: -100;
 }
@@ -647,6 +648,16 @@ path.link.anti-brushed-second.two {
 g.node.hover-branch circle{
   fill:#FE9D0B;
 }
+
+.node.hover circle {
+  fill:#FE9D0B;
+  r:4px;
+}
+.link.hover {
+  stroke:#FE9D0B;
+  stroke-width: 3px;
+}
+
 g.node.high circle{
   fill: #FE6666 !important;
   r:4px;
