@@ -94,6 +94,9 @@ export function drawPathsAndAttributes(pathData, main){
 
     let collapsed = d3.select('#scrunch').attr('value');
     main.select('#main-path-view').selectAll('*').remove();
+
+    let sortBar = main.append('div').style('width', '100%').style('height', '70px');
+
     let pathGroups = renderPaths(pathData, main, 800);
   
       /// LOWER ATTRIBUTE VISUALIZATION ///
@@ -120,9 +123,10 @@ export function drawPathsAndAttributes(pathData, main){
         let comboLine = continuousPaths(comboLineGroups.filter(f=> f[0].type === 'continuous'), collapsed, 80, 0.3, false);
 
         pathGroups.append('text').text('Volatility').attr('transform', `translate(${1090}, ${30})`);
-        pathGroups.append('text').text('Min Val').attr('transform', `translate(${1190}, ${30})`);
-        pathGroups.append('text').text('Max Val').attr('transform', `translate(${1290}, ${30})`);
-        pathGroups.append('text').text('State Shifts').attr('transform', `translate(${1390}, ${30})`);
+        pathGroups.append('text').text('Val Range').attr('transform', `translate(${1190}, ${30})`);
+        // pathGroups.append('text').text('Min Val').attr('transform', `translate(${1190}, ${30})`);
+        // pathGroups.append('text').text('Max Val').attr('transform', `translate(${1290}, ${30})`);
+        pathGroups.append('text').text('State Shifts').attr('transform', `translate(${1290}, ${30})`);
 
     }
    
@@ -166,18 +170,20 @@ export function drawPathsAndAttributes(pathData, main){
 
         let volatility = volatilityGroups.append('g').append('text').text(d=> zero(d[d.length - 1].volatility));
         volatility.attr('transform', `translate(${950}, ${30})`);
-        let minVal = volatilityGroups.append('g').append('text').text(d=> zero(d[d.length - 1].extent[0]));
-        minVal.attr('transform', `translate(${1050}, ${30})`);
-        let maxVal = volatilityGroups.append('g').append('text').text(d=> zero(d[d.length - 1].extent[1]));
-        maxVal.attr('transform', `translate(${1150}, ${30})`);
+         let valRange = volatilityGroups.append('g').append('text').text(d=> zero(d[d.length - 1].extent[1] - d[d.length - 1].extent[0]));
+        valRange.attr('transform', `translate(${1050}, ${30})`);
+        // let minVal = volatilityGroups.append('g').append('text').text(d=> zero(d[d.length - 1].extent[0]));
+        // minVal.attr('transform', `translate(${1050}, ${30})`);
+        // let maxVal = volatilityGroups.append('g').append('text').text(d=> zero(d[d.length - 1].extent[1]));
+        // maxVal.attr('transform', `translate(${1150}, ${30})`);
 
 
         ////DISCRETE CHAR SHIFTS
         let shiftGroups = cGroups.filter(f=> {
             return f[0].type != "continuous"});
 
-        let shiftVal = shiftGroups.append('g').append('text').text(d=> zero(d[d.length - 1].characterShifts));
-        shiftVal.attr('transform', `translate(${1250}, ${30})`);
+        let shiftVal = shiftGroups.append('g').append('text').text(d=> d[d.length - 1].characterShifts);
+        shiftVal.attr('transform', `translate(${1150}, ${30})`);
 
         
 
