@@ -122,6 +122,7 @@ export function drawPathsAndAttributes(pathData, main){
         pathGroups.append('text').text('Volatility').attr('transform', `translate(${1090}, ${30})`);
         pathGroups.append('text').text('Min Val').attr('transform', `translate(${1190}, ${30})`);
         pathGroups.append('text').text('Max Val').attr('transform', `translate(${1290}, ${30})`);
+        pathGroups.append('text').text('State Shifts').attr('transform', `translate(${1390}, ${30})`);
 
     }
    
@@ -158,13 +159,27 @@ export function drawPathsAndAttributes(pathData, main){
         var zero = d3.format(".2n");
 
         let contDist = drawDistLines(compactLineG.filter(f=> f[0].type != 'continuous'));
+      
+        let volatilityGroups = cGroups.filter(f=> {
+            return f[0].type === "continuous"});
+      
 
-        let volatility = cGroups.append('g').append('text').text(d=> zero(d[d.length - 1].volatility));
+        let volatility = volatilityGroups.append('g').append('text').text(d=> zero(d[d.length - 1].volatility));
         volatility.attr('transform', `translate(${950}, ${30})`);
-        let minVal = cGroups.append('g').append('text').text(d=> zero(d[d.length - 1].extent[0]));
+        let minVal = volatilityGroups.append('g').append('text').text(d=> zero(d[d.length - 1].extent[0]));
         minVal.attr('transform', `translate(${1050}, ${30})`);
-        let maxVal = cGroups.append('g').append('text').text(d=> zero(d[d.length - 1].extent[1]));
-        maxVal.attr('transform', `translate(${1150}, ${30})`)
+        let maxVal = volatilityGroups.append('g').append('text').text(d=> zero(d[d.length - 1].extent[1]));
+        maxVal.attr('transform', `translate(${1150}, ${30})`);
+
+
+        ////DISCRETE CHAR SHIFTS
+        let shiftGroups = cGroups.filter(f=> {
+            return f[0].type != "continuous"});
+
+        let shiftVal = shiftGroups.append('g').append('text').text(d=> zero(d[d.length - 1].characterShifts));
+        shiftVal.attr('transform', `translate(${1250}, ${30})`);
+
+        
 
        
     }
