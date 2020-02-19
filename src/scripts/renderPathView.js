@@ -36,7 +36,6 @@ export function calcVolatility(data, attribute){
         }
     }
 
-
     let characterShifts = [];
 
     if(data[0].attributes[attribute].type === 'discrete'){
@@ -87,13 +86,16 @@ export function calcVolatility(data, attribute){
 }
 
 export function SortPathsByTrait(trait, paths, main){
-    console.log(trait, paths);
+   
 
     let test = paths.sort((a, b)=> {
-        return  b[b.length - 1].attributes[trait.field].volatility - a[a.length - 1].attributes[trait.field].volatility;
+        if(trait.type === 'continuous'){
+            return  b[b.length - 1].attributes[trait.field].volatility - a[a.length - 1].attributes[trait.field].volatility
+        }else{
+            return b[b.length - 1].attributes[trait.field].characterShifts - a[a.length - 1].attributes[trait.field].characterShifts;
+        }
     });
 
-    console.log(test);
 
     drawPathsAndAttributes(test, main)
 
@@ -117,9 +119,16 @@ export function drawPathsAndAttributes(pathData, main){
         return newOb;
     });
 
-    let sortBar = main.append('div').style('width', '100%').style('height', '70px');
-    let dropWrap = sortBar.append('div');
-    let popStatWrap = sortBar.append('div');
+    let sortBar = main.append('div')
+    .classed('sort-toolbar', true)
+    .style('width', '100%')
+    .style('height', '60px');
+
+    let dropWrap = sortBar.append('div')
+    .style('display', 'inline')
+    .style('padding', '5px');
+    let popStatWrap = sortBar.append('div')
+    .style('display', 'inline');
 
     let traitSortOp = dropDown(dropWrap, optionArray, 'Sort By', 'trait-path-sort');
     traitSortOp.on('click', (d)=>{
@@ -127,11 +136,13 @@ export function drawPathsAndAttributes(pathData, main){
         d3.select('#trait-path-sort').classed('show', false);
         popStatWrap.selectAll('*').remove();
 
-        popStatWrap.append('text').text(`Sorted By : ${d.field} `)
+        let traitLabel = popStatWrap.append('div').classed('label', true);
+        traitLabel.append('span').append('text').text(`Sorted By :`).style('font-weight', '900');
+        traitLabel.append('text').text(` ${d.field} `)
+        let stateLabel = popStatWrap.append('div').classed('label', true);
+        stateLabel.append('span').text(`Volatility of Population : `).style('font-weight', '900');
+        stateLabel.text(`Volatility of Population : ${d.popDeviation}`);
 
-        popStatWrap.append('text').text(`Volatility of Population : ${d.popDeviation}`)
-
-        console.log('d', d);
         SortPathsByTrait(d, pathData, main);
     });
 

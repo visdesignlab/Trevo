@@ -528,6 +528,12 @@ line.half{
  // opacity: 0.8;
 }
 
+.sort-toolbar div.label{
+  display:inline-block;
+  padding:5px;
+  padding-right:10px;
+}
+
 .paths.hover circle{
   fill: #b7ed7e;
   stroke: gray;
