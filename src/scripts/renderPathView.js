@@ -36,14 +36,54 @@ export function calcVolatility(data, attribute){
         }
     }
 
+
+    let characterShifts = [];
+
+    if(data[0].attributes[attribute].type === 'discrete'){
+
+        let first = d3.entries(data[0].attributes[attribute].values).filter(f=> {
+            let max = d3.max(d3.entries(data[0].attributes[attribute].values), d=> +d.value);
+            return +f.value === max;
+        });
+
+        data.map((d)=> {
+       
+            let next = d3.entries(d.attributes[attribute].values).filter(f=> {
+                let max = d3.max(d3.entries(d.attributes[attribute].values), d=> +d.value);
+                return +f.value === max;
+            });
+         
+            if(next === undefined){
+                if(!first[first.length - 1].key.includes(d.winState)){
+                    first.push({'key': d.winState, 'value': 1});
+                }
+
+            }else{
+
+                if(next.length === 1){
+                    if(next[0].key != first[first.length - 1].key){
+                        first.push(next[0]);
+                    }
+                }
+            }
+
+            characterShifts.push(first);
+        
+            return d;
+        });
+    }
+
     return data.map(d=> {
-        //d.attributes[attribute].volatility = d3.deviation(valKeeper);//Math.sqrt(d3.mean(sumKeeper));//d3.variance(sumKeeper) / d3.mean(sumKeeper);
-        d.attributes[attribute].volatility = d3.deviation(sumKeeper);//Math.sqrt(d3.mean(sumKeeper));//d3.variance(sumKeeper) / d3.mean(sumKeeper);
-        d.attributes[attribute].extent = d3.extent(valKeeper);
-        d.attributes[attribute].maxDiff = d3.extent(valKeeper)[1] - d3.extent(valKeeper)[0];
-        return d;
+        if(d.attributes[attribute].type === 'continuous'){
+            //d.attributes[attribute].volatility = d3.deviation(valKeeper);//Math.sqrt(d3.mean(sumKeeper));//d3.variance(sumKeeper) / d3.mean(sumKeeper);
+            d.attributes[attribute].volatility = d3.deviation(sumKeeper);//Math.sqrt(d3.mean(sumKeeper));//d3.variance(sumKeeper) / d3.mean(sumKeeper);
+            d.attributes[attribute].extent = d3.extent(valKeeper);
+            d.attributes[attribute].maxDiff = d3.extent(valKeeper)[1] - d3.extent(valKeeper)[0];
+            return d;
+        }else{
+            d.attributes[attribute].characterShifts = characterShifts[0].length;
+        }
     });
-    
 }
 
 export function drawPathsAndAttributes(pathData, main){

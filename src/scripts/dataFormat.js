@@ -174,7 +174,6 @@ export function calculateNewScales(attributes, keyList, colorKeeper){
             let mean = d3.mean(attData.flatMap(m=> m.values.realVal));
             let deviation = d3.deviation(attData.flatMap(m=> m.values.realVal));
             
-
             return {
                 'field': d, 
                 'type':'continuous',
@@ -186,8 +185,12 @@ export function calculateNewScales(attributes, keyList, colorKeeper){
                 'colorScale': d3.scaleLinear().range([color, '#f23929']).domain([min, max]),
                 'catColor': color,
             };
+
         }else{
+            let disAtt= attributes.map(f=> f[d]);
+           
             let scaleCat = d3.keys(attData[0].values);
+
             return { 
                 'field': d,
                 'type':'discrete',

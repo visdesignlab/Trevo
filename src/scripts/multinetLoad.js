@@ -2,8 +2,8 @@ import { multinetApi } from "multinet";
 
 /* Multinet data importer */
 // Define local variables that will store the api url and the responses from the database
-//const api_root = "https://multinet.app/api";
-const api_root = "http://localhost:5000/api";
+const api_root = "https://multinet.app/api";
+//const api_root = "http://localhost:5000/api";
 
 class Multinet {
     constructor(){
