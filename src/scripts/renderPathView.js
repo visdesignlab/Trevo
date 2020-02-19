@@ -80,14 +80,13 @@ export function calcVolatility(data, attribute){
             d.attributes[attribute].maxDiff = d3.extent(valKeeper)[1] - d3.extent(valKeeper)[0];
             return d;
         }else{
-            d.attributes[attribute].characterShifts = characterShifts[0].length;
+            d.attributes[attribute].characterShifts = characterShifts[0].length - 1;
         }
     });
 }
 
 export function SortPathsByTrait(trait, paths, main){
    
-
     let test = paths.sort((a, b)=> {
         if(trait.type === 'continuous'){
             return  b[b.length - 1].attributes[trait.field].volatility - a[a.length - 1].attributes[trait.field].volatility
@@ -122,26 +121,32 @@ export function drawPathsAndAttributes(pathData, main){
     let sortBar = main.append('div')
     .classed('sort-toolbar', true)
     .style('width', '100%')
-    .style('height', '60px');
-
+    .style('height', '60px')
+    .style('padding-top', '10px');
+    
     let dropWrap = sortBar.append('div')
     .style('display', 'inline')
-    .style('padding', '5px');
-    let popStatWrap = sortBar.append('div')
-    .style('display', 'inline');
+    .style('padding-top', '10px')
+    .style('padding-left', '20px');
 
-    let traitSortOp = dropDown(dropWrap, optionArray, 'Sort By', 'trait-path-sort');
+    let popStatWrap = sortBar.append('div')
+    .style('display', 'inline')
+    .style('padding-left', '20px');
+
+    let traitSortOp = dropDown(dropWrap, optionArray, 'Sort Paths By', 'trait-path-sort');
     traitSortOp.on('click', (d)=>{
 
         d3.select('#trait-path-sort').classed('show', false);
         popStatWrap.selectAll('*').remove();
+
+        var zero = d3.format(".2n");
 
         let traitLabel = popStatWrap.append('div').classed('label', true);
         traitLabel.append('span').append('text').text(`Sorted By :`).style('font-weight', '900');
         traitLabel.append('text').text(` ${d.field} `)
         let stateLabel = popStatWrap.append('div').classed('label', true);
         stateLabel.append('span').text(`Volatility of Population : `).style('font-weight', '900');
-        stateLabel.text(`Volatility of Population : ${d.popDeviation}`);
+        stateLabel.text(`Volatility of Population : ${d.type === 'discrete'? d.characterShifts : zero(d.popDeviation)}`);
 
         SortPathsByTrait(d, pathData, main);
     });
@@ -1685,34 +1690,18 @@ export function drawDiscreteAtt(predictedAttrGrps, collapsed, bars, width){
             return d;
         }).join('circle').classed('dots', true);
         
-        stateDots.attr('cx', 10).attr('cy', (d)=> {
+        stateDots.attr('cx', 10)
+        .attr('cy', (d)=> {
             let y = d3.scaleLinear().domain([0, 1]).range([attributeHeight - 2, 2]);
             return d.realVal? y(d.realVal) : y(d.value);
-        }).attr('r', 2);
+        }).attr('r', (d, i, n)=> {
+            return d.value > .5 ? 7 : 3;
+        });
         
         stateDots.style('fill', (d, i, n)=> {
-           
-            /*
-            let speciesPath = d3.selectAll('.attribute-node-discrete.'+ d.species)//.filter(f=> f.type === 'discrete');
-           
-            let nodeArray = speciesPath.data().map(m=> {
-                return m.node ? m.node : m[0].node;
-            });
-            let index = nodeArray.indexOf(d.node);
-           
-            */
-            //return d.color
-            return 'gray';
-        });
+            return d.value > .5 ? d.color.color : 'gray';
+        }).style('opacity', '0.8')
     
-        stateDots.filter(f=> f.realVal > 0.5).attr('r', 4);
-/*
-        let maxDots = stateDots.filter((f, i, n)=> {
-           
-            return f.realVal === d3.max(d3.selectAll(n).data().map(m=> m.realVal));
-        });
-*/
-        
 
         ////NEED TO ADD COLOR ON STATE CHANGE////
     
