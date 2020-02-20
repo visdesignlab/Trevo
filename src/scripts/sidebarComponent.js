@@ -92,6 +92,47 @@ export function renderTreeButtons(normedPaths){
     cladeButton.on('click', ()=> growSidebarRenderTree(null));
 }
 
+export function tooltipTreeNode(data, index, nodeArray, attribute){
+
+    let paths = d3.select('#main-path-view').selectAll('.paths');
+    let points = d3.select('#main-summary-view').selectAll('.branch-points');
+    points.filter(f=> f.node === data.data.node).classed('selected', true);
+
+    let selectedPaths = paths.filter(path=> {
+        let nodes = path.map(m=> m.node);
+        return nodes.indexOf(data.data.node) > -1;
+    }).classed('hover', true);
+    selectedPaths.selectAll('g').filter(g=> g.node === data.data.node).classed('selected', true);
+    d3.select(nodeArray[index]).classed('selected-branch', true);
+
+    if(data.data.leaf === true){
+        let tool = d3.select('#tooltip');
+        tool.transition()
+        .duration(200)
+        .style("opacity", .9);
+    
+        if(attribute != null){
+
+            let access = attribute.type === 'continuous' ? 'realVal' : attribute.field;
+
+            tool.html(`
+            ${data.data.name.charAt(0).toUpperCase() + data.data.name.slice(1)} <br/>
+            ${attribute.field}: ${data.data.attributes[attribute.field].values[access]}
+            `);
+
+        }else{
+            tool.html(`${data.data.name.charAt(0).toUpperCase() + data.data.name.slice(1)}`);
+        }
+      
+        tool.style("left", (d3.event.pageX + 6) + "px")
+        .style("top", (d3.event.pageY - 18) + "px");
+        tool.style('height', 'auto');
+
+   
+    }
+
+}
+
 function uncollapseSub(d){
     d.children = d._children;
     d._children = null;
@@ -262,11 +303,9 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, pheno){
 
         if(pheno === 'None'){
             let scales = getScales().filter(f=> f.type === 'continuous');
-        
             pheno = scales[0].field;
         }
 
-    
         treeSvg.attr('height', 800);
         let min = scalingValues(treenodes.data.attributes[pheno].scales.min);
         let max = scalingValues(treenodes.data.attributes[pheno].scales.max);
@@ -368,29 +407,7 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, pheno){
 
     node.on('mouseover', (d, i, n)=> {
 
-        
-        let paths = d3.select('#main-path-view').selectAll('.paths');
-        let points = d3.select('#main-summary-view').selectAll('.branch-points');
-        points.filter(f=> f.node === d.data.node).classed('selected', true);
-
-        let selectedPaths = paths.filter(path=> {
-            let nodes = path.map(m=> m.node);
-            return nodes.indexOf(d.data.node) > -1;
-        }).classed('hover', true);
-        selectedPaths.selectAll('g').filter(g=> g.node === d.data.node).classed('selected', true);
-        d3.select(n[i]).classed('selected-branch', true);
-
-        if(d.data.label){
-            let tool = d3.select('#tooltip');
-            tool.transition()
-            .duration(200)
-            .style("opacity", .9);
-          
-            tool.html(`${d.data.label.charAt(0).toUpperCase() + d.data.label.slice(1)}`)
-            .style("left", (d3.event.pageX - 40) + "px")
-            .style("top", (d3.event.pageY - 28) + "px");
-            tool.style('height', 'auto');
-        }
+        tooltipTreeNode(d, i, n, attrDraw);
 
     }).on('mouseout', (d, i, n)=> {
         d3.selectAll('.paths.hover').classed('hover', false);
