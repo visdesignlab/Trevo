@@ -16,13 +16,24 @@ const macroModes = [
   {field:'Anti-Convergence', value: [1, -1, -1], pict: 'char-disp.gif'}
 ];
 
+function discreteTraitDraw(pairGroups, trait){
+
+
+  discreteTraitCalc(pairGroups.data(), trait)
+
+}
+
+function discreteTraitCalc(pairs, trait){
+  console.log('pppppairs',pairs);
+}
+
 export function rankingControl(data){
 
     let rankDiv = d3.select('#pair-rank').classed('hidden', false);
     rankDiv.selectAll('*').remove();
 
     let dropDiv = rankDiv.append('div')
-      .style('width', '200px')
+      .style('width', '180px')
       .style('display', 'inline-block')
       .style('padding-left', '30px')
       .style('padding-bottom', '20px')
@@ -41,16 +52,15 @@ export function rankingControl(data){
     
     let wImage = weightPicker
       .append("svg:image")
-      .attr('width', 180)
-      .attr('height', 126)
-      .attr('y', -30)
+      .attr('width', 142)
+      .attr('height', 102)
+      .attr('y', -12)
       .attr("xlink:href", `./public/${macroModes[1].pict}`);
 
     let dropOptions = dropDown(dropDiv, macroModes, macroModes[1].field, 'preset');
    
-
     let defaultW = macroModes[1].value;
-    let sliderWidth = 140;
+    let sliderWidth = 120;
     let sliderMargin = 50;
 
     let labels = ['Distance', 'Delta', 'Closeness'];
@@ -58,14 +68,13 @@ export function rankingControl(data){
     weightPicker.selectAll('text.labels').data(labels).join('text').classed('labels', true)
     .text(d=> d)
     .attr('y', 10)
-    .attr('x', (d, i)=> (300+((sliderWidth + sliderMargin) * i)));
+    .attr('x', (d, i)=> (200+((sliderWidth + sliderMargin) * i)));
  
     defaultW.forEach((color, i) => {
       var slider = slide
         .sliderBottom()
         .min(-1)
         .max(1)
-        // .step(.5)
         .ticks(3)
         .width(sliderWidth)
         .default(defaultW[i])
@@ -81,7 +90,7 @@ export function rankingControl(data){
       weightPicker
         .append('g')
         .attr('id', `weight-slider-${i}`)
-        .attr('transform', `translate(${300+((sliderWidth + sliderMargin) * i)}, 20)`)
+        .attr('transform', `translate(${200+((sliderWidth + sliderMargin) * i)}, 20)`)
         .call(slider);
 
       weightPicker.selectAll('.tick')
@@ -120,7 +129,6 @@ export function rankingControl(data){
    
         d3.select('.dropdown.preset').select('button').text(d.field);
        
-      
         let mappedPairs = updateRanking(pairPaths(data), d3.select('.attr-drop.dropdown').select('button').attr('value'), defaultW);
         drawSorted(mappedPairs.topPairs, d3.select('.attr-drop.dropdown').select('button').attr('value'));
         topPairSearch(mappedPairs.topPairs, mappedPairs.pairs, d3.select('.attr-drop.dropdown').select('button').attr('value'), defaultW);
@@ -180,11 +188,13 @@ export async function generatePairs(data){
 
         let mappedPairs = updateRanking([...pairs], attKeys[0].field, weights);
        
-        drawSorted(mappedPairs.topPairs, attKeys[0].field);
+        let pairPlots = drawSorted(mappedPairs.topPairs, attKeys[0].field);
                 
         if(data.length < 200){
           topPairSearch(mappedPairs.topPairs, mappedPairs.pairs, attKeys[0].field, weights);
         }
+
+        discreteTraitDraw(pairPlots);
         
 }
 function getWeightScales(pairs, field){
@@ -198,7 +208,6 @@ function getWeightScales(pairs, field){
   return {delta: deltaScale, close:closeScale, distance: distScale};
 
 }
-
 export function updateRanking(pairs, field, weights){
 
     let weightScales = getWeightScales(pairs, field);
@@ -220,7 +229,6 @@ export function updateRanking(pairs, field, weights){
 
     return {topPairs: sortedPairs, 'pairs': pickedPairs};
 }
-
 function renderText(pairs, field){
   d3.select('#pair-rank').select('svg').select('.rank-meta').remove();
   let rankMeta = d3.select('#pair-rank').select('svg').append('g').classed('rank-meta', true);
@@ -229,7 +237,6 @@ function renderText(pairs, field){
   rankMeta.append('text').text(`Num of Pairs: ${pairs.length}`).attr('transform', 'translate(870, 60)').style('font-size', '12px');
 
 }
-
 function drawSorted(pairs, field){
 
   let pairColor = ['#FF5733', '#129BF5'];
@@ -593,7 +600,7 @@ mouseG.append('svg:rect') // append a rect to catch mouse movements on canvas
           });
       });
 
-
+      return pairWraps;
    
 }
 function topPairSearch(topPairs, allPairs, field, weights){
@@ -649,7 +656,6 @@ function topPairSearch(topPairs, allPairs, field, weights){
   //   text.attr('transform', (d, i)=> `translate(20, ${(i*20)+11})`);
   // });
 }
-
 function rankGrid(matchKeeper){
 
   let scales = getScales();
@@ -676,7 +682,7 @@ function rankGrid(matchKeeper){
           return (m.key === f.key);
         }).append('g').classed('other-rank', true);
 
-    group.attr('transform', 'translate(880, 0)');
+    group.attr('transform', 'translate(900, 0)');
 
     group.append('text')
     .text('Ranked Top 20 in Other Traits')
