@@ -74,9 +74,11 @@ async function appLaunch(){
         return {field: name, text: `Data: ${name}`}
     });
 
-    toolbarDataControl(toolbarDataWrap, graphList, graphList[0]);
+    let chosen = graphList.filter(f=> f.field === 'island-anolis')[0];
+
+    toolbarDataControl(toolbarDataWrap, graphList, chosen);
     logScaleToggle();
-    loadApp(workspace, graphList[0].field);
+    loadApp(workspace, chosen.field);
 
 }
 
