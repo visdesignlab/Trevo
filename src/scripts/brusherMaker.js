@@ -56,7 +56,7 @@ export function addBrushables(bins, continDist){
 
         var zero = d3.format(".3n");
        
-        console.log('dddd',d)
+      
 
         let filterData = d.data.filter(f=> f.values.realVal >= brushOb.scale.invert(endPos) && f.values.realVal <= brushOb.scale.invert(startPos));
         let test = continuousHistogram(filterData);
@@ -85,7 +85,7 @@ export function addBrushables(bins, continDist){
         let descendBins = findDescendValues(d, brushOb, [endPos, startPos], continDist);
        
         let treenodeOb = highlightTree(filterData, descendBins, brushOb);
-        console.log('fffffffff',filterData)
+       
         addBadge(brushOb, [zero(brushOb.scale.invert(endPos)), zero(brushOb.scale.invert(startPos))], path, otherBins, descendBins, treenodeOb, filterData);
       
     });
@@ -182,13 +182,13 @@ function addBadge(brushOb, brushedDomain, dist, otherBins, descendBins, treenode
         return nodes.length > 0;
     }).flatMap(s=> s[s.length - 1].node);
 
-    console.log('species', species);
+
 
 
     badge.on('click', ()=> {
 
         let tool = d3.select('#copy-tooltip');
-        console.log(tool)
+       
         tool.classed('hidden') ? tool.classed('hidden', false) : tool.classed('hidden', true);
 
         tool.style("left", (d3.event.pageX) + "px")

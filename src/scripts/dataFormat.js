@@ -160,6 +160,10 @@ function calculateCloseness(pair, distance){
  return closeness;
 }
 
+function calcPopVol(){
+
+}
+
 export function calculateNewScales(attributes, keyList, colorKeeper){
 
     return keyList.map((d, i)=> {
@@ -530,16 +534,16 @@ export async function dataLoadAndFormatMultinet(workspace, graphName){
                         if(m.key.includes('upperCI')){
                             values.upperCI95 = +m.value;
                             
-                           // if(+m.value < 0){ console.log('this is a test' , (Math.log(Math.abs(+m.value)) * -1), Math.log(+m.value)) }
+                         
                             values.logUpper = +m.value < 0 ? (Math.log(Math.abs(+m.value)) * -1) : Math.log(+m.value);
                         }else if(m.key.includes('lowerCI')){
                             values.lowerCI95 = +m.value;
-                           // if(+m.value < 0){ console.log('this is a test in lower' , +m.value, (Math.log(Math.abs(+m.value)) * -1.0), Math.log(+m.value)) }
+                         
                             let logLower = +m.value < 0 ? (Math.log(Math.abs(+m.value))) : Math.log(+m.value);
                             values.logLower = logLower;
                         }else{
                             values.realVal = +m.value;
-                           // if(+m.value < 0){ console.log('this is a test' , (Math.log(Math.abs(+m.value)) * -1), Math.log(+m.value)) }
+                         
                             values.logVal = +m.value < 0 ? (Math.log(Math.abs(+m.value)) * -1) : Math.log(+m.value);
                         }
                     }else{

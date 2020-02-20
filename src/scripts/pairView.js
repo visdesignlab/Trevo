@@ -181,7 +181,7 @@ export async function generatePairs(data){
         let mappedPairs = updateRanking([...pairs], attKeys[0].field, weights);
        
         drawSorted(mappedPairs.topPairs, attKeys[0].field);
-                  console.log('dattttaaaaaaa', data);
+                
         if(data.length < 200){
           topPairSearch(mappedPairs.topPairs, mappedPairs.pairs, attKeys[0].field, weights);
         }

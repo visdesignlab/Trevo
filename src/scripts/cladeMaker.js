@@ -349,7 +349,7 @@ function drawCladeBox(cladeData){
         let names = n.nodes.map(m=> m[m.length - 1].node);
         treeSVG.selectAll('.node--leaf').filter(f=> names.indexOf(f.data.node) > -1).select('circle').attr('fill', n.color);
     });
-    console.log('multi',multiData)
+ 
 
     //treeSvg.selectAll('.node--leaf').filter(f=> f.data)
 

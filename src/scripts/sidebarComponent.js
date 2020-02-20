@@ -262,12 +262,11 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, pheno){
 
         if(pheno === 'None'){
             let scales = getScales().filter(f=> f.type === 'continuous');
-            console.log(scales[0].field)
+        
             pheno = scales[0].field;
         }
 
-        console.log(pheno, treenodes.data.attributes)
-
+    
         treeSvg.attr('height', 800);
         let min = scalingValues(treenodes.data.attributes[pheno].scales.min);
         let max = scalingValues(treenodes.data.attributes[pheno].scales.max);
@@ -463,7 +462,6 @@ export function updateTree(treenodes, dimensions, treeSvg, g, attrDraw, pheno){
         //         return f.data.node === leafSort[leafSort.length - 1].data.node;
         //     });
 
-        //     console.log(chosenNode.data())
      
         //     d3.select(node[i]).attr('transform', `translate(300, ${yScale(leafSort[0].position)})`)
         // })

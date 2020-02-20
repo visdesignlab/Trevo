@@ -403,7 +403,7 @@ export function renderPaths(pathData, main, width){
     /////////
     pathGroups.on('mouseover', function(d, i){
 
-        //console.log('ddd', d);
+      
         let nodeNames = d.map(m=> m.node);
        
 

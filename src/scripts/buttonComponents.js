@@ -32,7 +32,7 @@ export function updateDropdown(optionArray, dropId){
 }
 
 export function slider(trait, svg, callBack) {
-    console.log('trait', trait.min)
+   
 
     let range = [trait.min, trait.max];
 
