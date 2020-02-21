@@ -16,15 +16,59 @@ const macroModes = [
   {field:'Anti-Convergence', value: [1, -1, -1], pict: 'char-disp.gif'}
 ];
 
+let traitVal = null;
+
+export function pairUpdateRender(pairs, attr, weights){
+
+  let mappedPairs = updateRanking(pairs, attr, weights);
+  let pairPaths = drawSorted(mappedPairs.topPairs, d3.select('.attr-drop.dropdown').select('button').attr('value'));
+  discreteTraitDraw(pairPaths, traitVal);
+  topPairSearch(mappedPairs.topPairs, mappedPairs.pairs, d3.select('.attr-drop.dropdown').select('button').attr('value'), weights);
+  
+}
+
 function discreteTraitDraw(pairGroups, trait){
 
-
   discreteTraitCalc(pairGroups.data(), trait)
+  let stateWraps = pairGroups.selectAll('g.stateWrap').data(d=> [d]).join('g').classed('stateWrap', true);
+  stateWraps.attr('transform', `translate(560, -24)`)
+
+  let pairState = stateWraps.selectAll('g.state').data(d=> {
+    return [{'key': 'p1', 'value': d.p1}, {'key': 'p2', 'value': d.p2}]
+  }).join('g').classed('state', true);
+
+  pairState.append('rect')
+    .attr('height', 15)
+    .attr('width', 15)
+    .attr('fill', d=> {
+      return d.value[d.value.length - 1].attributes[trait].color;
+    });
+
+  pairState.attr('transform', (d, i)=>`translate(${i*20}, 0)`);
+
+  pairState.on('mouseover', (d, i)=> {
+
+    let tool = d3.select('#tooltip');
+    tool.transition()
+    .duration(200)
+    .style("opacity", .9);
+    tool.html(`${d.value[d.value.length - 1].attributes[trait].winState}`);
+
+    tool.style("left", (d3.event.pageX + 6) + "px")
+    .style("top", (d3.event.pageY - 18) + "px");
+    tool.style('height', 'auto');
+
+  }).on('mouseout', ()=> {
+    let tool = d3.select('#tooltip').style('opacity', 0)
+  })
+
+
 
 }
 
 function discreteTraitCalc(pairs, trait){
-  console.log('pppppairs',pairs);
+  console.log('pppppairs',pairs, trait);
+ 
 }
 
 export function rankingControl(data){
@@ -45,7 +89,7 @@ export function rankingControl(data){
 
     let weightPicker = weightPickerDiv
       .append('svg')
-      .style('width', '1000px')
+      .style('width', '830px')
       .attr('height', 100)
       .append('g')
       .attr('transform', 'translate(10,10)');
@@ -60,8 +104,8 @@ export function rankingControl(data){
     let dropOptions = dropDown(dropDiv, macroModes, macroModes[1].field, 'preset');
    
     let defaultW = macroModes[1].value;
-    let sliderWidth = 120;
-    let sliderMargin = 50;
+    let sliderWidth = 110;
+    let sliderMargin = 40;
 
     let labels = ['Distance', 'Delta', 'Closeness'];
 
@@ -75,16 +119,14 @@ export function rankingControl(data){
         .sliderBottom()
         .min(-1)
         .max(1)
-        .ticks(3)
+        .ticks(2)
         .width(sliderWidth)
         .default(defaultW[i])
         .displayValue(false)
         .fill('#516880')
         .on('end', num => {
           defaultW[i] = num;
-          let mappedPairs = updateRanking(pairPaths(data), d3.select('.attr-drop.dropdown').select('button').attr('value'), defaultW);
-          drawSorted(mappedPairs.topPairs, d3.select('.attr-drop.dropdown').select('button').attr('value'));
-          topPairSearch(mappedPairs.topPairs, mappedPairs.pairs, d3.select('.attr-drop.dropdown').select('button').attr('value'), defaultW);
+          pairUpdateRender(pairPaths(data), d3.select('.attr-drop.dropdown').select('button').attr('value'), defaultW);
         });
   
       weightPicker
@@ -119,9 +161,7 @@ export function rankingControl(data){
           .fill('#516880')
           .on('end', num => {
             defaultW[i] = num;
-            let mappedPairs = updateRanking(pairPaths(data), d3.select('.attr-drop.dropdown').select('button').attr('value'), defaultW);
-            drawSorted(mappedPairs.topPairs, d3.select('.attr-drop.dropdown').select('button').attr('value'));
-            topPairSearch(mappedPairs.topPairs, mappedPairs.pairs, d3.select('.attr-drop.dropdown').select('button').attr('value'), defaultW);
+            pairUpdateRender(pairPaths(data), d3.select('.attr-drop.dropdown').select('button').attr('value'), defaultW);
           });
 
           d3.select(`#weight-slider-${j}`).call(slider);
@@ -129,13 +169,25 @@ export function rankingControl(data){
    
         d3.select('.dropdown.preset').select('button').text(d.field);
        
-        let mappedPairs = updateRanking(pairPaths(data), d3.select('.attr-drop.dropdown').select('button').attr('value'), defaultW);
-        drawSorted(mappedPairs.topPairs, d3.select('.attr-drop.dropdown').select('button').attr('value'));
-        topPairSearch(mappedPairs.topPairs, mappedPairs.pairs, d3.select('.attr-drop.dropdown').select('button').attr('value'), defaultW);
+    
+        pairUpdateRender(pairPaths(data), d3.select('.attr-drop.dropdown').select('button').attr('value'), defaultW);
    
         wImage.attr("xlink:href", `./public/${d.pict}`);
    
        });
+
+     
+       let disMarkers = getScales().filter(f=> f.type === 'discrete');
+       traitVal = disMarkers[0].field;
+       let disMarkOp = dropDown(rankDiv, disMarkers, disMarkers[0].field, 'discrete-trait-mark');
+       disMarkOp.on('click', (d)=> {
+         
+          d3.select('.discrete-trait-mark').select('button').attr('value', d.field);
+          d3.select('.discrete-trait-mark.dropdown').select('button').text(`Trait: ${d.field}`);
+          d3.select('#discrete-trait-mark').classed('show', false);
+
+          discreteTraitDraw(d3.selectAll('.pair-wrap'), d.field)
+       })
 
        
 }
@@ -153,10 +205,8 @@ export function changeTrait(attKeys, data, weights){
   drop.on('click', (d, i, n)=> {
 
     if(toolbarButtonDiv.select('.dropdown.change-view').select('.dropdown-toggle').node().value === "Pair View"){
-      let mappedPairs = updateRanking(pairPaths(data), d.field, weights);
-
-      drawSorted(mappedPairs.topPairs, d.field);
-      topPairSearch(mappedPairs.topPairs, mappedPairs.pairs, d.field, weights);
+     
+      pairUpdateRender(pairPaths(data), d.field, weights);
     }
 
     if(d3.select('#sidebar').select('#view-pheno').text() === 'View Phylogeny'){
@@ -186,15 +236,9 @@ export async function generatePairs(data){
         
         let drop = changeTrait(attKeys, data, weights);
 
-        let mappedPairs = updateRanking([...pairs], attKeys[0].field, weights);
-       
-        let pairPlots = drawSorted(mappedPairs.topPairs, attKeys[0].field);
-                
-        if(data.length < 200){
-          topPairSearch(mappedPairs.topPairs, mappedPairs.pairs, attKeys[0].field, weights);
-        }
+        pairUpdateRender([...pairs], attKeys[0].field, weights);
 
-        discreteTraitDraw(pairPlots);
+
         
 }
 function getWeightScales(pairs, field){
@@ -232,9 +276,9 @@ export function updateRanking(pairs, field, weights){
 function renderText(pairs, field){
   d3.select('#pair-rank').select('svg').select('.rank-meta').remove();
   let rankMeta = d3.select('#pair-rank').select('svg').append('g').classed('rank-meta', true);
-  rankMeta.append('text').text(`Trait: ${field}`).attr('transform', 'translate(870, 20)').style('font-size', '12px');
-  rankMeta.append('text').text(`Pairs Shown: Top 1%`).attr('transform', 'translate(870, 40)').style('font-size', '12px');
-  rankMeta.append('text').text(`Num of Pairs: ${pairs.length}`).attr('transform', 'translate(870, 60)').style('font-size', '12px');
+  rankMeta.append('text').text(`Trait: ${field}`).attr('transform', 'translate(690, 20)').style('font-size', '12px');
+  rankMeta.append('text').text(`Pairs Shown: Top 1%`).attr('transform', 'translate(690, 40)').style('font-size', '12px');
+  rankMeta.append('text').text(`Num of Pairs: ${pairs.length}`).attr('transform', 'translate(690, 60)').style('font-size', '12px');
 
 }
 function drawSorted(pairs, field){
