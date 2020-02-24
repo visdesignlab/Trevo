@@ -121,21 +121,29 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
             let min = valueParam === 'realVal' ? scale.min : Math.log(scale.min);
             let max = valueParam === 'realVal' ? scale.max : Math.log(scale.max);
             let x = d3.scaleLinear().domain([min, max]).range([0, dimensions.height]);
+
+          //  let x = d3.scaleLinear().domain(scale.popNormalRange).range([0, dimensions.height]);
     
             let histogram = d3.histogram()
             .value(function(d) { return d.values[valueParam]; })  
             .domain(x.domain())  
             .thresholds(x.ticks(20)); 
-
-            console.log('the data in here', mapNorm)
   
             mapNorm.map((n, i, nodeArray)=> {
+
+                n.outliers = n.data.filter(f=> {
+                    return f.values.realVal < f.normalRange[0] ||  f.values.realVal > f.normalRange[1];
+                });
                 
                 n.type = scale.type;
-                n.bins = histogram(n.data);
+                n.bins = histogram(n.data.filter(f=> {
+                    return f.values.realVal >= f.normalRange[0] &&  f.values.realVal <= f.normalRange[1];
+                }));
                 n.domain = [max, min];
                 n.bins.count = branchCount;
                 n.bins.groupLabel = groupLabel;
+                n.bins.binNormal = n.data[0].normalRange;
+                n.bins.outlierRange = n.domain;
 
                 if(d3.mean(n.bins.map(m=> m.length)) === 0){
                     if(i === 0){
@@ -763,6 +771,7 @@ function brushedNodes(nodes, notNodes, data, brushedVal, classLabel){
         .classed('brushed-second', true)
         .classed(`${data.key}`, true)
         .classed(classLabel, true);
+
     let secondLinks = d3.select('#sidebar').selectAll('.link')
         .filter(f=> (nodeNames.indexOf(f.data.node) === -1)&&(testtest.indexOf(f.data.node) > -1))
         .classed('brushed-second', true)
@@ -1035,7 +1044,7 @@ function renderContinuousPredicted(continDist){
             .join('g')
             .classed('distribution', true);
 
-        distrib.attr('transform', 'translate(11, '+dimensions.height+') rotate(-90)');
+        distrib.attr('transform', 'translate(10, '+dimensions.height+') rotate(-90)');
         let path = distrib.append('path').attr('d', lineGen);
         path.attr("fill", defaultBarColor).attr('fill-opacity', .4)//.attr("fill", "rgba(133, 193, 233, .4)")
         .style('stroke', defaultBarColor);
@@ -1043,15 +1052,30 @@ function renderContinuousPredicted(continDist){
 
     let contRect = continDist.append('rect')
         .attr('height', dimensions.height)
-        .attr('width', 10)
-        .style('fill', 'none')
-        .style('stroke', 'gray');
+        .attr('width', 11)
+        .style('fill', '#fff');
+        
+//     contRect
+//     .attr('height', (d, i, n)=>{
+//         let y = d3.scaleLinear().domain([d.data[0].scales.min, d.data[0].scales.max]).range([dimensions.height, 0]);
+//         return y(d.data[0].normalRange[0]) - y(d.data[0].normalRange[1]);
+// }).attr('transform', (d, i)=> {
+//     let y = d3.scaleLinear().domain([d.data[0].scales.min, d.data[0].scales.max]).range([dimensions.height, 0]);
+
+//    if(d.data[0].scales.max >= d.data[0].normalRange[1]){
+//     return `translate(0, ${y(d.data[0].normalRange[1])})`;
+//    }else{
+//        return 0;
+//    }
+    
+// });
+
 
     let rangeRect = continDist.selectAll('rect.range').data(d=> {
         let newData = d.data.map(m=> {
             m.range = d.range;
             return m;
-        })
+        });
         return newData}).join('rect').classed('range', true);
 
     rangeRect.attr('width', 10);
@@ -1088,7 +1112,37 @@ function renderContinuousPredicted(continDist){
     });
 
     //rangeRect.attr('fill', "rgba(133, 193, 233, .05)");
-    rangeRect.attr('fill', defaultBarColor).attr('opacity', 0.5)
+    rangeRect.attr('fill', defaultBarColor).attr('opacity', 0.2);
+
+    let normalDisRect = continDist.append('rect')
+        .attr('width', 10)
+        .style('fill', 'none')
+        .style('stroke', 'gray')
+        .attr('height', (d, i, n)=>{
+                let y = d3.scaleLinear().domain([d.data[0].scales.min, d.data[0].scales.max]).range([dimensions.height, 0]);
+                let h = y(d.data[0].normalRange[0]) - y(d.data[0].normalRange[1]);
+                
+                if(h < dimensions.height){
+                    if(y(d.data[0].normalRange[0]) > dimensions.height){
+                        return dimensions.height - y(d.data[0].normalRange[1]);
+                    }else{
+                        return y(d.data[0].normalRange[0]) - y(d.data[0].normalRange[1]);
+                    }
+                    
+                }else{
+                    return dimensions.height;
+                }
+                
+        }).attr('transform', (d, i)=> {
+            let y = d3.scaleLinear().domain([d.data[0].scales.min, d.data[0].scales.max]).range([dimensions.height, 0]);
+
+        if(d.data[0].scales.max >= d.data[0].normalRange[1]){
+            return `translate(0, ${y(d.data[0].normalRange[1])})`;
+        }else{
+            return `translate(0, 0)`;
+        }
+            
+        });
 
     let avRect = continDist.append('rect').attr('width', 10).attr('height', (d, i)=> {
         if(d.data[0] != undefined){
@@ -1113,6 +1167,22 @@ function renderContinuousPredicted(continDist){
             return 'translate(0,0)';
         }
     }).attr('fill', '#004573');
+
+    let outliers = continDist.selectAll('g.outlier').data(d=> {
+       
+        return d.outliers.map(m=> {
+            m.domain = d.domain;
+            return m
+        });
+        
+    }).join('g').classed('outlier', true);
+
+    outliers.append('rect').attr('width', 10).attr('height', 2);
+
+    outliers.attr('transform', (d, i) => {
+        let yScale = d3.scaleLinear().domain([d.scales.min, d.scales.max]).range([dimensions.height, 0]);
+       return `translate(0,${yScale(d.values.realVal)})`;
+    }).attr('fill', 'red').attr('opacity', 0.7)
 }
 
 function highlightNodesMouseover(d, i, node, pointGroups){
