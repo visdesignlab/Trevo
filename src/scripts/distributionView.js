@@ -1054,21 +1054,15 @@ function renderContinuousPredicted(continDist){
         .attr('height', dimensions.height)
         .attr('width', 11)
         .style('fill', '#fff');
-        
-//     contRect
-//     .attr('height', (d, i, n)=>{
-//         let y = d3.scaleLinear().domain([d.data[0].scales.min, d.data[0].scales.max]).range([dimensions.height, 0]);
-//         return y(d.data[0].normalRange[0]) - y(d.data[0].normalRange[1]);
-// }).attr('transform', (d, i)=> {
-//     let y = d3.scaleLinear().domain([d.data[0].scales.min, d.data[0].scales.max]).range([dimensions.height, 0]);
 
-//    if(d.data[0].scales.max >= d.data[0].normalRange[1]){
-//     return `translate(0, ${y(d.data[0].normalRange[1])})`;
-//    }else{
-//        return 0;
-//    }
-    
-// });
+    continDist.append('rect')
+        .attr('width', 10)
+        .attr('height', dimensions.height)
+        .style('fill', 'none')
+        .style('stroke', 'gray')
+        .attr('opacity', 0.3)
+        
+
 
 
     let rangeRect = continDist.selectAll('rect.range').data(d=> {

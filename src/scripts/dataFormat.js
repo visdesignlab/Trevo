@@ -103,6 +103,8 @@ function calculateDelta(pair, distance){
     let p1 = pair.p1.filter((f, i)=> i >= p1Index);
     let p2 = pair.p2.filter((f, i)=> i >= p2Index);
 
+   // console.log('pairs',p1, p2);
+
  
     let range = maxTimeKeeper[maxTimeKeeper.length - 1] - p1[0].combLength;
     let binCount = d3.max([p1.length, p2.length])
@@ -120,9 +122,15 @@ function calculateDelta(pair, distance){
         return d;
     });
 
+ 
+
+
+
     bins = bins.map((b, i)=> {
         if(b.one.length === 0){
             b.one = bins[i-1].one;
+        }else if(b.one.length > 1){
+            
         }
         if(b.two.length === 0){
             b.two = bins[i-1].two;
@@ -136,7 +144,17 @@ function calculateDelta(pair, distance){
                     .map(m=> {
                         let name = m.key;
                         let valdiffs = bins.map((b, i)=> {
-                            return Math.abs(b.one[0].attributes[name].values.realVal - b.two[0].attributes[name].values.realVal);
+                            let maxOneVal = [];
+                            let maxTwoVal = [];
+                          
+                            let test1 = d3.extent(b.one.map(m=> m.attributes[name].values.realVal));
+                            maxOneVal.push(test1[0] < 0 ? test1[0]: test1[1]);
+                    
+                            let test2 = d3.extent(b.two.map(m=> m.attributes[name].values.realVal));
+                            maxTwoVal.push(test2[0] < 0 ? test2[0]: test2[1]);
+                 
+                            return Math.abs(maxOneVal[0] - maxTwoVal[0]);
+                           // return Math.abs(b.one[0].attributes[name].values.realVal - b.two[0].attributes[name].values.realVal);
                         });
                        // m.value = d3.max(valdiffs) / distance;
                         m.value = d3.max(valdiffs) /// distance;
@@ -152,7 +170,8 @@ function calculateCloseness(pair, distance){
  let leaf2 = pair.p2.filter(p=> p.leaf === true)[0].attributes;
 
  let closeness = d3.entries(leaf1).filter(f=> f.value.type === 'continuous').map(m=> {
-     //m.value = Math.abs(m.value.values.realVal - leaf2[m.key].values.realVal) / distance;
+
+
      m.value = Math.abs(m.value.values.realVal - leaf2[m.key].values.realVal)// / distance;
      return m
  });
