@@ -126,6 +126,8 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
             .value(function(d) { return d.values[valueParam]; })  
             .domain(x.domain())  
             .thresholds(x.ticks(20)); 
+
+            console.log('the data in here', mapNorm)
   
             mapNorm.map((n, i, nodeArray)=> {
                 

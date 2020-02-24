@@ -177,6 +177,7 @@ export function calculateNewScales(attributes, keyList, colorKeeper){
             let min = d3.min(attData.flatMap(m=> m.values.lowerCI95));
             let mean = d3.mean(attData.flatMap(m=> m.values.realVal));
             let deviation = d3.deviation(attData.flatMap(m=> m.values.realVal));
+            let stRange = [(mean - (deviation * 2)), (mean + (deviation * 2))]
             
             return {
                 'field': d, 
@@ -184,6 +185,7 @@ export function calculateNewScales(attributes, keyList, colorKeeper){
                 'max': max, 
                 'min':  min,
                 'popDeviation':deviation,
+                'popNormalRange': stRange,
                 'yScale': d3.scaleLinear().range([0, 43]).domain([min, max]).clamp(true),
                 'satScale': d3.scaleLinear().range([0, .9]).domain([min, max]),
                 'colorScale': d3.scaleLinear().range([color, '#f23929']).domain([min, max]),
@@ -408,6 +410,7 @@ export function formatAttributeData(pathData, scales, filterArray){
             return path.map((m)=> {
                 let speciesLabel = path[path.length - 1].node;
                 if(m.attributes[key].type === 'continuous'){
+                
                     m.attributes[key].species = speciesLabel;
                     m.attributes[key].color = scales.filter(f=> f.field === key)[0].catColor;
                     m.attributes[key].move = m.combineLength;
@@ -419,6 +422,7 @@ export function formatAttributeData(pathData, scales, filterArray){
                     m.attributes[key].yScale = m.attributes[key].scales.yScale;
                     m.attributes[key].satScale = m.attributes[key].scales.satScale;
                     m.attributes[key].colorScale = m.attributes[key].scales.colorScale;
+                    m.attributes[key].normalRange = m.attributes[key].scales.popNormalRange;
                     if(m.leaf){
                         m.attributes[key].leaf = m.leaf;
                     }
