@@ -90,6 +90,28 @@ function getDistance(pair){
     return d3.sum(p1.map(m=> m.edgeLength)) + d3.sum(p2.map(m=> m.edgeLength));
 }
 
+function fillBins(b, pair, bins, num, index){
+
+    let earlyBins = bins.filter((f, j)=> j < index && f[num].length > 0);
+    let x1 = earlyBins[earlyBins.length - 1][num][0].combLength;
+
+    let laterBins = bins.filter((f, j)=> {
+        return (j > index) && (f[num].length > 0)});
+
+    let x2 = laterBins.length === 0 ? pair[pair.length - 1].combLength : laterBins[0][num][0].combLength;
+
+    let slope = function(y1, y2){
+        return ((y2-y1) / (x2-x1));
+    };
+
+    b[`slope_${num}`] = slope;
+    b[`y1_${num}`] = earlyBins[earlyBins.length - 1][num][0];
+    b[`y2_${num}`] = laterBins.length === 0 ? pair[pair.length - 1] : laterBins[0][num][0];
+
+    return b;
+
+}
+
 function calculateDelta(pair, distance){
    
     let verts = pair.p2.map(m=> m.node);
@@ -102,9 +124,6 @@ function calculateDelta(pair, distance){
   
     let p1 = pair.p1.filter((f, i)=> i >= p1Index);
     let p2 = pair.p2.filter((f, i)=> i >= p2Index);
-
-   // console.log('pairs',p1, p2);
-
  
     let range = maxTimeKeeper[maxTimeKeeper.length - 1] - p1[0].combLength;
     let binCount = d3.max([p1.length, p2.length])
@@ -122,22 +141,30 @@ function calculateDelta(pair, distance){
         return d;
     });
 
- 
-
-
-
     bins = bins.map((b, i)=> {
         if(b.one.length === 0){
-            b.one = bins[i-1].one;
-        }else if(b.one.length > 1){
-            
+           
+            b = fillBins(b, p1, bins, 'one', i);
+           
+          
         }
         if(b.two.length === 0){
-            b.two = bins[i-1].two;
+          
+            b = fillBins(b, p2, bins, 'two', i);
+
         }
 
         return b;
-    })
+    });
+
+    let slopeMagic = function(bin, num, trait){
+
+        let slope = bin[`slope_${num}`](bin[`y1_${num}`].attributes[trait].values.realVal, bin[`y2_${num}`].attributes[trait].values.realVal);
+        let x = (bin.top - bin.bottom);
+        let b = bin[`y1_${num}`].attributes[trait].values.realVal - (slope * bin[`y1_${num}`].combLength);
+
+        return (slope * x) + b;
+    }
     
     let attributes = d3.entries(p1[0].attributes)
                     .filter(f => f.value.type === 'continuous')
@@ -146,15 +173,44 @@ function calculateDelta(pair, distance){
                         let valdiffs = bins.map((b, i)=> {
                             let maxOneVal = [];
                             let maxTwoVal = [];
-                          
-                            let test1 = d3.extent(b.one.map(m=> m.attributes[name].values.realVal));
-                            maxOneVal.push(test1[0] < 0 ? test1[0]: test1[1]);
+
+                            if(b.slope_one && !b.slope_two){
+
+                                maxOneVal.push(slopeMagic(b, 'one', name));
+
+                                let test2 = d3.extent(b.two.map(m=> m.attributes[name].values.realVal));
+                                maxTwoVal.push(test2[0] < 0 ? test2[0]: test2[1]);
+
+                            }else if(b.slope_two && !b.slope_one){
+
+                                maxTwoVal.push(slopeMagic(b, 'two', name));
+
+                                let test1 = d3.extent(b.one.map(m=> m.attributes[name].values.realVal));
+                                maxOneVal.push(test1[0] < 0 ? test1[0]: test1[1]);
+
+                            }else if(b.slope_one && b.slope_two){
+
+                                maxOneVal.push(slopeMagic(b, 'one', name));
+                                maxTwoVal.push(slopeMagic(b, 'two', name));
+
+                            }else{
+
+                                let test1 = d3.extent(b.one.map(m=> m.attributes[name].values.realVal));
+                                maxOneVal.push(test1[0] < 0 ? test1[0]: test1[1]);
+                        
+                                let test2 = d3.extent(b.two.map(m=> m.attributes[name].values.realVal));
+                                maxTwoVal.push(test2[0] < 0 ? test2[0]: test2[1]);
+                            }
+                            
+
+                            // let test1 = d3.extent(b.one.map(m=> m.attributes[name].values.realVal));
+                            // maxOneVal.push(test1[0] < 0 ? test1[0]: test1[1]);
                     
-                            let test2 = d3.extent(b.two.map(m=> m.attributes[name].values.realVal));
-                            maxTwoVal.push(test2[0] < 0 ? test2[0]: test2[1]);
+                            // let test2 = d3.extent(b.two.map(m=> m.attributes[name].values.realVal));
+                            // maxTwoVal.push(test2[0] < 0 ? test2[0]: test2[1]);
                  
                             return Math.abs(maxOneVal[0] - maxTwoVal[0]);
-                           // return Math.abs(b.one[0].attributes[name].values.realVal - b.two[0].attributes[name].values.realVal);
+                          
                         });
                        // m.value = d3.max(valdiffs) / distance;
                         m.value = d3.max(valdiffs) /// distance;
