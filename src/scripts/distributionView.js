@@ -45,8 +45,6 @@ function getNormBins(data, branchCount){
 
     let count = d3.max(internalNodes.map(int=> int.length)) < branchCount ? (d3.max(internalNodes.map(int=> int.length)) - 1) : branchCount;
 
-  
-
     let bins = new Array(count)
     .fill().map((m, i)=> {
         let step = max / count;
@@ -54,7 +52,6 @@ function getNormBins(data, branchCount){
         let top = ((i + 1)* step);
         return {'base': base, 'top': top, 'binI': i , 'step':step}
     });
-
 
     return bins.map((n, i)=> {
        
@@ -72,7 +69,6 @@ function getNormBins(data, branchCount){
         return n;
     });
 }
-
 
 export function groupDistributions(pathData, mainDiv, groupAttr){
 
@@ -131,7 +127,7 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
             return {'data': bin.fData, 'range': [bin.base, bin.top], 'index': bin.binI, 'key': key };
         });
 
-        console.log('mapnorm',mapNorm)
+     
        
         let leafAttr = leafNodes.map(m=> m.attributes[key]);
         let leafData = {'data': leafAttr};
@@ -141,7 +137,7 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
             let max = valueParam === 'realVal' ? scale.max : Math.log(scale.max);
             let x = d3.scaleLinear().domain([min, max]).range([0, dimensions.height]);
 
-          //  let x = d3.scaleLinear().domain(scale.popNormalRange).range([0, dimensions.height]);
+    
     
             let histogram = d3.histogram()
             .value(function(d) { return d.values[valueParam]; })  
@@ -266,7 +262,7 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
         }
     });
 
-    console.log('sortedbins',sortedBins[0].branches.length)
+
 
     sortedBins.group = groupLabel;
     sortedBins.branchCount = sortedBins[0].branches.length;

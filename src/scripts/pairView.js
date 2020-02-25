@@ -17,10 +17,41 @@ const macroModes = [
 ];
 
 let traitVal = null;
+let topPairsKeeper = [];
+
+function sortandRedraw(field){
+
+  let top = topPairsKeeper[topPairsKeeper.length - 1];
+
+  if(field === 'Sort by Top Frequency'){
+
+    let otherList = top.others.sort((a, b)=> b.value.length - a.value.length).map(m=> m.key);
+
+    let indexed = top.topPairs.map((m, i)=>{
+      m.index = otherList.indexOf(m.key) > -1 ? otherList.indexOf(m.key) : (100 + i);
+      return m;
+    });
+
+    let sorted = indexed.sort((a, b)=> a.index - b.index);
+    let pairGroups = drawSorted(sorted,  d3.select('.attr-drop.dropdown').select('button').attr('value'));
+    discreteTraitDraw(pairGroups, traitVal);
+    rankGrid(top.others.sort((a, b)=> b.value.length - a.value.length));
+
+  }else{
+    let sorted = top.topPairs.sort((a, b) => b.totalRank - a.totalRank);
+    let pairGroups = drawSorted(sorted,  d3.select('.attr-drop.dropdown').select('button').attr('value'));
+    discreteTraitDraw(pairGroups, traitVal);
+    rankGrid(top.others.sort((a, b)=> b.value.length - a.value.length));
+  }
+
+}
 
 export function pairUpdateRender(pairs, attr, weights){
 
   let mappedPairs = updateRanking(pairs, attr, weights);
+
+  topPairsKeeper.push(mappedPairs);
+ 
   let pairPaths = drawSorted(mappedPairs.topPairs, d3.select('.attr-drop.dropdown').select('button').attr('value'));
   discreteTraitDraw(pairPaths, traitVal);
   topPairSearch(mappedPairs.topPairs, mappedPairs.pairs, d3.select('.attr-drop.dropdown').select('button').attr('value'), weights);
@@ -187,7 +218,20 @@ export function rankingControl(data){
           d3.select('#discrete-trait-mark').classed('show', false);
 
           discreteTraitDraw(d3.selectAll('.pair-wrap'), d.field)
-       })
+       });
+      
+      let sortDropOp = [{field:'Sort by Rank'}, {field:'Sort by Top Frequency'}];
+      let sortOps = dropDown(rankDiv, sortDropOp, sortDropOp[0].field, 'sort-pair-drop');
+      sortOps.on('click', (d)=> {
+         
+        d3.select('.sort-pair-drop').select('button').attr('value', d.field);
+        d3.select('.sort-pair-drop.dropdown').select('button').text(`${d.field}`);
+        d3.select('#sort-pair-drop').classed('show', false);
+
+        sortandRedraw(d.field);
+
+        //discreteTraitDraw(d3.selectAll('.pair-wrap'), d.field)
+     });
 
        
 }
@@ -304,7 +348,7 @@ function drawSorted(pairs, field){
   pairWraps.append('rect')
     .attr('width', (d, i)=> {
     return width - xScale(d.common.combLength);
-  })
+    })
     .attr('height', height)
     .attr('x', d=> xScale(d.common.combLength))
     .attr('stroke-width', 1).attr('stroke', 'black')
@@ -521,6 +565,7 @@ function drawSorted(pairs, field){
         .classed('hover-not', false)
         .classed('two', false)
         .classed('one', false);
+
         let treeLinks  = d3.select('#sidebar').selectAll('.link')
         .classed('hover', false)
         .classed('hover-neighbor', false)
@@ -675,6 +720,8 @@ function topPairSearch(topPairs, allPairs, field, weights){
   });
 
   //rankHistogram(matchKeeper);
+  
+  topPairsKeeper[topPairsKeeper.length - 1].others = matchKeeper;
   rankGrid(matchKeeper);
 
   // matchKeeper.map((m, i)=> {
