@@ -203,11 +203,6 @@ function calculateDelta(pair, distance){
                             }
                             
 
-                            // let test1 = d3.extent(b.one.map(m=> m.attributes[name].values.realVal));
-                            // maxOneVal.push(test1[0] < 0 ? test1[0]: test1[1]);
-                    
-                            // let test2 = d3.extent(b.two.map(m=> m.attributes[name].values.realVal));
-                            // maxTwoVal.push(test2[0] < 0 ? test2[0]: test2[1]);
                  
                             return Math.abs(maxOneVal[0] - maxTwoVal[0]);
                           

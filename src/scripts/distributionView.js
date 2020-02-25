@@ -37,6 +37,42 @@ export function deviationTraitScale(deviation, pixelRange){
     return scale;
 }
 
+function getNormBins(data, branchCount){
+
+    let max = maxTimeKeeper[maxTimeKeeper.length - 1];
+
+    let internalNodes = data.map(path => path.filter(node=> (node.leaf != true) && (node.root != true)));
+
+    let count = d3.max(internalNodes.map(int=> int.length)) < branchCount ? (d3.max(internalNodes.map(int=> int.length)) - 1) : branchCount;
+
+  
+
+    let bins = new Array(count)
+    .fill().map((m, i)=> {
+        let step = max / count;
+        let base = (i * step);
+        let top = ((i + 1)* step);
+        return {'base': base, 'top': top, 'binI': i , 'step':step}
+    });
+
+
+    return bins.map((n, i)=> {
+       
+        let edges = internalNodes.flatMap(path => path.filter(node=> {
+            return node.combLength > n.base && node.combLength <= n.top;
+        } ));
+
+        let nodeSet = [...new Set(edges.map(e=> e.node))].map(m=> edges.filter(f=> f.node === m)[0]);
+
+        n.data = nodeSet.map(m=> {
+            m.range = [...new Set(edges.map(e=> e.node))].length;
+            return m;
+        });
+
+        return n;
+    });
+}
+
 
 export function groupDistributions(pathData, mainDiv, groupAttr){
 
@@ -66,40 +102,21 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
     let newNormed = [...pathData];
     let keysToHide = attrHide.length > 0 ? scales.filter(f=> attrHide.indexOf(f.field) === -1).map(m=> m.field) : null;
 
-    formatAttributeData(newNormed, scales, keysToHide);
+    let formatedNormed = formatAttributeData(newNormed, scales, keysToHide);
   
-    let max = maxTimeKeeper[maxTimeKeeper.length - 1];
+    let normBins = getNormBins(newNormed, branchCount);
 
-    let normBins = new Array(branchCount)
-        .fill().map((m, i)=> {
-            let step = max / branchCount;
-            let base = (i * step);
-            let top = ((i + 1)* step);
-            return {'base': base, 'top': top, 'binI': i , 'step':step}
-        });
-
-    let internalNodes = newNormed.map(path => path.filter(node=> (node.leaf != true) && (node.root != true)));
+    
     let leafNodes = newNormed.flatMap(path => path.filter(node=> node.leaf === true));
     let rootNodes = newNormed.flatMap(path => path.filter(node=> node.root === true));
 
-    normBins.map((n, i)=> {
-       
-        let edges = internalNodes.flatMap(path => path.filter(node=> {
-            return node.combLength > n.base && node.combLength <= n.top;
-        } ));
-
-        let nodeSet = [...new Set(edges.map(e=> e.node))].map(m=> edges.filter(f=> f.node === m)[0]);
-
-        n.data = nodeSet.map(m=> {
-            m.range = [...new Set(edges.map(e=> e.node))].length;
-            return m;
-        });
-
-        return n;
-    });
+    
 
     let sortedBins = keys.map(key=> {
+
         let scale = scales.filter(f=> f.field === key)[0];
+
+        
     
         let mapNorm = normBins.map(bin => {
             if(bin.data.length > 0){
@@ -113,6 +130,8 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
             }
             return {'data': bin.fData, 'range': [bin.base, bin.top], 'index': bin.binI, 'key': key };
         });
+
+        console.log('mapnorm',mapNorm)
        
         let leafAttr = leafNodes.map(m=> m.attributes[key]);
         let leafData = {'data': leafAttr};
@@ -128,7 +147,7 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
             .value(function(d) { return d.values[valueParam]; })  
             .domain(x.domain())  
             .thresholds(x.ticks(20)); 
-  
+
             mapNorm.map((n, i, nodeArray)=> {
 
                 n.outliers = n.data.filter(f=> {
@@ -142,7 +161,8 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
                 n.domain = [max, min];
                 n.bins.count = branchCount;
                 n.bins.groupLabel = groupLabel;
-                n.bins.binNormal = n.data[0].normalRange;
+              
+                n.bins.binNormal = n.data[0] ? n.data[0].normalRange : [];
                 n.bins.outlierRange = n.domain;
 
                 if(d3.mean(n.bins.map(m=> m.length)) === 0){
@@ -246,8 +266,10 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
         }
     });
 
+    console.log('sortedbins',sortedBins[0].branches.length)
+
     sortedBins.group = groupLabel;
-    sortedBins.branchCount = branchCount;
+    sortedBins.branchCount = sortedBins[0].branches.length;
     sortedBins.keys = keys;
     return sortedBins;
 }
