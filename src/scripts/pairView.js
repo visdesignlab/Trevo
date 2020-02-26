@@ -302,7 +302,7 @@ export function updateRanking(pairs, field, weights){
 
  
   let preset = d3.select('.dropdown.preset').select('button').text()
-  let penalty = preset === `Convergence (Shallow)` ? -1 : 1;
+  let penalty = preset.includes(`(Shallow)`) ? -1 : 1;
 
 
     let weightScales = getWeightScales(pairs, field);
