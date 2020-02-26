@@ -1,6 +1,8 @@
 import * as d3 from "d3";
 import { renderDistStructure, binGroups, continuousHistogram, mirrorlineGen } from './distributionView';
 import { getLatestData } from "./filterComponent";
+import { addClade, cladeKeeper } from "./cladeMaker";
+import { updateCladeDrop } from "./toolbarComponent";
 
 
 export let brushArray = [];
@@ -197,9 +199,7 @@ function addBadge(brushOb, brushedDomain, dist, otherBins, descendBins, treenode
         tool.select('button').on('click', ()=> {
 
             tool.classed('hidden', true);
-           // species.select();
-            // document.execCommand('copy');
-            // alert("Copied the text: " + species);
+        
             let textIn = d3.select('#copy-input');
             textIn.select('#copy-input-text').attr('value', species)
 
@@ -209,7 +209,7 @@ function addBadge(brushOb, brushedDomain, dist, otherBins, descendBins, treenode
             .style("top", (d3.event.pageY - 28) + "px")
 
             textIn.select('button').on('click', ()=> {
-                textIn.classed('hidden', true)
+                textIn.classed('hidden', true);
                 let copyText = document.getElementById("copy-input-text");
                 copyText.select();
                 copyText.setSelectionRange(0, 99999); /*For mobile devices*/
@@ -218,7 +218,22 @@ function addBadge(brushOb, brushedDomain, dist, otherBins, descendBins, treenode
                
                 alert("Copied the text: " + copyText.value);
 
-            })
+            });
+
+            textIn.select('#make-clade-copy').on('click', ()=> {
+               
+                textIn.classed('hidden', true);
+                
+                let name = `Clade-Brush-${species.length}`;
+               
+                addClade(name, getLatestData().filter(f=> species.indexOf(f[f.length - 1].node) > -1), []);
+
+                //growSidebarRenderTree(null);
+                let ul = d3.select('div#clade-show').selectAll('ul');
+                
+           
+                updateCladeDrop(ul, cladeKeeper[cladeKeeper.length - 1]);
+            });
 
 
            
