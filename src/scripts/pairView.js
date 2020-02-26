@@ -133,6 +133,7 @@ export function rankingControl(data){
       .attr("xlink:href", `./public/${macroModes[1].pict}`);
 
     let dropOptions = dropDown(dropDiv, macroModes, macroModes[1].field, 'preset');
+    dropOptions.attr('value', macroModes[1].field);
    
     let defaultW = macroModes[1].value;
     let sliderWidth = 110;
@@ -199,6 +200,7 @@ export function rankingControl(data){
         })
    
         d3.select('.dropdown.preset').select('button').text(d.field);
+        dropOptions.attr('value', d.field);
        
     
         pairUpdateRender(pairPaths(data), d3.select('.attr-drop.dropdown').select('button').attr('value'), defaultW);
@@ -298,6 +300,11 @@ function getWeightScales(pairs, field){
 }
 export function updateRanking(pairs, field, weights){
 
+ 
+  let preset = d3.select('.dropdown.preset').select('button').text()
+  let penalty = preset === `Convergence (Shallow)` ? -1 : 1;
+
+
     let weightScales = getWeightScales(pairs, field);
 
     let pickedPairs = [...pairs].map(p=> {
@@ -305,10 +312,15 @@ export function updateRanking(pairs, field, weights){
         
         newP.delta = p.deltas.filter(d=> d.key === field)[0];
         newP.closeness = p.closeAll.filter(d=> d.key === field)[0];
-        newP.deltaRank = weightScales.delta(newP.delta.value);
+        let deltaFix = newP.delta.value > 11 ? 0 : weightScales.delta(newP.delta.value);
+        newP.deltaRank = deltaFix;//weightScales.delta(newP.delta.value);
         newP.closenessRank = weightScales.close(newP.closeness.value);
         newP.distanceRank = weightScales.distance(p.distance);
-        newP.totalRank = (weights[0] * newP.distanceRank) + (weights[1] * newP.deltaRank) + (weights[2] * newP.closenessRank);
+        let totalRank = (weights[0] * newP.distanceRank) + (weights[1] * newP.deltaRank) + (weights[2] * newP.closenessRank);
+        newP.totalRank = newP.delta.value < newP.closeness.value ? (totalRank * penalty) : totalRank;
+        if(penalty === 0){
+          console.log('penalty total rank', newP.totalRank)
+        }
         return newP;
     });
 

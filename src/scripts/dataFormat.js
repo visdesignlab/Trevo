@@ -104,6 +104,9 @@ function fillBins(b, pair, bins, num, index){
         return ((y2-y1) / (x2-x1));
     };
 
+
+    b.lateDivergence = x1 >= (maxTimeKeeper[maxTimeKeeper.length - 1] * .6) ? true : false;
+
     b[`slope_${num}`] = slope;
     b[`y1_${num}`] = earlyBins[earlyBins.length - 1][num][0];
     b[`y2_${num}`] = laterBins.length === 0 ? pair[pair.length - 1] : laterBins[0][num][0];
@@ -176,22 +179,31 @@ function calculateDelta(pair, distance){
 
                             if(b.slope_one && !b.slope_two){
 
-                                maxOneVal.push(slopeMagic(b, 'one', name));
+                                let oneVal = b.lateDivergence === true ? b.y1_one.attributes[name].values.realVal : slopeMagic(b, 'one', name);
+
+                                //maxOneVal.push(slopeMagic(b, 'one', name));
+                                maxOneVal.push(oneVal);
 
                                 let test2 = d3.extent(b.two.map(m=> m.attributes[name].values.realVal));
                                 maxTwoVal.push(test2[0] < 0 ? test2[0]: test2[1]);
 
                             }else if(b.slope_two && !b.slope_one){
 
-                                maxTwoVal.push(slopeMagic(b, 'two', name));
+                                let twoVal = b.lateDivergence === true ? b.y1_two.attributes[name].values.realVal : slopeMagic(b, 'two', name);
+                                maxTwoVal.push(twoVal);
 
                                 let test1 = d3.extent(b.one.map(m=> m.attributes[name].values.realVal));
                                 maxOneVal.push(test1[0] < 0 ? test1[0]: test1[1]);
 
                             }else if(b.slope_one && b.slope_two){
 
-                                maxOneVal.push(slopeMagic(b, 'one', name));
-                                maxTwoVal.push(slopeMagic(b, 'two', name));
+                                // maxOneVal.push(slopeMagic(b, 'one', name));
+                                // maxTwoVal.push(slopeMagic(b, 'two', name));
+                                let oneVal = b.lateDivergence === true ? b.y1_one.attributes[name].values.realVal : slopeMagic(b, 'one', name);
+                                maxOneVal.push(oneVal);
+
+                                let twoVal = b.lateDivergence === true ? b.y1_two.attributes[name].values.realVal : slopeMagic(b, 'two', name);
+                                maxTwoVal.push(twoVal);
 
                             }else{
 
