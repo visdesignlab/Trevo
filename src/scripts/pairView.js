@@ -309,18 +309,16 @@ export function updateRanking(pairs, field, weights){
 
     let pickedPairs = [...pairs].map(p=> {
         let newP = Object.assign({}, p);
-        
+
         newP.delta = p.deltas.filter(d=> d.key === field)[0];
         newP.closeness = p.closeAll.filter(d=> d.key === field)[0];
         let deltaFix = newP.delta.value > 11 ? 0 : weightScales.delta(newP.delta.value);
         newP.deltaRank = deltaFix;//weightScales.delta(newP.delta.value);
         newP.closenessRank = weightScales.close(newP.closeness.value);
-        newP.distanceRank = weightScales.distance(p.distance);
+        newP.distanceRank = (penalty === -1 && p.lateDivergence) ? -100 : weightScales.distance(p.distance);
         let totalRank = (weights[0] * newP.distanceRank) + (weights[1] * newP.deltaRank) + (weights[2] * newP.closenessRank);
         newP.totalRank = newP.delta.value < newP.closeness.value ? (totalRank * penalty) : totalRank;
-        if(penalty === 0){
-          console.log('penalty total rank', newP.totalRank)
-        }
+      
         return newP;
     });
 

@@ -54,7 +54,8 @@ function generatePairs(pathData){
             let key = [m.p1[m.p1.length - 1].node, m.p2[m.p2.length - 1].node].sort();
             m.key = key.join(',');
             let distance = getDistance(m);
-            m.distance = distance;
+            m.distance = distance.distance;
+            m.lateDivergence = distance.shallowFlag;
             m.deltas = calculateDelta(m, distance);
             m.closeAll = calculateCloseness(m, distance);
            
@@ -87,7 +88,9 @@ function getDistance(pair){
 
     pair.common = pair.p1[p1Index]
 
-    return d3.sum(p1.map(m=> m.edgeLength)) + d3.sum(p2.map(m=> m.edgeLength));
+    let distanceFlag = pair.common.combLength > (maxTimeKeeper[maxTimeKeeper.length - 1] / 2) ? true : false;
+
+    return {distance: d3.sum(p1.map(m=> m.edgeLength)) + d3.sum(p2.map(m=> m.edgeLength)), shallowFlag: distanceFlag};
 }
 
 function fillBins(b, pair, bins, num, index){
@@ -105,7 +108,7 @@ function fillBins(b, pair, bins, num, index){
     };
 
 
-    b.lateDivergence = x1 >= (maxTimeKeeper[maxTimeKeeper.length - 1] * .6) ? true : false;
+    b.lateDivergence = earlyBins[0][num][0].combLength >= (maxTimeKeeper[maxTimeKeeper.length - 1] * .6) ? true : false;
 
     b[`slope_${num}`] = slope;
     b[`y1_${num}`] = earlyBins[earlyBins.length - 1][num][0];
