@@ -34,13 +34,13 @@ function sortandRedraw(field){
 
     let sorted = indexed.sort((a, b)=> a.index - b.index);
     let pairGroups = drawSorted(sorted,  d3.select('.attr-drop.dropdown').select('button').attr('value'));
-    discreteTraitDraw(pairGroups, traitVal);
+    if(traitVal != null) discreteTraitDraw(pairGroups, traitVal);
     rankGrid(top.others.sort((a, b)=> b.value.length - a.value.length));
 
   }else{
     let sorted = top.topPairs.sort((a, b) => b.totalRank - a.totalRank);
     let pairGroups = drawSorted(sorted,  d3.select('.attr-drop.dropdown').select('button').attr('value'));
-    discreteTraitDraw(pairGroups, traitVal);
+    if(traitVal != null) discreteTraitDraw(pairGroups, traitVal);
     rankGrid(top.others.sort((a, b)=> b.value.length - a.value.length));
   }
 
@@ -53,7 +53,7 @@ export function pairUpdateRender(pairs, attr, weights){
   topPairsKeeper.push(mappedPairs);
  
   let pairPaths = drawSorted(mappedPairs.topPairs, d3.select('.attr-drop.dropdown').select('button').attr('value'));
-  discreteTraitDraw(pairPaths, traitVal);
+  if(traitVal != null) discreteTraitDraw(pairPaths, traitVal);
   topPairSearch(mappedPairs.topPairs, mappedPairs.pairs, d3.select('.attr-drop.dropdown').select('button').attr('value'), weights);
   
 }
@@ -211,16 +211,21 @@ export function rankingControl(data){
 
      
        let disMarkers = getScales().filter(f=> f.type === 'discrete');
-       traitVal = disMarkers[0].field;
-       let disMarkOp = dropDown(rankDiv, disMarkers, disMarkers[0].field, 'discrete-trait-mark');
-       disMarkOp.on('click', (d)=> {
+       traitVal = disMarkers.length > 0 ? disMarkers[0].field : null;
+       if(traitVal != null){
          
-          d3.select('.discrete-trait-mark').select('button').attr('value', d.field);
-          d3.select('.discrete-trait-mark.dropdown').select('button').text(`Trait: ${d.field}`);
-          d3.select('#discrete-trait-mark').classed('show', false);
+        let disMarkOp = dropDown(rankDiv, disMarkers, disMarkers[0].field, 'discrete-trait-mark');
+        disMarkOp.on('click', (d)=> {
+          
+           d3.select('.discrete-trait-mark').select('button').attr('value', d.field);
+           d3.select('.discrete-trait-mark.dropdown').select('button').text(`Trait: ${d.field}`);
+           d3.select('#discrete-trait-mark').classed('show', false);
+ 
+           discreteTraitDraw(d3.selectAll('.pair-wrap'), d.field)
+        });
 
-          discreteTraitDraw(d3.selectAll('.pair-wrap'), d.field)
-       });
+       }
+  
       
       let sortDropOp = [{field:'Sort by Rank'}, {field:'Sort by Top Frequency'}];
       let sortOps = dropDown(rankDiv, sortDropOp, sortDropOp[0].field, 'sort-pair-drop');

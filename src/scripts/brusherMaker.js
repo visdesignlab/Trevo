@@ -229,8 +229,7 @@ function addBadge(brushOb, brushedDomain, dist, otherBins, descendBins, treenode
                 addClade(name, getLatestData().filter(f=> species.indexOf(f[f.length - 1].node) > -1), []);
 
                 //growSidebarRenderTree(null);
-                let ul = d3.select('div#clade-show').selectAll('ul');
-                
+                let ul = d3.select('div#clade-show').selectAll
            
                 updateCladeDrop(ul, cladeKeeper[cladeKeeper.length - 1]);
             });
