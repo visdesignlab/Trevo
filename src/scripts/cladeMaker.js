@@ -52,7 +52,6 @@ function highlightGroups(group, className, range, param){
         return chosen;
     }
          
-
 }
 
 function defineTraitClade(trait){

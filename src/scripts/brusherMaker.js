@@ -58,8 +58,6 @@ export function addBrushables(bins, continDist){
 
         var zero = d3.format(".3n");
        
-      
-
         let filterData = d.data.filter(f=> f.values.realVal >= brushOb.scale.invert(endPos) && f.values.realVal <= brushOb.scale.invert(startPos));
         let test = continuousHistogram(filterData);
 
@@ -184,12 +182,13 @@ function addBadge(brushOb, brushedDomain, dist, otherBins, descendBins, treenode
         return nodes.length > 0;
     }).flatMap(s=> s[s.length - 1].node);
 
-
-
-
     badge.on('click', ()=> {
 
+        console.log(MouseEvent, EventSource, EventTarget)
+
+
         let tool = d3.select('#copy-tooltip');
+
        
         tool.classed('hidden') ? tool.classed('hidden', false) : tool.classed('hidden', true);
 
@@ -253,14 +252,10 @@ function addBadge(brushOb, brushedDomain, dist, otherBins, descendBins, treenode
 
     })
 
-    
-
-  
-
     let xOut = badge.append('i').classed('close fas fa-times', true).style('padding-left', '10px');
     
     xOut.on('click', (d, i, n)=> {
-        
+        event.stopPropagation();
         removeBrush(d.brush);
         d3.select(n[i].parentNode).remove();
         dist.remove();
