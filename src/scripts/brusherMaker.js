@@ -184,12 +184,8 @@ function addBadge(brushOb, brushedDomain, dist, otherBins, descendBins, treenode
 
     badge.on('click', ()=> {
 
-        console.log(MouseEvent, EventSource, EventTarget)
-
-
         let tool = d3.select('#copy-tooltip');
 
-       
         tool.classed('hidden') ? tool.classed('hidden', false) : tool.classed('hidden', true);
 
         tool.style("left", (d3.event.pageX) + "px")
@@ -222,14 +218,11 @@ function addBadge(brushOb, brushedDomain, dist, otherBins, descendBins, treenode
             textIn.select('#make-clade-copy').on('click', ()=> {
                
                 textIn.classed('hidden', true);
-                
                 let name = `Group-Brush-${species.length}`;
-               
                 addClade(name, getLatestData().filter(f=> species.indexOf(f[f.length - 1].node) > -1), []);
 
                 //growSidebarRenderTree(null);
-                let ul = d3.select('div#clade-show').selectAll
-           
+                let ul = d3.select('div#clade-show').selectAll('ul');
                 updateCladeDrop(ul, cladeKeeper[cladeKeeper.length - 1]);
             });
 
@@ -237,18 +230,6 @@ function addBadge(brushOb, brushedDomain, dist, otherBins, descendBins, treenode
            
 
         })
-
-        // var copyText = document.getElementById("myInput");
-
-        // /* Select the text field */
-        // copyText.select();
-        // copyText.setSelectionRange(0, 99999); /*For mobile devices*/
-      
-        // /* Copy the text inside the text field */
-        // document.execCommand("copy");
-      
-        // /* Alert the copied text */
-        // alert("Copied the text: " + copyText.value);
 
     })
 
