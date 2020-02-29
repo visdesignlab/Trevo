@@ -15,7 +15,9 @@ export const cladeKeeper = [[]];
 
 const colorKeep = ['#58D68D', '#F39C12', '#EC7063'];
 
-function highlightGroups(group, className, range){
+function highlightGroups(group, className, range, param){
+
+    let attr = param && param != null ? param : 'field';
 
     let data = getLatestData();
     if(group.type === 'continuous'){
@@ -39,7 +41,7 @@ function highlightGroups(group, className, range){
 
         let chosen = data.filter(f=> {
             let leaf = f[f.length - 1];
-            return group.field.includes(leaf.attributes[group.trait].winState);
+            return group[attr].includes(leaf.attributes[group.field].winState);
         });
     
         let leaf = d3.select('#sidebar').select('.tree-svg').selectAll('.node--leaf');
@@ -64,16 +66,16 @@ function defineTraitClade(trait){
             return m;
         });
 
-        let dropOp = dropDown(d3.select('#sidebar').select('.button-wrap'), options, 'Define by Trait', 'clade-by-trait');
+        let dropOp = dropDown(d3.select('#sidebar').select('.button-wrap'), options, 'Define by Trait', 'clade-by-trait', 'category');
         dropOp.on('mouseover', (d)=> {
-           highlightGroups(d, 'clade-define-hover', null);
+           highlightGroups(d, 'clade-define-hover', null, 'category');
         }).on('mouseout', ()=> {
             d3.selectAll('.clade-define-hover').classed('clade-define-hover', false);
         });
            
         dropOp.on('click', (d)=> {
 
-            let chosen = highlightGroups(d, 'clade-define', null);
+            let chosen = highlightGroups(d, 'clade-define', null, 'category');
 
             d3.select('#clade-by-trait').classed('show', false);
 
