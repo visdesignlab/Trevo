@@ -60,7 +60,7 @@ function defineTraitClade(trait){
         
         let options = [...trait.scales].map(m => {
             m.trait = m.field;
-            m.field = m.scaleName;
+            m.category = m.scaleName;
             return m;
         });
 
@@ -82,13 +82,13 @@ function defineTraitClade(trait){
             
             let textInput = wrap.append('input').attr('type', 'text')
             .classed('form-control', true)
-            .attr('placeholder', `Group-${d.field}`);
+            .attr('placeholder', `Group-${d.category}`);
 
             let button = wrap.append('div').classed('input-group-append', true).append('button').attr('type', 'button').classed('btn btn-outline-secondary', true);
             button.text('Add Group');
             
             button.on('click', ()=> {
-                let name = textInput.node().value != "" ? textInput.node().value : `Group-${d.field}`;
+                let name = textInput.node().value != "" ? textInput.node().value : `Group-${d.trait}`;
                
                 addClade(name, chosen, []);
                 growSidebarRenderTree(null);
@@ -106,7 +106,7 @@ function defineTraitClade(trait){
         
         let textInput = wrap.append('input').attr('type', 'text')
         .classed('form-control', true)
-        .attr('placeholder', `Group-${trait.field}`);
+        .attr('placeholder', `Group-${trait.category}`);
 
         let button = wrap.append('div').classed('input-group-append', true).append('button').attr('type', 'button').classed('btn btn-outline-secondary', true);
         button.text('Add Group');
@@ -114,13 +114,13 @@ function defineTraitClade(trait){
         button.on('click', ()=> {
 
             let range = sliderThing.value;
-            let name = textInput.node().value != "" ? textInput.node().value : `Group-${trait.field}`;
+            let name = textInput.node().value != "" ? textInput.node().value : `Group-${trait.category}`;
 
             let data = getLatestData();
 
             let chosen = data.filter(f=> {
                 let leaf = f[f.length - 1];
-                return (leaf.attributes[trait.field].values.realVal >= range[0]) && (leaf.attributes[trait.field].values.realVal <= range[1]);
+                return (leaf.attributes[trait.field].values.realVal >= range[0]) && (leaf.attributes[trait.category].values.realVal <= range[1]);
             });
 
             addClade(name, chosen, []);
@@ -128,8 +128,6 @@ function defineTraitClade(trait){
             let ul = d3.select('div#clade-show').selectAll('ul');
             updateCladeDrop(ul, cladeKeeper[cladeKeeper.length - 1]);
         });
-
-        
     }
 }
 
