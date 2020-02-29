@@ -224,7 +224,7 @@ function addBadge(brushOb, brushedDomain, dist, otherBins, descendBins, treenode
                
                 textIn.classed('hidden', true);
                 
-                let name = `Clade-Brush-${species.length}`;
+                let name = `Group-Brush-${species.length}`;
                
                 addClade(name, getLatestData().filter(f=> species.indexOf(f[f.length - 1].node) > -1), []);
 

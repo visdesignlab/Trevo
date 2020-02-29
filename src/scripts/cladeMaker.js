@@ -82,13 +82,13 @@ function defineTraitClade(trait){
             
             let textInput = wrap.append('input').attr('type', 'text')
             .classed('form-control', true)
-            .attr('placeholder', `Clade-${d.field}`);
+            .attr('placeholder', `Group-${d.field}`);
 
             let button = wrap.append('div').classed('input-group-append', true).append('button').attr('type', 'button').classed('btn btn-outline-secondary', true);
-            button.text('Add Clade');
+            button.text('Add Group');
             
             button.on('click', ()=> {
-                let name = textInput.node().value != "" ? textInput.node().value : `Clade-${d.field}`;
+                let name = textInput.node().value != "" ? textInput.node().value : `Group-${d.field}`;
                
                 addClade(name, chosen, []);
                 growSidebarRenderTree(null);
@@ -106,15 +106,15 @@ function defineTraitClade(trait){
         
         let textInput = wrap.append('input').attr('type', 'text')
         .classed('form-control', true)
-        .attr('placeholder', `Clade-${trait.field}`);
+        .attr('placeholder', `Group-${trait.field}`);
 
         let button = wrap.append('div').classed('input-group-append', true).append('button').attr('type', 'button').classed('btn btn-outline-secondary', true);
-        button.text('Add Clade');
+        button.text('Add Group');
         
         button.on('click', ()=> {
 
             let range = sliderThing.value;
-            let name = textInput.node().value != "" ? textInput.node().value : `Clade-${trait.field}`;
+            let name = textInput.node().value != "" ? textInput.node().value : `Group-${trait.field}`;
 
             let data = getLatestData();
 
@@ -267,10 +267,10 @@ export function growSidebarRenderTree(attrDraw){
             .attr('placeholder', 'Clade Name');
 
             let button = wrap.append('div').classed('input-group-append', true).append('button').attr('type', 'button').classed('btn btn-outline-secondary', true);
-            button.text('Add Clade');
+            button.text('Add Group');
             
             button.on('click', ()=> {
-                let name = textInput.node().value != "" ? textInput.node().value : `Clade-${cladeKeeper[cladeKeeper.length - 1].length}`;
+                let name = textInput.node().value != "" ? textInput.node().value : `Group-${cladeKeeper[cladeKeeper.length - 1].length}`;
                 addClade(name, paths, positionHolder);
                 growSidebarRenderTree(null);
                 let ul = d3.select('div#clade-show').selectAll('ul');
@@ -407,7 +407,7 @@ function createNewCladeGroup(div, scales){
     updateDropdown(cladesGroupKeeper, 'change-clade');
     let groups = groupDataByClade(scales, getLatestData(), chosenGroup);
 
-    d3.select('.dropdown.change-clade').select('button').text(`Clades Shown: ${chosenGroup.field}`);
+    d3.select('.dropdown.change-clade').select('button').text(`Groups Shown: ${chosenGroup.field}`);
 
     updateMainView('Summary View', groups);
     renderTree(d3.select('#sidebar'), null, true, false);

@@ -88,7 +88,7 @@ export function renderTreeButtons(normedPaths){
     });
 
     let cladeButton = buttonWrap.append('button').attr('id', 'clade-maker');
-    cladeButton.attr('class', 'btn btn-outline-secondary').text('Clade View').style('font-size', '12px');
+    cladeButton.attr('class', 'btn btn-outline-secondary').text('Subtree View').style('font-size', '12px');
     cladeButton.on('click', ()=> growSidebarRenderTree(null));
 }
 
