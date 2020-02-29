@@ -342,6 +342,8 @@ function renderText(pairs, field){
 }
 function drawSorted(pairs, field){
 
+  console.log('test', pairs, field);
+
   let pairColor = ['#FF5733', '#129BF5'];
   let nodes = findBrushedNodes();
 
