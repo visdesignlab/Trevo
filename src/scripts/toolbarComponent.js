@@ -191,10 +191,13 @@ export function toolbarControl(toolbar, main, calculatedScales){
 
     buttonClade.on('click', (d, i, n)=> {
         if(dropContentClade.classed('show')){
+
             dropContentClade.classed('show', false);
            
             let test = d3.select('#clade-show').selectAll('li').selectAll('input').filter((f, j, li)=> {
                 return li[j].checked === true});
+
+            console.log('test', test, d3.select('.dropdown.change-view').select('button').node().value);
             
             let groups = test.data().map((m=> {
                 let names = m.nodes.map(path => path[path.length - 1].node);

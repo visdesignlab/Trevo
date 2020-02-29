@@ -226,12 +226,8 @@ function addBadge(brushOb, brushedDomain, dist, otherBins, descendBins, treenode
                 updateCladeDrop(ul, cladeKeeper[cladeKeeper.length - 1]);
             });
 
-
-           
-
-        })
-
-    })
+        });
+    });
 
     let xOut = badge.append('i').classed('close fas fa-times', true).style('padding-left', '10px');
     
@@ -253,5 +249,13 @@ function removeBrush(brushOb){
 
     brushOb.brush.remove();
     brushArray = brushArray.filter(f=> f.key != brushOb.key);
+
+}
+
+export function removeAllBrushes(){
+
+    d3.selectAll('.distribution-too').remove();
+    d3.selectAll('.brush-span').remove();
+
 
 }

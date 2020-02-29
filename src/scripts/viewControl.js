@@ -6,6 +6,7 @@ import { generatePairs, rankingControl } from "./pairView";
 import { drawTreeForGroups, createCladeView, chosenCladesGroup } from "./cladeMaker";
 import { calculatedScalesKeeper } from ".";
 import { changeDropValue, clearMain } from './toolbarComponent';
+import { removeAllBrushes } from "./brusherMaker";
 
 export let groupedView = false;
 
@@ -54,6 +55,8 @@ export function updateMainView(d, groups){
     if(d != 'Pair View' && view === 'View Phenogram'){
         d3.select('.dropdown.attr-drop').remove();
     }
+
+    removeAllBrushes();
   
     if(d === 'Path View' || d === null){
         d3.select('#pair-rank').classed('hidden', true);
@@ -100,7 +103,7 @@ export function initialViewLoad(scales, dataName){
 
     main.selectAll('*').remove();
 
-    if(data.length > 50){
+    // if(data.length > 50){
 
         renderDistStructure(main, chosenCladesGroup[chosenCladesGroup.length - 1].groups)
             .then(()=>  document.getElementById("loader").style.display = "none");
@@ -115,21 +118,21 @@ export function initialViewLoad(scales, dataName){
 
         changeDropValue({'field':'Summary View'}, d3.select('.dropdown.change-view').select('button'));
 
-    }else{
+    // }else{
         
-        drawPathsAndAttributes(data, main);
-        d3.select('#view-toggle').text('View Summary');
+        // drawPathsAndAttributes(data, main);
+        // d3.select('#view-toggle').text('View Summary');
 
-        document.getElementById("scrunch").disabled = false;
-        document.getElementById("discrete-view").disabled = false;
+        // document.getElementById("scrunch").disabled = false;
+        // document.getElementById("discrete-view").disabled = false;
 
-        d3.select('#scrunch').classed('hidden', false);
-        d3.select('#discrete-view').classed('hidden', false);
+        // d3.select('#scrunch').classed('hidden', false);
+        // d3.select('#discrete-view').classed('hidden', false);
         
 
-        changeDropValue({'field':'Path View'});
+        // changeDropValue({'field':'Path View'});
       
-    }
+//    }
 
 }
 
