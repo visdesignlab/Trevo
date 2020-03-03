@@ -23,6 +23,8 @@ function sortandRedraw(field){
 
   let top = topPairsKeeper[topPairsKeeper.length - 1];
 
+ 
+
   if(field === 'Sort by Top Frequency'){
 
     let otherList = top.others.sort((a, b)=> b.value.length - a.value.length).map(m=> m.key);
@@ -35,13 +37,13 @@ function sortandRedraw(field){
     let sorted = indexed.sort((a, b)=> a.index - b.index);
     let pairGroups = drawSorted(sorted,  d3.select('.attr-drop.dropdown').select('button').attr('value'));
     if(traitVal != null) discreteTraitDraw(pairGroups, traitVal);
-    rankGrid(top.others.sort((a, b)=> b.value.length - a.value.length));
+    rankGrid(top.others.sort((a, b)=> b.value.length - a.value.length), top.length);
 
   }else{
     let sorted = top.topPairs.sort((a, b) => b.totalRank - a.totalRank);
     let pairGroups = drawSorted(sorted,  d3.select('.attr-drop.dropdown').select('button').attr('value'));
     if(traitVal != null) discreteTraitDraw(pairGroups, traitVal);
-    rankGrid(top.others.sort((a, b)=> b.value.length - a.value.length));
+    rankGrid(top.others.sort((a, b)=> b.value.length - a.value.length), top.length);
   }
 
 }
@@ -341,8 +343,6 @@ function renderText(pairs, field){
 
 }
 function drawSorted(pairs, field){
-
-  console.log('test', pairs, field);
 
   let pairColor = ['#FF5733', '#129BF5'];
   let nodes = findBrushedNodes();
@@ -736,10 +736,8 @@ function topPairSearch(topPairs, allPairs, field, weights){
     });
   });
 
-  //rankHistogram(matchKeeper);
-  
   topPairsKeeper[topPairsKeeper.length - 1].others = matchKeeper;
-  rankGrid(matchKeeper);
+  rankGrid(matchKeeper, topPairs.length);
 
   // matchKeeper.map((m, i)=> {
    
@@ -764,7 +762,7 @@ function topPairSearch(topPairs, allPairs, field, weights){
   //   text.attr('transform', (d, i)=> `translate(20, ${(i*20)+11})`);
   // });
 }
-function rankGrid(matchKeeper){
+function rankGrid(matchKeeper, pairLength){
 
   let scales = getScales();
 
@@ -782,7 +780,7 @@ function rankGrid(matchKeeper){
     return {key:m.key, 'bins':bins}
   });
 
-  let satScale = d3.scaleLinear().domain([20, 1]).range([0.02, 1])
+  let satScale = d3.scaleLinear().domain([pairLength, 1]).range([0.02, 1])
 
   newMatch.map(m=> {
 
@@ -793,7 +791,7 @@ function rankGrid(matchKeeper){
     group.attr('transform', 'translate(900, 0)');
 
     group.append('text')
-    .text('Ranked Top 20 in Other Traits')
+    .text('Ranked Top 1% in Other Traits')
     .style('font-size', 11)
     .attr('transform', `translate(5,0)`);
     
