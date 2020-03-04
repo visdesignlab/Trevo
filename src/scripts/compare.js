@@ -849,19 +849,27 @@ export function renderDistributionComparison(div, data, branchScale){
     let cRects = contBars.append('rect').attr('width', (d, i, n)=> {
         let width = dimensions.observedWidth / n.length;
         return width;
-    }).attr('height', (d, i)=> {
-        let y = d3.scaleLinear().domain([0, Object.keys(d).length]).range([(dimensions.height - dimensions.margin), 0])
-        return y(Object.keys(d).length - 2)
+    }).attr('height', (d, i, n)=> {
+
+   let y = d3.scaleLinear().domain([0, d3.max(d3.selectAll(n).data().map(m=> m.length))]).range([0, (dimensions.height - dimensions.margin)]);
+        return y(Object.keys(d).length - 2);
     })
     .attr('fill', d=> compareColors[d.index].light).attr('fill-opacity', .4);
 
     contBars.attr('transform', (d, i, n)=> {
-        let movex = dimensions.observedWidth / n.length;
-        let y = d3.scaleLinear()
-            .domain([0, Object.keys(d).length])
-            .range([(dimensions.height - dimensions.margin), 0]);
 
-     let movey = dimensions.height - y(Object.keys(d).length - 2);
+        let movex = dimensions.observedWidth / n.length;
+        let y = d3.scaleLinear().domain([0, d3.max(d3.selectAll(n).data().map(m=> m.length))]).range([0, (dimensions.height - dimensions.margin)]);
+       
+        let movey = dimensions.height - y(Object.keys(d).length - 2);
+
+
+    //     let movex = dimensions.observedWidth / n.length;
+    //     let y = d3.scaleLinear()
+    //         .domain([0, Object.keys(d).length])
+    //         .range([(dimensions.height - dimensions.margin), 0]);
+
+    //  let movey = dimensions.height - y(Object.keys(d).length - 2);
      return 'translate('+(movex * i)+', '+movey+')'});
 
  contOb.each((d, i, nodes)=> {

@@ -672,7 +672,6 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
         let movex = dimensions.observedWidth / n.length;
         let y = d3.scaleLinear().domain([0, d3.max(d3.selectAll(n).data().map(m=> m.length))]).range([0, (dimensions.height - dimensions.margin)]);
        
-
         let movey = dimensions.height - y(Object.keys(d).length - 2);
         return 'translate('+(movex * i)+', '+movey+')'});
 
