@@ -173,7 +173,8 @@ function addBadge(brushOb, brushedDomain, dist, otherBins, descendBins, treenode
     .classed('badge badge-secondary', true)
     .style('background', brushOb.color)
     .datum({brush:brushOb})
-    .text(`${brushOb.trait}:${brushedDomain[0]} - ${brushedDomain[1]}`);
+    .text(`${brushOb.trait}:${brushedDomain[0]} - ${brushedDomain[1]}`)
+    .style('margin-left', '25px')
 
     let nodeNames = filterData.map(m=> m.node);
 

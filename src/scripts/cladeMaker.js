@@ -100,6 +100,8 @@ function defineTraitClade(trait){
 
     }else{
 
+        console.log('c', trait)
+
         let sliderThing = slider(trait, d3.select('#sidebar').select('.button-wrap').append('svg'), highlightGroups);
 
         let wrap = d3.select('#sidebar').select('.button-wrap').append('form').classed("form-inline", true)
@@ -107,7 +109,7 @@ function defineTraitClade(trait){
         
         let textInput = wrap.append('input').attr('type', 'text')
         .classed('form-control', true)
-        .attr('placeholder', `Group-${trait.category}`);
+        .attr('placeholder', `Group-${trait.field}`);
 
         let button = wrap.append('div').classed('input-group-append', true).append('button').attr('type', 'button').classed('btn btn-outline-secondary', true);
         button.text('Add Group');
@@ -115,13 +117,13 @@ function defineTraitClade(trait){
         button.on('click', ()=> {
 
             let range = sliderThing.value;
-            let name = textInput.node().value != "" ? textInput.node().value : `Group-${trait.category}`;
+            let name = textInput.node().value != "" ? textInput.node().value : `Group-${trait.field}`;
 
             let data = getLatestData();
 
             let chosen = data.filter(f=> {
                 let leaf = f[f.length - 1];
-                return (leaf.attributes[trait.field].values.realVal >= range[0]) && (leaf.attributes[trait.category].values.realVal <= range[1]);
+                return (leaf.attributes[trait.field].values.realVal >= range[0]) && (leaf.attributes[trait.field].values.realVal <= range[1]);
             });
 
             addClade(name, chosen, []);
