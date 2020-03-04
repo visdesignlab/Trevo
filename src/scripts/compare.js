@@ -387,13 +387,13 @@ export function renderDistributionComparison(div, data, branchScale){
             .data((d, i, n)=> {
                 
                 let form = d3.format(".3f");
-                console.log('compare d', d)
+              
                 let jitterMove = [...new Set(d.value.state.map(m=> +form(m.value)))].map(m=> {
-                    console.log('m', m, d.value.state)
+                  
                     let arrayTest = d.value.state
                     .filter(f=> +form(f.value) === m)
                     .map(arr=> {
-                        console.log(arr)
+                    
                         arr.index = d.index;
                       //  arr.y = Math.random();
                       //  arr.x = randomizer();
@@ -402,7 +402,7 @@ export function renderDistributionComparison(div, data, branchScale){
                     return arrayTest;
                 })
 
-                console.log(jitterMove)
+            
                 return jitterMove.flatMap(j=> j);
                
 
@@ -863,13 +863,6 @@ export function renderDistributionComparison(div, data, branchScale){
        
         let movey = dimensions.height - y(Object.keys(d).length - 2);
 
-
-    //     let movex = dimensions.observedWidth / n.length;
-    //     let y = d3.scaleLinear()
-    //         .domain([0, Object.keys(d).length])
-    //         .range([(dimensions.height - dimensions.margin), 0]);
-
-    //  let movey = dimensions.height - y(Object.keys(d).length - 2);
      return 'translate('+(movex * i)+', '+movey+')'});
 
  contOb.each((d, i, nodes)=> {
@@ -922,10 +915,11 @@ export function renderDistributionComparison(div, data, branchScale){
             let width = dimensions.observedWidth / n.length;
             return width/2;
         }).attr('height', (d, i, n)=> {
+           console.log('discrete', d, d3.max(d3.selectAll(n).data().map(m=> m.data.length)));
            
-            let height = d.data[0] ? (d.data[0].scales.stateColors.length * dimensions.squareDim - 10): 0;
-            let y = d3.scaleLinear().domain([0, d.max]).range([0, (height)])
+            let y = d3.scaleLinear().domain([0, d3.max(d3.selectAll(n).data().map(m=> m.data.length))]).range([0, dimensions.height]);
             return y(d.data.length);
+
         }).attr('fill', (d, i) => {
             return d.data[0] != undefined ? d.data[0].color : '#fff';
         }).attr('opacity', 0.3);
@@ -933,9 +927,11 @@ export function renderDistributionComparison(div, data, branchScale){
         discBars.attr('transform', (d, i, n)=> {
             let movex = dimensions.observedWidth / n.length;
             let offSet = movex / 2
-            let height = d.data[0] ? (d.data[0].scales.stateColors.length * dimensions.squareDim - 10) : 0;
-            let y = d3.scaleLinear().domain([0, d.max]).range([0, (height-5)])
-            let movey = (height-2) - y(d.data.length);
+          
+
+            let y = d3.scaleLinear().domain([0, d3.max(d3.selectAll(n).data().map(m=> m.data.length))]).range([0, dimensions.height]);
+            let movey = (dimensions.height) - y(d.data.length);
+
             let finalMove = d.index === 0 ? 'translate('+(movex * i)+', '+movey+')' : 'translate('+(offSet+(movex * i))+', '+movey+')';
             return finalMove;
         })
@@ -954,10 +950,10 @@ export function renderDistributionComparison(div, data, branchScale){
         discOb.each((d, i, nodes)=> {
                 
                 let xPoint = d3.scalePoint().domain(d.stateKeys).range([0, dimensions.observedWidth]).padding(.6)
-                let height = d.stateKeys ? (d.stateKeys.length * dimensions.squareDim - 10) : 0;
-                let y = d3.scaleLinear().domain([0, d.leafData.data.length]).range([(height), 0]);
-                d3.select(nodes[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(4))//.attr('transform', 'translate(0, '+height+')');
-                d3.select(nodes[i]).append('g').classed('x-axis', true).call(d3.axisBottom(xPoint)).attr('transform', 'translate(0, '+height+')');
+              
+                let y = d3.scaleLinear().domain([0, d.leafData.data.length]).range([(dimensions.height), 0]);
+                d3.select(nodes[i]).append('g').classed('y-axis', true).call(d3.axisLeft(y).ticks(4));
+                d3.select(nodes[i]).append('g').classed('x-axis', true).call(d3.axisBottom(xPoint)).attr('transform', 'translate(0, '+dimensions.height+')');
 
                 d3.select(nodes[i]).select('.x-axis').selectAll('text').style('font-size', '8px');
                 d3.select(nodes[i]).select('.y-axis').selectAll('text').style('font-size', '8px');
