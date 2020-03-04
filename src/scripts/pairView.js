@@ -739,29 +739,9 @@ function topPairSearch(topPairs, allPairs, field, weights){
   topPairsKeeper[topPairsKeeper.length - 1].others = matchKeeper;
   rankGrid(matchKeeper, topPairs.length);
 
-  // matchKeeper.map((m, i)=> {
-   
-  //   let group = d3.selectAll('.pair-wrap').filter(f=> {
-  //     return (m.key === f.key);
-  //   }).append('g').classed('other-rank', true);
 
-  //   let rankSet = [...new Set(m.value.map(v=> v[1]).sort())]
-  //   let groupedRanks = rankSet.map(f=> {
-  //     let ranked = m.value.filter(va=> va[1]===f);
-  //     return {rank:f, value:ranked}
-  //   }).sort((a, b)=> a.rank - b.rank);
-
-  //   group.attr('transform', 'translate(860, 0)');
-  //   group.append('rect').attr('width', 300).attr('height', groupedRanks.length * 20).attr('opacity', 0.1);
-  //   let textGrp = group.selectAll('g.text-group').data(groupedRanks).join('g').classed('text-group', true);
-
-  //   let text = textGrp.append('text').text(d=> {
-  //     let traits = d.value.map(v=>v[2].delta.key).join(', ');
-  //     return `Ranking: ${d.rank} Traits: ${traits},  `});
-  //   text.style('font-size', '10px');
-  //   text.attr('transform', (d, i)=> `translate(20, ${(i*20)+11})`);
-  // });
 }
+
 function rankGrid(matchKeeper, pairLength){
 
   let scales = getScales();

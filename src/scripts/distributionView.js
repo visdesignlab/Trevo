@@ -177,13 +177,14 @@ export function binGroups(pathData, groupLabel, scales, branchCount){
             //Histogram for observed////
             let maxO = d3.max(leafAttr.flatMap(v=> +v.values[valueParam]));
             let minO = d3.min(leafAttr.flatMap(v=> +v.values[valueParam]));
-            let xO = d3.scaleLinear().domain([minO, maxO]).range([0, dimensions.height]);
+           // let xO = d3.scaleLinear().domain([minO, maxO]).range([0, dimensions.height]);
+           let xO = d3.scaleLinear().domain([min, max]).range([0, dimensions.width]);
 
             let histogramO = d3.histogram()
             .value(function(d) { 
                 return +d.values[valueParam]; })  
             .domain(xO.domain())  
-            .thresholds(xO.ticks(20)); 
+            .thresholds(xO.ticks(10)); 
 
             leafData.bins = histogramO(leafAttr);
       
@@ -386,6 +387,8 @@ export function drawGroupLabels(pathData, svg, groupLabel){
  */
 export async function renderDistStructure(mainDiv, pathGroups){
 
+    console.log('pathgroups',pathGroups)
+
     let compareTooltipFlag = false;
    
     let shownAttributes = d3.select('#attribute-show').selectAll('input').filter((f, i, n)=> n[i].checked === true).data();
@@ -502,6 +505,8 @@ export async function renderDistStructure(mainDiv, pathGroups){
  */
 
 export function renderDistibutions(binnedWrap, branchScale, pointGroups){
+
+  
 
     let predictedWrap = binnedWrap.append('g').classed('predicted', true);
     predictedWrap.attr('transform', 'translate(35, 0)');
@@ -651,22 +656,22 @@ export function renderDistibutions(binnedWrap, branchScale, pointGroups){
     contOb.attr('transform', `translate(${dimensions.predictedWidth + 160}, -15)`);
 
     let contBars = contOb.selectAll('g.ob-bars').data(d=> {
+        
         return d.leafData.bins}).join('g').classed('ob-bars', true);
 
     let cRects = contBars.append('rect').attr('width', (d, i, n)=> {
         let width = dimensions.observedWidth / n.length;
         return width;
-    }).attr('height', (d, i)=> {
-        let y = d3.scaleLinear().domain([0, Object.keys(d).length]).range([(dimensions.height - dimensions.margin), 0]);
-        return y(Object.keys(d).length - 2)
+    }).attr('height', (d, i, n)=> {
+        let y = d3.scaleLinear().domain([0, d3.max(d3.selectAll(n).data().map(m=> m.length))]).range([0, (dimensions.height - dimensions.margin)]);
+        return y(Object.keys(d).length - 2);
     })
     .attr('fill', defaultBarColor).attr('fill-opacity', .5);
 
     contBars.attr('transform', (d, i, n)=> {
         let movex = dimensions.observedWidth / n.length;
-        let y = d3.scaleLinear()
-            .domain([0, Object.keys(d).length])
-            .range([(dimensions.height - dimensions.margin), 0]);
+        let y = d3.scaleLinear().domain([0, d3.max(d3.selectAll(n).data().map(m=> m.length))]).range([0, (dimensions.height - dimensions.margin)]);
+       
 
         let movey = dimensions.height - y(Object.keys(d).length - 2);
         return 'translate('+(movex * i)+', '+movey+')'});
