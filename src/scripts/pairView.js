@@ -342,6 +342,9 @@ function renderText(pairs, field){
   rankMeta.append('text').text(`Num of Pairs: ${pairs.length}`).attr('transform', 'translate(690, 60)').style('font-size', '12px');
 
 }
+
+
+
 function drawSorted(pairs, field){
 
   let pairColor = ['#FF5733', '#129BF5'];
@@ -405,7 +408,7 @@ function drawSorted(pairs, field){
     scoreLabel.append('text').text((d, i, n)=> zero(d.closenessRank + d.distanceRank + d.deltaRank)).style('font-size', 10).attr('y', 60).attr('x', 115);
     scoreLabel.append('text').text((d, i)=> i+1).style('font-size', 10).attr('y', 80).attr('x', 115);
 
-    var lineGen = d3.line()
+    let lineGen = d3.line()
     .x(d=> {
         let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, width]);
        let distance = x(d.combLength);
@@ -414,6 +417,26 @@ function drawSorted(pairs, field){
         let y = d.attributes[field].scales.yScale;
         y.range([height, 0]);
         return y(d.attributes[field].values.realVal);
+    });
+
+    let areaGen = d3.area()
+    .curve(d3.curveCardinal)
+    .x((d, i, n)=> {
+        let x = d3.scaleLinear().domain([0, maxTimeKeeper[maxTimeKeeper.length - 1]]).range([0, width]);
+        let distance = x(d.combLength);
+        return distance;
+    })
+    .y0(d=> {
+      let y = d.attributes[field].scales.yScale;
+      y.range([height, 0]);
+      let value = d.attributes[field].values.lowerCI95 ? d.attributes[field].values.lowerCI95 : d.attributes[field].values.realVal
+      return y(value);
+    })
+    .y1((d, i, n)=> {
+      let y = d.attributes[field].scales.yScale;
+      y.range([height, 0]);
+      let value = d.attributes[field].values.upperCI95 ? d.attributes[field].values.upperCI95 : d.attributes[field].values.realVal
+      return y(value);
     });
 
     //BEGIN EXPERIOMENTING////]
@@ -468,6 +491,13 @@ function drawSorted(pairs, field){
       .attr('fill', 'none')
       .attr('stroke-width', 1)
       .style('stroke', 'rgba(160, 141, 184, .9)');
+
+      let rangePathsN = pairGroupN.append('path')
+      .attr("d", areaGen)
+      .attr("class", "inner-area-n")
+      .attr('fill', 'rgba(160, 141, 184, .4)')
+      .attr('stroke-width', 1)
+      .style('stroke', 'rgba(160, 141, 184, .9)');
      
       let branchesN = pairGroupN.selectAll('g.branch-n').data(d=> d).join('g').classed('branch-n', true);
       branchesN.attr('transform', (d, i)=> `translate(${xScale(d.combLength)}, 0)`);
@@ -496,12 +526,17 @@ function drawSorted(pairs, field){
 
     let pairGroup = pairWraps.selectAll('g.pair').data(d=> [d.p1, d.p2]).join('g').classed('pair', true);
 
+    let rangePaths = pairGroup.append('path')
+    .attr("d", areaGen)
+    .attr("class", "inner-area")
+    .attr('fill', (d, i)=> pairColor[i])
+    .attr('opacity', 0.07)
+ 
     let innerPaths = pairGroup.append('path')
     .attr("d", lineGen)
     .attr("class", "inner-line")
     .style('stroke', (d, i)=> pairColor[i])
-   // .style('stroke', 'rgb(165, 185, 198)');
-
+  
    let brushedPaths = innerPaths.filter(f=> {
     let nodeTest = f.filter(n=> nodes.map(m=> m.node).indexOf(n.node) > -1)
     return nodeTest.length > 0}).style('stroke', '#64B5F6').style('stroke-width', '5px');
@@ -838,7 +873,6 @@ function chunkArray(myArray, chunk_size){
 
     return tempArray;
 }
-
 
 function rankHistogram(matchKeeper){
 
