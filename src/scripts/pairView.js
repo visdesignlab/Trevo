@@ -545,11 +545,13 @@ function drawSorted(pairs, field){
     branches.attr('transform', (d, i)=> `translate(${xScale(d.combLength)}, 0)`);
     branches.filter(f=> f.leaf != true).append('rect')
     .classed('range', true)
-    .attr('width', 10)
+    .attr('width', 8)
     .attr('height', (d)=> {
         let y = d.attributes[field].scales.yScale;
         return y(d.attributes[field].values.lowerCI95) - y(d.attributes[field].values.upperCI95)
-    }).attr('fill', 'rgba(165, 185, 198, .5)')
+    }).attr('fill', 'none')
+    .style('stroke', 'rgba(165, 185, 198, .5)')
+
     .attr('y', (d, i)=> {
         let y = d.attributes[field].scales.yScale;
         return y(d.attributes[field].values.upperCI95);
@@ -559,7 +561,7 @@ function drawSorted(pairs, field){
       return nodes.map(m=> m.node).indexOf(f.node) > -1
     }).selectAll('rect.range').attr('fill', '#64B5F6')
 
-    branches.append('rect').attr('width', 10).attr('height', 4).attr('y', (d, i)=> {
+    branches.append('rect').attr('width', 8).attr('height', 4).attr('y', (d, i)=> {
         return d.attributes[field].scales.yScale(d.attributes[field].values.realVal) - 2;
     });
 
