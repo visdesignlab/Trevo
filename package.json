@@ -1,8 +1,8 @@
 {
-  "name": "Evo-Bio-Design-Study",
+  "name": "Trevo",
   "version": "1.0.0",
   "description": "Design Study for Mulitvariate Networks in Evolutionary Biology",
-  "homepage": "https://vdl.sci.utah.edu/Evo-Bio-Design-Study/",
+  "homepage": "https://vdl.sci.utah.edu/Trevo/",
   "scripts": {
     "build": "webpack --config webpack/webpack.config.prod.js  --colors",
     "start": "webpack-dev-server --open --config webpack/webpack.config.dev.js",
@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jenrogers1207/Evo-Bio-Design-Study.git"
+    "url": "git+https://github.com/jenrogers1207/Trevo.git"
   },
   "keywords": [
     "evolutionary",
@@ -22,7 +22,7 @@
   "author": "Jen",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/jenrogers1207/Evo-Bio-Design-Study/issues"
+    "url": "https://github.com/jenrogers1207/Trevo/issues"
   },
   "devDependencies": {
     "@babel/core": "^7.6.4",

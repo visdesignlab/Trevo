@@ -915,7 +915,7 @@ export function renderDistributionComparison(div, data, branchScale){
             let width = dimensions.observedWidth / n.length;
             return width/2;
         }).attr('height', (d, i, n)=> {
-           console.log('discrete', d, d3.max(d3.selectAll(n).data().map(m=> m.data.length)));
+        
            
             let y = d3.scaleLinear().domain([0, d3.max(d3.selectAll(n).data().map(m=> m.data.length))]).range([0, dimensions.height]);
             return y(d.data.length);

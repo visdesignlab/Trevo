@@ -24,4 +24,4 @@ npm run build
 ```
 
 ### Demo the App
-[try it out](https://vdl.sci.utah.edu/Evo-Bio-Design-Study/)
+[try it out](https://vdl.sci.utah.edu/Trevo/)

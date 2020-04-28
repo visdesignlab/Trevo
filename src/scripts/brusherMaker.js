@@ -174,7 +174,7 @@ function addBadge(brushOb, brushedDomain, dist, otherBins, descendBins, treenode
     .style('background', brushOb.color)
     .datum({brush:brushOb})
     .text(`${brushOb.trait}:${brushedDomain[0]} - ${brushedDomain[1]}`)
-    .style('margin-left', '25px')
+    .style('margin-left', '25px');
 
     let nodeNames = filterData.map(m=> m.node);
 

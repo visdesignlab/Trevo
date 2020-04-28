@@ -251,9 +251,9 @@ export function changeTrait(attKeys, data, weights){
   let view = toolbarButtonDiv.select('.dropdown.change-view').select('.dropdown-toggle').node().value;
 
   let drop = d3.select('.attr-drop.dropdown')
-  .selectAll('a').empty() ? dropDown(toolbarButtonDiv, attKeys, `Trait: ${attKeys[0].field}`, 'attr-drop') : d3.select('.attr-drop.dropdown').selectAll('a');
+  .selectAll('a').empty() ? dropDown(toolbarButtonDiv, attKeys, `Trait: ${attKeys[3].field}`, 'attr-drop') : d3.select('.attr-drop.dropdown').selectAll('a');
 
-  d3.select('.attr-drop.dropdown').select('button').attr('value', attKeys[0].field);
+  d3.select('.attr-drop.dropdown').select('button').attr('value', attKeys[3].field);
 
   drop.on('click', (d, i, n)=> {
 

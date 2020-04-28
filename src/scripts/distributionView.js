@@ -409,7 +409,7 @@ export async function renderDistStructure(mainDiv, pathGroups){
         let svg = group.append('svg');
         svg.attr('class', 'main-summary-view');
         svg.attr('id', `${d.label}-svg`);
-        svg.attr('height', (shownAttributes.length * (dimensions.height + 7))+ 50);
+        svg.attr('height', (shownAttributes.length * (dimensions.height + 11))+ 50);
     
         let branchBar = drawBranchPointDistribution(d, svg);
         branchBar.attr('transform', 'translate(55, 10)');
@@ -1084,9 +1084,6 @@ function renderContinuousPredicted(continDist){
         .style('stroke', 'gray')
         .attr('opacity', 0.3)
         
-
-
-
     let rangeRect = continDist.selectAll('rect.range').data(d=> {
         let newData = d.data.map(m=> {
             m.range = d.range;
