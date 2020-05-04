@@ -64,6 +64,8 @@ let tooltip = wrap.append("div")
 
 ////DATA LOADING////
 
+
+
 appLaunch();
 
 async function appLaunch(){
