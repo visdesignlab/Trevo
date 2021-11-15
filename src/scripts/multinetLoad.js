@@ -5,7 +5,7 @@ import { multinetApi } from "multinet";
 // const api_root = "https://multinet.app/api";
 const api_root = "https://api.multinet.app/api";
 
-//const api_root = "http://localhost:5000/api";
+// const api_root = "http://localhost:8000/api";
 
 class Multinet {
     constructor(){
@@ -20,47 +20,27 @@ class Multinet {
 const api = multinetApi(api_root);
 
 export async function getGraphNames(workspace){
-    return await api.graphs(workspace);
+    return await api.networks(workspace);
 }
 
 export async function load_data(workspace, graph) {
 
     let multinetOb = new Multinet();
 
-    // Fetch the names of all the node and edge tables 
-    await load_tables(workspace, graph, multinetOb);
+    const tables = await api.tables(workspace, graph);
+    multinetOb.tables = tables.results;
 
-    // Loop through each node tables and fetch the nodes to global variables
-    for (let node_table of multinetOb.tables.nodeTables) {
-        await load_nodes(workspace, node_table, multinetOb);
-    };
-
-    // Load the edge table (ONLY ONE BECAUSE OF ARANGO API LIMITATIONS) to a global variable
-    let edge_table = multinetOb.tables.edgeTable;
-    await load_links(workspace, edge_table, multinetOb);
+    multinetOb.nodes[0] = await api.table(workspace, tables.results.filter(table => table.name.includes('internal'))[0].name, {limit: 1000});
+    multinetOb.nodes[1] = await api.table(workspace, tables.results.filter(table => table.name.includes('leaf'))[0].name, {limit: 1000});
+    multinetOb.links[0] = await api.table(workspace, tables.results.filter(table => table.name.includes('edges'))[0].name, {limit: 1000});
 
     // Set the graph structure
-    multinetOb.graph_structure = { "nodes": rename_node_vars(multinetOb.nodes), "links": rename_link_vars(multinetOb.links) }
+    multinetOb.graph_structure = {
+        "nodes": multinetOb.nodes.map(nodeTable => nodeTable.results = rename_node_vars(nodeTable.results)),
+        "links": multinetOb.links.map(linkTable => linkTable.results = rename_link_vars(linkTable.results))
+    }
    
     return JSON.parse(JSON.stringify(multinetOb.graph_structure))
-};
-
-async function load_tables(workspace, graph, multinetOb) {
-    multinetOb.tables = await api.graph(workspace, graph);
-};
-
-async function load_nodes(workspace, node_table, multinetOb) {
-    const table = await api.table(workspace, node_table, {
-      limit: 1000,
-    });
-    multinetOb.nodes = [].concat(multinetOb.nodes, table);
-};
-
-async function load_links(workspace, edge_table, multinetOb) {
-    const table = await api.table(workspace, edge_table, {
-      limit: 1000,
-    });
-    multinetOb.links = [].concat(multinetOb.links, table)
 };
 
 function rename_link_vars(links) {
