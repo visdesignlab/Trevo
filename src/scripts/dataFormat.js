@@ -590,10 +590,10 @@ export async function dataLoadAndFormatMultinet(workspace, graphName){
 
     let attributeList = [];
 
-    let edges = data.links[0].rows;
+    let edges = data.links[0];
 
-    let internal = data.nodes[internalIndex].rows//.filter(f=> f._id.includes('internal'));
-    let leaves = data.nodes[leafIndex].rows//.filter(f=> f._id.includes('leaf'));
+    let internal = data.nodes[internalIndex]//.filter(f=> f._id.includes('internal'));
+    let leaves = data.nodes[leafIndex]//.filter(f=> f._id.includes('leaf'));
 
     let notAttributeList = ["_id", "label", "_key", "_rev", "key", "length"];
 
@@ -645,7 +645,7 @@ export async function dataLoadAndFormatMultinet(workspace, graphName){
             }
         });
         newRow.node = row.label;
-        newRow.key = row._id;
+        newRow.key = row.id;
         newRow.length = +row.length;
         newRow.leaf = false;
         return newRow;
@@ -671,7 +671,7 @@ export async function dataLoadAndFormatMultinet(workspace, graphName){
         newRow.node = row.label;
         newRow.label = row.label;
         newRow.length = +row.length;
-        newRow.key = row._id;
+        newRow.key = row.id;
         newRow.leaf = true;
         return newRow;
     });
@@ -680,8 +680,8 @@ export async function dataLoadAndFormatMultinet(workspace, graphName){
 
     let matchedEdges = edges.map((edge, i)=> {
 
-        let edgeSource = '_from';
-        let edgeTarget = '_to';
+        let edgeSource = 'source';
+        let edgeTarget = 'target';
 
         let attrib = edge[edgeTarget].includes("internal") ? calculatedAtt.filter(f=> f.key === edge[edgeTarget])[0] : calcLeafAtt.filter(f=> f.key === edge[edgeTarget])[0];
         let fromNode = edge[edgeSource].includes("internal") ? calculatedAtt.filter(f=> f.key === edge[edgeSource])[0] : calcLeafAtt.filter(f=> f.key === edge[edgeSource])[0];

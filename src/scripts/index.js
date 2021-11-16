@@ -72,8 +72,10 @@ async function appLaunch(){
 
     let graphList = await getGraphNames(workspace);
 
-    graphList = graphList.map(name=> {
-        return {field: name, text: `Data: ${name}`}
+    graphList = graphList.results;
+
+    graphList = graphList.map(network=> {
+        return {field: network.name, text: `Data: ${network.name}`}
     });
 
     let chosen = graphList.filter(f=> f.field === 'island-anolis')[0];
