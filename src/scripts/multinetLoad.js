@@ -27,12 +27,12 @@ export async function load_data(workspace, graph) {
 
     let multinetOb = new Multinet();
 
-    const tables = await api.tables(workspace, graph);
-    multinetOb.tables = tables.results;
+    const tables = await api.networkTables(workspace, graph);
+    multinetOb.tables = tables;
 
-    multinetOb.nodes[0] = await api.table(workspace, tables.results.filter(table => table.name.includes('internal'))[0].name, {limit: 1000});
-    multinetOb.nodes[1] = await api.table(workspace, tables.results.filter(table => table.name.includes('leaf'))[0].name, {limit: 1000});
-    multinetOb.links[0] = await api.table(workspace, tables.results.filter(table => table.name.includes('edges'))[0].name, {limit: 1000});
+    multinetOb.nodes[0] = await api.table(workspace, tables.filter(table => table.name.includes('internal'))[0].name, {limit: 1000});
+    multinetOb.nodes[1] = await api.table(workspace, tables.filter(table => table.name.includes('leaf'))[0].name, {limit: 1000});
+    multinetOb.links[0] = await api.table(workspace, tables.filter(table => table.name.includes('edges'))[0].name, {limit: 1000});
 
     // Set the graph structure
     multinetOb.graph_structure = {
